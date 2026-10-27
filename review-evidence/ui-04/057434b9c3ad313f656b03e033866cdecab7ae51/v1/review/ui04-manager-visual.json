@@ -1,0 +1,11 @@
+{
+  "testedHead": "07285735ff92af7dd35908d79e47460256cb8415",
+  "reviewer": "root manager",
+  "scope": "Visual review of combined Refined tabs UI only; no gate or human approval supplied.",
+  "files": {
+    "pending-initial-focus-2-off-1280.png": "04b3a77ca82a76674edec56b5a2fcff0b3d49c029375e566f056cd21c42e80ab",
+    "pending-rows-off-320.png": "1a9fb7814b1d68a4eb6aa5f49bc100bca751186ad54baf83cce421c2b5e36407"
+  },
+  "result": "No actionable visual defect. Desktop member facts align, invitation disclosure is visible beside the heading, pending actions and UTC expiry fit, and keyboard focus is clear. At320px the facts and long invitation identity reflow without overlap, and both allowed pending actions remain visible. Help stays after pending invitations.",
+  "limits": "These are controlled browser fixtures, not production screenshots. Automated71-case evidence owns interaction,200percent text and remaining viewport assertions."
+}

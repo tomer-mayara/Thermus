@@ -1,0 +1,5005 @@
+{
+  "before": "07285735ff92af7dd35908d79e47460256cb8415",
+  "after": "057434b9c3ad313f656b03e033866cdecab7ae51",
+  "changedPaths": [
+    {
+      "path": "docs/design/organization-admin-plan.md",
+      "before": {
+        "mode": "100644",
+        "type": "blob",
+        "blob": "e7fdb8c6663a8a4b2e3e12bb364e888dcfd06b7e"
+      },
+      "after": {
+        "mode": "100644",
+        "type": "blob",
+        "blob": "fbf7cbbf9dff62291dbd161b8b6a20ae2523c882"
+      }
+    },
+    {
+      "path": "docs/implementation/admin-ui-stack-review.md",
+      "before": {
+        "mode": "100644",
+        "type": "blob",
+        "blob": "c520e9a5b8d05b0d982783489673afd45e2ffabb"
+      },
+      "after": {
+        "mode": "100644",
+        "type": "blob",
+        "blob": "3f604c00cee5fe398f322919ee56eee490c5d72d"
+      }
+    },
+    {
+      "path": "docs/implementation/self-onboarding-plan.md",
+      "before": {
+        "mode": "100644",
+        "type": "blob",
+        "blob": "f7d2b186814b66f6a04600cf04883e5a74deae21"
+      },
+      "after": {
+        "mode": "100644",
+        "type": "blob",
+        "blob": "71bc4d30809b9e99d8796a12cbe4120ba3e04eb5"
+      }
+    },
+    {
+      "path": "docs/implementation/self-onboarding-s1.md",
+      "before": {
+        "mode": "100644",
+        "type": "blob",
+        "blob": "376cd097c6a08191031d47c1014d65e3d5f6e20b"
+      },
+      "after": {
+        "mode": "100644",
+        "type": "blob",
+        "blob": "247c4b94c700b4fb36aec6c64450b0afa0ff8710"
+      }
+    },
+    {
+      "path": "docs/metrics/2026-10-26-9507e751.json",
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "type": "blob",
+        "blob": "7133b4a6f41d2244b024c0273fca23ea5f899f89"
+      }
+    },
+    {
+      "path": "knip.json",
+      "before": {
+        "mode": "100644",
+        "type": "blob",
+        "blob": "f7c9205bc1c3e0fd5930ea0e0aa19b70af1174bd"
+      },
+      "after": {
+        "mode": "100644",
+        "type": "blob",
+        "blob": "f9951cc9fe48202536753bea7b2f897dc06c9b11"
+      }
+    },
+    {
+      "path": "script/spike/render-tenant-lifecycle.ts",
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "type": "blob",
+        "blob": "a1eec2f317f1ded3892b2470af14ce8679d8d785"
+      }
+    },
+    {
+      "path": "script/spike/render-tenant-lifecycle/answers.ts",
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "type": "blob",
+        "blob": "2d37aea6e76a66768acf5a9685990ca8df0ecf80"
+      }
+    },
+    {
+      "path": "script/spike/render-tenant-lifecycle/calls.ts",
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "type": "blob",
+        "blob": "0e4565b4aeaaffee21a495758ac9ed2d3c8f9a8b"
+      }
+    },
+    {
+      "path": "script/spike/render-tenant-lifecycle/cleanup.ts",
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "type": "blob",
+        "blob": "bb8ab7c4cf1a43bf64020b689e1d49c3ca496913"
+      }
+    },
+    {
+      "path": "script/spike/render-tenant-lifecycle/context.ts",
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "type": "blob",
+        "blob": "db67395219f06d7349b36958841044b35ccd2972"
+      }
+    },
+    {
+      "path": "script/spike/render-tenant-lifecycle/dry-run.ts",
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "type": "blob",
+        "blob": "acdc75555daf61ae2e1b0afad271eeb50239ffc9"
+      }
+    },
+    {
+      "path": "script/spike/render-tenant-lifecycle/inputs.ts",
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "type": "blob",
+        "blob": "51dd53bdd1fa8d5a340aa1c80bcfab39a06aa975"
+      }
+    },
+    {
+      "path": "script/spike/render-tenant-lifecycle/polls.ts",
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "type": "blob",
+        "blob": "35705f33b4faba1a54bbb2882b62a29a20036f8b"
+      }
+    },
+    {
+      "path": "script/spike/render-tenant-lifecycle/preflight.ts",
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "type": "blob",
+        "blob": "96982d8486d86c36d1b982208c99861c2706d1c6"
+      }
+    },
+    {
+      "path": "script/spike/render-tenant-lifecycle/render-client.ts",
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "type": "blob",
+        "blob": "c9f8158ddf799201149edded3bc42ac2cf61800c"
+      }
+    },
+    {
+      "path": "script/spike/render-tenant-lifecycle/report.ts",
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "type": "blob",
+        "blob": "34571381e62ba13335170bd2164082257a846888"
+      }
+    },
+    {
+      "path": "script/spike/render-tenant-lifecycle/step-ids.ts",
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "type": "blob",
+        "blob": "b9b98e65d1b8a9666012503ff3b9e969d221b824"
+      }
+    },
+    {
+      "path": "script/spike/render-tenant-lifecycle/steps-lifecycle.ts",
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "type": "blob",
+        "blob": "493aa5c11b32f08e8b9ac0df9606dc8351fc854b"
+      }
+    },
+    {
+      "path": "script/spike/render-tenant-lifecycle/steps-service.ts",
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "type": "blob",
+        "blob": "283f1db819548e34c33daa669dc58a742bced5cc"
+      }
+    },
+    {
+      "path": "script/spike/render-tenant-lifecycle/steps.ts",
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "type": "blob",
+        "blob": "357b40b6ae07ff331edb8bb2ee90fc5fae301327"
+      }
+    },
+    {
+      "path": "script/spike/render-tenant-lifecycle/waits.ts",
+      "before": null,
+      "after": {
+        "mode": "100644",
+        "type": "blob",
+        "blob": "4d1b66be7fcdbae75f8f2e7c613a7b72b044092a"
+      }
+    }
+  ],
+  "identicalRelevantPaths": {
+    ".ast-metrics-baseline.yaml": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "675d8c17e9439be03da130361fdf725a772072da"
+    },
+    ".ast-metrics.yaml": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "36f5c93801ff04d16fc335668229ae320f914e69"
+    },
+    ".code-quality-exceptions.yaml": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "baf96aacf4b48bc4a101cd2948441191464277c5"
+    },
+    ".dockerignore": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "7894d12849b20c6ef1a7384cc76d3f94330c5b78"
+    },
+    ".habit-hooks/config.toml": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "738988aedb561ff154628ba26571f6e4797d28d5"
+    },
+    ".habit-hooks/eslint.config.mjs": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "756ed0ccaf661718119d375c214ef0ee2c2bf449"
+    },
+    ".habit-hooks/hook.config.toml": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "a141a2d86e051a0fdd985727fc089be62bddbac7"
+    },
+    ".habit-hooks/import-context.mjs": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "ee4c3f04bf0522ef002186cd71eb7e121e7b8e82"
+    },
+    ".habit-hooks/package.json": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "c78977bfa57dcf515071061d8ea855937095c75f"
+    },
+    ".habit-hooks/snooze.json": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "fe51488c7066f6687ef680d6bfaa4f7768ef205c"
+    },
+    ".npmrc": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "b6f27f135954640c8cc5bfd7b8c9922ca6eb2aad"
+    },
+    ".pr-impact.json": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "01dbe05211dc12d9e6d6653ac6b74d2f1fa4ef2a"
+    },
+    "Dockerfile": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "1f5fa2b6ca510aaa159e9e66da9264ba9c677942"
+    },
+    "Dockerfile.hosted": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "fa65a52dfce7e694a6a8c00c221964d5b1168e01"
+    },
+    "Dockerfile.hosted.dockerignore": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "773cfc0dd2d5c6e43e6d9dfe2daa728cfb481adc"
+    },
+    "architecture/components.md": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "bcbf8484fc833c97a81dd10490d6c85fcda00909"
+    },
+    "architecture/decisions/2026-10-26-per-tenant-containers.md": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "3380662d6ca4fd99c1398bf0bf5c5a628f8c942d"
+    },
+    "architecture/decisions/2026-10-26-tiers-and-billing.md": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "877a7ff483e270965eac3693779e9e20a24e2d40"
+    },
+    "docker/check-lightpanda-digest.sh": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "346cf501ed6dc2fbeecd6353f8c6dd2f40271eae"
+    },
+    "docker/hosted-ad-rules.LICENSE.txt": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "604209a804632b6e5274005a22293976d07c3099"
+    },
+    "docker/hosted-ad-rules.SOURCE.md": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "9abd837405e5e0af9c3726ee237b31d601cb4a2d"
+    },
+    "docker/hosted-ad-rules.txt": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "0e85010cf3159c405ade390e00521d1bca2f792f"
+    },
+    "docker/verify-hosted-runtime.mjs": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "4d710a7d0bcf49c97a8c10e3179e2dc511793d1d"
+    },
+    "docs/api-surface/src/accounts/billing/billing.d.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "fbdfaef9992041a049beb0d9a1b428a64c13ff4b"
+    },
+    "docs/api-surface/src/accounts/identity/access-context.d.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "64066d49a3fa1c87d922e0bf686a451d7aa03e99"
+    },
+    "docs/api-surface/src/accounts/identity/browser-session-controls.d.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "25564624d02a6d2dcf9cfc6aff786546ce4422b9"
+    },
+    "docs/api-surface/src/accounts/identity/browser-session.d.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "1bd6bdae5b453971b467b3078f508189b84f8fa7"
+    },
+    "docs/api-surface/src/accounts/identity/identity-verifier.d.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "29a69f9252d7814b1cc9dfb3c027a5a722ae8b10"
+    },
+    "docs/api-surface/src/accounts/identity/local-user-administration.d.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "9ebd16d97d683d4c9081a5d16ef859019fdddb49"
+    },
+    "docs/api-surface/src/accounts/organizations/administration-overviews.d.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "0137fbba18ef773ee9157039a6db1d2d6decac37"
+    },
+    "docs/api-surface/src/accounts/organizations/change-records.d.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "8a8f65630a7f57c7d6b52c7c077cc9e876f30ac9"
+    },
+    "docs/api-surface/src/accounts/organizations/customer-roles.d.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "647a8aa48253393d642c3a07fc8b7ef37c86d2b5"
+    },
+    "docs/api-surface/src/accounts/organizations/organization-administration.d.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "0928c317651889dbf9a2ec23a4910241be508954"
+    },
+    "docs/api-surface/src/accounts/organizations/organization-directory.d.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "2e722e72e973af367d4ac01f25778f29516cc6e0"
+    },
+    "docs/api-surface/src/accounts/organizations/removal-operation-store.d.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "2438f3bdcdbe10a9492e85f328e72ccb8f898938"
+    },
+    "docs/api-surface/src/accounts/organizations/signup-activation.d.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "ecce02f2d28e957582245dff7b5007a2ce57be0c"
+    },
+    "docs/api-surface/src/accounts/providers/workos/session-cookies.d.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "5cb715182d46b20dc608df0e1510c7977ffbcef6"
+    },
+    "docs/api-surface/src/accounts/providers/workos/workos-browser-session.d.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "1e4417bb0f0de45c2f5178f02b21d81d1fd6c68f"
+    },
+    "docs/api-surface/src/accounts/providers/workos/workos-signup-documents.d.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "6a387b713d63bb37aaa5adb39c9b2ad0a887d3d8"
+    },
+    "docs/api-surface/src/accounts/providers/workos/workos-signup.d.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "fd69be83dd0ca9402d330639ff5fe9ca2bb61f13"
+    },
+    "docs/api-surface/src/app/fetch-tool.d.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "421cf5c106ac918670b60996b9616a161bf24526"
+    },
+    "docs/api-surface/src/index.d.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "cfe716c628b6dfead66fed72527564c41ca381fa"
+    },
+    "docs/api-surface/src/interfaces/mcp/fetch-tool-schema.d.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "d2b80a84577735a4d6dcc7a6f4680fdb22392fa4"
+    },
+    "docs/api-surface/src/interfaces/mcp/protected-resource-endpoint.d.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "e17cd8aafdce9fdb9f179192981bb6358a4c17d3"
+    },
+    "docs/api-surface/src/interfaces/web/account/account-form.d.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "4d190edbb4c535dac2073fe8ed303197b1c0dffa"
+    },
+    "docs/api-surface/src/interfaces/web/html-escape.d.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "98347488162c35168abcc2ecd65d90baab144f62"
+    },
+    "docs/api-surface/src/interfaces/web/page-html.d.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "eb59dec0916bee1dd56fa95cf0068f3d7cb92add"
+    },
+    "docs/api-surface/src/logs/audit/audit-log.d.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "208ac83d55705881aac74e974372524694585068"
+    },
+    "docs/api-surface/src/logs/audit/audit-send.d.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "3b4e89aa0249bbe72004481d636344340819792a"
+    },
+    "docs/api-surface/src/logs/audit/destination-settings-service.d.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "86ff91e9b65662b341403b3e8727505096b0b951"
+    },
+    "docs/api-surface/src/logs/audit/otlp-audit-sender.d.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "8b42e46b34d21932126c01b1897a1a61f3457351"
+    },
+    "docs/api-surface/src/logs/system/system-logger.d.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "e99ac95ac39460247fc4d8edf37a6509fa72fff1"
+    },
+    "docs/api-surface/src/pipelines/execution/execution-context.d.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "c25908b0862877d2a5dd5439e2a3c8318818319a"
+    },
+    "docs/api-surface/src/pipelines/execution/pipeline-step.d.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "e421cc5112ca7e4ea0be37c4d7836e50f0e9994a"
+    },
+    "docs/api-surface/src/pipelines/execution/step-record.d.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "fc52fc884dbb42d0e180a33b80f9617f731803e5"
+    },
+    "docs/api-surface/src/pipelines/html-processing/ad-cleaner/adb/clean-html-ads-adblock-rs.d.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "7ca9ec62e0113a9c4f31dbb8b01bbf8ddcdccac6"
+    },
+    "docs/api-surface/src/pipelines/html-processing/ad-cleaner/html-depth-limit-error.d.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "9b99ec34123088f84fdf8ff1103483c4bb2eee2f"
+    },
+    "docs/api-surface/src/pipelines/html-processing/html-to-markdown-pipeline.d.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "bbc9303e192483ce91bff7e83acbc2e61b40bb5a"
+    },
+    "docs/api-surface/src/pipelines/page-fetch/fetch-failure.d.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "b8b0b655f01c952ddceb2daa0bff65c04e6c9003"
+    },
+    "docs/api-surface/src/pipelines/page-fetch/fetch-page.d.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "3849b1e812dae2ce1157f66195b54e38bc498a78"
+    },
+    "docs/api-surface/src/pipelines/page-fetch/fetch-url.d.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "7df2171283f783014eb3b3589a5531842c219ab2"
+    },
+    "docs/api-surface/src/pipelines/providers/search-engine/search-engine.d.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "b345105c8e160ddc62d2003acbfea85011721112"
+    },
+    "docs/api-surface/src/pipelines/providers/website-fetcher/network-policy.d.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "712445a60726ac07e78e8733d508b625edc4f354"
+    },
+    "docs/api-surface/src/pipelines/providers/website-fetcher/renderer-failure-reports.d.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "c09a08ee307bb3a823d35252ddcc94e5b79997c9"
+    },
+    "docs/api-surface/src/pipelines/providers/website-fetcher/website-fetcher.d.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "38ac643314d2466e5a78fd9a2814663db5c71cb3"
+    },
+    "docs/api-surface/src/pipelines/search/search-failure.d.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "4fcc9a141d92041fa94360685caf3d181f084416"
+    },
+    "docs/api-surface/src/pipelines/search/search-pipeline.d.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "b38b143c71b18992ddfd66a4b553ce7b369f7ad4"
+    },
+    "docs/api-surface/src/pipelines/search/search-query.d.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "a2c8c25003aa8e53f06cfeacd4309e7bdf8fb57a"
+    },
+    "docs/api-surface/src/runtime/config/ad-rules-file.d.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "5a4b29993506b9a18faee2df3a21852597f681c5"
+    },
+    "docs/api-surface/src/runtime/config/deployment-config.d.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "7d27c38e9c430de295e38b7290eff4d3d67eeeb1"
+    },
+    "docs/api-surface/src/runtime/http/client-address.d.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "d59784788b190abe08c27e67a97e510c0410be67"
+    },
+    "docs/api-surface/src/runtime/http/request-cancellation.d.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "66d01b9e875e5e655520657e8298dfeffe89d255"
+    },
+    "docs/implementation/pr-review-rules.yaml": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "0296d2a0eaac4f1f5a8869e6ace97365d09dcc0f"
+    },
+    "docs/implementation/test-gate-policy.md": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "2906d5bb324cf8590a90a72e857d72f46dfbd834"
+    },
+    "docs/lightpanda-runtime.md": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "b57f91844b84b0385845e75741e93fbd8cec95e3"
+    },
+    "migrations/auth-local/0001-better-auth.sql": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "07a2f12cf470407b5b96ef93a27595ebdb5b5108"
+    },
+    "migrations/auth-local/0002-installation.sql": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "f73875e8e75d7a64773a4a97986fc7fd53581ef8"
+    },
+    "package.json": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "5f84bb7a20e631a23cca127d51e9281f145b475e"
+    },
+    "patches/agent-input-sanitizer@1.47.14.patch": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "c43bcde6db0e95d80dc99fb39c849b7ab4f39945"
+    },
+    "patches/ast-metrics/0.43.1-thermus.1.patch": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "0e0a3be5c7318ef37cd4d61bb6bae7536471307d"
+    },
+    "patches/ast-metrics/LICENSE.txt": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "c57184117d7b11e972ed2d25280ddaea273ab6b8"
+    },
+    "patches/ast-metrics/README.md": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "7c2d18874c44b3335a78b3a923d62e8d4d9ae410"
+    },
+    "patches/defuddle@0.19.4.patch": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "b8a95161d4943ed895062861656f627ad1f02ca4"
+    },
+    "patches/linkedom@0.18.13.patch": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "daaebcc2f01db8d4056cb7664e50b71e3d4fb7eb"
+    },
+    "pnpm-lock.yaml": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "1f3b6d8dafdeaf0b759b8218e01d81f5c2c2deec"
+    },
+    "pnpm-workspace.yaml": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "ab028f20fecd543c42b48a8c05e1718194e92c00"
+    },
+    "src/accounts/billing/billing-free.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "5473c6d719e3db0ddd39de926e315e5e3a43c020"
+    },
+    "src/accounts/billing/billing.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "d26e600346e18ba3c8200d36136d7ce6f4b80c0f"
+    },
+    "src/accounts/identity/access-context.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "b5261f348f840271abff6ce948b2b9dcba8c3fcb"
+    },
+    "src/accounts/identity/browser-session-controls.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "3dd21090d7a1587d56b2e4aeed4697355c44219f"
+    },
+    "src/accounts/identity/browser-session.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "5c47dc31ec4787a6c022b230160518327b2e3ae7"
+    },
+    "src/accounts/identity/identity-verifier.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "83030368602eb4abd50782fb3408517dff6843b3"
+    },
+    "src/accounts/identity/local-user-administration.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "dd69d230c76fac1a782eab21108321667ae9248a"
+    },
+    "src/accounts/organizations/administration-overviews.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "b4d6cadea6bdb8993d403f14e100b265c20d23ba"
+    },
+    "src/accounts/organizations/change-records.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "6c27f9b6075eaa30a5cde957eba03cec026b1558"
+    },
+    "src/accounts/organizations/customer-roles.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "ff84da8badeac4dcbf835442ec57b1d611ea6abf"
+    },
+    "src/accounts/organizations/directory-reads.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "6c2e934745c2af15c68b9217138b92441b8afb84"
+    },
+    "src/accounts/organizations/membership-removal-checks.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "79ba639a060a5fe7f61db38350635980752636e4"
+    },
+    "src/accounts/organizations/membership-removal-lifetime.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "1b43217ee71bcf1d8bad69d9b189325e2d45a84a"
+    },
+    "src/accounts/organizations/membership-removal.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "b10aa83b1600612641fcdb47bcc88979b271fc18"
+    },
+    "src/accounts/organizations/organization-administration.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "3847d85078f53b888b6b30726ba9e18ea33edb1e"
+    },
+    "src/accounts/organizations/organization-directory.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "1a0981f8ac6ad9ada2d05562cb317bdaf1aefb6c"
+    },
+    "src/accounts/organizations/removal-operation-store.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "3a159f60a9fcb8288ab9ec2d11e0656e4151245d"
+    },
+    "src/accounts/organizations/signup-activation.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "4c35bccbb90a7c4287fb7bb0c46935f98e9bdd57"
+    },
+    "src/accounts/providers/better-auth/better-auth-provider.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "6d01eb0f0451a8daae79cc68e47c37aec47870ac"
+    },
+    "src/accounts/providers/better-auth/better-auth-runtime.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "c7c32affd5d839c262138065b31d27a172c752fa"
+    },
+    "src/accounts/providers/better-auth/better-auth-user-administration.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "5a549221acabf0a01256c19a5b5a009120b49c68"
+    },
+    "src/accounts/providers/better-auth/data-directory-lock.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "900619d94b3c897b353e092d0f74741b0bda1647"
+    },
+    "src/accounts/providers/better-auth/local-installation.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "fcf51059f3e5fd792aeb09094805ff825a39029b"
+    },
+    "src/accounts/providers/workos/hosted-role-mapping.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "0a3cab16dd07f8e7344cec4c0965736678371ee1"
+    },
+    "src/accounts/providers/workos/session-cookies.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "8fe6c32eaf4dd8196859acaf266dc51d44f6c67b"
+    },
+    "src/accounts/providers/workos/workos-approved-organization-documents.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "71e188bc876738b30abb5a462c3f15ac8c0f7cbf"
+    },
+    "src/accounts/providers/workos/workos-approved-signup-documents.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "c908addb65a402629e7fb2027207681fed17c6f9"
+    },
+    "src/accounts/providers/workos/workos-auth-provider.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "4031f4c64626e224dc27e79f70f817c4adca37ca"
+    },
+    "src/accounts/providers/workos/workos-browser-session.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "4ff60a350093e488c1618a26cd99a887c0de7261"
+    },
+    "src/accounts/providers/workos/workos-google-onboarding.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "021f49a50d1a9bec26d49c610b7a7007a4342981"
+    },
+    "src/accounts/providers/workos/workos-organization-audit-documents.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "b3663643b9c9ac552500412a1fd06b0f2bf1cc05"
+    },
+    "src/accounts/providers/workos/workos-organization-removal-documents.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "7de5e8df4930d78ad2b9347c7c97d123ecd1c03a"
+    },
+    "src/accounts/providers/workos/workos-organizations.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "16d24fa7d83d4f8618fd3eb1417973d8c5774697"
+    },
+    "src/accounts/providers/workos/workos-session-client.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "0425d837d1cdfeedb9a9edee94c874f6996232b4"
+    },
+    "src/accounts/providers/workos/workos-settings.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "5fa9b33a6e4143a67b7310ec20717194a6bed763"
+    },
+    "src/accounts/providers/workos/workos-sign-in.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "6d5233d8f4a340c9ed461d9235a275aeca8cd4b9"
+    },
+    "src/accounts/providers/workos/workos-signup-documents.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "42e1fdd8bb7b69269f04d650bfa014fef0dbd140"
+    },
+    "src/accounts/providers/workos/workos-signup-settings.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "e8a77e9a02a6b6fa181141f0bc49905997050662"
+    },
+    "src/accounts/providers/workos/workos-signup.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "69436de231f8b5d9522ec8511850c08166245e54"
+    },
+    "src/app/application.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "c3e014219baa34bee1886b54b6927207e3891d07"
+    },
+    "src/app/fetch-tool.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "ddfc4368fea61c2bd29b0fdca1270c21eeb19914"
+    },
+    "src/app/hidden-line-input.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "0be1d74708270a145454fad20ad4c1490426ee61"
+    },
+    "src/app/hosted-portal.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "023227f27e8f1dfb111940edce99ecb65ecd686c"
+    },
+    "src/app/hosted-renderer-startup.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "696ad6e0c555a67fd2db57f08c073f544176495b"
+    },
+    "src/app/hosted-workos-application.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "5b5b2ac22919c84a6e15402a27cc98d339e3879f"
+    },
+    "src/app/logging-storage.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "f4f8963990c9e437e8aa946c1f124d3787c32cba"
+    },
+    "src/app/operation-capacity.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "226325b24da2524759b88d5b95f83eb907b118ac"
+    },
+    "src/index.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "b2d1d2e52695ae9cd8bae60252cae1df2e4ed157"
+    },
+    "src/interfaces/cli/local-auth-command-line.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "27c30dc33099f622255fdd161d7c988d4d27e63f"
+    },
+    "src/interfaces/cli/local-auth-command.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "b145469b20e1d98ac7bef9aa32dcf8a7e40443ab"
+    },
+    "src/interfaces/mcp/fetch-tool-schema.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "e8d233ada2b51a51aef0e84d34a62413217cd3ed"
+    },
+    "src/interfaces/mcp/fetch-tool-server.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "e06efdce0220db8df771ea34060fa002452102b3"
+    },
+    "src/interfaces/mcp/get-url-as-markdown.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "613efa07d90fd92f1c1df30d2fada8a36149c38b"
+    },
+    "src/interfaces/mcp/identity-verifier-sdk-adapter.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "a469701147eecb46f7e1f6e8af9914ac2026a877"
+    },
+    "src/interfaces/mcp/mcp-server.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "4b782d2a50d755b2ef3920389f084bf126bb110f"
+    },
+    "src/interfaces/mcp/protected-resource-endpoint.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "77c6c0bd3ae0d1179c3f5bf0dff449f8bae91e4e"
+    },
+    "src/interfaces/mcp/search-tool-schema.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "8c64550a8a63bda2a9ab7e9e71dfee1f456d41a7"
+    },
+    "src/interfaces/mcp/search.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "18a08b0fbe96b6f7709a1e76a029903b759a6f4b"
+    },
+    "src/interfaces/mcp/tool-completion-record.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "df306992d07a011f7a61857a31ebae3cca7e0934"
+    },
+    "src/interfaces/user-portal/agent-guides.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "7802a16d1c1a79ff52136bb58c156eb5a074736a"
+    },
+    "src/interfaces/user-portal/connection-guide.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "6bb1b40cb05e54ef4eb78d6cc126fa7915706222"
+    },
+    "src/interfaces/user-portal/env.d.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "788444611a608486370189245b13366f5f56c4bd"
+    },
+    "src/interfaces/user-portal/guide-selector.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "abe2aba88fd36f72e049add64256c45ae48ac07e"
+    },
+    "src/interfaces/user-portal/index.html": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "3ba2f3dcc32158c740276e9a0aa8fb5bf58b22c3"
+    },
+    "src/interfaces/user-portal/main.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "1375bf8d5bd7839572371f4a319f904cbb40465a"
+    },
+    "src/interfaces/user-portal/portal.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "6a23132e055108f908b8a40f20bc90066ef5d7bb"
+    },
+    "src/interfaces/user-portal/product-flow.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "c0ad428053d5181f8f09a4f9736a94a88cb0938b"
+    },
+    "src/interfaces/user-portal/public/assets/plex-OFL.txt": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "c35c4c618fab33da8695177b3a6cefe0810b7b28"
+    },
+    "src/interfaces/user-portal/public/assets/plex-mono-400-latin.woff2": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "52b6c7595dd5e2106676e7c52fcff18539607879"
+    },
+    "src/interfaces/user-portal/public/assets/plex-sans-latin.woff2": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "e5ebabbddc52459948f27539fb06d60db5fc2929"
+    },
+    "src/interfaces/user-portal/public/assets/plex-serif-500-latin.woff2": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "b532b81c4d5b2debb9ac0cf354434fb4ea2ab369"
+    },
+    "src/interfaces/user-portal/public/assets/thermus-favicon.svg": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "54f6ad899a4ce28117fa75fae841d61e4546fd9e"
+    },
+    "src/interfaces/user-portal/public/assets/thermus-logo.svg": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "8b78b884305d4f4eb867e9a70815655d786f21f8"
+    },
+    "src/interfaces/user-portal/style.css": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "1dcf5b599dc7e981456b9070f4375ff65874aab4"
+    },
+    "src/interfaces/user-portal/vite.config.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "0d598e5fdcadd3f5839746fbecfd0d43b4093f24"
+    },
+    "src/interfaces/web/account/account-form.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "55b7df53961fc913a323d26647beba0163ea0c0f"
+    },
+    "src/interfaces/web/account/account-pages.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "cd04dcd5a5a3bb96db3864463e99c7cd970b7b24"
+    },
+    "src/interfaces/web/account/account-routes.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "786c38514c8222dda7dce1d93a95025a61b129e5"
+    },
+    "src/interfaces/web/account/administration-help-documents.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "e0d260986261606d475875d1f6fd24147b7f035a"
+    },
+    "src/interfaces/web/account/administration-pages.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "50eb3e08ef13a3841515720db43163e1894c91c8"
+    },
+    "src/interfaces/web/account/administration-routes.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "1366a2606d283cf91fdca4cf1f2f10f7ea0e2c8e"
+    },
+    "src/interfaces/web/account/billing-page.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "06a59ca87c67c693045f08ac1105a048468c84ae"
+    },
+    "src/interfaces/web/account/logging-form.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "b5ce94fc0678c34c3ea2ae484ba38104b073ec39"
+    },
+    "src/interfaces/web/account/logging-page.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "ba8aaba97820ed43280f670f42d18cc8bc0b1c85"
+    },
+    "src/interfaces/web/account/logging-routes.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "496477d2de29373db47044154e8bcdf844a1bbd1"
+    },
+    "src/interfaces/web/account/logging-test-page.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "3058eaa7c41c1f3f8122d73846211c8c8dc1345d"
+    },
+    "src/interfaces/web/account/members-page-layout.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "627a7d4d5153a587d92597cf0c80fd14adf0774b"
+    },
+    "src/interfaces/web/account/members-style.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "6f6d8e674b6176e1c22e18828b5130e0d02ee38b"
+    },
+    "src/interfaces/web/account/organization-selection-page.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "81c258ad61eebcf57dc0164458b0742d60d584c3"
+    },
+    "src/interfaces/web/account/organization-selection-style.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "bbcbaf837830e4215006905b832b29a6001d5236"
+    },
+    "src/interfaces/web/account/portal-access.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "1e1a5eec126667c6f1294cb7ddb16d608c9e0cc8"
+    },
+    "src/interfaces/web/auth/better-auth/local-auth-page-form.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "79572aa7afc3f46e80e84508b4e784c69873756e"
+    },
+    "src/interfaces/web/auth/better-auth/local-auth-page-html.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "cc2bd1ee6f310ea34bf6256cd5ca3b48f9fc3a97"
+    },
+    "src/interfaces/web/auth/better-auth/local-auth-pages.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "1fb008b8d671e409b0186d678b11d70a88aeaff3"
+    },
+    "src/interfaces/web/auth/better-auth/local-auth-provider-routes.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "d65e409d651654283ab0639ba13ce5ddb2bb7156"
+    },
+    "src/interfaces/web/auth/workos/sign-out-form.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "5bd44adf5a85968f425a32d6bff38c7f8d7fdc44"
+    },
+    "src/interfaces/web/auth/workos/workos-session-pages.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "6fbbf9046f3405471ac0042515b15533c619e79a"
+    },
+    "src/interfaces/web/auth/workos/workos-session-routes.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "40a7aa25d7b10bf94df86ad80e5237cb41749ac7"
+    },
+    "src/interfaces/web/auth/workos/workos-signup-document-reader.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "f81ca7deee832bfc189da150d805e87df809be49"
+    },
+    "src/interfaces/web/auth/workos/workos-signup-form.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "63a10a050cc720a51e26a58a014b91c65bb95096"
+    },
+    "src/interfaces/web/auth/workos/workos-signup-pages.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "2b7691e05d542dd1416647cebc1ee9879c16be93"
+    },
+    "src/interfaces/web/auth/workos/workos-signup-routes.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "8ad2f32f1241f0c94eab3c7893ce3ee772ae6195"
+    },
+    "src/interfaces/web/auth/workos/workos-signup-style.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "281c833c6b90c410ac0b83d9254bfd239432f04a"
+    },
+    "src/interfaces/web/html-escape.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "2387bc50f5d35e77570bab5757d7b297542e25c9"
+    },
+    "src/interfaces/web/page-html.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "a8b1c019c29dddc229b7f29ee10eebc41219ef24"
+    },
+    "src/logs/audit/audit-collector-state.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "644edc764f2282655b664f9dd50b64ce9df1d6e6"
+    },
+    "src/logs/audit/audit-collector.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "57ab62481708615ee035c4b0fe5aa145f9507d49"
+    },
+    "src/logs/audit/audit-content.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "e062dd8e198bd0692723af1f437a0d83666784cb"
+    },
+    "src/logs/audit/audit-event-projection.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "d0fc5603e95aa25cebeeefbae9d49abc2dcaf283"
+    },
+    "src/logs/audit/audit-https-connection.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "4712968988ed0ff13c4c14d3311c40015e154ac5"
+    },
+    "src/logs/audit/audit-log.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "b161e90d03fa8ce92677ba7d4916a7b3ed698449"
+    },
+    "src/logs/audit/audit-send.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "d9dd5c71522410b8aeb9a4492473714b4e85e0c0"
+    },
+    "src/logs/audit/audit-snapshot-state.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "4cd6c7711e5fd5de478e72af5a4c8e534204075d"
+    },
+    "src/logs/audit/audit-snapshots.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "cd4e03b75a35823b0c4769b5a65e04731ba67d9d"
+    },
+    "src/logs/audit/bounded-sql-runtime.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "f2cadea57279af8262f14a5196a08ac2712bb0f6"
+    },
+    "src/logs/audit/destination-credential-codec.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "fb671ceaf1929db701ea225b848570114c3e15f3"
+    },
+    "src/logs/audit/destination-endpoint.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "bc7a94c4ef9358a66c3866ac27ae0956496f99fc"
+    },
+    "src/logs/audit/destination-settings-service.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "dcf85475f1944fd653cfa9b089083a3be0bc5381"
+    },
+    "src/logs/audit/destination-settings-store.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "1b2682633643bf7c3012cb246a85222dd7bb7018"
+    },
+    "src/logs/audit/destination-test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "12f3fe979f376d75d5d104112d2be882636407c5"
+    },
+    "src/logs/audit/otlp-audit-encoding.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "ebf6f621fe4ead1221d8dbd817d49e291e8fa3de"
+    },
+    "src/logs/audit/otlp-audit-request.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "30fff1e8c297883d32cddb213251c2f8faeb1a30"
+    },
+    "src/logs/audit/otlp-audit-response.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "d280893b86ed4144491af4cc423ee1d8737b98d8"
+    },
+    "src/logs/audit/otlp-audit-sender.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "4431d5deb2ce8cfb625ff60b98a215323b0af7ed"
+    },
+    "src/logs/audit/pg-destination-settings-store.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "306f17de42488c1d7276d69e36cefa8892b9eca4"
+    },
+    "src/logs/audit/public-audit-destination.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "ca4fb9d68d7f955f0b1200d6b028dfbd79ebd535"
+    },
+    "src/logs/system/console-system-log-sink.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "4d661b5fc12df6b90277df00fb6970f19f9a2df7"
+    },
+    "src/logs/system/otel-system-log-sink.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "2047456ced7e788db90beb4b568fdea0a82873eb"
+    },
+    "src/logs/system/system-logger.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "e81b6e301acd272331ae4dc76649adac73017968"
+    },
+    "src/pipelines/execution/execution-context.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "4474a81cf03d867af45ad7842a7c7310e6c4273b"
+    },
+    "src/pipelines/execution/observe-request-step.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "86edc9af5aaae62bea5747e7840140f92123f17e"
+    },
+    "src/pipelines/execution/pipeline-step.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "a8e92cd2bd671f9526f80a7647316828ba179123"
+    },
+    "src/pipelines/execution/step-record.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "f56b993f27a8b6697c0ea6a1acfdf913eecb7904"
+    },
+    "src/pipelines/html-processing/ad-cleaner/adb/adblock-rs.d.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "6146ecadbc4becfc435cfd8038b4c69162ecee68"
+    },
+    "src/pipelines/html-processing/ad-cleaner/adb/clean-html-ads-adblock-rs.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "bc946fc0d74b4f2369b503521ce2e6a5e266150c"
+    },
+    "src/pipelines/html-processing/ad-cleaner/adb/source-line-index.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "6272e92332aa4d240e41ecef8e552444b8a82f2b"
+    },
+    "src/pipelines/html-processing/ad-cleaner/adb/source-range-parser.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "3291b7896c24b52e21d0c9f75e1a1d2221981871"
+    },
+    "src/pipelines/html-processing/ad-cleaner/clean-html-ads.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "62af286dbd3e5daa7a68a4a410d6d2ec5812dfeb"
+    },
+    "src/pipelines/html-processing/ad-cleaner/html-depth-limit-error.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "4feaeb5d284bb89b3efdc8b33c559a921392c668"
+    },
+    "src/pipelines/html-processing/html-input-limit.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "6b82f7eb728184edb84db0c37cc3cc18408d224d"
+    },
+    "src/pipelines/html-processing/html-to-markdown-pipeline.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "0757a9d595a2bca692dfb52e4edb8188af85f2c2"
+    },
+    "src/pipelines/html-processing/html-to-markdown/clean-html-to-markdown-defuddle.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "e6139dc0801a65cadd160b4512cd9a2f304d5a0b"
+    },
+    "src/pipelines/html-processing/html-to-markdown/clean-html-to-markdown.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "900cbd1c60c7cb9b0082062ba9ec61dc965d314b"
+    },
+    "src/pipelines/html-processing/html-to-markdown/plain-text-input.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "3ac6f45e359906b6aadc3392e95e170952e3356a"
+    },
+    "src/pipelines/html-processing/html-to-markdown/prepare-html-document.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "f8ad69d9585ad306ecffbe3b5bfd12f9cbd1820c"
+    },
+    "src/pipelines/html-processing/html-to-markdown/sanitize-html-document.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "0da5c00ded5ecfe463a9ff9e43e09553b693bd7c"
+    },
+    "src/pipelines/html-processing/process-html-step.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "d64b30275df8baacb7769fad1daef3bb558f516a"
+    },
+    "src/pipelines/html-processing/prompt-injection-remover/css-animation-declarations.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "23b3981a4874649fad37fe90c9a2ccb09f9b4531"
+    },
+    "src/pipelines/html-processing/prompt-injection-remover/css-opacity-animations.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "d6b20d857a19992d8c3c3631487ee2b357a3e491"
+    },
+    "src/pipelines/html-processing/prompt-injection-remover/css-opacity-keyframes.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "7757d4bcb633a75e34735d19c182dcb84006bb1f"
+    },
+    "src/pipelines/html-processing/prompt-injection-remover/css-selector-index.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "bdfbae7aa856deebef42f6ec14429e3127cb114d"
+    },
+    "src/pipelines/html-processing/prompt-injection-remover/css-selector-predicates.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "19f967918fd97d23f4307f6c1b6ea562a65aa01c"
+    },
+    "src/pipelines/html-processing/prompt-injection-remover/css-visibility-provenance.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "8620998678bb031adc2c97ea3c9d2f90c69fa0f8"
+    },
+    "src/pipelines/html-processing/prompt-injection-remover/css-visibility-ranges.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "4c6660c7b818da232228ee1ec1b9958bcdebe0e7"
+    },
+    "src/pipelines/html-processing/prompt-injection-remover/css-visibility-rules.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "42d69652bae27a3591660936fa42a44cb7a85625"
+    },
+    "src/pipelines/html-processing/prompt-injection-remover/css-visibility-selectors.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "d01f0772ffaa8ef58624cc00f3d12795c5905618"
+    },
+    "src/pipelines/html-processing/prompt-injection-remover/css-visibility-tree.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "2d33dc62f159b6f17b1e0aca5fcb727120e18611"
+    },
+    "src/pipelines/html-processing/prompt-injection-remover/css-visibility.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "11394b608867ad04fad2af327723a4e009d915e5"
+    },
+    "src/pipelines/html-processing/prompt-injection-remover/hidden-html-removal-counts.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "95dfec3546f7d8e524e8a7778f711b4c7dcb08b9"
+    },
+    "src/pipelines/html-processing/prompt-injection-remover/hidden-html-removal-session.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "68b77f1fc89f8ce2fe994b85f678cad4d192acf6"
+    },
+    "src/pipelines/html-processing/prompt-injection-remover/hidden-html-scanner.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "dd319072773565383ad02c33fda629c27c873948"
+    },
+    "src/pipelines/html-processing/prompt-injection-remover/html-control-context.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "d61bd541ec3639c148fa8478fcaf73df517023ee"
+    },
+    "src/pipelines/html-processing/prompt-injection-remover/html-text-source-ranges.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "75385de1f24a04bfea3ef469c66055d1e92fca6a"
+    },
+    "src/pipelines/html-processing/prompt-injection-remover/prompt-injection-remover-sanitizer.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "99d931f7f9daf19d556226912105895f21ca950e"
+    },
+    "src/pipelines/html-processing/prompt-injection-remover/prompt-injection-remover.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "43bdf4aad65c5aed525111b4cdd7ee6d7cce450e"
+    },
+    "src/pipelines/html-processing/prompt-injection-remover/sanitize-html-controls.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "ef1d7aa5af120ded349d5a1efb976f2d1b11055d"
+    },
+    "src/pipelines/html-processing/prompt-injection-remover/small-text-policy.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "d9c487c6acf086c306b64e56668bc8ac0f79caa6"
+    },
+    "src/pipelines/html-processing/search-results/brave-http-result-cleanup.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "80ecd9984538372e44330a12681831d8814d366a"
+    },
+    "src/pipelines/html-processing/search-results/brave-result-document.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "1d993140e57fe68eb57d970e6c28a8efc3847362"
+    },
+    "src/pipelines/html-processing/search-results/brave-result-fields.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "91d2c1c32cf87d90ca0163afa349d60b726617f6"
+    },
+    "src/pipelines/page-fetch/execute-incoming-step.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "3cd550cec328f48bb6d2a95a4e1ebf99a9196344"
+    },
+    "src/pipelines/page-fetch/execute-outgoing-step.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "b6db0991e111b7c5fe2ecaaf02b92d3020f0af29"
+    },
+    "src/pipelines/page-fetch/fetch-failure.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "4fe1c48f84da966e0d904752a3f1b8891607454b"
+    },
+    "src/pipelines/page-fetch/fetch-page.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "1659192b1faa0a9fc909de53f3d4376f943d45fd"
+    },
+    "src/pipelines/page-fetch/fetch-url.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "aeb2f6194a7671e9716b5a8a1b61f2e3c07a7a9f"
+    },
+    "src/pipelines/providers/search-engine/search-engine-brave-http.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "c045fc0df77b20652fd67eb448401e55915674c1"
+    },
+    "src/pipelines/providers/search-engine/search-engine.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "27c5d3f543d6d0cca2648c979428abdad4b0d04c"
+    },
+    "src/pipelines/providers/website-fetcher/fetch-diagnostic.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "a4bf3282afda1f3d41adacbe5c001e972195a1a3"
+    },
+    "src/pipelines/providers/website-fetcher/network-policy.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "8887f083419bc436da9c7e8a43860df347b7e380"
+    },
+    "src/pipelines/providers/website-fetcher/renderer-failure-reports.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "1e423652920097deeaf9238d21ee268527e00280"
+    },
+    "src/pipelines/providers/website-fetcher/renderer-result.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "5f1a57b96beb31cc6b10b95609f0f95a2cde1514"
+    },
+    "src/pipelines/providers/website-fetcher/website-fetcher-lightpanda.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "e1a53165f56c038f4737e43af9659697a56f1bd1"
+    },
+    "src/pipelines/providers/website-fetcher/website-fetcher.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "6f754f3cc27399d52499a3e1c6b7051058eb68af"
+    },
+    "src/pipelines/search/execute-incoming-step.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "1a25b1bc19306dbfc02402d3bfc96e9b20373407"
+    },
+    "src/pipelines/search/execute-outgoing-step.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "c17b1b036f01199331c2038dc7bbf34247881b0d"
+    },
+    "src/pipelines/search/search-cancellation.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "96f2a65e93a15a1a63d52a28825d4144af667f2d"
+    },
+    "src/pipelines/search/search-failure.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "a87c669cad3fac6b282b06517be5ca583d3394d9"
+    },
+    "src/pipelines/search/search-pipeline.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "30a9e77908498875a12734f4d3baa99042062450"
+    },
+    "src/pipelines/search/search-query.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "51f5c15c4d176382e958b27a88ddf4a0521ed0be"
+    },
+    "src/runtime/config/ad-rules-file.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "900f599d284ecc8b6665f4aa904097fb52ee7258"
+    },
+    "src/runtime/config/deployment-config.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "ed5ed89d255ace7f93be6949dafdd56cfef819cb"
+    },
+    "src/runtime/config/logging-storage-config.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "b870e90814adfad833645aebd22238bd2d0dab9c"
+    },
+    "src/runtime/config/operation-capacity-config.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "37793bb7b3b1418567ddee78c756a951e0248e8b"
+    },
+    "src/runtime/http/client-address.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "c29c01efb1a6f16fedd9ab6383389d2739101f88"
+    },
+    "src/runtime/http/fetch-exchange.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "ec0cc7daafc64bf9e482eb5e6aa364edbfd64eaa"
+    },
+    "src/runtime/http/request-cancellation.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "a03e18b228d760ab8dbf5169470d35d281ea7a41"
+    },
+    "src/runtime/http/server.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "bfa1b622fa703a6b52ba69f4aef0fd67180bb76f"
+    },
+    "test/acceptance/auth/fetch-public-connect.live.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "b70f2050b38e4e28ea3866550dca66f09b20dcac"
+    },
+    "test/acceptance/auth/fetch-public-script.live.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "41cc2e27d79cb9fadf821c3a78f41691c09a5e3b"
+    },
+    "test/acceptance/auth/fixtures/member-removal-integrated-site.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "778b090a79aa064da12306d57837cb2d14dc2cf0"
+    },
+    "test/acceptance/auth/hosted-admin-journey.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "06d48abed9d7127c0ed6fefb1fa61452d3a7c0ae"
+    },
+    "test/acceptance/auth/hosted-grant-retirement.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "e2ad44e59085be0ae288512249ef403f64b5cd37"
+    },
+    "test/acceptance/auth/hosted-image.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "aa29835f2e489968db8a2eae277ffb8fea135313"
+    },
+    "test/acceptance/auth/hosted-invitation-landing.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "9f37cac32b5222a931a0d5bc1a10d6da460441b1"
+    },
+    "test/acceptance/auth/hosted-invitation-refusals.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "277359ec080c3b2f453e265cf53462f0c76ac6ec"
+    },
+    "test/acceptance/auth/hosted-invitations.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "8e4a0b6447947c49c026e8d303e9ae0902376036"
+    },
+    "test/acceptance/auth/hosted-live/administration-proofs.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "6b48e72744f62deed9aa0691f6a143b241ce37c7"
+    },
+    "test/acceptance/auth/hosted-live/administration-server.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "96535dc5aa7980b7b61a7a03d670f38f3eaa3b57"
+    },
+    "test/acceptance/auth/hosted-live/configuration.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "87f6040419b27a1fd1ffc8a43a14e300355e8129"
+    },
+    "test/acceptance/auth/hosted-live/hosted-server.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "893612e9476655bbb84cac76a1cabdb1a6445607"
+    },
+    "test/acceptance/auth/hosted-live/operator-setup.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "85a9c1fd280984b077ace36b1a489d51a8a13846"
+    },
+    "test/acceptance/auth/hosted-live/organization-server.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "a0e2661d51307d5f24fe68e223097bd1506183f7"
+    },
+    "test/acceptance/auth/hosted-live/signup-server.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "08bc2a6f2be6823e18060344b667c686544a7a19"
+    },
+    "test/acceptance/auth/hosted-mcp-origin.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "7ffcf5817dbf4c8332134012114d63b18a4080ad"
+    },
+    "test/acceptance/auth/hosted-mcp-signup-guidance.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "324c5c8b0af7ba50e3340f24529f2438e660ef9a"
+    },
+    "test/acceptance/auth/hosted-member-removal-browser.runtime.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "60f19925ae72b758b6c08fc854087904cc72bec7"
+    },
+    "test/acceptance/auth/hosted-member-removal-budget.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "0de21aa595cf849eb6c60f2d401b09d42da89515"
+    },
+    "test/acceptance/auth/hosted-member-removal-integrated.runtime.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "8e435326abbd7393e6fec4bb2694452a66454354"
+    },
+    "test/acceptance/auth/hosted-member-removal-scope.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "ef833c05244f3c1c682237788a23c0d312893aaf"
+    },
+    "test/acceptance/auth/hosted-member-removal.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "def46cf51bc086c16472db11e301a5d223024be4"
+    },
+    "test/acceptance/auth/hosted-member-self-removal.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "333f72f064ced5178e72ad41dcfc3299315b47a4"
+    },
+    "test/acceptance/auth/hosted-member-session-recovery.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "c26f6504faabebbaf3d0a8e6ac12ae74284f261d"
+    },
+    "test/acceptance/auth/hosted-members.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "29a09706b85a57983294f88fe04f4d7a87852d54"
+    },
+    "test/acceptance/auth/hosted-membership-access.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "fa2949f0a1d77e3fcc0133cad2a9197ce6f3c15e"
+    },
+    "test/acceptance/auth/hosted-membership-deletion.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "bd91fb6c34f0a6b6a611aabf496642f4ba64675d"
+    },
+    "test/acceptance/auth/hosted-organization-requests.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "59ce9a1c07eb905aa32d21a60585c1a894232f67"
+    },
+    "test/acceptance/auth/hosted-organizations.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "4d61b45dac3b241d300a678c9860a4458c557a69"
+    },
+    "test/acceptance/auth/hosted-portal.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "e4c473eb37e594af9b13125c05220f729ed88e40"
+    },
+    "test/acceptance/auth/hosted-removal.live.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "2e1112bb7c204d0094a790512354ff53db6c377c"
+    },
+    "test/acceptance/auth/hosted-request-cancellation.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "b56a19a802d82f14b53f33a0ba304460a51584c4"
+    },
+    "test/acceptance/auth/hosted-seats.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "c49f2a2bbbf1e8788163d04fca88f5754745dd8f"
+    },
+    "test/acceptance/auth/hosted-signup-eligibility.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "9509395c4141325a65ad7d77f5fc32328550012c"
+    },
+    "test/acceptance/auth/hosted-signup-guidance.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "5a31856586c8d981adda612d21a4feb651d81173"
+    },
+    "test/acceptance/auth/hosted-signup-presentation.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "c5ce8192b11bd83585b60bccb52a9e1d6b35473a"
+    },
+    "test/acceptance/auth/hosted-signup-recovery.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "33e20fbe06cbdd718c48e70ef68faeaf82ec9307"
+    },
+    "test/acceptance/auth/hosted-signup-restart.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "225c24a4b6c16cd335d5c4e53477f7e0acd88b39"
+    },
+    "test/acceptance/auth/hosted-startup.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "b5c77bb5f3ad955e6ffaa39855cd9dfc526a98d2"
+    },
+    "test/acceptance/auth/hosted-workos-administration.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "c64d8211f9f8408e5cd01b403fefd5a9c522e6b8"
+    },
+    "test/acceptance/auth/hosted-workos-legacy-session.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "0e8875f0d945545153967bb17d124dbcf629d0c3"
+    },
+    "test/acceptance/auth/hosted-workos-mfa-policy.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "12b657d53767ce4ec90347202155e4212c447989"
+    },
+    "test/acceptance/auth/hosted-workos-organizations.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "995c2183bfb37b32261b7d5788eafcccb256a806"
+    },
+    "test/acceptance/auth/hosted-workos-role-access.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "e0f5223df685bc6581244ad529621f8ef56b3df2"
+    },
+    "test/acceptance/auth/hosted-workos-signup.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "980e7feb37b99975b5f6800a351708d159484dac"
+    },
+    "test/acceptance/auth/hosted-workos.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "51621994531eaa1d61fb01314dc52cfb35bae14d"
+    },
+    "test/acceptance/auth/hosted.live.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "98ec602dae86ac80f855611051f0e560f72ce9a5"
+    },
+    "test/acceptance/auth/local-client-registration.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "8e9ade7a008db02d64378148ee3610533370a032"
+    },
+    "test/acceptance/auth/local-command-provider-loading.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "7d254f1364b9d8efb9b090135de93eed75a12fb4"
+    },
+    "test/acceptance/auth/local-user-commands.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "a0ee4e0ee51875de12b6c47ddfe9ad804d0851bc"
+    },
+    "test/acceptance/auth/mcp-access.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "6ec159fa05f55ac94765c59701ca77e093d23a6a"
+    },
+    "test/acceptance/auth/mcp-failure-reports.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "4508529bf28a6895a59fdc35f4e9f638785afdf2"
+    },
+    "test/acceptance/auth/membership-removal-restart.runtime.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "b20b11636172f41ea7bd715baab9cb6e72f58487"
+    },
+    "test/acceptance/auth/membership-removal.runtime.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "5c95bee8aaae7e1e2bc38eaa2d24ee6d2b2e985d"
+    },
+    "test/acceptance/auth/self-hosted-container.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "39325b37fd77bbff7bd99c80ce43b8e7e9b0d719"
+    },
+    "test/acceptance/auth/self-hosted-routes.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "dce723f222fdd3e8617730b34e7bb926689aba0e"
+    },
+    "test/acceptance/auth/self-hosted-startup.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "686f743d09270185e77cbd526b26c7155ee36843"
+    },
+    "test/acceptance/auth/self-hosted.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "3fbaa32646fb13ecd25ff61c3c1fdbe6ce17116f"
+    },
+    "test/acceptance/billing/free-billing.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "60cccd959674c2ede6e24b0dfcb519681d4880fa"
+    },
+    "test/acceptance/billing/hosted-billing.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "10bd7c740468fb986f91bb04a4da1dbe7c8a7562"
+    },
+    "test/acceptance/emoji-joiners.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "14a0f67833b14fc471495ae2570b42448c5d6d64"
+    },
+    "test/acceptance/hosted-ad-policy.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "87a2c2ea7d35249531266606eaa5adf8824ef849"
+    },
+    "test/acceptance/literal-inline-emoji-joiners.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "fc2cb9243380435b15a48ee21c4667789bea426f"
+    },
+    "test/acceptance/logging/audit/activity-snapshots.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "31c72b307463e8bfcc96a6f62243e1cf367cf1e3"
+    },
+    "test/acceptance/logging/audit/actor-name.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "66da9ea32e1795f25a7b54ff1d404e9ac801230a"
+    },
+    "test/acceptance/logging/audit/administration-capture.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "d4e644fde1b57e18ed8d3ab9f990d232e5f7941f"
+    },
+    "test/acceptance/logging/audit/audit-log.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "a4fc802101485284f323390976ecc488d84d59b8"
+    },
+    "test/acceptance/logging/audit/audit-sender.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "f159a5bcad990aecbc32788e77923313ece2f1dc"
+    },
+    "test/acceptance/logging/audit/collector-dispatch.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "e8bbc9ad107e30c22915e15339fc11f283880dfe"
+    },
+    "test/acceptance/logging/audit/destination-settings.runtime.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "280acd050266a0c33cf123139ccfa4cb8ff469ff"
+    },
+    "test/acceptance/logging/audit/destination-test.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "e9b39b1e86fce8ebdb19bfa1380d8e70c3bd5e15"
+    },
+    "test/acceptance/logging/audit/export-destination.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "a4ae55a33680d2ea805233d197205caea341196d"
+    },
+    "test/acceptance/logging/audit/hosted-audit-journey.runtime.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "8f6657fc25aa63b000e990a24afc9ab6ed438dea"
+    },
+    "test/acceptance/logging/audit/hosted-customer-export.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "605c840b8ba2c6f6b971fa3f9e90c4a5ae746173"
+    },
+    "test/acceptance/logging/audit/hosted-snapshot-composition.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "d8af1f85bd2fae4f43648d6565c3c33ed820937a"
+    },
+    "test/acceptance/logging/audit/hosted-storage-failure.runtime.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "592ba060478b2ee31b3213f62d3525ec735787ad"
+    },
+    "test/acceptance/logging/audit/hosted-storage-startup.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "4c200b1a378d1b16714fdd937f9db24ba33ce4ec"
+    },
+    "test/acceptance/logging/hosted-destination-settings.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "d15511fc914ffe16a646bc54697dc651d0ad6c12"
+    },
+    "test/acceptance/logging/hosted-destination-test.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "853c45fcf03576a530b31b312481de84ba222b1d"
+    },
+    "test/acceptance/logging/hosted-save-and-test.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "68171f7e541dbdd1db7001ef92ed2a2ceffcda78"
+    },
+    "test/acceptance/logging/hosted-save-feedback.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "56bacacbbaad8dc4e45c45e2357eb1a1e1c45c7d"
+    },
+    "test/acceptance/logging/system/otel-logger.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "e334d6e193eb2e9cde859eec8a285028661ba810"
+    },
+    "test/acceptance/logging/system/system-log-sink.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "028862143581064c4fe9e01c22183d82437daac1"
+    },
+    "test/acceptance/mcp/customer-tool-capture.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "3e050c83f577f790a084e0d20a9067fd4ce655d8"
+    },
+    "test/acceptance/mcp/get-url-as-markdown.runtime.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "1ff9d79151db819f5cfc684f1a4c3d2386cb657f"
+    },
+    "test/acceptance/mcp/hosted-capacity-setting.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "b9755e706a750ad745f4d8cf356dd624729553a7"
+    },
+    "test/acceptance/mcp/hosted-fetch-failure-diagnostics.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "150f39040a03a3657b7b60632eda1747a7143d4e"
+    },
+    "test/acceptance/mcp/hosted-fetch-tool.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "146f5adbc1ba7b82f9aa58ec652541bf428569d1"
+    },
+    "test/acceptance/mcp/hosted-process-shutdown.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "596f3659e849f524f2558d0810575f18fcb5bd1c"
+    },
+    "test/acceptance/mcp/hosted-search-capacity.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "efaab70f891b5864a019fe147107aa57df585e10"
+    },
+    "test/acceptance/mcp/http-authentication-cancellation.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "daefea90d5efa0711bef76ca2d57def1768dd225"
+    },
+    "test/acceptance/mcp/http-cancelled-shutdown.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "2757985a3c30ef6a749be96b4b414a13c14f26da"
+    },
+    "test/acceptance/mcp/http-dns-cancellation.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "05f4f7608d2bb2959b70a4fbadb511670e7e9bd0"
+    },
+    "test/acceptance/mcp/http-fetch-cancellation.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "d2d4281e56216972f64b5b1c4cdc7bdac483d956"
+    },
+    "test/acceptance/mcp/http-fetch-refusals.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "864d139661f0f3654ca97762b4d363935084d337"
+    },
+    "test/acceptance/mcp/http-fetch.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "63284f309c30e592bad9c6548049517dc0269148"
+    },
+    "test/acceptance/mcp/http-renderer-shutdown.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "336122f984a172d481ede3bd45d6cf11cd585f72"
+    },
+    "test/acceptance/mcp/http-request-cancellation.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "29d6d3e416383852b7832467e5dba8a87a6998e5"
+    },
+    "test/acceptance/mcp/http-request-isolation.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "4b3e1fedf59128b50b35f6d2559509579f8cfc42"
+    },
+    "test/acceptance/mcp/http-request-refusals.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "3691e754ae00b4af7fdd74ab7f05ab6da44d9ee2"
+    },
+    "test/acceptance/mcp/http-shutdown.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "1e7fed5f0cb103e0b45fbb7e740c829bf362ee74"
+    },
+    "test/acceptance/mcp/incoming-step-cancellation.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "06712eaa66d2eb8f2194e5e978661c262379e63c"
+    },
+    "test/acceptance/mcp/incoming-step.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "30b2f8bd9f6719293a5c07de790b72fe736e175c"
+    },
+    "test/acceptance/mcp/outgoing-step-cancellation.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "b5ad17e7bd6d2fb1fdf8aad3383045c8f87cc019"
+    },
+    "test/acceptance/mcp/outgoing-step.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "14efd4965edca1d0b38e64e59578c5709a09352c"
+    },
+    "test/acceptance/mcp/renderer-setup-report.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "0eb57e7ecdf44b873f17231cf18dc2a30bd7a559"
+    },
+    "test/acceptance/mcp/search-lifecycle.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "0c48cbb36f8f3bbf088a66f22222a7831ae61ea2"
+    },
+    "test/acceptance/mcp/search-pipeline.live.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "cf189037809b7a00e8f96be7f4364eefc3ff298a"
+    },
+    "test/acceptance/mcp/search-pipeline.runtime.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "a595017533e5b980ae59baaba777f178a5f1628a"
+    },
+    "test/acceptance/mcp/search-pipeline.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "0746a3c3216f2876814a370032c0253182e0db33"
+    },
+    "test/acceptance/mcp/self-hosted-fetch-tool.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "8ae3b4a086bca333da5c5471fb97569774fcb8b9"
+    },
+    "test/acceptance/mcp/self-hosted-rules-startup.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "f1e197cbfd15e5217cbd1467ecabfec0ac3f9ad0"
+    },
+    "test/acceptance/mcp/server-only-modules.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "680d5f0f9dcf2197c9f97b828592ee054de3f53e"
+    },
+    "test/acceptance/pipeline-counters.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "d09b968f1cf54a2d70e9598dcdb36876bee89cdc"
+    },
+    "test/acceptance/pipeline-css-work.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "02a59899e95fb4c8fd0552a76580809534391952"
+    },
+    "test/acceptance/script/fetch-url-failure-details.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "f8db60349556ce5a966c079ef94d9e5b85bca491"
+    },
+    "test/acceptance/small-text-cutoff.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "055aaf11139468820a1502b73db383b7f1b54f0b"
+    },
+    "test/acceptance/user-portal/portal.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "e5e6c08e0a6d10b851c8a9ff7f7f396fcf7066fd"
+    },
+    "test/acceptance/work-slice/README.md": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "bd4fc4a253912724f5f749e1dc92ae4c85344f83"
+    },
+    "test/acceptance/work-slice/auth-workos-mcp-url-fetch/README.md": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "93681347cd2149a69be07e47be16ec816caf43d1"
+    },
+    "test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-admin-access.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "9735a11843b48e89176ac2175c2c25ba092bdfaf"
+    },
+    "test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.sh": {
+      "mode": "100755",
+      "type": "blob",
+      "blob": "8b3245bd865eee9f5f82839b66644a7f04583f73"
+    },
+    "test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "afb390a770fbd1bcbafe3556ba6cc6929d7a48b7"
+    },
+    "test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "e46ce162162f84900053d99bca77d97e0e56a8c8"
+    },
+    "test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-onboarding.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "34517d167314061f7a94d0cd17611fc6bce8763e"
+    },
+    "test/acceptance/work-slice/basic-mcp-url-fetch/README.md": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "e7228698cbeb8de6e15e9c25176bd2b84cc4345f"
+    },
+    "test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.sh": {
+      "mode": "100755",
+      "type": "blob",
+      "blob": "db4d349a15f628c0b13a81daed1c23612b7fcd99"
+    },
+    "test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "b08d3413922ac31e270a62fed54a99895702df13"
+    },
+    "test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "186270030458f0dadff392b5aef3d10700be2ee8"
+    },
+    "test/integration/application-ad-rules.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "3eb0586772d4c8105431de801b25ebd5b0024e59"
+    },
+    "test/integration/auth-workos/fixtures/session-routes-fixtures.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "131e1f27512dcd79c60c36ac7a977d76344cb3ee"
+    },
+    "test/integration/auth-workos/workos-session-landing-cancellation.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "ba78703d5a7b6318691d26a460887b562022ae6f"
+    },
+    "test/integration/auth-workos/workos-session-routes-cancellation.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "1598e6a559ceb94824f3475cd715b2112f4d86cb"
+    },
+    "test/integration/auth-workos/workos-session-routes-landing.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "c9c4b8d7d6470ee7af7e2298a4f045c2a998dc26"
+    },
+    "test/integration/auth-workos/workos-session-routes-logout.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "918bb7ff58c45c37c9776f2c5d16fac216a8e7a2"
+    },
+    "test/integration/auth-workos/workos-session-routes-sign-in.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "ec9f0dd76e0a520e0eb8e6632a29f053282432c5"
+    },
+    "test/integration/auth-workos/workos-session-routes.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "2555af802a9e1e7d75e0d120949bbe219b5a4112"
+    },
+    "test/integration/auth/better-auth-provider-access.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "d47698217bb105a3fa69b1e5f5a7534652b1b0b0"
+    },
+    "test/integration/auth/better-auth-provider-introspection.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "bdd799b11366fec1216b161ae4de48fb977981bb"
+    },
+    "test/integration/auth/better-auth-provider-verification.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "131f8ea7cb0066220ddb50648c4e9a104c4006f6"
+    },
+    "test/integration/auth/fixtures/https-site-fixtures.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "970b253f83757bfca8c7dd0698e13bebd9801dc6"
+    },
+    "test/integration/auth/fixtures/local-access-tokens.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "7bd3f9a2f885a5191eb4c302153a778031a174cf"
+    },
+    "test/integration/auth/fixtures/local-auth-command-harness.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "152746593507e31408025ff4ba9c6a2585ddc376"
+    },
+    "test/integration/auth/fixtures/portal-access-context.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "b3c87441693fc73969eb5945c8ce851b06501304"
+    },
+    "test/integration/auth/fixtures/signup-client-fake.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "70e228c9ec6a798bb68d147b9bb2944201fa3109"
+    },
+    "test/integration/auth/fixtures/token-provider-double.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "0bc0ead58f47420d8845b756e3a11fec6fe880da"
+    },
+    "test/integration/auth/fixtures/workos-session-fixtures.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "77bbfcc1d09c31a30a1055d02da4d263a08e8c6c"
+    },
+    "test/integration/auth/hosted-account.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "25795fbc9e3a307fa0fdf7f52c4bd8795717c1be"
+    },
+    "test/integration/auth/hosted-administration.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "a411332a82b4d052c7fa4423a17c0526cb03bc58"
+    },
+    "test/integration/auth/hosted-audit-snapshot-lifecycle.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "4d070d8228ce802efca51e1467cf694752b6e904"
+    },
+    "test/integration/auth/hosted-live-site.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "0f11c6c371794846e3b2f9919bff9cae493dd487"
+    },
+    "test/integration/auth/hosted-live-site/mcp.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "79f3a84e03db543ccce4a36ee3a90eebe54ff82b"
+    },
+    "test/integration/auth/hosted-mcp-origin.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "dcdc8aabd51f8ced2517b3bf55b4d19a443a83af"
+    },
+    "test/integration/auth/hosted-organizations.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "13de15d78ae61c38fa5dcdaa7ce2a6ab2774bff7"
+    },
+    "test/integration/auth/hosted-storage-lifecycle.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "4659f09f941da0f9c371b004aa92efcd215f66a4"
+    },
+    "test/integration/auth/local-access.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "7ba7013a367b4aecf3891724001dd2814424df4f"
+    },
+    "test/integration/auth/local-auth-command-boundary.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "a8069919fcae3aa746428f20696386ea80113a31"
+    },
+    "test/integration/auth/local-auth-command-clients.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "211d8cadccfa7895da84d6fa93b3f65b08d61677"
+    },
+    "test/integration/auth/local-auth-command-grants.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "c6a75d3464e3ef5387ca81e05bca71ed982076f7"
+    },
+    "test/integration/auth/local-auth-command-lifecycle.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "1d604750f346825f7a2031781557e122d9b58283"
+    },
+    "test/integration/auth/local-auth-command-lock.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "747bb7c0a60ad9dd4f58480b1aa499b80f5e997a"
+    },
+    "test/integration/auth/local-auth-command-users.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "838ae93cbbcdd72f8754ebb0bff59c494c6bd029"
+    },
+    "test/integration/auth/local-auth-command.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "f1390989c382f11c6bc58d895d48b1f696a79a98"
+    },
+    "test/integration/auth/local-installation.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "63608f3fabfeda516617fc35ad4b8061e9e43f46"
+    },
+    "test/integration/auth/mcp-context.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "5d5510d97e113efb7fc2b18d9ca0854e86281a6d"
+    },
+    "test/integration/auth/portal-access.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "dfa59f308d3b6163e756636de0d83ab3bd387f3c"
+    },
+    "test/integration/auth/portal-organization-name.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "f2f4ab558b57100d2378f6bf96bcbf2c9220a727"
+    },
+    "test/integration/auth/workos-actor-name.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "b5c1774e2a36e54f4811c608651fe9992dcb22a2"
+    },
+    "test/integration/auth/workos-browser-session-mfa.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "739071797311ec0c269d766d7c51cb1db08189eb"
+    },
+    "test/integration/auth/workos-browser-session-switch.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "fe3ad6e2f173b922f9dba929dc74f387026f53de"
+    },
+    "test/integration/auth/workos-browser-session.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "91e57cfc3e083257ba3e65560d295acac875fb3b"
+    },
+    "test/integration/auth/workos-connection.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "5115f7478df612f95eb3b118bea404450d873f51"
+    },
+    "test/integration/auth/workos-google-onboarding.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "e54f1a5a54e8601998e6da83330dcd948d970316"
+    },
+    "test/integration/auth/workos-member-facts.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "f9e91805d5bd1e002359a8890138436c8b4604da"
+    },
+    "test/integration/auth/workos-provider-access.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "1d944f45cb3a5176ca650391a17edbbd5a2906b3"
+    },
+    "test/integration/auth/workos-provider-administration.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "de3d6c59f07dd1c63f262eced54cbf4d53c5f8cd"
+    },
+    "test/integration/auth/workos-provider-directory.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "53bffd637a6324b9ab31fb8380859eb79c5db32b"
+    },
+    "test/integration/auth/workos-provider-organizations.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "b5a09f44b64e90234254551819a25ae64831508a"
+    },
+    "test/integration/auth/workos-provider-verification.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "0098b3f8e3b18bf7f6334a811c7be9b58ad29d7b"
+    },
+    "test/integration/auth/workos-removal-lifetime.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "8961f47477d916a9e44b539704fc83e7778404f4"
+    },
+    "test/integration/auth/workos-signup-inspection.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "ae8ca6c857c18bbd708ac9570ef0e3f087518293"
+    },
+    "test/integration/auth/workos-signup-pages.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "20419bf7dfdd890ef46c7c5beba18e32800efec1"
+    },
+    "test/integration/auth/workos-signup-routes.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "9ba7c9b728db522b519189288884d5509adc5343"
+    },
+    "test/integration/auth/workos-signup.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "cf922036f6d2d4e5b3748c5624d9583db41d8e05"
+    },
+    "test/integration/fetch-tool-renderer-setup-report.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "d5b527bdab05cfa5b272215a053943898acaf8de"
+    },
+    "test/integration/hosted-admin/account-routes-administration-changes.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "02f5b62754239389d68fc7160d808fe79c0c4a08"
+    },
+    "test/integration/hosted-admin/account-routes-administration-input.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "0d337a924d6bdefec4de3ad3c53c350c3f5c30ae"
+    },
+    "test/integration/hosted-admin/account-routes-administration-pages.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "8803b1baf8f2bac78e1b9772994542b60e6669f3"
+    },
+    "test/integration/hosted-admin/account-routes-audit.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "1a2ae8d3ee5d4f30946f7cb10d21ca207c7e8522"
+    },
+    "test/integration/hosted-admin/account-routes-billing-page.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "01a92acff3cf6a2d70e297edfced564bf0134c58"
+    },
+    "test/integration/hosted-admin/account-routes-cancellation.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "b9594253f948499ac5b58140875e25106c3cf9b9"
+    },
+    "test/integration/hosted-admin/account-routes-effects.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "096359bbd2edd3571bffd4d716e55683a2dbc2eb"
+    },
+    "test/integration/hosted-admin/account-routes-grant-retirement.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "2c7e3f217e1fa14c1800ed650ce19f061ae9b4c4"
+    },
+    "test/integration/hosted-admin/account-routes-logging.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "43b6f1a2c338ca210c26b2a3af3802f70dfa6fc2"
+    },
+    "test/integration/hosted-admin/account-routes-organization-page.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "1fa94321a89d951d3bd1acd2c65521e821043d58"
+    },
+    "test/integration/hosted-admin/account-routes-removal-audit.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "6428cb9899c8d76190ad905fb6a82e7cf49229a0"
+    },
+    "test/integration/hosted-admin/account-routes-removal.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "d0ad2644fab295e0a8eba2cfd9af36840e65628f"
+    },
+    "test/integration/hosted-admin/account-routes-selection-input.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "d102d1bab3a8cd1cb2187aeba5d450213b5eba04"
+    },
+    "test/integration/hosted-admin/account-routes-selection.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "26cdef1784e22aee9bc4a3198eb3936085911f05"
+    },
+    "test/integration/hosted-admin/account-routes.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "2ffaa9a766e31447735573ab5486dc79f93e6f20"
+    },
+    "test/integration/hosted-admin/fixtures/account-operation-double.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "440e42e68b0d55cca4d7bcafb2b561e1a70a7e13"
+    },
+    "test/integration/hosted-admin/fixtures/account-routes-fixtures.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "6301dee3b675a796072f7dc45f977ba35cbe7e51"
+    },
+    "test/integration/hosted-admin/fixtures/administration-routes-fixtures.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "b2b1ffaf343c2161f7db8e1118c06d5318e63063"
+    },
+    "test/integration/hosted-admin/fixtures/organization-administration-double.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "2d3cb2fe5b3c752feb84843c59455c82024ca981"
+    },
+    "test/integration/hosted-admin/fixtures/organization-routes-fixtures.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "416de3468493c772b1a8380e6d544a12052c79db"
+    },
+    "test/integration/hosted-admin/organization-selection-page.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "14311372f922a659ec33eb97158874e6aaa7fc34"
+    },
+    "test/integration/logging/audit/audit-sender.runtime.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "8eec8a359528e7b68717a92605091adb30be5e8c"
+    },
+    "test/integration/logging/audit/destination-settings.runtime.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "70cbb2f1a7241be609ac5e5c6ca70cdce8b39486"
+    },
+    "test/integration/logging/audit/logging-storage-export.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "6c1bd106e38113e112691f5d0f8771ff9483a7ec"
+    },
+    "test/integration/logging/audit/removal-operations.runtime.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "43c61800ebbf1747dd807e635287da020d450cd8"
+    },
+    "test/integration/mcp/access-resolver.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "593d52912a56e4644aac617737dad4e0071f7cc4"
+    },
+    "test/integration/mcp/auth-claims.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "b0a3b2db5edeca45c6bba9e13f9cc4e32af7565f"
+    },
+    "test/integration/mcp/auth.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "e0a37c14986bd6b6485de675e6bf0223bfe7943e"
+    },
+    "test/integration/mcp/fetch-failure-details.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "05e2c804efc689257bc565913dc7a5a927110eca"
+    },
+    "test/integration/mcp/fetch-tool-schema.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "9cf608f72dc25806931ab2e0f2d3ea289a29a5f9"
+    },
+    "test/integration/mcp/fetch-tool-server.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "81c3878cc58f4dcbbef5aa6449287fbae0aa8921"
+    },
+    "test/integration/mcp/get-url-as-markdown-mcp.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "952e10d356665e4c7b0550e39bdd6dbe5789481b"
+    },
+    "test/integration/mcp/get-url-as-markdown-pipeline.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "341fece81867a097c2fb590c4f9adc1613b27c01"
+    },
+    "test/integration/mcp/hosted-tool-operations.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "22512d9a761c420f777037fda7142a9c449afdc9"
+    },
+    "test/integration/mcp/identity-verifier-sdk-adapter.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "973da37da7d846da86e22837510253648d5dc32c"
+    },
+    "test/integration/mcp/renderer-setup-report.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "c1f091066e4acf3ba4479125f49b47e69438203e"
+    },
+    "test/integration/mcp/required-permission.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "af3c40fe072486a5650af398889c31e43e47190d"
+    },
+    "test/integration/mcp/sdk-http.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "e7294673c909c03c1c264f12268191513c37c962"
+    },
+    "test/integration/mcp/search-tool-schema.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "297be1311f38e5edf769bf78c583c0d4bcc73c20"
+    },
+    "test/integration/mcp/tool-completion-record.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "c54e15d1bf66bfd93932b31b8d867218d33ed348"
+    },
+    "test/integration/page-fetch/execute-incoming-step.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "bea4f9306176bb238a0ba7e9455db092e48c904c"
+    },
+    "test/integration/page-fetch/execute-outgoing-step.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "7850a102fb8bf2aabb87d8c710b81cb394dea9b4"
+    },
+    "test/integration/page-fetch/fetch-page.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "54230b87433974c39bf8e7614be66b10dbfb779a"
+    },
+    "test/integration/search-pipeline/brave-markdown.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "99b2bc2c992227037d54ac0abac4674e8906bb09"
+    },
+    "test/integration/search-pipeline/brave-renderer-failures.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "638113114a892dc1412ea10f09a20b14cd3216f5"
+    },
+    "test/integration/search-pipeline/protected-search.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "743627145b422a26840ebdbc5d8868e96e2d51f3"
+    },
+    "test/integration/server-stop-signals.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "7952ad409d55a0c7352708a74517b4440f92196b"
+    },
+    "test/integration/tool-operations.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "d9d614bae739d2d47214d0a21bd304047ff81a4e"
+    },
+    "test/interface/auth/better-auth.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "2131884619b672f076fcf45ef1ef094dd4a562fb"
+    },
+    "test/interface/hosted-renderer-startup.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "e8c85d86685ccde90812b946f6dc88974081a41e"
+    },
+    "test/interface/logging/audit/destination-settings-store.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "7d7dabd52fa6424bb215f9fdd66366297ec83e7f"
+    },
+    "test/interface/logging/system/axiom-logging.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "b6d5ac0b0232f322354e9678ff513f222388165c"
+    },
+    "test/interface/logging/system/otel-logger-axiom.live.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "7ddddf718eae118aa96a031eab603d1c38af2b3d"
+    },
+    "test/interface/logging/system/otel-logger.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "ab66f667e1b36a2a4f654c8a663d942a5a1cbdaa"
+    },
+    "test/interface/page-fetch/pipeline-step-types.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "54c75bcb385cafc724947987a3d1c5376f04a3d2"
+    },
+    "test/interface/search-engine/search-engine-types.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "71a6964481ec9e5941fb3929962765c68de52ea7"
+    },
+    "test/interface/website-fetcher-cancellation.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "434f093d539fa1194be8677a6bd2056255a54bcd"
+    },
+    "test/interface/website-fetcher-http.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "6241b8fbc667b0fb7a4be181ed52902552e356b9"
+    },
+    "test/interface/website-fetcher-network.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "66e75b2642882438e063801f1a5b988383c89f04"
+    },
+    "test/interface/website-fetcher-readiness.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "f6422eea8c08cb06e8b1a1b04e2102650d0e8fc0"
+    },
+    "test/interface/website-fetcher-redirects.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "be9e3a144cfe81fc37d7f7da78a350b3f8463634"
+    },
+    "test/interface/website-fetcher.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "f707688252cbaee52cdff194f4f3d62df3f063cb"
+    },
+    "test/support/container/audit-sender-site.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "de3e67ace2c668d97d0e9ef05ba68008258dab98"
+    },
+    "test/support/container/audit-tls-receiver.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "08734786f1feba96b0c41fcfcfa8f159595dd52e"
+    },
+    "test/support/container/container-edge.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "c99865aa1d89b63a4969eb5c8db47d3ce65a01e7"
+    },
+    "test/support/container/container-gate.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "ca6b291d4c8cf47336b0ceba5a1f58fd99427161"
+    },
+    "test/support/container/container-page.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "f31d01c7d18aff6f1a036b849588178437616e06"
+    },
+    "test/support/container/container-probe.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "e50b016b88a6f3ada0f9814a619e184964590b22"
+    },
+    "test/support/container/container-site.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "9815919ed8c3236e5e2471a37e81e9f014d8a25c"
+    },
+    "test/support/container/docker-cli.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "8ea40fbd2a0b582058303a7008ca1842945e610e"
+    },
+    "test/support/container/hosted-image-gate.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "db69838750a018b0999fdbab1bc789693514f468"
+    },
+    "test/support/container/hosted-image-identity.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "7de735c75feb82f0aba139f08784186ed705cf68"
+    },
+    "test/support/container/server-container.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "6e54d55db16258d83075367dbbc5983bc2653a86"
+    },
+    "test/support/doubles/application/operator-log-spy.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "258c8d1b404665725dbf816b17e05b0496a4c083"
+    },
+    "test/support/doubles/auth/access-resolver-spy.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "05f7c72bb6f22623781e3e07de75e0662ec4facb"
+    },
+    "test/support/doubles/auth/browser-session-double.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "6311131d922fe6972dcb5c02be55043ac767f4cf"
+    },
+    "test/support/doubles/auth/browser-session-store.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "0075b97009304ea7c5148ff00470dca4456fdf4f"
+    },
+    "test/support/doubles/auth/identity-verifier-spy.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "74bbf453b0fd49e43262fc44cb8f4bef60744f3b"
+    },
+    "test/support/doubles/auth/local-provider-double.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "7ce836de581cbbb6e256506623b068d68f38ec2d"
+    },
+    "test/support/doubles/auth/no-auth-provider.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "99705ddaaaf1a942e92ee7d98531d6fee6d68287"
+    },
+    "test/support/doubles/billing/billing-recorder.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "9d1ddec1c32fc3c2089ba83240e48f96ff1834d3"
+    },
+    "test/support/doubles/hosted-admin/account-operation-spy.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "91b9e6a5dc4be4be974c474dc59ca8bc0be265b3"
+    },
+    "test/support/doubles/logging/audit-export-sender-spy.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "31bc24916d336a3e06b52b383be4042f03e942f6"
+    },
+    "test/support/doubles/logging/destination-settings-fake.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "77e7031a48a6b5557b35e77d1ad5fdda1ffb670d"
+    },
+    "test/support/doubles/logging/otel-log-receiver.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "765c3ede215e8a6c7c3464b6d7f9c68dd408bb43"
+    },
+    "test/support/doubles/logging/snapshot-settings-store-spy.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "2f01b973e277e41c6f79520ab17205c90c6e1547"
+    },
+    "test/support/doubles/mcp/context-report-tool-spy.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "a58ae4e7cbc1957e23a6e045964b92c98b19ba9b"
+    },
+    "test/support/doubles/mcp/failure-reporter-spy.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "aa53b2a38f14adc69cd0d4c0b99d1d7bdaf84e52"
+    },
+    "test/support/doubles/mcp/fetch-operation-spy.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "cdb7ce6b45b74f832eb382dcf5fd7af55e3ce427"
+    },
+    "test/support/doubles/mcp/protected-tool-spy.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "f3ca53eac2c7d22ba547998a9540c7f06adfd697"
+    },
+    "test/support/doubles/organizations/change-answers.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "8bcba74c7197bbda29a63c2a5657a24a5d4fa934"
+    },
+    "test/support/doubles/organizations/directory-double-records.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "f87b1245eb64c8785fc8089e28ac7b22e4d4d713"
+    },
+    "test/support/doubles/organizations/membership-directory-double.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "1699e3ff2e8e1976f8ddec3f53dd008c452c238b"
+    },
+    "test/support/doubles/organizations/organization-directory-double.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "7c28063beed3d3a1fc6ee6ec9ce73401b0a72db3"
+    },
+    "test/support/doubles/organizations/removal-operation-store-fake.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "b5aada98b5faa40b5cc3fb44ad9cd8bd6b867b02"
+    },
+    "test/support/doubles/website-fetcher/builtin-mocks.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "ad9e515e5c0f74cc4cdeb70044ddfdf09317abd8"
+    },
+    "test/support/doubles/website-fetcher/lightpanda-stub.sh": {
+      "mode": "100755",
+      "type": "blob",
+      "blob": "abea17d3b09446597b9dc979fda3752acad8619a"
+    },
+    "test/support/doubles/website-fetcher/network-fixture.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "4dc0c44cde5ff97e90bf4344650671616ecf0509"
+    },
+    "test/support/doubles/website-fetcher/renderer-process-double.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "c19514004fc58d47d15af90931ac94402cfcedf1"
+    },
+    "test/support/doubles/workos/jwt-signing-key.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "6fe05005de87fac6608e35470b15a2de6ce8cee4"
+    },
+    "test/support/doubles/workos/workos-fake-api.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "bdd98fe547871a11e78d6e87570c3a0db9375cca"
+    },
+    "test/support/doubles/workos/workos-fake-directory.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "40fb2b1bbd44ec0ffe1c7dde22c8048e11ee8f68"
+    },
+    "test/support/doubles/workos/workos-fake-invitations.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "dafc49601d13038e6d106ffcc89523e1662027be"
+    },
+    "test/support/doubles/workos/workos-fake-sessions.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "506b94bfacb089d1ec98443352e6d3a187d5fbaf"
+    },
+    "test/support/doubles/workos/workos-fake-wire.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "d62a5854817435aabf891e60961ff293b0ceb7d6"
+    },
+    "test/support/doubles/workos/workos-fake.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "b6f02ac07790e8ef725d7e6bfbf310b64a2bc0b2"
+    },
+    "test/support/doubles/workos/workos-signup-fake.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "b25edd6f868d6278f8842335abcd055060d99694"
+    },
+    "test/support/drivers/browser/admin-shell-browser.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "6d1af049c5a45a0f35dcc9df164a0aeb9791eac6"
+    },
+    "test/support/drivers/browser/admin-shell-measurements.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "4002e92ea950cb058c8200790fc2837a2fa8119d"
+    },
+    "test/support/drivers/browser/better-auth-agents.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "4ded0aa55e417b268b91aefda052de6629f1e20d"
+    },
+    "test/support/drivers/browser/cookie-jar.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "539678bf20c1966a42248ff57dfc711480899437"
+    },
+    "test/support/drivers/browser/hosted-browser.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "773903dade014c26afbfeaa1a0b32c01be090ce5"
+    },
+    "test/support/drivers/browser/html-entities.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "f9dc098f20d1c9f772d8b019ec89318b2ff21f0d"
+    },
+    "test/support/drivers/browser/https-client.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "ef34321dfba803449c80465a42c01a3076940ffb"
+    },
+    "test/support/drivers/browser/invitation-browser.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "d86d32a17e4db1adb75a1ae32d6aee9b470ca46e"
+    },
+    "test/support/drivers/browser/local-browser.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "79168007c7f757b387676f111213247e966d13cb"
+    },
+    "test/support/drivers/browser/member-removal-browser.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "cf824a8871f47e5fec361af8f06d0b556bc01d31"
+    },
+    "test/support/drivers/browser/pending-invitations-browser.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "eb2f49f190be253afd57da9ec4125a86c4105fbf"
+    },
+    "test/support/drivers/browser/pending-invitations-page.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "4c6725a234aaec23c1cf5c76c1bdf65bd1b52a76"
+    },
+    "test/support/drivers/mcp/mcp-http-request.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "714c6d3325bffd4d6b0c254366195f5f64e6677b"
+    },
+    "test/support/drivers/mcp/mcp-protocol-eras.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "be533ba82c668db4d921d9dcfe36d0fe916b16a7"
+    },
+    "test/support/drivers/mcp/mcp-sdk-client.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "a99abc89738e5e408f7b3428c6102da19bb006a4"
+    },
+    "test/support/drivers/mcp/mcp-sdk-oauth-client.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "368da154bb275b1624bbda1d4dd8926a2a1d9a05"
+    },
+    "test/support/drivers/operator-log.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "dea98b55de60c572997eed1038505f0ecca81545"
+    },
+    "test/support/dsl/hosted-access.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "b40e5e78117ac9b3bf553cd58d5bf2f4d1103110"
+    },
+    "test/support/dsl/hosted-administration.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "9ce22c6cc9046d15e106398473d2817f596742d9"
+    },
+    "test/support/dsl/hosted-member-removal.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "47479c91c10095434eaf2ab8a26e36166b6bb806"
+    },
+    "test/support/dsl/local-commands.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "8128ff22a37e1b9deb5dfb7ca686e1af3e829271"
+    },
+    "test/support/dsl/local-mcp-user.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "e657264615ab9793def31d131f5bdef69999036a"
+    },
+    "test/support/dsl/mcp-request-isolation.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "0872e501e7a38227fbd5722de2f3cf4097c4c294"
+    },
+    "test/support/dsl/search-results.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "3030b0ec2c8fd6895d0656403f698e8e4701744d"
+    },
+    "test/support/dsl/workos-sign-in.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "e118b0895d36c790ce756ba83cf47b0e7654898d"
+    },
+    "test/support/dsl/workos-signup.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "64b35a533d7355e2ab0204b82545fa05793aa915"
+    },
+    "test/support/fixtures/ad-rules.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "c73a28a02d52d2b4feabda18bd4c333aa4172e09"
+    },
+    "test/support/fixtures/element-hiding.filters.txt": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "85e56d9930f319dde7fc5a04ed51821435d183fa"
+    },
+    "test/support/fixtures/execution-context.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "6fcd84dae572a0863a063ca4470925ce4ce1e919"
+    },
+    "test/support/fixtures/hosted-config.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "6c7f49a954a1f140c315a51c9994de9247b96f34"
+    },
+    "test/support/fixtures/hosted-members.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "42ccad97e8806c8040951e1dd14b897553b4ab6e"
+    },
+    "test/support/fixtures/hosted-placeholder.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "8dceb46389509ae60c805fa8c4e39d1730db1afd"
+    },
+    "test/support/fixtures/hosted-portal/assets/portal.css": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "693ce9b84057d37872139150e32284abbbe76754"
+    },
+    "test/support/fixtures/hosted-portal/assets/portal.js": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "02dedb0e3f95da165a0c223730430de4d157592f"
+    },
+    "test/support/fixtures/hosted-portal/index.html": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "df28714bd1fc651340e92d0a47ab9b139ee9824b"
+    },
+    "test/support/fixtures/hosted-roles.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "b204d1c1fa87fa1abbbc21fcfeca522ead49d1a5"
+    },
+    "test/support/fixtures/incoming-pages.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "6a58e33f86c29da190cd501bee2d346e341326aa"
+    },
+    "test/support/fixtures/legacy-workos-session.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "53931047b8a62567b96f9d5cb6517358d53b99ce"
+    },
+    "test/support/fixtures/search-engine/README.md": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "8be32ec0413a83309e65f156349d47ca954677e8"
+    },
+    "test/support/fixtures/search-engine/brave-no-results-derived.html": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "73a1f1094f29e650cc0943be6cbe28e6d1677173"
+    },
+    "test/support/fixtures/search-engine/brave-results-expected.json": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "ab42d4a0b24ca1f372e57da26d1b809de6b85b5c"
+    },
+    "test/support/fixtures/search-engine/brave-results-inline-qa-expected.json": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "79b5a93817e243fcd23f9fc194a656832e93f8a1"
+    },
+    "test/support/fixtures/search-engine/brave-results-inline-qa.html": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "0b49556009b9c9ffed254cc9fb62c75adfc07ec3"
+    },
+    "test/support/fixtures/search-engine/brave-results-inline-qa.json": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "0a5d529b754e9bba24098215c951399fe5d51cc1"
+    },
+    "test/support/fixtures/search-engine/brave-results-video-expected.json": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "67cdfa784c25004a20821ebcb7c6b53706113db6"
+    },
+    "test/support/fixtures/search-engine/brave-results-video.html": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "a630cec45ad92941a65c095aa6a4b46add557272"
+    },
+    "test/support/fixtures/search-engine/brave-results-video.json": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "697b82c15a5f644096d1e4afe56d0fc27e0d1170"
+    },
+    "test/support/fixtures/search-engine/brave-results.html": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "6acbdc1e34115e60c42b6b41fdfbf2c24ee58d28"
+    },
+    "test/support/fixtures/search-engine/brave-results.json": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "4776ed2e48165b23c9a76edbb7fb7c8f7c1b99e0"
+    },
+    "test/support/fixtures/signup-documents.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "1029c5531155a827192650dc042d1779f73a94d9"
+    },
+    "test/support/fixtures/trusted-ad-rules.txt": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "21930bbee0df18ea694898475d20d1986a95bf12"
+    },
+    "test/support/hosted-live/administration-fixtures.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "7c58445f27670093b8e0e7c2f8793cb3ea429827"
+    },
+    "test/support/hosted-live/authkit-driver.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "3c6740eb0597fbe175c3106ab2a66c8eadce5b50"
+    },
+    "test/support/hosted-live/browser-session.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "dd511a213690610e68d63c18541b9d99c69475c1"
+    },
+    "test/support/hosted-live/connect-client.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "006cdb646737f8821ed33b6e835c003b91ae050d"
+    },
+    "test/support/hosted-live/connect-grant.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "b1c855bd4499bc1edf895961c315890654f2285a"
+    },
+    "test/support/hosted-live/fetch-public-connect-proof.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "5156f6f49b5f485340b5654fec90291e79369a32"
+    },
+    "test/support/hosted-live/fetch-public-script-client.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "4fc9b35f4bd0c901bffd54d91d74958692980755"
+    },
+    "test/support/hosted-live/fetch-public-script-proof.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "164bb2565cb178472c3ae26c4f97b7be4b3b0d83"
+    },
+    "test/support/hosted-live/fixture-registry.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "2134e3ee44fe60c165837c72c6ae3e75b2e38e94"
+    },
+    "test/support/hosted-live/live-browser.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "0f386bf804783145255f71cd7f845df132934ef4"
+    },
+    "test/support/hosted-live/live-run.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "15a80d087f5116eea560c83574b94950dcc024b8"
+    },
+    "test/support/hosted-live/local-https-site.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "a56e5fdb560f7177c61e6e4cd18ed68efb2a01f7"
+    },
+    "test/support/hosted-live/navigations.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "b01e0ebd28092a902785c948311d3a483c0da98c"
+    },
+    "test/support/hosted-live/operator-runbook.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "771591e8e6da1bf6f742e0156ece9fd7464a53eb"
+    },
+    "test/support/hosted-live/organization-fixtures.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "f75e50bd573872f6c2ae7a98678c14192fafdc8e"
+    },
+    "test/support/hosted-live/password-profile.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "98b925c78c3913536e0caa44e8b5002f133b0619"
+    },
+    "test/support/hosted-live/portal-front.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "17e40b3ad3ea642c21661a33cf8e95d51a91f343"
+    },
+    "test/support/hosted-live/portal-visit.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "8a253bc3f2b995032d8c36303170145cd8cd0acf"
+    },
+    "test/support/hosted-live/removal-fixtures.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "718220b4eab2d8f03fd8faf5f25c10a836b9cd9c"
+    },
+    "test/support/hosted-live/sdk-errors.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "8102618e1bf260bebf1862047350d4590d0a4eff"
+    },
+    "test/support/hosted-live/settings.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "ee7bca25e517a856192ff7c13bf6d884e96cfa6e"
+    },
+    "test/support/hosted-live/signup-fixtures.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "b5ce74e85e87b8a5dab0a4ea0b4fec2e6c37a65d"
+    },
+    "test/support/hosted-live/staging-fixtures.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "9d9daeac5e9317f3936b0e71754152729b958591"
+    },
+    "test/support/hosted-live/tokens.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "01c19ae86fdecc8bec739bf785355e3407ccaa45"
+    },
+    "test/support/hosted-live/workos-api.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "461a0ad57f22080680777a811ddb8d76d2015d85"
+    },
+    "test/support/in-process/access-test-server.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "dd9cedc79a3fcbce7fe610657fd5611406dd1c8a"
+    },
+    "test/support/in-process/audit-actor-name-site.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "8ea8d269bcec13d1a7a6557d709493a92e0048d2"
+    },
+    "test/support/in-process/audit-administration-site.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "05bbd60df31ab57ddb862f963b440d6d4e462747"
+    },
+    "test/support/in-process/audit-collector-site.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "e5bd9f115aec68a9dbf8fb3de62ef9351069064c"
+    },
+    "test/support/in-process/audit-snapshot-site.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "681ded5562dcc3f3b390cbf7e18342417012015e"
+    },
+    "test/support/in-process/axiom-test-export.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "460fc6360fe013b918b323b81ace328b8bfbf719"
+    },
+    "test/support/in-process/better-auth-local.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "92008dc6d37963bbac44374966046e3744089936"
+    },
+    "test/support/in-process/browser-transport-site.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "cacf9602f6e71626d0d1cb6b860058319228187e"
+    },
+    "test/support/in-process/fetch-operation.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "35a74b04d7c2a10137abc034e136e3bdab82efda"
+    },
+    "test/support/in-process/hosted-audit-export-site.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "85ef20d74ed5a77b1a5c10f57b72366460b0e866"
+    },
+    "test/support/in-process/hosted-audit-journey-site.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "e3981ae0badc6a77f8b006975a7ecce7d89be0fb"
+    },
+    "test/support/in-process/hosted-audit-snapshot-site.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "b2ae211ddccb90c5a4548313915fe6f05d622d7c"
+    },
+    "test/support/in-process/hosted-fetch-site.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "4abc709336f0020b04235a4a46549f25847fb677"
+    },
+    "test/support/in-process/hosted-member-removal-site.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "01892c9f61a8e190e3a0092f5ac87f477ecbd6af"
+    },
+    "test/support/in-process/hosted-organization-site.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "28f872b6bf612b592a0c948e420c4dd12afd0cf0"
+    },
+    "test/support/in-process/in-process-server.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "1612b090f5d6eb0d69b1a95d6fbcdc2a6e9d7d4c"
+    },
+    "test/support/in-process/local-runtime.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "a0236901f2df59473df0128ef58ab5e36b54d457"
+    },
+    "test/support/in-process/logging-destination-test-site.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "3fce319e4c5d6dfd294f5e6986640ab4b9016ca1"
+    },
+    "test/support/in-process/mcp-audit-site.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "1389f4621480bee2ef4247679a1d456fc5b70352"
+    },
+    "test/support/in-process/mcp-fetch-site.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "5d9af7eb6fcd188e7e4a2a56d92438a0f180e982"
+    },
+    "test/support/in-process/mcp-request-isolation-site.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "f305a7d70c6342d2d43d4b0ee790b84293d8f530"
+    },
+    "test/support/in-process/mcp-search-site.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "a29c12d3f3b2d783b25084df9ded67286bf289f7"
+    },
+    "test/support/in-process/postgres-settings-site.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "25f857e024a7a505dd5e0f32774c4a67977644ef"
+    },
+    "test/support/in-process/process-html.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "e93e5cc08d9ddd68979d592d308fd307c4334007"
+    },
+    "test/support/in-process/production-signup-site.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "078fbe4ef365cc2415ddf59f4dee7227cd2704e1"
+    },
+    "test/support/in-process/required-mfa-site.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "c13d477da6b4bbdb446a4db2d99796a4af5fd352"
+    },
+    "test/support/in-process/workos-site.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "4772a16937d4e6dee75565f5a4085eaa60300bd5"
+    },
+    "test/support/isolation/data-directory.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "7c5b9acc0b0dcdef533f637eed9d4e9f1327d84a"
+    },
+    "test/support/isolation/fetch-url-state.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "1ee6c1a333c23b10ac0b36584a758c0af26d2092"
+    },
+    "test/support/isolation/outbound-fetch-guard.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "ab104f32a029e95854562efa129f2aec1b028262"
+    },
+    "test/support/isolation/process-environment.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "7caa3b4e946ed0dac8bd863733cd8803fe1f105d"
+    },
+    "test/support/processes/audit-capture-export-probe.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "e461f30afe8b8305083a712c7e5c491cb6f55751"
+    },
+    "test/support/processes/audit-destination-test-probe.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "c660e41087cef8b0391b398b000adda7ed49214e"
+    },
+    "test/support/processes/audit-sender-probe.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "0269ba8d9b994db9295cd9dc3acb03adef9a04aa"
+    },
+    "test/support/processes/command-process.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "e64976907ab95f6b0c71587b099b1795d03e35a3"
+    },
+    "test/support/processes/crash-child.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "49a2c412cc2342fdb28e8c3ff612a858fe6a68d5"
+    },
+    "test/support/processes/deny-network.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "fba3046e3e5ea8669534a78e4f8998c0b22ebebd"
+    },
+    "test/support/processes/fail-ad-cleaner.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "146936bc56d1d85c48b4466e2a3ff65ec3a2185a"
+    },
+    "test/support/processes/fetch-public-script-entry.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "b50fb6e8fee863e3bbdbd12f9cf2af6a66b2f783"
+    },
+    "test/support/processes/fetch-url-command.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "69a16e88313c97a24ca5d662a5280f5c7dc1cba0"
+    },
+    "test/support/processes/foreign-origin-probe.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "e3368db7c01db9ef2ec43b604e9b8ff1f93a7e51"
+    },
+    "test/support/processes/hold-hosted-cleanup.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "7a3cadf5017d713873e9c3745dc51acc21e44c55"
+    },
+    "test/support/processes/hold-hosted-identity.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "0b9c5f41a0ff5795ca81d437729788c2374747c8"
+    },
+    "test/support/processes/hosted-audit-journey-probe.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "7b272588100fdb6436b06f2419c9ec210465a2c8"
+    },
+    "test/support/processes/keep-hosted-handle-open.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "c6009f21cabc09101268515190fe3e26a316c55e"
+    },
+    "test/support/processes/membership-removal-child.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "7a8fb259d84a454178a16e71178732e81eea07b0"
+    },
+    "test/support/processes/membership-removal-process.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "cd614a4ac66caafd7f40b0354c8a8a4be8d93112"
+    },
+    "test/support/processes/module-paths.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "d0a88236eb7c02192a81f5da7697626d18286f69"
+    },
+    "test/support/processes/pinned-renderer.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "4ddf6c181da97d674b165dc5b54e48de1933e4f4"
+    },
+    "test/support/processes/script-command.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "f7f778649cb151f871b32a7b3757e08f9b4a0da4"
+    },
+    "test/support/processes/server-preloads.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "fa7e13c7e199dcb259c7db1e7840ef88600a7d3d"
+    },
+    "test/support/processes/server-process.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "78725af00cdbc355ce0bcd1e2be980f19e7d5588"
+    },
+    "test/support/processes/stop-signal.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "96b9f9c0c5ab031b5ce0ecb4ceef2e2fc296f193"
+    },
+    "test/support/processes/trace-sqlite.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "b0d471fd8c0a74bf92474ae9b3f035c2a0ccc7b3"
+    },
+    "test/support/processes/use-hosted-portal-fixture.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "39a35ea9fa820aaed404d6bd299e569b9ffd0ea3"
+    },
+    "test/unit/app/hidden-line-input.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "0787ef7b0d03659d28c8102bb34b1d746134e3a9"
+    },
+    "test/unit/app/operation-capacity.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "181d64d1cb1af4fc5a5829a7664863c54cbfc3c3"
+    },
+    "test/unit/application-lifecycle.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "7ea7362f5644134aa16fa26bbeb25081d7f9c6b2"
+    },
+    "test/unit/application-operator-log.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "0b6853b8efbe85948b0e6e32c4b445208ed48d85"
+    },
+    "test/unit/application.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "5156d1022dbba153416700e6c0f08359445b6c44"
+    },
+    "test/unit/auth-better-auth/better-auth-runtime.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "f37ca073a976051e80d63c196181f3ce2c040ae5"
+    },
+    "test/unit/auth-better-auth/data-directory-lock.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "800f122386d539c3694f1d13a805e6217359fc91"
+    },
+    "test/unit/auth-better-auth/fixtures/administration-fixtures.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "41cde58dadaebbc4e5149c2957e6a4d23372f0e3"
+    },
+    "test/unit/auth-better-auth/fixtures/local-auth-pages-fixtures.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "03231470db0695d101bfcb9076b9081f2a1b06e9"
+    },
+    "test/unit/auth-better-auth/local-administration-opener.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "303e4fa9d00d950bbc10214eedd6aa04468c4f77"
+    },
+    "test/unit/auth-better-auth/local-auth-migrations.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "1e9050dc6c2d68c710e7c559e4ce96d05bc8681e"
+    },
+    "test/unit/auth-better-auth/local-auth-pages-consent.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "07c2a1cd17b495fad3afaafd5f7397e46b1b5b1f"
+    },
+    "test/unit/auth-better-auth/local-auth-pages-form-posts.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "2f198646a4e8a714153425ba8ed718666c3139c2"
+    },
+    "test/unit/auth-better-auth/local-auth-pages-sign-in.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "37879005d68688c47f14668b0f6d448befb79ce9"
+    },
+    "test/unit/auth-better-auth/local-auth-pages.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "a0affefbfbcdc117002673e417e59f5dbdd88d08"
+    },
+    "test/unit/auth-better-auth/local-installation.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "370aa4dd08502348957c6e670c56694d1b180471"
+    },
+    "test/unit/auth-better-auth/local-provider-options.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "3e303b3b61a18a90544b4365aa5eb10dbb5c8fb7"
+    },
+    "test/unit/auth-better-auth/local-user-administration-clients.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "29ed21388543272615a268091dce926a8ddc7a53"
+    },
+    "test/unit/auth-better-auth/local-user-administration-revocation.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "a10a1b29149a84d1a3abdbeb8c1544e6752679ba"
+    },
+    "test/unit/auth-better-auth/local-user-administration.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "94a39aad802bd61d6bd59e3ff9aed72785a01fcb"
+    },
+    "test/unit/auth-workos/fixtures/workos-organizations-double.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "9d46534b64cfed2175261466970ebea9c4646913"
+    },
+    "test/unit/auth-workos/fixtures/workos-session-client-double.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "df796617a269394240f6a47cd40b17ecc5d43b7c"
+    },
+    "test/unit/auth-workos/session-cookies.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "2353cb1feb00e5d3d701bc3d2b5d8c03610e885d"
+    },
+    "test/unit/auth-workos/workos-approved-organization-documents.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "8737f375de32294c1a06f87cb77b0c6f348196e2"
+    },
+    "test/unit/auth-workos/workos-browser-session-end.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "a4c24036ca6a628ec09f71319c5a8785fe118629"
+    },
+    "test/unit/auth-workos/workos-browser-session-mfa.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "c3ca41f8bba348ee25875cb822b649a3aab6f6fe"
+    },
+    "test/unit/auth-workos/workos-browser-session-refresh.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "6139b50acb9d105b0032b80ec8b2e627ade0f264"
+    },
+    "test/unit/auth-workos/workos-browser-session-sign-in.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "26ff564328e7799fc1681a249096f2235f8f357a"
+    },
+    "test/unit/auth-workos/workos-browser-session.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "5655dd574ead276ab05a26a0d12cb24bbd2450aa"
+    },
+    "test/unit/auth-workos/workos-membership-reads.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "c80e8a527eb8348cce96d4c062e24d8349d678d7"
+    },
+    "test/unit/auth-workos/workos-organization-audit-documents.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "3652b456491599db72966cdd2c8629eeb08a283f"
+    },
+    "test/unit/auth-workos/workos-organization-removal-documents.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "f1364584452560f07615978a6f0cf5c5a6b6b345"
+    },
+    "test/unit/auth-workos/workos-organizations-deletion.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "7bf19bdd27df393af0f5fc7a9e0aa0d4e012b89b"
+    },
+    "test/unit/auth-workos/workos-organizations-invitations.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "6e9503e4c86db53dfb705ef4f90e4ef8cbf2c221"
+    },
+    "test/unit/auth-workos/workos-organizations-member-facts.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "5bf90167a87c63103e5fcf3d9d95aef9c1e920d6"
+    },
+    "test/unit/auth-workos/workos-organizations-members.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "62d332c880cda07865230423117934ff97cdb47c"
+    },
+    "test/unit/auth-workos/workos-organizations-memberships.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "8f7e89d198976c2acb6010e18018444d907482e2"
+    },
+    "test/unit/auth-workos/workos-organizations-read-lifetime.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "ada626984acf196bc65f9af28eee38ba5a53981d"
+    },
+    "test/unit/auth-workos/workos-organizations.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "61f15b2bcdef82c6f83874152a1fa9ec3032a8c9"
+    },
+    "test/unit/auth-workos/workos-settings.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "3479730bae320e77cbfe0a21c7acdf11d8c6e3d1"
+    },
+    "test/unit/auth-workos/workos-sign-in-onboarding.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "d9e21df80799675100a2d2f8646543b532ec199e"
+    },
+    "test/unit/auth-workos/workos-signup-documents.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "8d19c3ea8b99e0cdbb1a7e99377ae71d4289865d"
+    },
+    "test/unit/auth/access-context.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "d4a483419751ecbc097d2ceb91bde550e1418959"
+    },
+    "test/unit/billing/billing-free.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "394aaf342dec7ab143624050106b550ad7fdf1a9"
+    },
+    "test/unit/config/ad-rules-file.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "942a1ffe629194dd2acd98d37e74db205e5a3cbe"
+    },
+    "test/unit/config/deployment-config.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "1588e0131965de5692fc1afc2e90c2410b67930b"
+    },
+    "test/unit/config/listen-address.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "396e2dd60c6a5348c2ea08c499b353f9978663dd"
+    },
+    "test/unit/config/logging-storage-config.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "213a4a07232d01ec8da20345146481d445612866"
+    },
+    "test/unit/config/operation-capacity-config.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "cb31f78b35285fa753778d4633ee3356a2697fb6"
+    },
+    "test/unit/execution/execution-context.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "11bf4775457ed7c76014273724b2b50d35d45da2"
+    },
+    "test/unit/execution/observe-request-step.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "5a8b6cd51d10f100e3c5be2d7b19e1388f7b858d"
+    },
+    "test/unit/execution/step-record.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "4b0f7647c3ddc01b6d688a60cc1539bc0fac6fd3"
+    },
+    "test/unit/hosted-portal/hosted-portal.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "ce79c2d5163e1b3863fdf79ce9dcc4d60529ee80"
+    },
+    "test/unit/hosted-renderer-startup.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "78f98ce34f2ba46820a36df03f7114f6cd514917"
+    },
+    "test/unit/html-cleaner-pipeline/ad-cleaner/ad-rules-deployment.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "2aec65bed53a68bc251cc1d483fe8bc7ada74cd8"
+    },
+    "test/unit/html-cleaner-pipeline/ad-cleaner/ad-rules.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "5ef495115bda967372f5c8f5cfc65f0053eceb82"
+    },
+    "test/unit/html-cleaner-pipeline/ad-cleaner/ad-work-counters.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "2a8a7ce30852d7b56875d4c1ce84cace8eff48c9"
+    },
+    "test/unit/html-cleaner-pipeline/ad-cleaner/clean-html-ads-construction.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "13e60a20373ff653abde520d66950b72323bc550"
+    },
+    "test/unit/html-cleaner-pipeline/ad-cleaner/clean-html-ads-depth.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "74b68ec1c255d6a2445be71478b6a835bd558cde"
+    },
+    "test/unit/html-cleaner-pipeline/ad-cleaner/clean-html-ads-document-boundaries.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "8c2b6f1d79ac3fb3a87fbb99d5180c9e6a487fe3"
+    },
+    "test/unit/html-cleaner-pipeline/ad-cleaner/clean-html-ads-line-whitespace.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "0568777a02620d3eac3a30f25a225a45ffc27cb0"
+    },
+    "test/unit/html-cleaner-pipeline/ad-cleaner/clean-html-ads-recovery.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "63e52860aded2f91062570de37e7123f29d9ae33"
+    },
+    "test/unit/html-cleaner-pipeline/ad-cleaner/clean-html-ads-source-ranges.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "2645b10558034358b4e0a80264be51a7d79d85ba"
+    },
+    "test/unit/html-cleaner-pipeline/ad-cleaner/clean-html-ads.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "d5edc310ded25e453bff8745d9eb4376ee3e0c7e"
+    },
+    "test/unit/html-cleaner-pipeline/ad-cleaner/fixtures/parser-child.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "2d81900b033ef4f27135a914ba9a09d218cfcb8a"
+    },
+    "test/unit/html-cleaner-pipeline/ad-cleaner/source-range-parser.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "1717d08aa697bc27d30449a2ddceec0e71ae9a19"
+    },
+    "test/unit/html-cleaner-pipeline/fixtures/ad-pages.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "819d96a62aadc4158ac63c16ae7587b488a93f15"
+    },
+    "test/unit/html-cleaner-pipeline/fixtures/html-cleaner-context.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "8d21684715c83de3ae1b22e03381ef92046b9af9"
+    },
+    "test/unit/html-cleaner-pipeline/fixtures/pages/element-hiding-exception.cleaned.html": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "f7d50aa965eafbe535f10b00bffbd63d16816a41"
+    },
+    "test/unit/html-cleaner-pipeline/fixtures/pages/element-hiding-exception.html": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "f7d50aa965eafbe535f10b00bffbd63d16816a41"
+    },
+    "test/unit/html-cleaner-pipeline/fixtures/pages/element-hiding.cleaned.html": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "ea48713e9bfd5d7283ea91547f30a725b87b193f"
+    },
+    "test/unit/html-cleaner-pipeline/fixtures/pages/element-hiding.html": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "2e58dabb228bb24608b1279337e070e087d9da28"
+    },
+    "test/unit/html-cleaner-pipeline/fixtures/pages/hidden-text.cleaned.html": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "27ffab8c5b9113abf54dee59fa69a0792c217800"
+    },
+    "test/unit/html-cleaner-pipeline/fixtures/pages/hidden-text.html": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "c8d649c151620c1a31c43090d5623056f8fabb08"
+    },
+    "test/unit/html-cleaner-pipeline/fixtures/sanitize-html.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "4806b39149603a2034a470ee969bfb1c19eca6fa"
+    },
+    "test/unit/html-cleaner-pipeline/html-to-markdown/html-to-markdown-code-formatting.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "a742bb7a76312f5949763939905a8d1057d2cad5"
+    },
+    "test/unit/html-cleaner-pipeline/html-to-markdown/html-to-markdown-fragment-content.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "9be8d55db89cdcbf71c6187773e9a2b6dc9bd33a"
+    },
+    "test/unit/html-cleaner-pipeline/html-to-markdown/html-to-markdown-input-shapes.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "c6abf6238e21923565cc385bccb1d842c622b002"
+    },
+    "test/unit/html-cleaner-pipeline/html-to-markdown/html-to-markdown-landing-regressions.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "945e5da2859f885fc735ce2c21919463fcfb0cbb"
+    },
+    "test/unit/html-cleaner-pipeline/html-to-markdown/html-to-markdown-noscript-fragments.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "ffb01d2e862ef0b2f54cd58482fde054c691d596"
+    },
+    "test/unit/html-cleaner-pipeline/html-to-markdown/html-to-markdown-regressions.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "262f8d1b27bf3719d06a9171470e1df47366894d"
+    },
+    "test/unit/html-cleaner-pipeline/html-to-markdown/html-to-markdown-search-links.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "33e7639f70b8cbff33c9f320fbc38fe1971a8f6d"
+    },
+    "test/unit/html-cleaner-pipeline/html-to-markdown/html-to-markdown.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "6039ca868a4afafef0610eae099ff0260dad3e8a"
+    },
+    "test/unit/html-cleaner-pipeline/html-to-markdown/markdown-counters.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "a05366c8fd2a9a71c86371cc354645964ab24e22"
+    },
+    "test/unit/html-cleaner-pipeline/html-to-markdown/noscript-examples.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "57084e107ffb51d747269ef8e72c4f296fd6fc0f"
+    },
+    "test/unit/html-cleaner-pipeline/html-to-markdown/prepared-html-document.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "f7f9b5caf2a0965abdb028c0e0da1c732773624a"
+    },
+    "test/unit/html-cleaner-pipeline/pipeline/ad-sanitizer-pipeline.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "114bfcd177bf3cc1fed324af356547a566575fb4"
+    },
+    "test/unit/html-cleaner-pipeline/pipeline/html-processing-depth.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "c6d0c5630988880d7defc0d2c1c4fa1ca1250630"
+    },
+    "test/unit/html-cleaner-pipeline/pipeline/html-processing-pipeline.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "3978c005fe967bba6e710f0ca1f918a8b9322409"
+    },
+    "test/unit/html-cleaner-pipeline/pipeline/html-processing-sanitized-content.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "54063cc966e450b96827f0f1f322b40785ed2ebd"
+    },
+    "test/unit/html-cleaner-pipeline/pipeline/known-html-pipeline.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "c1b2b7fe99f12ff07175ca6712254937c5352014"
+    },
+    "test/unit/html-cleaner-pipeline/pipeline/pipeline-cancellation.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "8e948260d40429ce7db96d5360ccf255b3ebdada"
+    },
+    "test/unit/html-cleaner-pipeline/pipeline/redirect-metadata.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "461857343f8ae1a4c159b9a200ad940e30e70c53"
+    },
+    "test/unit/html-cleaner-pipeline/process-html-step.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "1ccc0916e09cc498f32ca90c8c137d1751a361b0"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/controls/decoded-control-boundary.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "fa75c8b9132519d8e4d1bb3b915f0e7516fa45f6"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/controls/deferred-html-controls.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "98b2b85b0ce16c4b331378bd4e29926549532c85"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/controls/encoded-invisible-controls.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "ef239ae287548b960f99751fabec0a420d39ea32"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/controls/raw-inline-emoji-joiners.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "ab227d398656bc15fb621688c8891d49a9b26d42"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/composed-transform.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "44be8333c277b9faa6b1d6b38b79e04f79a97de3"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-class-token-budget.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "4ba91e444887af9f207208c0ccc93158b41eb30b"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-cleared-style-findings.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "c4aaf27d76a02252db59dccdbf9bcde13bccebbd"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-document-source-tokens.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "67121dd40ec5817b20d75550020c99c37d1984ac"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-document-visibility.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "dd202dfe27b3201319c910190d4915b6f3b312c4"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-hidden-passes.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "3e4319cc5374ef6e42169b0bd9f7642a99176c01"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-html-tree.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "b92fd2b4ff23c3b649909ae183b4237428fa8770"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-opacity-animation.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "4ce708477b1d9e44ec8f850a8514a3317c02e371"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-selector-candidates.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "1eb889a48dc7b38b2e3405c793d9f85f89fe5514"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-selector-cost.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "3e155c82f43750a9523c90c76a485c5c8f453cb5"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-selector-flags.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "ec8e8a7e755b0993da1dd9117d960f22e5145493"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-selector-matching.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "458469c97c07e207ee2e761b11981fba3a1f0903"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-stylesheet.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "ef17aec8c78854ec44aeceee38fb34b9fb8d80fc"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-visibility-provenance.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "9e52c48741dba00dc5583cf6b3890860c7e18ff0"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-visibility.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "6b7a7fe89806882787245be387f48c0e829c24cd"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-visible-controls.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "c531d396db422a1041c0eedf961c7ac0c0748bd6"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/deferred-font-size.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "531c756be759ac810480abc8e0831c3295e0f670"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/fixtures/css-pipeline.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "410e9a1a96d3699c33f2905e6127a1a8c2f20699"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/fixtures/pipeline-child.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "fe5b38ce6a53dbf898ca63e4266ffb1cf2322923"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/font-size-mode.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "9824853f6b8f3df5f636874efbfe4fc33ce30b85"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/matrix-visibility.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "6c24066c8bd4e99a07e88a2578e5091c6d27c2e8"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/preserve-3d.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "01f7452bdb70ea25e15f3a18dffb20fa93a41efb"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/small-text-policy.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "61a759a99062c760dd90b3060f7c7750a7887547"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/source-html-document.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "18e3f612d38e460985d83deb3fbc7e4a5ff57d92"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/transform-context.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "b1961586e609cb6ac0d4cb9dfa740770f4f5fbb6"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/transform-planes.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "a102311a4a0814a2e0b660594390e6bf0d86bec8"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-control-boundaries.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "8aaa06971c24dd2b5147312013671960e937dfe2"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-correctness-regressions.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "de559361136a406fb0c4a0a13064d2742c5d958d"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-css-integration.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "fcbf44fa36874afb3fd11b093d688d7f00abec9e"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-deferred-headers.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "0543a65bc64de13e2f580a63fc4ede554e7744d2"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-deferred-overflow.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "ec2d0e2e261a015758453c5052d8a8b45a765b7a"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-display-context.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "2650ae8fd6175418e0a842d5541b657478c187a8"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-edge-on-projections.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "057e34884daa198d5f891dbb1a1f2a679daac2e3"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-element-boundaries.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "c671fb9303740f9c6384e8590fb4afe2c69de8ab"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-exact-transform-boundaries.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "e29e1b22863b433cdb3343f95febceb0a24129d4"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-final-regressions.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "9e639bb17630aa3b522d4edc36eb7ac14f619e32"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-flat-affine.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "8821957b779271379332824855d3e20be1929587"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-font-root-boundaries.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "dbb0b918dad3a893d2b29eee6126091662f76f3a"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-matrix-precision.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "6fc3dd38ef61dcf79f7d6a52f70121855b2be467"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-native-control-transforms.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "32082db6bc2fbec511291ddfff5d3ef8e4b1cfbf"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-planar-boundaries.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "e94bc969107cfdfd2cdfc264fb3a600ad7815aeb"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-rank-boundaries.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "4ab14b49d079a5e99ecdb51937d88b67c046782b"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-removal-boundaries.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "dc7a20c1ebcde8ddb64411a98eb0523a877b4ab6"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-review-regressions.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "b0b93571d97295bdabb434ebd9e387da873223ca"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-scale-scalar-boundaries.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "e762c4c395a114ce272e7b656e643bf995fa8e77"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-source-ranges.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "cdad6afa2a7463ed0dd102e5306d5b6d62997ec5"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-stylesheet-boundaries.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "e8bc8994d395f4cf8dcd4d2954775e06c94a6b25"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-transform-math-validation.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "0ec96601c47b20176afffc2455c7e8f037a51b37"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-translation-uncertainty.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "5795b2bbe4a9aef852eaa44335467a1f998e7993"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-unknown-boundaries.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "257214dedaf56960a2cf6dca5c1a179074217c26"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visible-descendants.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "f6f3240c5835dbf04a4ea391f80ca34ef9fabbed"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/hidden-html/hidden-html-document.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "eb343601b22fb2b2ed8a731cd9f155065b17c85e"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/hidden-html/hidden-html-passes.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "28394c518e46a2f5ed3ab1042974569c1ae54215"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/hidden-html/hidden-html-removal-session.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "72c3a20c9f535595c8ffff3f6e4f0751c845cc8e"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/hidden-html/hidden-html-tree.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "4a9e0c32c0707a163f5c6210149d1b753744097d"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/hidden-html/hidden-text.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "a0214a30765cbc5dee2007c98278fa2f6b262699"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/hidden-html/known-html-sanitizer.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "6115b814c261f4d04bb15ca96076644df629f726"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/hidden-html/sanitizer-counters.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "2ae172efb312ae5ee06edbd2c291d7c7db3b0bf9"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/hidden-html/sanitizer-markers.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "267188d8cd56beaf6203eb8aa2c37ed38fd00e17"
+    },
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/hidden-html/sanitizer-templates.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "9b977c25f1da19d55cbd472795a49e8d63221b5a"
+    },
+    "test/unit/html-cleaner-pipeline/search-results/brave-http-result-cleanup.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "682fa6fb7c789526a717b0e3f7c712f4eeb318ef"
+    },
+    "test/unit/html/administration-help-documents.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "4c77d12f5ea87bc9b0efd5978624c46b2ddd2632"
+    },
+    "test/unit/html/html-escape.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "4b43341db56f0487a686508a3fea3a2de43e15df"
+    },
+    "test/unit/html/logging-feedback-script.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "e0b7105dba765a96d36d3657f1b03b9827084ae2"
+    },
+    "test/unit/html/logging-form.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "87b314c230e29123e7ce52547022133262291d7b"
+    },
+    "test/unit/html/logging-page.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "92081c38ec19e0c87f1afa44de83a7eeb6d56bbd"
+    },
+    "test/unit/html/logging-routes.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "32b2670fffd9ab1719b5abb05d54ff157acc6b4f"
+    },
+    "test/unit/html/logging-test-routes.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "da15ff37ae3b5cd14361d742459e2cf1b41e6b57"
+    },
+    "test/unit/http/fixtures/http-server-fixtures.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "320e80204ba77bce139baec562fd6a3bf1697104"
+    },
+    "test/unit/http/request-cancellation.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "758c0413c0b27d3ed325cbcf86e65fbbdfe7c63b"
+    },
+    "test/unit/http/server-close-request-body.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "86371427a326316660faad8323172fdd10c8d95c"
+    },
+    "test/unit/http/server-close.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "972de60a83f684dd88a9b05d860333c474fc59a6"
+    },
+    "test/unit/http/server-lifecycle.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "7d24b120000148aaca34b33c51765bc05d113dff"
+    },
+    "test/unit/http/server-requests.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "5ecd03e9291126568e371d958f6b11bfd55e80e3"
+    },
+    "test/unit/http/server-responses.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "bd8f4dc4056d20a92de2c2a85be678877ed6fa10"
+    },
+    "test/unit/logging/audit/audit-capture.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "5688a85d2d90716865f879832e1ec0cc372df473"
+    },
+    "test/unit/logging/audit/audit-collector-observation.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "62395853107d98a61cd1307737d8e9b984556905"
+    },
+    "test/unit/logging/audit/audit-collector.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "8387e17b30497dcd1eb3a015641bde6d0b63acff"
+    },
+    "test/unit/logging/audit/audit-https-connection.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "36cd1c9a2ef7050be4208a5a7c75de260a9c6d1f"
+    },
+    "test/unit/logging/audit/audit-log.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "41a3eca22c9844406cf0e1452724f7e6b9eefaf0"
+    },
+    "test/unit/logging/audit/audit-removal.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "6121e0d0a64cedb1b3097bb7a5524726d4d2ca48"
+    },
+    "test/unit/logging/audit/audit-snapshot-pending.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "3e48402c37c3a1d393f613337d2c1b5ddfd980a0"
+    },
+    "test/unit/logging/audit/audit-snapshots.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "73912d46e16d6c29454b5f0bf7aeff01df5fbe4c"
+    },
+    "test/unit/logging/audit/bounded-sql-runtime.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "d61b48a50be1a2bad5520ad9dffde364ce22e17c"
+    },
+    "test/unit/logging/audit/destination-test.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "23cf24be8dc4a8d84741fa465e9372530b49f594"
+    },
+    "test/unit/logging/audit/export-authorization.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "a7dc2cbc9d2dc9bf28271bc56230b584b07ad540"
+    },
+    "test/unit/logging/audit/fixtures/audit-collector-fixtures.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "01960862a9e6aa6e422d5a769b2b8b1b311a7492"
+    },
+    "test/unit/logging/audit/fixtures/audit-snapshot-fixtures.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "3c2e89e657812a81665153a2a2deb57fec4d31fa"
+    },
+    "test/unit/logging/audit/otlp-audit-encoding.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "570d87bb26525cee929b10375c97c34100be88ce"
+    },
+    "test/unit/logging/audit/otlp-audit-request.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "a9fdfcb6a93e48ac4536972cc3e7188d1806db66"
+    },
+    "test/unit/logging/audit/otlp-audit-response.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "25514068e80659ffd0fdc09a8a495853564217cb"
+    },
+    "test/unit/logging/audit/otlp-audit-sender.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "e404d17de63f5608f343f9e5532d75a586390204"
+    },
+    "test/unit/logging/audit/pg-destination-settings-store.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "2e6fdd3cc90bcd4a6d2063e327e955e809d19667"
+    },
+    "test/unit/logging/audit/pg-removal-operation-store.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "163092ff7f9e47bf5ef0bcbd4abb5521ecd4091f"
+    },
+    "test/unit/logging/audit/public-audit-destination.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "a448d97ef68233f8148fb8e2d6856e6fe35dfb1e"
+    },
+    "test/unit/logging/destination-credential-codec.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "d31df98e5fa2a48d31ef878180b9bd15182f29d7"
+    },
+    "test/unit/logging/destination-settings-service.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "4b0c9236018fd08be4a3d023a6ed4342d9ede57f"
+    },
+    "test/unit/logging/system/console-logger.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "f1a1941325619d709e7c6e920161a660e2593ae1"
+    },
+    "test/unit/logging/system/otel-logger.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "1e3376b9610e32e9d641e384ef16d89aa6abfc7f"
+    },
+    "test/unit/logging/system/system-logger.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "1aeff5e8dc8d6751a942fe842656a56b97f1e088"
+    },
+    "test/unit/mcp/discovery.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "9b42eb76f70f3f67e0285c8af8bc6259c9d220db"
+    },
+    "test/unit/mcp/get-url-as-markdown.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "37412d6acec3189472a6677dcaac7ec3b0bc1ac3"
+    },
+    "test/unit/mcp/lifetime.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "65f5d4beb20c19de4bea8599a35d4c8fe9c93831"
+    },
+    "test/unit/mcp/protected-resource-endpoint.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "552f04e74bb69f750e81656eeb854bd7e46922d7"
+    },
+    "test/unit/mcp/request-context-binding.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "9a33d54475a6df21747c6e2a6601374715208bda"
+    },
+    "test/unit/mcp/request-lifetime-isolation.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "0312b272e653d4f3af1c212c6ec7045b56eb4471"
+    },
+    "test/unit/mcp/search.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "24c14c5312d32692d0b0d524ad222e3d5d57c1d5"
+    },
+    "test/unit/mcp/tool-completion-record.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "38fdd0e1dd50bf024694246675d375c2c7bb6d60"
+    },
+    "test/unit/organizations/change-records.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "10e9374ee93edfa94379fb068a9db71d1dca801a"
+    },
+    "test/unit/organizations/fixtures/administration-fixtures.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "c8853501853b4e8b7eadc7145f7919294e922be8"
+    },
+    "test/unit/organizations/fixtures/billing-double.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "fd8eab695e637f2bad8ba3346b804f0b38161d01"
+    },
+    "test/unit/organizations/fixtures/membership-removal-fixtures.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "30dcc96a12b6cd96233ec87fe004d5d2663ade01"
+    },
+    "test/unit/organizations/membership-removal-lifetime.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "377938f2192f5204dd9b846721f0a366308b8476"
+    },
+    "test/unit/organizations/membership-removal-outcomes.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "70bc3e937aa39d45a30a6d39b98eef8eb99a9917"
+    },
+    "test/unit/organizations/membership-removal-rules.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "3d32c0c5c0a0a5c99e739380c5b631e0d75e302b"
+    },
+    "test/unit/organizations/organization-administration-billing.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "58c5eaa8ec8fca1219f2a35eb7de12ba7b54b183"
+    },
+    "test/unit/organizations/organization-administration-changes.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "8786c831859e69dd58831ab0098c8018260e8f37"
+    },
+    "test/unit/organizations/organization-administration-invitation-overview.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "e0e147872e9cbd9a667721dd07717ea05c0fdb64"
+    },
+    "test/unit/organizations/organization-administration-invitations.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "58f9fb5d5f987cb69610218ed0c680666ca2fd58"
+    },
+    "test/unit/organizations/organization-administration-members.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "002c3b2bfd3ead292b97f66488f0d1f383564460"
+    },
+    "test/unit/organizations/organization-administration.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "26662b890d5fdc9b68d04c1d2028c0bc3834d115"
+    },
+    "test/unit/page-fetch/fetch-failure.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "51d5bd7c8409b5d78b2ac2b85870c0a917e57c1a"
+    },
+    "test/unit/search-engine/search-engine-brave-http.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "70e569bafffa7e967c39af2680fe30edfb5a4f7c"
+    },
+    "test/unit/search-pipeline/search-cancellation.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "80b927f09081e05cf262cd9afa3632c4b4ffe289"
+    },
+    "test/unit/search-pipeline/search-failure.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "bd6e9c8d6f86bdc0f6fa5fe0ce2c0e36eb346e3f"
+    },
+    "test/unit/search-pipeline/search-query.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "c2f6d058f142e37eb9fc0535e28962c8a4a56852"
+    },
+    "test/unit/stop-signal.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "9d633f24b5b66edb5d929570ed015d70934c1b4a"
+    },
+    "test/unit/test-support/hosted-config.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "1a0f21f633a71a190324b42891f16a3e17be7db3"
+    },
+    "test/unit/test-support/workos-site.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "84cc02a8aa4e6bdbed17194102d7cc01d152d095"
+    },
+    "test/unit/user-portal/connection-guide.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "211af6e426ad75a0e740c8fef6fddc4e325017d2"
+    },
+    "test/unit/user-portal/portal.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "87b842bcd9aa85cd55fab63dd7d46b2518b2e064"
+    },
+    "test/unit/website-fetcher/website-fetcher-cancellation.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "d0c599de05937b9dcfc5bd79ef86af19d6cd8ade"
+    },
+    "test/unit/website-fetcher/website-fetcher-concurrent-calls.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "4be7f898abfa43bc0bec0a73b35f71bde06f703e"
+    },
+    "test/unit/website-fetcher/website-fetcher-diagnostics.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "73073a53881f1647782ec0f28d2b321726cf9d68"
+    },
+    "test/unit/website-fetcher/website-fetcher-dns-wait.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "30220aa19f520c8a782aea1777c48906d1bd1913"
+    },
+    "test/unit/website-fetcher/website-fetcher-http-errors.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "1688c19bcd6f2c9f27c26ad870949d51f70108a9"
+    },
+    "test/unit/website-fetcher/website-fetcher-launch-errors.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "96b525468eb36cfc3974976a04a66d1822852329"
+    },
+    "test/unit/website-fetcher/website-fetcher-lightpanda-deadline.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "1731a8be9dbc6a98d1ccba4b826edacd6717a3cc"
+    },
+    "test/unit/website-fetcher/website-fetcher-lightpanda.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "c0c24aff6598016cba67b86c626832f3724176b4"
+    },
+    "test/unit/website-fetcher/website-fetcher-network.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "98cd71d1df5ef4090ed116ebe9a3de807c599a71"
+    },
+    "test/unit/website-fetcher/website-fetcher-runtime.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "20542deb03caf20845872324f653b24ee11af022"
+    },
+    "test/unit/website-fetcher/website-fetcher.test.ts": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "79545a5e164eb2a520889b84d17c2d7222fc4e27"
+    },
+    "tsconfig.api-surface.json": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "a227e3c8f9c0f907e8aad2a6dcd907adb98aae72"
+    },
+    "tsconfig.build.json": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "1bba4a3987dbf3fd02308d74c0da5154faed21b0"
+    },
+    "tsconfig.json": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "229ff3b3551b7bbc1bacd835255cf52969cec05e"
+    },
+    "tsconfig.user-portal.json": {
+      "mode": "100644",
+      "type": "blob",
+      "blob": "9d3be27ea030b3165505f23a48020ef8082eca85"
+    }
+  },
+  "scopePrefixes": [
+    "src/",
+    "test/",
+    "patches/",
+    "migrations/",
+    "docker/",
+    "package.json",
+    "pnpm-lock.yaml",
+    "pnpm-workspace.yaml",
+    ".npmrc",
+    "tsconfig",
+    "Dockerfile",
+    ".dockerignore",
+    ".habit-hooks/",
+    ".ast-metrics",
+    ".code-quality-exceptions.yaml",
+    ".pr-impact.json",
+    "docs/implementation/test-gate-policy.md",
+    "docs/implementation/pr-review-rules.yaml",
+    "architecture/",
+    "docs/api-surface/",
+    "docs/lightpanda-runtime.md"
+  ],
+  "claimLimit": "Native logs retain072 pins. Relevant source/test/build/policy/impact/API/registry inputs match; added script tooling requires fresh broad typecheck and fresh global quality identity."
+}

@@ -1,0 +1,138 @@
+pr-review-check: ignored 33 compiler errors in 2 files that public_surface does not list
+{
+  "tier": "T1",
+  "tierName": "T1 Team review",
+  "eligibility": "eligible",
+  "blockers": [],
+  "candidate": "057434b9c3ad313f656b03e033866cdecab7ae51",
+  "mergeBase": "aa8c56bb7e195e97d2362b2c661cc63a760a5cc9",
+  "architecture": {
+    "policy": "facts",
+    "facts": [],
+    "summary": "T0: no architecture fact"
+  },
+  "reasons": [
+    {
+      "tier": "T1",
+      "key": "read_paths",
+      "fact": "docs/implementation/test-gate-policy.md"
+    }
+  ],
+  "questions": [],
+  "changedPaths": [
+    {
+      "status": "M",
+      "path": ".pr-impact.json"
+    },
+    {
+      "status": "M",
+      "path": "docs/design/organization-admin-plan.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/design/portal-design.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/implementation/admin-ui-04.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/implementation/admin-ui-stack-review.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/implementation/test-gate-policy.md"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/web/account/administration-pages.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/web/account/members-style.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/auth/hosted-invitations.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/auth/hosted-live/administration-server.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/auth/hosted-member-removal-browser.runtime.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/auth/hosted-members.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/auth/hosted-workos-administration.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/integration/auth/hosted-administration.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/integration/hosted-admin/account-routes-administration-pages.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/support/drivers/browser/hosted-browser.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/support/drivers/browser/invitation-browser.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/support/drivers/browser/pending-invitations-browser.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/support/drivers/browser/pending-invitations-page.ts"
+    }
+  ],
+  "lineCounts": {
+    "production": 44,
+    "productionLimit": 400,
+    "total": 830,
+    "totalLimit": 1500
+  },
+  "tests": {
+    "added": 6,
+    "removed": 0,
+    "skippedOrTodo": []
+  },
+  "mi": [
+    "changed: src/interfaces/web/account/administration-pages.ts: 59.20233572948304 to 57.90663211767644",
+    "not applicable: src/interfaces/web/account/members-style.ts: no raw MI in the base snapshot"
+  ],
+  "crap": [
+    "src/interfaces/web/account/administration-pages.ts: membersPage: 4.0",
+    "src/interfaces/web/account/administration-pages.ts: (anonymous): 2.0",
+    "src/interfaces/web/account/administration-pages.ts: (anonymous): 1.0",
+    "src/interfaces/web/account/administration-pages.ts: invitationRow: 1.0"
+  ],
+  "metrics": [
+    "Delta: goal miss",
+    "Review: passed",
+    "CRAP: passed",
+    "Architecture: passed",
+    "0 findings on unchanged files, reason unchanged by this PR"
+  ],
+  "factsToDeclare": [],
+  "declaredFacts": [],
+  "surfaceDifferences": [],
+  "informational": [
+    "49 public modules, 0 snapshots changed"
+  ],
+  "notes": [
+    "Local eligibility is preliminary. The manager or Delamain session must verify current local checks, holds, and required independent human approval."
+  ],
+  "label": "gh pr edit <n> --repo tomer-mayara/Thermus --add-label 'T1 Team review' --remove-label 'T2 Need architect' --remove-label 'T0 Auto merge'"
+}

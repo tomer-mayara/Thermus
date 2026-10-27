@@ -1,0 +1,14 @@
+{
+  "head": "07285735ff92af7dd35908d79e47460256cb8415",
+  "absoluteDependencyLinks": [],
+  "brokenDependencyLinks": [],
+  "outsideDependencyLinks": [
+    {
+      "path": ".pnpm/node_modules/@thermus/habit-tools",
+      "target": "../../../../.habit-hooks",
+      "resolved": "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus/.habit-hooks"
+    }
+  ],
+  "trackedInputsUnchanged": true,
+  "treeClean": true
+}

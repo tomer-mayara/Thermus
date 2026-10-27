@@ -1,0 +1,142 @@
+{
+  "version": 1,
+  "base": "aa8c56bb7e195e97d2362b2c661cc63a760a5cc9",
+  "head": "057434b9c3ad313f656b03e033866cdecab7ae51",
+  "rows": [
+    {
+      "file": "src/interfaces/web/account/administration-pages.ts",
+      "function": "membersPage",
+      "change": "changed",
+      "paths": 4,
+      "share": 0.976,
+      "crap": 4.000221184,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"membersPage\",\"start\":1693,\"end\":3529,\"body\":\"0b42556dd8a3342aa1ec873c6bcaa8d930e7c1eccdfc06979f15c23979ff948c\",\"signature\":\"16f0253aee78552103740607de26a07553eb2fa08b12f8236a13d5c5758cc2dc\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/administration-pages.ts",
+      "function": "removalForm",
+      "change": "unchanged",
+      "paths": 4,
+      "share": 1,
+      "crap": 4,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"removalForm\",\"start\":3531,\"end\":4662,\"body\":\"f5457b363e30c21678f7c3cf047621336c79378126016cfbe7eb22b0d50f8034\",\"signature\":\"9132db80a4c5a3629bc50d2ae11fe2f401200979dbdd038d9a42bb388eff2c99\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/administration-pages.ts",
+      "function": "(anonymous)",
+      "change": "unchanged",
+      "paths": 3,
+      "share": 1,
+      "crap": 3,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:membersPage\",\"name\":\"(anonymous)\",\"start\":1968,\"end\":2476,\"body\":\"8fabb24e53999a180fa031ded109fb383112398f50dcfb4760b798d0715dab5b\",\"signature\":\"a12528639c242ac6a651440c7c2593376be9ce0ea91009a89537f7ffc84fbcc2\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/administration-pages.ts",
+      "function": "(anonymous)",
+      "change": "new",
+      "paths": 2,
+      "share": 1,
+      "crap": 2,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:invitationRow\",\"name\":\"(anonymous)\",\"start\":6109,\"end\":6557,\"body\":\"ac3fa3fbb6e203829853b1ca7ae7a5ea523cc2f9ca142204e82d38072117d571\",\"signature\":\"6f409f3593628bbf808307f32efe598a8f1c013cbc414ee985c7de62c8e3fa03\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/administration-pages.ts",
+      "function": "(anonymous)",
+      "change": "unchanged",
+      "paths": 2,
+      "share": 1,
+      "crap": 2,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:sendForm\",\"name\":\"(anonymous)\",\"start\":4832,\"end\":5015,\"body\":\"408b753a2dc11cd76d98e53fe7dca7c6215b69d4666251d88d35aed6362dec94\",\"signature\":\"37050a4c3750e847047bd0f43ae2379dccc092c75b1dab34ad94c0194b4779f8\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/administration-pages.ts",
+      "function": "identityPolicyText",
+      "change": "unchanged",
+      "paths": 2,
+      "share": 1,
+      "crap": 2,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"identityPolicyText\",\"start\":7114,\"end\":7463,\"body\":\"efc9f6c90b72546821ba20df79808f6481b48ff02a675963ecf9cf1a0a54e555\",\"signature\":\"3e82e23e0b373955d6da8837c0f93f382c31fdef6650b261e2f5f5b962bb5451\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/administration-pages.ts",
+      "function": "rolesText",
+      "change": "unchanged",
+      "paths": 2,
+      "share": 1,
+      "crap": 2,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"rolesText\",\"start\":7465,\"end\":7621,\"body\":\"29565283b3899d582520af2027024ea166f30923a949b0ac72dcab0cbfd9af80\",\"signature\":\"fbe573602f16aba81de2a68096ecf8915b6eec3d5a4515453f9ed9475943cd6b\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/administration-pages.ts",
+      "function": "sendForm",
+      "change": "unchanged",
+      "paths": 2,
+      "share": 1,
+      "crap": 2,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"sendForm\",\"start\":4664,\"end\":5981,\"body\":\"3ed886b5944a9d30adfd8b1f0155562b9316d39ff3a7758d1272dff6984cc528\",\"signature\":\"49d7301d22edfdd1e36c9b8a4159dbb6bd0bc35cd07c3223fe0f7f1f3fda7efb\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/administration-pages.ts",
+      "function": "(anonymous)",
+      "change": "new",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"\",\"name\":\"(anonymous)\",\"start\":887,\"end\":972,\"body\":\"8759331c3cc75ac46bc61c45d51e2f614529a7e4d5d002360df60999094ca864\",\"signature\":\"fce7b55878c3b96254fb565eaee750d1b12cf515a1d7d4f17ee0cbe125b5eab0\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/administration-pages.ts",
+      "function": "(anonymous)",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:membersPage\",\"name\":\"(anonymous)\",\"start\":1802,\"end\":1837,\"body\":\"4f402a6b0c0cc8246200a07cf566b81eb179d7fd380061482274c4c990c83c0e\",\"signature\":\"9d145d87dcaf15a322632bf156892203ba76c9a46824299c2edd3ae15fd27373\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/administration-pages.ts",
+      "function": "(anonymous)",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:membersPage\",\"name\":\"(anonymous)\",\"start\":1898,\"end\":1932,\"body\":\"aa8a09835b577ff46b9ea6d6e1a1b9d4b17c6a7554d7f119f17b34c590e96aab\",\"signature\":\"a51ef8d464a76de4d05f05d39ef1c4200263fb40648e90173d8e11ec81d15101\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/administration-pages.ts",
+      "function": "(anonymous)",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:membersPage\",\"name\":\"(anonymous)\",\"start\":3282,\"end\":3329,\"body\":\"4737cd2f3f0787d1c1ecf32f43d1706dcf4f85db576f3db6f94f90a111443e49\",\"signature\":\"2fc3fe246c646efcff37bca76a2f1990f701953d3c98fb92f8c12c48095a0a91\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/administration-pages.ts",
+      "function": "(anonymous)",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:rolesText\",\"name\":\"(anonymous)\",\"start\":7569,\"end\":7606,\"body\":\"8ee232e73e652c2542515ed8f032f5c8dea384e055df77c63ca58184fcffd371\",\"signature\":\"37050a4c3750e847047bd0f43ae2379dccc092c75b1dab34ad94c0194b4779f8\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/administration-pages.ts",
+      "function": "invitationRow",
+      "change": "changed",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"invitationRow\",\"start\":5983,\"end\":7026,\"body\":\"42cf58aa4f9268e6ae53fd7429d7a4ef0b239c85bd2e05417fd8020330071c2e\",\"signature\":\"f7d6a0ef78fbf10dc6626094b43fedbc882672ddb47208633a94ec0ecfece9ff\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/administration-pages.ts",
+      "function": "roleLabel",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"roleLabel\",\"start\":7028,\"end\":7112,\"body\":\"32dd512193e5fb4572038af5ec724fad95a3137bad24b63a7cd1ee750cfe6b30\",\"signature\":\"3c221b92babd8b070a130f2de14c0a579cf1743bc647adee6aa564cc6163945d\"}"
+    }
+  ]
+}

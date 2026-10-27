@@ -1,0 +1,248 @@
+{
+  "head": "057434b9c3ad313f656b03e033866cdecab7ae51",
+  "base": "aa8c56bb7e195e97d2362b2c661cc63a760a5cc9",
+  "main": "9507e751215fec32748bf4e944f2393928e61cf5",
+  "branch": "codex/validate-ui-04-057434b9",
+  "checks": {
+    "typecheck": {
+      "exitCode": 0,
+      "started": "2026-10-27T05:09:44.373Z",
+      "ended": "2026-10-27T05:09:46.479Z",
+      "log": ".cache/ui-stack-finish/ui04/typecheck-quality-057.log"
+    },
+    "integration-coverage": {
+      "exitCode": 0,
+      "started": "2026-10-27T05:09:46.538Z",
+      "ended": "2026-10-27T05:10:30.175Z",
+      "log": ".cache/ui-stack-finish/ui04/integration-coverage-quality-057.log"
+    },
+    "snapshot-base": {
+      "exitCode": 0,
+      "started": "2026-10-27T05:10:30.317Z",
+      "ended": "2026-10-27T05:10:34.145Z",
+      "log": ".cache/ui-stack-finish/ui04/snapshot-base-quality-057.log"
+    },
+    "snapshot-head": {
+      "exitCode": 0,
+      "started": "2026-10-27T05:10:34.214Z",
+      "ended": "2026-10-27T05:10:36.865Z",
+      "log": ".cache/ui-stack-finish/ui04/snapshot-head-quality-057.log"
+    },
+    "metrics-process": {
+      "exitCode": 1,
+      "started": "2026-10-27T05:10:36.943Z",
+      "ended": "2026-10-27T05:10:58.042Z",
+      "log": ".cache/ui-stack-finish/ui04/metrics-process-quality-057.log"
+    },
+    "metrics-crap": {
+      "exitCode": 0,
+      "started": "2026-10-27T05:10:58.116Z",
+      "ended": "2026-10-27T05:11:03.861Z",
+      "log": ".cache/ui-stack-finish/ui04/metrics-crap-quality-057.log"
+    },
+    "low-file-inspection": {
+      "exitCode": 0,
+      "started": "2026-10-27T05:11:03.995Z",
+      "ended": "2026-10-27T05:11:08.128Z",
+      "log": ".cache/ui-stack-finish/ui04/low-file-inspection-quality-057.log"
+    },
+    "api-surface": {
+      "exitCode": 0,
+      "started": "2026-10-27T05:11:08.199Z",
+      "ended": "2026-10-27T05:11:10.321Z",
+      "log": ".cache/ui-stack-finish/ui04/api-surface-quality-057.log"
+    },
+    "habit-hooks": {
+      "exitCode": 1,
+      "started": "2026-10-27T05:11:10.407Z",
+      "ended": "2026-10-27T05:11:12.966Z",
+      "log": ".cache/ui-stack-finish/ui04/habit-hooks-quality-057.log"
+    }
+  },
+  "checker": {
+    "exitCode": 0,
+    "tier": "T1 Team review",
+    "eligibility": "eligible",
+    "blockers": [],
+    "reasons": [
+      {
+        "tier": "T1",
+        "key": "read_paths",
+        "fact": "docs/implementation/test-gate-policy.md"
+      }
+    ],
+    "architecture": {
+      "policy": "facts",
+      "facts": [],
+      "summary": "T0: no architecture fact"
+    },
+    "informational": [
+      "49 public modules, 0 snapshots changed"
+    ]
+  },
+  "processOutcomes": [
+    {
+      "name": "Delta",
+      "status": "goal miss"
+    },
+    {
+      "name": "Review",
+      "status": "passed"
+    },
+    {
+      "name": "CRAP",
+      "status": "passed"
+    },
+    {
+      "name": "Architecture",
+      "status": "passed"
+    }
+  ],
+  "reviewCounts": {
+    "filesChanged": 11,
+    "filesAdded": 2,
+    "filesDeleted": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 3,
+    "improvements": 0
+  },
+  "requiredCrapRows": [
+    {
+      "file": "src/interfaces/web/account/administration-pages.ts",
+      "function": "membersPage",
+      "change": "changed",
+      "paths": 4,
+      "share": 0.976,
+      "crap": 4.000221184,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"membersPage\",\"start\":1693,\"end\":3529,\"body\":\"0b42556dd8a3342aa1ec873c6bcaa8d930e7c1eccdfc06979f15c23979ff948c\",\"signature\":\"16f0253aee78552103740607de26a07553eb2fa08b12f8236a13d5c5758cc2dc\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/administration-pages.ts",
+      "function": "(anonymous)",
+      "change": "new",
+      "paths": 2,
+      "share": 1,
+      "crap": 2,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:invitationRow\",\"name\":\"(anonymous)\",\"start\":6109,\"end\":6557,\"body\":\"ac3fa3fbb6e203829853b1ca7ae7a5ea523cc2f9ca142204e82d38072117d571\",\"signature\":\"6f409f3593628bbf808307f32efe598a8f1c013cbc414ee985c7de62c8e3fa03\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/administration-pages.ts",
+      "function": "(anonymous)",
+      "change": "new",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"\",\"name\":\"(anonymous)\",\"start\":887,\"end\":972,\"body\":\"8759331c3cc75ac46bc61c45d51e2f614529a7e4d5d002360df60999094ca864\",\"signature\":\"fce7b55878c3b96254fb565eaee750d1b12cf515a1d7d4f17ee0cbe125b5eab0\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/administration-pages.ts",
+      "function": "invitationRow",
+      "change": "changed",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"invitationRow\",\"start\":5983,\"end\":7026,\"body\":\"42cf58aa4f9268e6ae53fd7429d7a4ef0b239c85bd2e05417fd8020330071c2e\",\"signature\":\"f7d6a0ef78fbf10dc6626094b43fedbc882672ddb47208633a94ec0ecfece9ff\"}"
+    }
+  ],
+  "coverage": {
+    "tests": 1169,
+    "files": 164,
+    "processes": 288,
+    "provenance": {
+      "sourceFingerprint": "3895d5c8939fc7c05a873ba5432400bf491e378d5ceb5f6a79caa2cf1329df9b",
+      "inputsFingerprint": "c1d375a1796b956c255f655254b9027899cdf3585ddd5bc7c2d8befd32b64399",
+      "runtime": "node-24.20.0",
+      "compiler": "typescript-7.0.2",
+      "measurementVersion": "own-characters-1",
+      "suite": [
+        "integration"
+      ],
+      "comparisonIdentity": {
+        "sourceFingerprint": "3895d5c8939fc7c05a873ba5432400bf491e378d5ceb5f6a79caa2cf1329df9b",
+        "inputsFingerprint": "c1d375a1796b956c255f655254b9027899cdf3585ddd5bc7c2d8befd32b64399",
+        "runtime": "node-24.20.0",
+        "compiler": "typescript-7.0.2",
+        "measurementVersion": "own-characters-1",
+        "suite": "unit"
+      },
+      "status": "verified",
+      "capturedCommit": "057434b9c3ad313f656b03e033866cdecab7ae51",
+      "buildFingerprint": "da599258a59d3572ff3c0615e75ea4b1d84190a894415068802cd405363bcf4d",
+      "captureManifestFingerprint": "03ca9616c2155b5c4dd26d389434b2d2920cfa7ff7117a915188431ce8b27f5e",
+      "captures": [
+        {
+          "sourceFingerprint": "3895d5c8939fc7c05a873ba5432400bf491e378d5ceb5f6a79caa2cf1329df9b",
+          "inputsFingerprint": "97ca0e4a05d0759a8a4c44f9c3f10c526cf87db57c436b978a43604727d22966",
+          "runtime": "node-24.20.0",
+          "compiler": "typescript-7.0.2",
+          "measurementVersion": "own-characters-1",
+          "suite": "integration",
+          "completionProtocol": "normal-exit-or-sealed-or-loader-1",
+          "captureId": "365fea8cb228ae8cb1788b6fd8af131f4c09a9873bb2daac09ed3afe995c535c",
+          "comparisonIdentity": {
+            "sourceFingerprint": "3895d5c8939fc7c05a873ba5432400bf491e378d5ceb5f6a79caa2cf1329df9b",
+            "inputsFingerprint": "c1d375a1796b956c255f655254b9027899cdf3585ddd5bc7c2d8befd32b64399",
+            "runtime": "node-24.20.0",
+            "compiler": "typescript-7.0.2",
+            "measurementVersion": "own-characters-1",
+            "suite": "unit"
+          },
+          "status": "verified",
+          "capturedCommit": "057434b9c3ad313f656b03e033866cdecab7ae51",
+          "buildFingerprint": "da599258a59d3572ff3c0615e75ea4b1d84190a894415068802cd405363bcf4d",
+          "captureManifestFingerprint": "23cf4a58dd042e9c8b52c6c80655f7320ab7c3e94f061f787b461ff086b4b421"
+        }
+      ]
+    },
+    "rawFileCount": 433
+  },
+  "retainedFindings": "retained-findings-quality-057.json records every one of42 habit findings and all metric notes. Snooze remains []. Existing source MI57.9 is retained with a cohesive-template reason; no exception or baseline change.",
+  "historyDisposition": "The process reports: No record: aa8c56bb is not on origin/main. No record was generated, forced or edited; the canonical950 main record is inherited.",
+  "inputIdentity": {
+    "trackedFiles": 1547,
+    "beforeAfterHashesAndModesIdentical": true,
+    "oldNativeHead": "07285735ff92af7dd35908d79e47460256cb8415",
+    "oldNativeEvidence": "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus/.cache/ui-stack-finish/archives/ui04-07285735ff92af7dd35908d79e47460256cb8415/evidence",
+    "oldNativeMapping": "old-native-to-current-comparison.json verifies951 relevant source/test/build/policy/impact/API/registry paths; parent-rebind-comparison.json verifies949 parent paths. Native logs retain072 pins.",
+    "newToolingLimit": "New main probe/scripts, knip and documents/history changed global tool identity. The broad typecheck and all057 quality/coverage reports are fresh. Old standalone hosted-offline remains an actual072 result, with its full nested phases retained; no fresh057 native aggregate run is claimed."
+  },
+  "historicalNativeResults": {
+    "ordinary": {
+      "emitted": 5165,
+      "portal": 49
+    },
+    "browser": 71,
+    "postgres": 26,
+    "collector": 10,
+    "selfHostedContainer": 11,
+    "hostedOfflinePhases": [
+      3319,
+      29,
+      20,
+      1169,
+      123,
+      13
+    ],
+    "failures": 0,
+    "retries": 0,
+    "screenshots": 57
+  },
+  "remainingHolds": [
+    "The selected hosted-live gate is unverified at057. No current UI04 live attempt ran. Historical quota429 and separate reinvitation503 records retain their actual heads; no pass or cause is inferred.",
+    "The required local LinuxAMD64 image gate is deferred to the dedicated VM and is not passed by this worker.",
+    "T1 requires independent authorized human approval of the current candidate. Local checker eligibility does not prove approval or resolve live/image holds."
+  ],
+  "toolLimits": [
+    "The API tool ignored33 compiler errors in2 unlisted files while verifying49 snapshots; full broad typecheck passed.",
+    "Global architecture coverage remains incomplete in unchanged functions, but all required changed/new functions have verified assessment and identity.",
+    "The unchanged unresolved CSS import appears on both sides, so uncertain edge/cycle deltas are withheld. The registry and checker independently verify declared production boundaries.",
+    "Base CRAP derived from head integration coverage is an estimate.",
+    "Every stacked metric comparison uses the actual parent under AGENTS, despite the lower-priority guide sentence retaining process at main."
+  ],
+  "treeClean": true,
+  "heavyLaneReleased": true,
+  "lastResourceUsingProcessEnded": "2026-10-27T05:11:12.966Z",
+  "noResourceUsingProcessesRunning": true,
+  "publication": "No tracked edits, commits, PR writes, provider configuration changes, image or live runs were made in this quality turn."
+}

@@ -1,0 +1,31 @@
+
+> thermus@0.0.0 test:logging:collector
+> npm run build && node --test --test-concurrency=1 dist/test/integration/logging/audit/audit-sender.runtime.js dist/test/acceptance/logging/audit/hosted-audit-journey.runtime.js
+
+
+> thermus@0.0.0 build
+> test ! -L dist && { test ! -e dist || test -d dist; } && rm -rf dist && tsc --project tsconfig.build.json --outDir dist
+
+✔ S2-04 Given a current password-authenticated Admin and a reachable Collector, when the Admin saves disabled, Tests once, enables, uses MCP after snapshot expiry, and uses MCP and shipped Admin actions, then the Collector receives the first and later bounded results and administration metadata while product outcomes and system output stay independent (3506.037333ms)
+ℹ Actual Collector otel/opentelemetry-collector-contrib:0.163.2@sha256:7f22d2a6748110ffb6a59bc0df448bccbf501cdb667d610ede4c61d3863d5849, native DNS and verified TLS on an isolated internal Docker network. WorkOS Password exchange, tool operations, and settings store are controlled. Shared public capture is composed explicitly; default hosted factory wiring has separate acceptance coverage. No live provider, PostgreSQL, rollout, backup, or release proof is claimed.
+✔ Given a saved Axiom dataset and a verified TLS receiver, when saved Test and normal export run, then only the configured dataset and Bearer headers reach the destination (1896.302167ms)
+ℹ Local verified TLS receiver checks the Axiom header contract. This does not prove live Axiom ingestion or durable storage.
+✔ Given a trusted public-address TLS receiver, when None and Bearer events are sent, then only the supplied audit data and auth reach that socket (1126.078292ms)
+✔ Given an open-source Collector with None and Bearer receivers, when audit events are sent, then the Collector accepts both and rejects the wrong token (1086.642458ms)
+ℹ Collector otel/opentelemetry-collector-contrib:0.163.2@sha256:7f22d2a6748110ffb6a59bc0df448bccbf501cdb667d610ede4c61d3863d5849; isolated public-address TLS 93.184.216.10.
+✔ Given disabled saved Bearer destinations at two receivers, when their real logging form Tests each saved revision, then the Collector receives one labelled synthetic event per destination and settings do not change (1316.345417ms)
+ℹ Real LoggingRoutes, settings service, credential codec, sender, DNS, and TLS; store and decided Admin context are supplied by the probe.
+✔ Given a trusted public-address receiver, when its hostname or trust chain is wrong, then no event or Bearer token reaches HTTP (1471.151125ms)
+✔ Given a hostname that changes from public to loopback, when the same sender sends again, then the new DNS answer is refused before HTTP (1081.787166ms)
+✔ Given a receiver that redirects, when an authenticated audit event is sent, then the redirect target gets no request (1040.291458ms)
+✔ Given an actual stalled TLS response, when its caller cancels, then the send settles and the sender can send a later event (1343.627417ms)
+✔ Given enabled saved Bearer settings and the production audit assembly, when the first bounded redacted tool capture occurs, then the real Collector receives that event and one separate saved Test without event writes to settings (1181.219334ms)
+ℹ Real production logging-storage factory, AuditLog, snapshots, queue, fresh destination authorization, shared sender, and Collector; settings storage is controlled.
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 15171.423292

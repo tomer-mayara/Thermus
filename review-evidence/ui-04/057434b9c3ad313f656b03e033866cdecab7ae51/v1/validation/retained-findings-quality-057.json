@@ -1,0 +1,363 @@
+{
+  "head": "057434b9c3ad313f656b03e033866cdecab7ae51",
+  "base": "aa8c56bb7e195e97d2362b2c661cc63a760a5cc9",
+  "habitHooks": {
+    "exitCode": 1,
+    "reportedFindings": 42,
+    "counts": {
+      "non-null-assertion": 7,
+      "non-essential-comment": 31,
+      "oversized-file": 4
+    },
+    "retained": [
+      {
+        "rule": "non-null-assertion",
+        "path": "test/integration/hosted-admin/account-routes-administration-pages.test.ts",
+        "lines": [
+          41
+        ],
+        "reason": "This test reads the rendered Members list container to check section order. A missing container throws at this line and fails the public-route specification; it cannot produce a silent pass. The assertion is local to test markup and creates no production nullable-state rule."
+      },
+      {
+        "rule": "non-null-assertion",
+        "path": "test/integration/hosted-admin/account-routes-administration-pages.test.ts",
+        "lines": [
+          55
+        ],
+        "reason": "The case builds two fixture entries, asserts exactly two rendered rows, then uses only their indices0 and1. A mismatched entry fails the test at the read. Keep this bounded test pairing; it is not production input handling."
+      },
+      {
+        "rule": "non-null-assertion",
+        "path": "test/support/drivers/browser/pending-invitations-browser.ts",
+        "lines": [
+          17,
+          48,
+          56
+        ],
+        "reason": "These evaluations run on elements attached to the real Chromium document. Its defaultView supplies computed styles. A missing view throws and fails the browser case; it cannot be accepted as a valid geometry result. No product lifecycle or circular owner is involved."
+      },
+      {
+        "rule": "non-null-assertion",
+        "path": "test/support/drivers/browser/pending-invitations-browser.ts",
+        "lines": [
+          50
+        ],
+        "reason": "The button is selected inside this.disclosure, so its details ancestor is the tested surface. If markup removes that ancestor, the browser evaluation fails immediately. This is a test-local DOM assumption, not a production fallback."
+      },
+      {
+        "rule": "non-null-assertion",
+        "path": "test/support/drivers/browser/pending-invitations-browser.ts",
+        "lines": [
+          59
+        ],
+        "reason": "The loaded Members fixture has the page heading whose doubled font is asserted as64px. If the heading is missing, evaluation fails immediately. Keep the local observable check; no runtime null state or authority is hidden."
+      },
+      {
+        "rule": "non-essential-comment",
+        "path": "test/acceptance/auth/hosted-workos-administration.test.ts",
+        "lines": [
+          10,
+          11,
+          12,
+          13
+        ],
+        "reason": "The comment states the real HTTP composition and controlled WorkOS seam, preventing application-side results from being presented as live provider evidence."
+      },
+      {
+        "rule": "non-essential-comment",
+        "path": "test/acceptance/auth/hosted-workos-administration.test.ts",
+        "lines": [
+          18
+        ],
+        "reason": "The comment connects the fixture external ID to the operator runbook constraint."
+      },
+      {
+        "rule": "non-essential-comment",
+        "path": "test/acceptance/auth/hosted-workos-administration.test.ts",
+        "lines": [
+          36,
+          37
+        ],
+        "reason": "The fixture summary explains the two organizations, mixed roles/statuses and the six active product members."
+      },
+      {
+        "rule": "non-essential-comment",
+        "path": "test/acceptance/auth/hosted-workos-administration.test.ts",
+        "lines": [
+          83,
+          84
+        ],
+        "reason": "The comment explains why refused pages read the session form token through the session endpoint rather than a missing page form."
+      },
+      {
+        "rule": "non-essential-comment",
+        "path": "test/acceptance/auth/hosted-workos-administration.test.ts",
+        "lines": [
+          110,
+          111
+        ],
+        "reason": "The comment defines observed administration writes and excludes sign-in/refresh traffic from that evidence."
+      },
+      {
+        "rule": "non-essential-comment",
+        "path": "test/acceptance/auth/hosted-workos-administration.test.ts",
+        "lines": [
+          138,
+          139
+        ],
+        "reason": "The comment distinguishes organization-wide member reads from access-resolution reads for the signed-in user."
+      },
+      {
+        "rule": "non-essential-comment",
+        "path": "src/interfaces/web/account/administration-pages.ts",
+        "lines": [
+          25
+        ],
+        "reason": "Keep the complete-read invariant explicit: both member and invitation reads must succeed before rendering, so a partial read cannot look like a correct count or page."
+      },
+      {
+        "rule": "non-essential-comment",
+        "path": "test/support/drivers/browser/hosted-browser.ts",
+        "lines": [
+          23
+        ],
+        "reason": "The comment distinguishes null, which omits Origin, from undefined, which uses the public origin. This matters to unsafe-request specifications."
+      },
+      {
+        "rule": "non-essential-comment",
+        "path": "test/support/drivers/browser/hosted-browser.ts",
+        "lines": [
+          28,
+          29,
+          30
+        ],
+        "reason": "The comment defines cookie handling, the no-auto-redirect behavior and the listening/in-process transport seam. These limits explain what this protocol driver proves."
+      },
+      {
+        "rule": "non-essential-comment",
+        "path": "test/support/drivers/browser/hosted-browser.ts",
+        "lines": [
+          59
+        ],
+        "reason": "The raw string-body path deliberately preserves duplicate form fields so boundary tests can send malformed input; normal URLSearchParams conversion would lose that case."
+      },
+      {
+        "rule": "non-essential-comment",
+        "path": "test/support/drivers/browser/hosted-browser.ts",
+        "lines": [
+          95,
+          96
+        ],
+        "reason": "The comment records the loopback transport and public Host/raw-header behavior that origin and routing assertions depend on."
+      },
+      {
+        "rule": "non-essential-comment",
+        "path": "test/support/drivers/browser/hosted-browser.ts",
+        "lines": [
+          118
+        ],
+        "reason": "The form reader takes hidden fields, checked radios and accessible button names while callers fill visible fields. This is the contract used by the new short-label invitation markup and its consumers."
+      },
+      {
+        "rule": "non-essential-comment",
+        "path": "test/support/drivers/browser/hosted-browser.ts",
+        "lines": [
+          131,
+          132
+        ],
+        "reason": "The comment limits missing-form diagnostics to button names because hidden fields contain the session form token. Keep that disclosure constraint explicit."
+      },
+      {
+        "rule": "non-essential-comment",
+        "path": "test/support/drivers/browser/pending-invitations-page.ts",
+        "lines": [
+          3
+        ],
+        "reason": "Keep this protocol-reader scope note: it reads displayed pending email/role facts, not provider state or action authority."
+      },
+      {
+        "rule": "non-essential-comment",
+        "path": "test/acceptance/auth/hosted-live/administration-server.ts",
+        "lines": [
+          44,
+          45
+        ],
+        "reason": "The comment defines safe page-failure diagnostics: operator path/failure reports are allowed; credentials are not."
+      },
+      {
+        "rule": "non-essential-comment",
+        "path": "test/acceptance/auth/hosted-live/administration-server.ts",
+        "lines": [
+          80
+        ],
+        "reason": "The credential sentinel returns only a boolean. Keep the no-secret-output limit visible beside the test guard."
+      },
+      {
+        "rule": "non-essential-comment",
+        "path": "test/acceptance/auth/hosted-live/administration-server.ts",
+        "lines": [
+          102
+        ],
+        "reason": "The shared administrator session survives between cases. This lifetime explains the complete-group requirement and must stay explicit."
+      },
+      {
+        "rule": "non-essential-comment",
+        "path": "test/acceptance/auth/hosted-live/administration-server.ts",
+        "lines": [
+          105
+        ],
+        "reason": "The helper uses the current visible page form and its button name before posting. Keep the public interaction boundary clear for the live cases."
+      },
+      {
+        "rule": "non-essential-comment",
+        "path": "test/acceptance/auth/hosted-live/administration-server.ts",
+        "lines": [
+          130
+        ],
+        "reason": "Invitation tokens and links are test-only credentials. The comment identifies that sensitive scope and prevents treating their reads as safe public output."
+      },
+      {
+        "rule": "oversized-file",
+        "path": "test/acceptance/auth/hosted-live/administration-server.ts",
+        "lines": [],
+        "reason": "Keep the existing live administration journey with its shared session, provider observations and credential sentinels together. UI04 updates form observations; it does not add provider operations. Splitting only to meet a line count would obscure that sequence."
+      },
+      {
+        "rule": "oversized-file",
+        "path": "test/acceptance/auth/hosted-member-removal-browser.runtime.ts",
+        "lines": [],
+        "reason": "The71-case inventory states the combined user journey across viewports, JavaScript states, keyboard actions and safety outcomes. Existing drivers hold mechanics. The test file has no MI goal; keep the complete behavior inventory."
+      },
+      {
+        "rule": "oversized-file",
+        "path": "test/acceptance/auth/hosted-workos-administration.test.ts",
+        "lines": [],
+        "reason": "This acceptance inventory uses one real HTTP composition and controlled provider seam to check related administration behavior. UI04 updates pending facts and labels without adding a product responsibility."
+      },
+      {
+        "rule": "oversized-file",
+        "path": "test/integration/hosted-admin/account-routes-administration-pages.test.ts",
+        "lines": [],
+        "reason": "The integration file groups public Members rendering contracts: complete counts, native disclosure state/order, protected forms and escaping. The new cases state observable behavior; a size-only split would not create a clearer owner."
+      }
+    ],
+    "snooze": [],
+    "disposition": "Every reported finding has a retained reason. These test-local assumptions fail loudly; none changes production safety. No source edit or suppression was made."
+  },
+  "metrics": {
+    "processExitCode": 1,
+    "outcomes": [
+      {
+        "name": "Delta",
+        "status": "goal miss"
+      },
+      {
+        "name": "Review",
+        "status": "passed"
+      },
+      {
+        "name": "CRAP",
+        "status": "passed"
+      },
+      {
+        "name": "Architecture",
+        "status": "passed"
+      }
+    ],
+    "existingFileMI": {
+      "path": "src/interfaces/web/account/administration-pages.ts",
+      "before": 59.20233572948304,
+      "after": 57.90663211767644,
+      "reason": "Keep the existing cohesive Members/invitation HTML owner. The counted disclosure and compact escaped form markup add template volume, while changed/new functions have at most four paths and verified CRAP1\u20134. No new production file is below the goal; no exception or mechanical split is needed."
+    },
+    "styleMeasurement": {
+      "path": "src/interfaces/web/account/members-style.ts",
+      "disposition": "N/A: static CSS string module; both snapshots report no functions and complete source evidence, so raw function MI/CRAP is not fabricated."
+    },
+    "retainedHigh": [],
+    "retainedLow": [
+      {
+        "kind": "regression",
+        "severity": "low",
+        "rule": "bugs-regression",
+        "file": "test/acceptance/auth/hosted-invitations.test.ts",
+        "message": "Estimated bugs (Halstead): 0.82 -> 1.22",
+        "suggestion": "This estimate grows with code volume and complexity; consider simplifying or splitting this file",
+        "before": 0.8165930128534054,
+        "after": 1.2242882001256847,
+        "reason": "The public acceptance cases now check the counted pending disclosure, compact row facts and complete-read failures. The size-derived estimate rises with those specifications; no product failure is inferred."
+      },
+      {
+        "kind": "regression",
+        "severity": "low",
+        "rule": "bugs-regression",
+        "file": "test/acceptance/auth/hosted-members.test.ts",
+        "message": "Estimated bugs (Halstead): 2.44 -> 2.71",
+        "suggestion": "This estimate grows with code volume and complexity; consider simplifying or splitting this file",
+        "before": 2.4422441606391,
+        "after": 2.706716234302281,
+        "reason": "The updated assertions distinguish displayed active members and pending entries while retaining product seats and access rules. Keep the public behavior coverage; the estimate is not an observed defect."
+      },
+      {
+        "kind": "regression",
+        "severity": "low",
+        "rule": "bugs-regression",
+        "file": "test/integration/hosted-admin/account-routes-administration-pages.test.ts",
+        "message": "Estimated bugs (Halstead): 4.09 -> 5.08",
+        "suggestion": "This estimate grows with code volume and complexity; consider simplifying or splitting this file",
+        "before": 4.0862169576301435,
+        "after": 5.078756355191878,
+        "reason": "New route cases check zero/nonzero disclosure state, protected action fields, accessible labels, section order and UTC expiry. Keep those related contract checks together."
+      }
+    ],
+    "nativeThresholdNotes": "No high, medium or new-function >10-path finding. The native review passed with three low Halstead notes.",
+    "requiredCrapRows": [
+      {
+        "file": "src/interfaces/web/account/administration-pages.ts",
+        "function": "membersPage",
+        "change": "changed",
+        "paths": 4,
+        "share": 0.976,
+        "crap": 4.000221184,
+        "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"membersPage\",\"start\":1693,\"end\":3529,\"body\":\"0b42556dd8a3342aa1ec873c6bcaa8d930e7c1eccdfc06979f15c23979ff948c\",\"signature\":\"16f0253aee78552103740607de26a07553eb2fa08b12f8236a13d5c5758cc2dc\"}"
+      },
+      {
+        "file": "src/interfaces/web/account/administration-pages.ts",
+        "function": "(anonymous)",
+        "change": "new",
+        "paths": 2,
+        "share": 1,
+        "crap": 2,
+        "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:invitationRow\",\"name\":\"(anonymous)\",\"start\":6109,\"end\":6557,\"body\":\"ac3fa3fbb6e203829853b1ca7ae7a5ea523cc2f9ca142204e82d38072117d571\",\"signature\":\"6f409f3593628bbf808307f32efe598a8f1c013cbc414ee985c7de62c8e3fa03\"}"
+      },
+      {
+        "file": "src/interfaces/web/account/administration-pages.ts",
+        "function": "(anonymous)",
+        "change": "new",
+        "paths": 1,
+        "share": 1,
+        "crap": 1,
+        "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"\",\"name\":\"(anonymous)\",\"start\":887,\"end\":972,\"body\":\"8759331c3cc75ac46bc61c45d51e2f614529a7e4d5d002360df60999094ca864\",\"signature\":\"fce7b55878c3b96254fb565eaee750d1b12cf515a1d7d4f17ee0cbe125b5eab0\"}"
+      },
+      {
+        "file": "src/interfaces/web/account/administration-pages.ts",
+        "function": "invitationRow",
+        "change": "changed",
+        "paths": 1,
+        "share": 1,
+        "crap": 1,
+        "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"invitationRow\",\"start\":5983,\"end\":7026,\"body\":\"42cf58aa4f9268e6ae53fd7429d7a4ef0b239c85bd2e05417fd8020330071c2e\",\"signature\":\"f7d6a0ef78fbf10dc6626094b43fedbc882672ddb47208633a94ec0ecfece9ff\"}"
+      }
+    ],
+    "exceptionsAdded": false,
+    "baselineChanged": false,
+    "historyDisposition": "The process reports: No record: aa8c56bb is not on origin/main. No record was forced or edited; the canonical main950 record is inherited.",
+    "limits": [
+      "The architecture report has unchanged incomplete coverage outside required functions; all required changed/new functions are assessed.",
+      "The known unresolved CSS import appears on both sides, so uncertain edge/cycle deltas are withheld. Registry and checker facts separately verify declared production boundaries.",
+      "Base CRAP derived from head integration coverage is an estimate.",
+      "All stacked metric comparisons use the actual parent as AGENTS requires; the lower-priority check-guide sentence keeping process at main was not followed."
+    ]
+  },
+  "toolWarnings": "No install or dependency-verification warning. API verification ignored33 compiler errors in2 unlisted files and verified49 public snapshots current. Full broad typecheck passed; do not claim an error-free API compiler run."
+}

@@ -1,0 +1,143 @@
+[
+  {
+    "branch": "codex/ui-01-refined-tabs",
+    "head": "37046bbd1426566d90bf1a32f8578584d7173060",
+    "parent": "9507e751215fec32748bf4e944f2393928e61cf5",
+    "mergeBase": "9507e751215fec32748bf4e944f2393928e61cf5",
+    "files": [
+      ".pr-impact.json",
+      "docs/design/organization-admin-plan.md",
+      "docs/design/portal-design.md",
+      "docs/implementation/admin-ui-01.md",
+      "docs/implementation/test-gate-policy.md",
+      "docs/metrics/2026-10-26-2b3ad13b.json",
+      "docs/metrics/2026-10-26-9507e751.json",
+      "src/interfaces/web/account/administration-pages.ts",
+      "src/interfaces/web/account/members-page-layout.ts",
+      "src/interfaces/web/account/members-style.ts",
+      "test/acceptance/auth/hosted-member-removal-browser.runtime.ts",
+      "test/acceptance/auth/hosted-members.test.ts",
+      "test/integration/hosted-admin/account-routes-administration-pages.test.ts",
+      "test/support/drivers/browser/admin-shell-browser.ts",
+      "test/support/drivers/browser/admin-shell-measurements.ts",
+      "test/support/in-process/hosted-member-removal-site.ts"
+    ],
+    "sourceFiles": [
+      "src/interfaces/web/account/administration-pages.ts",
+      "src/interfaces/web/account/members-page-layout.ts",
+      "src/interfaces/web/account/members-style.ts"
+    ],
+    "publicSnapshotsUnchanged": true,
+    "registryUnchanged": true
+  },
+  {
+    "branch": "codex/ui-02-member-rows",
+    "head": "614090a1632b27ce40a3d2e38cac9492bac048aa",
+    "parent": "37046bbd1426566d90bf1a32f8578584d7173060",
+    "mergeBase": "37046bbd1426566d90bf1a32f8578584d7173060",
+    "files": [
+      ".pr-impact.json",
+      "docs/design/organization-admin-plan.md",
+      "docs/design/portal-design.md",
+      "docs/implementation/admin-ui-02.md",
+      "docs/implementation/test-gate-policy.md",
+      "src/interfaces/web/account/administration-pages.ts",
+      "src/interfaces/web/account/members-style.ts",
+      "test/acceptance/auth/hosted-invitations.test.ts",
+      "test/acceptance/auth/hosted-member-removal-browser.runtime.ts",
+      "test/acceptance/auth/hosted-member-removal.test.ts",
+      "test/acceptance/auth/hosted-members.test.ts",
+      "test/acceptance/auth/hosted-removal.live.ts",
+      "test/acceptance/auth/hosted-workos-administration.test.ts",
+      "test/integration/hosted-admin/account-routes-administration-pages.test.ts",
+      "test/integration/hosted-admin/account-routes-grant-retirement.test.ts",
+      "test/integration/hosted-admin/account-routes-removal.test.ts",
+      "test/support/drivers/browser/admin-shell-measurements.ts",
+      "test/support/drivers/browser/member-removal-browser.ts"
+    ],
+    "sourceFiles": [
+      "src/interfaces/web/account/administration-pages.ts",
+      "src/interfaces/web/account/members-style.ts"
+    ],
+    "publicSnapshotsUnchanged": true,
+    "registryUnchanged": true
+  },
+  {
+    "branch": "codex/ui-03-invitation-disclosure",
+    "head": "aa8c56bb7e195e97d2362b2c661cc63a760a5cc9",
+    "parent": "614090a1632b27ce40a3d2e38cac9492bac048aa",
+    "mergeBase": "614090a1632b27ce40a3d2e38cac9492bac048aa",
+    "files": [
+      ".pr-impact.json",
+      "docs/design/organization-admin-plan.md",
+      "docs/design/portal-design.md",
+      "docs/implementation/admin-ui-03.md",
+      "docs/implementation/test-gate-policy.md",
+      "src/interfaces/web/account/account-pages.ts",
+      "src/interfaces/web/account/administration-pages.ts",
+      "src/interfaces/web/account/members-style.ts",
+      "test/acceptance/auth/hosted-admin-journey.test.ts",
+      "test/acceptance/auth/hosted-invitation-refusals.test.ts",
+      "test/acceptance/auth/hosted-invitations.test.ts",
+      "test/acceptance/auth/hosted-live/administration-server.ts",
+      "test/acceptance/auth/hosted-member-removal-browser.runtime.ts",
+      "test/acceptance/auth/hosted-member-removal-scope.test.ts",
+      "test/acceptance/auth/hosted-members.test.ts",
+      "test/acceptance/auth/hosted-membership-access.test.ts",
+      "test/acceptance/auth/hosted-workos-administration.test.ts",
+      "test/acceptance/auth/hosted-workos-role-access.test.ts",
+      "test/acceptance/logging/audit/administration-capture.test.ts",
+      "test/acceptance/logging/audit/hosted-storage-failure.runtime.ts",
+      "test/integration/auth/hosted-administration.test.ts",
+      "test/integration/hosted-admin/account-routes-administration-pages.test.ts",
+      "test/integration/hosted-admin/account-routes-removal.test.ts",
+      "test/support/container/audit-sender-site.ts",
+      "test/support/drivers/browser/admin-shell-browser.ts",
+      "test/support/drivers/browser/invitation-browser.ts",
+      "test/support/drivers/browser/member-removal-browser.ts",
+      "test/support/in-process/browser-transport-site.ts",
+      "test/support/in-process/hosted-audit-journey-site.ts",
+      "test/support/in-process/hosted-audit-snapshot-site.ts"
+    ],
+    "sourceFiles": [
+      "src/interfaces/web/account/account-pages.ts",
+      "src/interfaces/web/account/administration-pages.ts",
+      "src/interfaces/web/account/members-style.ts"
+    ],
+    "publicSnapshotsUnchanged": true,
+    "registryUnchanged": true
+  },
+  {
+    "branch": "codex/ui-04-pending-invitations",
+    "head": "057434b9c3ad313f656b03e033866cdecab7ae51",
+    "parent": "aa8c56bb7e195e97d2362b2c661cc63a760a5cc9",
+    "mergeBase": "aa8c56bb7e195e97d2362b2c661cc63a760a5cc9",
+    "files": [
+      ".pr-impact.json",
+      "docs/design/organization-admin-plan.md",
+      "docs/design/portal-design.md",
+      "docs/implementation/admin-ui-04.md",
+      "docs/implementation/admin-ui-stack-review.md",
+      "docs/implementation/test-gate-policy.md",
+      "src/interfaces/web/account/administration-pages.ts",
+      "src/interfaces/web/account/members-style.ts",
+      "test/acceptance/auth/hosted-invitations.test.ts",
+      "test/acceptance/auth/hosted-live/administration-server.ts",
+      "test/acceptance/auth/hosted-member-removal-browser.runtime.ts",
+      "test/acceptance/auth/hosted-members.test.ts",
+      "test/acceptance/auth/hosted-workos-administration.test.ts",
+      "test/integration/auth/hosted-administration.test.ts",
+      "test/integration/hosted-admin/account-routes-administration-pages.test.ts",
+      "test/support/drivers/browser/hosted-browser.ts",
+      "test/support/drivers/browser/invitation-browser.ts",
+      "test/support/drivers/browser/pending-invitations-browser.ts",
+      "test/support/drivers/browser/pending-invitations-page.ts"
+    ],
+    "sourceFiles": [
+      "src/interfaces/web/account/administration-pages.ts",
+      "src/interfaces/web/account/members-style.ts"
+    ],
+    "publicSnapshotsUnchanged": true,
+    "registryUnchanged": true
+  }
+]

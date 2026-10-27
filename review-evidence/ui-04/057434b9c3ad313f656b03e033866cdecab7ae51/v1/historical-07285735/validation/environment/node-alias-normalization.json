@@ -1,0 +1,11 @@
+{
+  "path": "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus/node_modules/.bin/node",
+  "before": "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus/node_modules/node/bin/node",
+  "after": "../node/bin/node",
+  "sha256": "9d050fd455b56426e25d4d603c7c501cbb2630348e836cf221dcce748e90588a",
+  "version": "v24.20.0",
+  "sameExecutableBytesAsPrimary": true,
+  "symlinkModeBefore": "0o755",
+  "symlinkModeAfter": "0o755",
+  "scope": "Only the private copied .bin/node symlink changed. Relative alias resolves inside the copied mount tree. The primary alias and executable bytes are unchanged. This is a version check, no test/build/metric/Docker run."
+}

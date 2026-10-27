@@ -1,0 +1,197 @@
+{
+  "head": "07285735ff92af7dd35908d79e47460256cb8415",
+  "parent": "6ced8db3965190d1d859b60d7053f1830cf5a23c",
+  "mainAtStart": "2b3ad13b9e2e61e206479b82e91359192cae1d00",
+  "dockerContext": "colima",
+  "checks": {
+    "ordinary": {
+      "exitCode": 0,
+      "started": "2026-10-27T04:32:48.432Z",
+      "ended": "2026-10-27T04:39:21.515Z",
+      "log": ".cache/ui-stack-finish/ui04/ordinary-final.log",
+      "phases": [
+        {
+          "tests": 5165,
+          "suites": 266,
+          "pass": 5165,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        {
+          "tests": 49,
+          "suites": 0,
+          "pass": 49,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        }
+      ]
+    },
+    "typecheck": {
+      "exitCode": 0,
+      "started": "2026-10-27T04:39:21.556Z",
+      "ended": "2026-10-27T04:39:23.196Z",
+      "log": ".cache/ui-stack-finish/ui04/typecheck-final.log",
+      "phases": []
+    },
+    "portal-build": {
+      "exitCode": 0,
+      "started": "2026-10-27T04:39:23.230Z",
+      "ended": "2026-10-27T04:39:24.483Z",
+      "log": ".cache/ui-stack-finish/ui04/portal-build-final.log",
+      "phases": []
+    },
+    "members-browser": {
+      "exitCode": 0,
+      "started": "2026-10-27T04:39:24.521Z",
+      "ended": "2026-10-27T04:40:09.663Z",
+      "log": ".cache/ui-stack-finish/ui04/members-browser-final.log",
+      "phases": [
+        {
+          "tests": 71,
+          "suites": 0,
+          "pass": 71,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        }
+      ]
+    },
+    "postgres": {
+      "exitCode": 0,
+      "started": "2026-10-27T04:40:09.704Z",
+      "ended": "2026-10-27T04:41:12.513Z",
+      "log": ".cache/ui-stack-finish/ui04/postgres-final.log",
+      "phases": [
+        {
+          "tests": 26,
+          "suites": 0,
+          "pass": 26,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        }
+      ]
+    },
+    "collector": {
+      "exitCode": 0,
+      "started": "2026-10-27T04:41:12.554Z",
+      "ended": "2026-10-27T04:41:29.809Z",
+      "log": ".cache/ui-stack-finish/ui04/collector-final.log",
+      "phases": [
+        {
+          "tests": 10,
+          "suites": 0,
+          "pass": 10,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        }
+      ]
+    },
+    "self-hosted-container": {
+      "exitCode": 0,
+      "started": "2026-10-27T04:41:29.852Z",
+      "ended": "2026-10-27T04:44:04.499Z",
+      "log": ".cache/ui-stack-finish/ui04/self-hosted-container-final.log",
+      "phases": [
+        {
+          "tests": 11,
+          "suites": 1,
+          "pass": 11,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        }
+      ]
+    },
+    "hosted-offline": {
+      "exitCode": 0,
+      "started": "2026-10-27T04:44:04.541Z",
+      "ended": "2026-10-27T04:46:42.411Z",
+      "log": ".cache/ui-stack-finish/ui04/hosted-offline-final.log",
+      "phases": [
+        {
+          "tests": 3319,
+          "suites": 164,
+          "pass": 3319,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        {
+          "tests": 29,
+          "suites": 0,
+          "pass": 29,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        {
+          "tests": 20,
+          "suites": 0,
+          "pass": 20,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        {
+          "tests": 1169,
+          "suites": 59,
+          "pass": 1169,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        {
+          "tests": 123,
+          "suites": 6,
+          "pass": 123,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        {
+          "tests": 13,
+          "suites": 2,
+          "pass": 13,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        }
+      ]
+    }
+  },
+  "beforeAfterTrackedInputCount": 1530,
+  "beforeAfterAllHashesAndModesIdentical": true,
+  "trackedTreeClean": true,
+  "browserScreenshotCount": 57,
+  "browserEvidence": "browser-visual-review-final.json",
+  "dependencyEnvironment": "environment/materialization-provenance.json",
+  "failures": [],
+  "retries": [],
+  "cleanup": "Each selected gate completed its registered cleanup with exit0. Sharedports46443/46480free afterlastcommand; Dockercolima hadonlyunrelateditsaplancontainers. No ownedtestcontainer wasstillrunning.",
+  "qualityHold": "Main advanced to9507e751215fec32748bf4e944f2393928e61cf5. No coverage/metrics/API/habit/checker has run. Awaitrootrebind andexplicitrelease.",
+  "qualityRebindLimit": "tsconfig.json includes script; finalnewhead needsfreshbroadtypecheck foraddedprobe files. tsconfig.build excludes script. Oldhostedoffline is pinned072 withallnestedphases retained.",
+  "remainingRequiredGates": [
+    "Fresh verified integrationcoverage and parentmetrics/API/habit/checker afterfinalrebind.",
+    "LocalLinuxAMD64hostedimage in dedicatedVM remainsdeferred, notpassed.",
+    "Selectedhostedlive remainsheld,noUI04liveattemptatthishead. EarlierUI02quota429 andseparate503 evidencekeepsitsownpins; itdoesnot proveUI04runtime."
+  ],
+  "hostLaneReleased": true,
+  "lastResourceUsingCommandEnded": "2026-10-27T04:46:42.411Z",
+  "noSourceTestsDocsConfigEdits": true
+}

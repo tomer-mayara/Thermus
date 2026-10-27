@@ -1,0 +1,109 @@
+{
+  "head": "07285735ff92af7dd35908d79e47460256cb8415",
+  "copyCommand": [
+    "cp",
+    "-cR",
+    "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/node_modules",
+    "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus/node_modules"
+  ],
+  "source": "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/node_modules",
+  "destination": "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus/node_modules",
+  "preservedOldLinks": "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus/.cache/ui-stack-finish/ui04/environment/absolute-link-node_modules",
+  "entryCount": 23918,
+  "regularFiles": 19676,
+  "symlinks": 911,
+  "sourceInventoryFingerprint": "92affb54be1be91f24e4e0b8e5fe749c36976316287d3ed26ee0f762062f82b6",
+  "externalSymlinks": [
+    {
+      "path": ".pnpm/node_modules/@thermus/habit-tools",
+      "target": "../../../../.habit-hooks",
+      "resolved": "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus/.habit-hooks"
+    }
+  ],
+  "externalSymlinkDisposition": "Only the unchanged local @thermus/habit-tools workspace link leaves node_modules, to this validation checkout .habit-hooks. Collector source/probes import no habit-tools. All other dependency links and all mounted runtime package targets resolve inside the private copy. The workspace edge was not changed.",
+  "brokenSymlinks": [],
+  "mountedPackageChecks": {
+    "pg": {
+      "relativeTarget": ".pnpm/pg@8.23.1/node_modules/pg",
+      "containerTarget": "/workspace/node_modules/.pnpm/pg@8.23.1/node_modules/pg",
+      "exists": true
+    },
+    "@opentelemetry/exporter-logs-otlp-http": {
+      "relativeTarget": ".pnpm/@opentelemetry+exporter-logs-otlp-http@0.223.0_@opentelemetry+api@1.9.1/node_modules/@opentelemetry/exporter-logs-otlp-http",
+      "containerTarget": "/workspace/node_modules/.pnpm/@opentelemetry+exporter-logs-otlp-http@0.223.0_@opentelemetry+api@1.9.1/node_modules/@opentelemetry/exporter-logs-otlp-http",
+      "exists": true
+    },
+    "@opentelemetry/sdk-logs": {
+      "relativeTarget": ".pnpm/@opentelemetry+sdk-logs@0.223.0_@opentelemetry+api@1.9.1/node_modules/@opentelemetry/sdk-logs",
+      "containerTarget": "/workspace/node_modules/.pnpm/@opentelemetry+sdk-logs@0.223.0_@opentelemetry+api@1.9.1/node_modules/@opentelemetry/sdk-logs",
+      "exists": true
+    },
+    "@opentelemetry/api-logs": {
+      "relativeTarget": ".pnpm/@opentelemetry+api-logs@0.223.0/node_modules/@opentelemetry/api-logs",
+      "containerTarget": "/workspace/node_modules/.pnpm/@opentelemetry+api-logs@0.223.0/node_modules/@opentelemetry/api-logs",
+      "exists": true
+    },
+    "@workos-inc/node": {
+      "relativeTarget": ".pnpm/@workos-inc+node@11.0.0/node_modules/@workos-inc/node",
+      "containerTarget": "/workspace/node_modules/.pnpm/@workos-inc+node@11.0.0/node_modules/@workos-inc/node",
+      "exists": true
+    },
+    "better-auth": {
+      "relativeTarget": ".pnpm/better-auth@1.7.7_@opentelemetry+api@1.9.1_pg@8.23.1/node_modules/better-auth",
+      "containerTarget": "/workspace/node_modules/.pnpm/better-auth@1.7.7_@opentelemetry+api@1.9.1_pg@8.23.1/node_modules/better-auth",
+      "exists": true
+    },
+    "jose": {
+      "relativeTarget": ".pnpm/jose@6.2.12/node_modules/jose",
+      "containerTarget": "/workspace/node_modules/.pnpm/jose@6.2.12/node_modules/jose",
+      "exists": true
+    },
+    "adblock-rs": {
+      "relativeTarget": ".pnpm/adblock-rs@0.13.3/node_modules/adblock-rs",
+      "containerTarget": "/workspace/node_modules/.pnpm/adblock-rs@0.13.3/node_modules/adblock-rs",
+      "exists": true
+    },
+    "css-tree": {
+      "relativeTarget": ".pnpm/css-tree@3.2.1/node_modules/css-tree",
+      "containerTarget": "/workspace/node_modules/.pnpm/css-tree@3.2.1/node_modules/css-tree",
+      "exists": true
+    },
+    "linkedom": {
+      "relativeTarget": ".pnpm/linkedom@0.18.13_patch_hash=ed2bfadf57d266edaacd09d43626f141f804161107e15e1ad1d4e816cbdef590/node_modules/linkedom",
+      "containerTarget": "/workspace/node_modules/.pnpm/linkedom@0.18.13_patch_hash=ed2bfadf57d266edaacd09d43626f141f804161107e15e1ad1d4e816cbdef590/node_modules/linkedom",
+      "exists": true
+    }
+  },
+  "tracked1530InputsUnchanged": true,
+  "sourceTreeOutsideLinks": [
+    {
+      "path": ".pnpm/node_modules/@thermus/habit-tools",
+      "target": "../../../../.habit-hooks",
+      "resolved": "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/.habit-hooks"
+    },
+    {
+      "path": ".bin/node",
+      "target": "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus/node_modules/node/bin/node",
+      "resolved": "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus/node_modules/.pnpm/node@runtime+24.20.0/node_modules/node/bin/node"
+    }
+  ],
+  "sourceTreeBrokenLinks": [],
+  "noInstall": true,
+  "noTestsBuildsMetricsDocker": true,
+  "claimLimit": "Filesystem/materialization verification only. Collector/runtime result awaits lane authorization and real selected gate. Initial strict all-links check was refined for the existing local workspace link; no product/dependency code changed.",
+  "identicalContentModesAndLinkTextBeforeAliasNormalization": true,
+  "identicalRegularFileBytesAndModes": true,
+  "copyInventoryFingerprintBeforeAliasNormalization": "92affb54be1be91f24e4e0b8e5fe749c36976316287d3ed26ee0f762062f82b6",
+  "copyInventoryFingerprint": "dd45a6cc76c4aed5479b8623ae2d14d04999f1aaeff0efd5173446e8ddb0e35c",
+  "intentionalPrivateAliasDifference": {
+    "path": "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus/node_modules/.bin/node",
+    "before": "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus/node_modules/node/bin/node",
+    "after": "../node/bin/node",
+    "sha256": "9d050fd455b56426e25d4d603c7c501cbb2630348e836cf221dcce748e90588a",
+    "version": "v24.20.0",
+    "sameExecutableBytesAsPrimary": true,
+    "symlinkModeBefore": "0o755",
+    "symlinkModeAfter": "0o755",
+    "scope": "Only the private copied .bin/node symlink changed. Relative alias resolves inside the copied mount tree. The primary alias and executable bytes are unchanged. This is a version check, no test/build/metric/Docker run."
+  }
+}

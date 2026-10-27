@@ -1,0 +1,18 @@
+{
+  "collector-final.log": "a3fdc5ec0d294490e574396b17911fc8e5ca90554eecbcfbc6dfbf2eade9c097",
+  "collector-final.log.result.json": "a728836e92b11cc7229e4474f1236e2f833befe959226e161b3e6f3ca39dc883",
+  "hosted-offline-final.log": "f771b760ba8b5da7e1179e5d92724df9c90d4399d7949aa9ad007d50f87ccd80",
+  "hosted-offline-final.log.result.json": "4d7652c5de8ed902d2c4d9f6aa9a1af567ace954e87e581d755f4e48ab9595ed",
+  "members-browser-final.log": "0bd6d1d7c5af1a720e45d35496a484ac5dbd3a8f1442c0b6c7ad159695afaa16",
+  "members-browser-final.log.result.json": "28d3a5f28b037ac9cfb578bd9bd80f782b9c178b1d24f4814d24bf329d56a13b",
+  "ordinary-final.log": "3857ea7112cd7c73babeb008aedd508e6c0630f6f144619a31f82dd1ef9cfac0",
+  "ordinary-final.log.result.json": "3809dacb65526a656401b5ca9b891093271b68ca7e589267b9f841e75647e72a",
+  "portal-build-final.log": "869049c70f670d8931405fa875f162a629fe96c8ca6081a58defc9ce11271dcc",
+  "portal-build-final.log.result.json": "38b935346de13cef54d5ad77a9f93d39263ec2e474e54a2c8088f073647dee99",
+  "postgres-final.log": "01925dc6afa0017bf687ff6b2b125dd124ea04f1600ebfe9c958814ef7af7b04",
+  "postgres-final.log.result.json": "865ee2e2a8fdae72fdcd312de532d5e11eccb3480fed207e8d2ea7699be016a9",
+  "self-hosted-container-final.log": "dc3aedcc9ac1bbc65b4693fb34384f287d09babe8c444a289838061b941bd23f",
+  "self-hosted-container-final.log.result.json": "a6c0bfbc8ca7f4c9477ee6247a04af556148bbf5f1f0aa5d7b60f738eddfe9bf",
+  "typecheck-final.log": "3e7da0f72fb1e2186aff4be23f6142b0b6bf87499450f1c180578697a5468c62",
+  "typecheck-final.log.result.json": "baa85937e74745d99dbfc77a9ee922539c463259cc10f1de19a449f70397ba29"
+}

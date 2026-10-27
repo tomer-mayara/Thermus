@@ -1,0 +1,38 @@
+{
+  "head": "057434b9c3ad313f656b03e033866cdecab7ae51",
+  "base": "aa8c56bb7e195e97d2362b2c661cc63a760a5cc9",
+  "reasons": [
+    {
+      "note": "T1 read_paths: docs/implementation/test-gate-policy.md",
+      "reason": "The protected browser gate inventory is updated to describe the implemented cases. Keep it accurate and obtain independent authorized human review of this head."
+    },
+    {
+      "note": "T0: no architecture fact;49 public modules,0 snapshots changed",
+      "reason": "Production owners, dependencies, contracts and registry diagrams stay unchanged. The current checker regenerated every public snapshot."
+    },
+    {
+      "note": "Existing MI59.20233572948304\u219257.90663211767644",
+      "reason": "The cohesive Members HTML owner adds a counted disclosure and compact escaped forms. All required functions have at most4 paths and CRAP1\u20134. The drop is below5 and no new production file misses the MI goal; no exception is used."
+    },
+    {
+      "note": "No raw MI for members-style.ts",
+      "reason": "Both snapshots explicitly report a string-only CSS module with no callable functions and complete source evidence. Browser geometry checks verify its behavior."
+    },
+    {
+      "note": "Three low Halstead test notes; no high/medium or >10-path finding",
+      "reason": "The added public acceptance/integration cases check counted pending state, row facts, order and protected forms. Each volume-derived estimate has its own reason in retained-findings-quality-057.json."
+    },
+    {
+      "note": "0 findings on unchanged files",
+      "reason": "No unchanged-file finding needs a retained disposition in this increment."
+    },
+    {
+      "note": "API compiler ignored33 errors in2 unlisted files",
+      "reason": "The tool excludes those errors from listed-module verification. Full broad typecheck passed and49 public snapshots are current; this is not an error-free API compiler claim."
+    },
+    {
+      "note": "Local eligibility is preliminary",
+      "reason": "The checker does not prove current live/image passes or human approval. Those separate holds remain."
+    }
+  ]
+}

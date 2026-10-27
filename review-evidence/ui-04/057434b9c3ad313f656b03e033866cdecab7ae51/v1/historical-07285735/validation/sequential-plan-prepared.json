@@ -1,0 +1,194 @@
+{
+  "head": "07285735ff92af7dd35908d79e47460256cb8415",
+  "base": "6ced8db3965190d1d859b60d7053f1830cf5a23c",
+  "state": "Queued only. Do not execute before explicit root authorization.",
+  "nodePath": "/Users/tomermayara/.nvm/versions/node/v24.20.0/bin",
+  "cwd": "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus",
+  "privateEnvironmentWrapper": "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/.cache/ui04/with-test-env.cjs",
+  "logRunner": "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/.cache/ui04/run-check.cjs",
+  "browserEvidenceDir": "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus/.cache/ui-stack-finish/ui04/screenshots-final",
+  "functional": [
+    {
+      "name": "ordinary",
+      "command": [
+        "npm",
+        "test"
+      ]
+    },
+    {
+      "name": "typecheck",
+      "command": [
+        "npm",
+        "run",
+        "typecheck"
+      ]
+    },
+    {
+      "name": "portal-build",
+      "command": [
+        "npm",
+        "run",
+        "build:user-portal"
+      ]
+    },
+    {
+      "name": "members-browser71",
+      "command": [
+        "node",
+        "--test",
+        "dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js"
+      ]
+    },
+    {
+      "name": "private-postgres-seven-entry-group",
+      "command": [
+        "npm",
+        "run",
+        "test:logging:postgres"
+      ]
+    },
+    {
+      "name": "collector-two-entry-group",
+      "command": [
+        "npm",
+        "run",
+        "test:logging:collector"
+      ]
+    },
+    {
+      "name": "self-hosted-container",
+      "command": [
+        "npm",
+        "run",
+        "test:container"
+      ]
+    },
+    {
+      "name": "hosted-offline",
+      "command": [
+        "npm",
+        "run",
+        "build:hosted"
+      ]
+    }
+  ],
+  "quality": [
+    {
+      "name": "integration-coverage",
+      "command": [
+        "pnpm",
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-coverage.ts",
+        "--suite",
+        "integration"
+      ]
+    },
+    {
+      "name": "snapshot-base",
+      "command": [
+        "pnpm",
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-snapshot.ts",
+        "--base",
+        "6ced8db3965190d1d859b60d7053f1830cf5a23c"
+      ]
+    },
+    {
+      "name": "snapshot-head",
+      "command": [
+        "pnpm",
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-snapshot.ts"
+      ]
+    },
+    {
+      "name": "metrics-process",
+      "command": [
+        "pnpm",
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-process.ts",
+        "--base",
+        "6ced8db3965190d1d859b60d7053f1830cf5a23c",
+        "--json",
+        "ast-report/process.json"
+      ]
+    },
+    {
+      "name": "metrics-crap",
+      "command": [
+        "pnpm",
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-crap.ts",
+        "--base",
+        "6ced8db3965190d1d859b60d7053f1830cf5a23c",
+        "--json",
+        "ast-report/crap.json"
+      ]
+    },
+    {
+      "name": "api-surface",
+      "command": [
+        "pnpm",
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/pr-review/api-surface.ts",
+        "--check"
+      ]
+    },
+    {
+      "name": "habit-hooks",
+      "command": [
+        "habit-hooks",
+        "--branch",
+        "6ced8db3965190d1d859b60d7053f1830cf5a23c"
+      ]
+    },
+    {
+      "name": "review-check-after-record-and-retained-reason-review",
+      "command": [
+        "pnpm",
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/pr-review/check.ts",
+        "--base",
+        "6ced8db3965190d1d859b60d7053f1830cf5a23c",
+        "--repo",
+        "tomer-mayara/Thermus",
+        "--impact",
+        "ast-report/impact.json",
+        "--base-snapshot",
+        "ast-report/snapshot-base.json",
+        "--head-snapshot",
+        "ast-report/snapshot.json",
+        "--crap",
+        "ast-report/crap.json",
+        "--process",
+        "ast-report/process.json",
+        "--review",
+        "ast-report/review.json",
+        "--json"
+      ]
+    }
+  ],
+  "constraints": [
+    "No live retry: quota and separate503 holds persist. Preserve UI02 raw evidence at originalhead, no relabel.",
+    "LinuxAMD64 image deferred to dedicated local VM; not a pass.",
+    "All commands sequential in exclusive lane; finish all functional gates before coverage and native comparisons.",
+    "One fresh integration-only verified coverage capture; no existing UI02 coverage reuse.",
+    "Do not force or edit metric history; pause for root to commit a newly generated record before finalchecker.",
+    "Review and record each retained metric and habit-hooks finding, every checker note, architecture impact and unchanged public snapshots.",
+    "Snooze stays[]. No tracked edits, external actions, provider configuration changes, or broad retries without root direction."
+  ]
+}

@@ -1,0 +1,97 @@
+{
+  "head": "057434b9c3ad313f656b03e033866cdecab7ae51",
+  "parent": "aa8c56bb7e195e97d2362b2c661cc63a760a5cc9",
+  "state": "Queued only. Require explicit root lane grant before first command.",
+  "steps": [
+    {
+      "name": "typecheck",
+      "command": [
+        "npm",
+        "run",
+        "typecheck"
+      ]
+    },
+    {
+      "name": "integration-coverage",
+      "command": [
+        "pnpm",
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-coverage.ts",
+        "--suite",
+        "integration"
+      ]
+    },
+    {
+      "name": "snapshot-base",
+      "command": [
+        "pnpm",
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-snapshot.ts",
+        "--base",
+        "aa8c56bb7e195e97d2362b2c661cc63a760a5cc9"
+      ]
+    },
+    {
+      "name": "snapshot-head",
+      "command": [
+        "pnpm",
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-snapshot.ts"
+      ]
+    },
+    {
+      "name": "metrics-process",
+      "command": [
+        "pnpm",
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-process.ts",
+        "--base",
+        "aa8c56bb7e195e97d2362b2c661cc63a760a5cc9",
+        "--json",
+        "ast-report/process.json"
+      ]
+    },
+    {
+      "name": "metrics-crap",
+      "command": [
+        "pnpm",
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-crap.ts",
+        "--base",
+        "aa8c56bb7e195e97d2362b2c661cc63a760a5cc9",
+        "--json",
+        "ast-report/crap.json"
+      ]
+    },
+    {
+      "name": "api-surface",
+      "command": [
+        "pnpm",
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/pr-review/api-surface.ts",
+        "--check"
+      ]
+    },
+    {
+      "name": "habit-hooks",
+      "command": [
+        "habit-hooks",
+        "--branch",
+        "aa8c56bb7e195e97d2362b2c661cc63a760a5cc9"
+      ]
+    }
+  ],
+  "afterSteps": "Review all outcomes and each retained finding. Pause for any new immutable metric record. Otherwise stamp committed impact and run full checker. No ordinary/browser/SQL/Collector/container/image/live run."
+}

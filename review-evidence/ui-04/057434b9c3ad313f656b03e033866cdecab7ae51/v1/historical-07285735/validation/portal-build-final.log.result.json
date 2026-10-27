@@ -1,0 +1,14 @@
+{
+  "command": "node",
+  "args": [
+    "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/.cache/ui04/with-test-env.cjs",
+    "npm",
+    "run",
+    "build:user-portal"
+  ],
+  "started": "2026-10-27T04:39:23.230Z",
+  "ended": "2026-10-27T04:39:24.483Z",
+  "exitCode": 0,
+  "signal": null,
+  "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus/.cache/ui-stack-finish/ui04/portal-build-final.log"
+}

@@ -1,0 +1,11 @@
+{
+  "head": "057434b9c3ad313f656b03e033866cdecab7ae51",
+  "parent": "aa8c56bb7e195e97d2362b2c661cc63a760a5cc9",
+  "managerSummaryAndReasonsAccepted": true,
+  "independentRawAudit": "ui04-evidence-review.md",
+  "independentResult": "No actionable evidence defect",
+  "image": "Pending local dedicated VM; no pass claimed",
+  "live": "Selected gate held; no current pass",
+  "humanApproval": "Required current-head approval pending",
+  "publication": "Preparation snapshot only; root records actual publication and readback separately"
+}

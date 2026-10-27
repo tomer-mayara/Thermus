@@ -1,0 +1,191 @@
+{
+  "results": {
+    "typecheck-final.log.result.json": {
+      "command": "node",
+      "args": [
+        "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/.cache/ui04/with-test-env.cjs",
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "started": "2026-10-27T04:39:21.556Z",
+      "ended": "2026-10-27T04:39:23.196Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus/.cache/ui-stack-finish/ui04/typecheck-final.log"
+    },
+    "postgres-final.log.result.json": {
+      "command": "node",
+      "args": [
+        "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/.cache/ui04/with-test-env.cjs",
+        "npm",
+        "run",
+        "test:logging:postgres"
+      ],
+      "started": "2026-10-27T04:40:09.704Z",
+      "ended": "2026-10-27T04:41:12.513Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus/.cache/ui-stack-finish/ui04/postgres-final.log"
+    },
+    "portal-build-final.log.result.json": {
+      "command": "node",
+      "args": [
+        "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/.cache/ui04/with-test-env.cjs",
+        "npm",
+        "run",
+        "build:user-portal"
+      ],
+      "started": "2026-10-27T04:39:23.230Z",
+      "ended": "2026-10-27T04:39:24.483Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus/.cache/ui-stack-finish/ui04/portal-build-final.log"
+    },
+    "self-hosted-container-final.log.result.json": {
+      "command": "node",
+      "args": [
+        "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/.cache/ui04/with-test-env.cjs",
+        "npm",
+        "run",
+        "test:container"
+      ],
+      "started": "2026-10-27T04:41:29.852Z",
+      "ended": "2026-10-27T04:44:04.499Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus/.cache/ui-stack-finish/ui04/self-hosted-container-final.log"
+    },
+    "members-browser-final.log.result.json": {
+      "command": "node",
+      "args": [
+        "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/.cache/ui04/with-test-env.cjs",
+        "node",
+        "--test",
+        "dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js"
+      ],
+      "started": "2026-10-27T04:39:24.521Z",
+      "ended": "2026-10-27T04:40:09.663Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus/.cache/ui-stack-finish/ui04/members-browser-final.log"
+    },
+    "ordinary-final.log.result.json": {
+      "command": "node",
+      "args": [
+        "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/.cache/ui04/with-test-env.cjs",
+        "npm",
+        "test"
+      ],
+      "started": "2026-10-27T04:32:48.432Z",
+      "ended": "2026-10-27T04:39:21.515Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus/.cache/ui-stack-finish/ui04/ordinary-final.log"
+    },
+    "collector-final.log.result.json": {
+      "command": "node",
+      "args": [
+        "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/.cache/ui04/with-test-env.cjs",
+        "npm",
+        "run",
+        "test:logging:collector"
+      ],
+      "started": "2026-10-27T04:41:12.554Z",
+      "ended": "2026-10-27T04:41:29.809Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus/.cache/ui-stack-finish/ui04/collector-final.log"
+    },
+    "hosted-offline-final.log.result.json": {
+      "command": "node",
+      "args": [
+        "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/.cache/ui04/with-test-env.cjs",
+        "npm",
+        "run",
+        "build:hosted"
+      ],
+      "started": "2026-10-27T04:44:04.541Z",
+      "ended": "2026-10-27T04:46:42.411Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus/.cache/ui-stack-finish/ui04/hosted-offline-final.log"
+    }
+  },
+  "countLines": {
+    "portal-build-final.log": [],
+    "typecheck-final.log": [],
+    "postgres-final.log": [
+      "\u2139 tests 26",
+      "\u2139 pass 26",
+      "\u2139 fail 0",
+      "\u2139 skipped 0",
+      "\u2139 todo 0"
+    ],
+    "collector-final.log": [
+      "\u2139 tests 10",
+      "\u2139 pass 10",
+      "\u2139 fail 0",
+      "\u2139 skipped 0",
+      "\u2139 todo 0"
+    ],
+    "members-browser-final.log": [
+      "\u2139 tests 71",
+      "\u2139 pass 71",
+      "\u2139 fail 0",
+      "\u2139 skipped 0",
+      "\u2139 todo 0"
+    ],
+    "self-hosted-container-final.log": [
+      "\u2139 tests 11",
+      "\u2139 pass 11",
+      "\u2139 fail 0",
+      "\u2139 skipped 0",
+      "\u2139 todo 0"
+    ],
+    "hosted-offline-final.log": [
+      "\u2139 tests 3319",
+      "\u2139 pass 3319",
+      "\u2139 fail 0",
+      "\u2139 skipped 0",
+      "\u2139 todo 0",
+      "\u2139 tests 29",
+      "\u2139 pass 29",
+      "\u2139 fail 0",
+      "\u2139 skipped 0",
+      "\u2139 todo 0",
+      "\u2139 tests 20",
+      "\u2139 pass 20",
+      "\u2139 fail 0",
+      "\u2139 skipped 0",
+      "\u2139 todo 0",
+      "\u2139 tests 1169",
+      "\u2139 pass 1169",
+      "\u2139 fail 0",
+      "\u2139 skipped 0",
+      "\u2139 todo 0",
+      "\u2139 tests 123",
+      "\u2139 pass 123",
+      "\u2139 fail 0",
+      "\u2139 skipped 0",
+      "\u2139 todo 0",
+      "\u2139 tests 13",
+      "\u2139 pass 13",
+      "\u2139 fail 0",
+      "\u2139 skipped 0",
+      "\u2139 todo 0"
+    ],
+    "ordinary-final.log": [
+      "\u2139 tests 5165",
+      "\u2139 pass 5165",
+      "\u2139 fail 0",
+      "\u2139 skipped 0",
+      "\u2139 todo 0",
+      "\u2139 tests 49",
+      "\u2139 pass 49",
+      "\u2139 fail 0",
+      "\u2139 skipped 0",
+      "\u2139 todo 0"
+    ]
+  }
+}

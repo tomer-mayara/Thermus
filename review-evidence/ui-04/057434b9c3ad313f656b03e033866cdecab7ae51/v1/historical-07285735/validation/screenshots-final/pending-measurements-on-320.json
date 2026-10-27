@@ -1,0 +1,16 @@
+{
+  "width": 320,
+  "shortRow": {
+    "x": 37,
+    "y": 1352.90625,
+    "width": 246,
+    "height": 163.640625
+  },
+  "styles": {
+    "text": "rgb(243, 242, 238)",
+    "border": "rgb(123, 126, 136)",
+    "background": "rgba(0, 0, 0, 0)",
+    "surface": "rgb(33, 34, 40)"
+  },
+  "text": "64px"
+}

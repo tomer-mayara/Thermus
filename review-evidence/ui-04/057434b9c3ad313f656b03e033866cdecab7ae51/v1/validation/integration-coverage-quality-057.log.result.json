@@ -1,0 +1,18 @@
+{
+  "command": "node",
+  "args": [
+    "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/.cache/ui04/with-test-env.cjs",
+    "pnpm",
+    "--config.verifyDepsBeforeRun=false",
+    "exec",
+    "node",
+    "script/code-quality/ast-metrics-coverage.ts",
+    "--suite",
+    "integration"
+  ],
+  "started": "2026-10-27T05:09:46.538Z",
+  "ended": "2026-10-27T05:10:30.175Z",
+  "exitCode": 0,
+  "signal": null,
+  "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus/.cache/ui-stack-finish/ui04/integration-coverage-quality-057.log"
+}

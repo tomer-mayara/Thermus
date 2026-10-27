@@ -1,0 +1,11 @@
+{
+  "outside": [
+    {
+      "path": ".pnpm/node_modules/@thermus/habit-tools",
+      "target": "../../../../.habit-hooks",
+      "resolved": "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus/.habit-hooks",
+      "exists": true
+    }
+  ],
+  "broken": []
+}
