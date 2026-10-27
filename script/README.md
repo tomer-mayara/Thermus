@@ -309,3 +309,20 @@ identities as the check guide specifies. Its local result is preliminary and
 does not prove completed local checks or human approval. Follow "Review tier and merge
 eligibility" in [AGENTS.md](../AGENTS.md). The
 [check guide](pr-review/README.md) gives options, evidence, output, and tests.
+
+# Deploy a hosted image digest
+
+The deploy job of [`.github/workflows/hosted-image.yml`](../.github/workflows/hosted-image.yml)
+runs [`release/deploy-hosted-image.ts`](release/deploy-hosted-image.ts) with Node
+and no installed package. `check` checks the deploy request of the manual
+dispatch and makes no network call. `deploy` checks it again, deploys the digest
+to the Render web service with the Render API deploy with `imageUrl`, waits for
+`live`, and checks `/healthz`. It reads the inputs from `DIGEST`, `SERVICE_ID`,
+`CONFIRM_PRODUCTION`, and `GITHUB_REF`, and the key from `RENDER_API_KEY`; it
+never prints the key. [Hosted release](../README.md#hosted-release) gives the
+rules. [`deploy-request.ts`](release/deploy-request.ts) holds the request rules,
+[`render-api.ts`](release/render-api.ts) the API client,
+[`render-answers.ts`](release/render-answers.ts) the fields of the answers, and
+[`public-health.ts`](release/public-health.ts) the health check. Verify changes
+with type, lint, and manual checks, and with a dispatch against a disposable
+`thermus-spike-*` web service.
