@@ -11,6 +11,7 @@ export class BillingFree implements Billing {
     return Object.freeze({ organizationId, plan: 'free', memberLimit: FREE_MEMBER_LIMIT, billedSeats: 0 });
   }
 
+  // The free plan bills no seat, so a valid seat count changes nothing.
   async updateSeats(organizationId: string, seatCount: number): Promise<BillingState> {
     if (!Number.isSafeInteger(seatCount) || seatCount < 0) {
       throw new RangeError('A seat count must be a whole number of 0 or more');
