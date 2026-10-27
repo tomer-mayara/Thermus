@@ -1,12 +1,32 @@
 name: Hosted image
 
-# Manual dispatch only. SO-02 of the self on-boarding plan makes this workflow the release path.
+# The release path of SO-02 of the self on-boarding plan. Each push to main, and each manual dispatch without deploy
+# inputs, builds Dockerfile.hosted for linux/amd64, runs the hosted image gate, and pushes the tested image by digest.
+# Only a manual dispatch on main with a digest and a service ID deploys: the deploy job deploys that pushed digest to
+# that Render web service through the Render API. A push never deploys, and a deploy request from another branch
+# fails before any call. Production switches from its Git build to the image at step 5 of the SO-12 order.
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
+    inputs:
+      digest:
+        description: 'Deploy only: the digest of an image that a run pushed, sha256:<64 hex>. Empty: build, gate, and push.'
+        type: string
+        required: false
+        default: ''
+      service_id:
+        description: 'Deploy only: the Render web service to deploy to, srv-<ID>.'
+        type: string
+        required: false
+        default: ''
+      confirm_production:
+        description: 'Deploy to the production service only: its service ID again.'
+        type: string
+        required: false
+        default: ''
 
-concurrency:
-  group: hosted-image-${{ github.ref }}
-  cancel-in-progress: false
+permissions: {}
 
 env:
   IMAGE: ghcr.io/tomer-mayara/thermus-hosted
@@ -14,6 +34,9 @@ env:
 jobs:
   hosted-image:
     name: Build, gate, and push the hosted image
+    # No concurrency group: a pending run of a group is cancelled when a newer one queues, and each merge pushes its
+    # own image.
+    if: github.event_name == 'push' || (inputs.digest == '' && inputs.service_id == '' && inputs.confirm_production == '')
     runs-on: ubuntu-latest
     # The hosted image gate allows 60 minutes for its build and image cases.
     timeout-minutes: 120
@@ -105,6 +128,7 @@ jobs:
             echo "| --- | --- |"
             echo "| Pull by digest | \`$IMAGE@$digest\` |"
             echo "| Tag | \`$reference\` |"
+            echo "| Run | $GITHUB_EVENT_NAME on \`$GITHUB_REF\` |"
             echo "| Compressed size | $bytes bytes ($(awk -v b="$bytes" 'BEGIN { printf "%.1f", b / 1048576 }') MiB), $layers layers, linux/amd64 |"
             echo "| Build time | $BUILD_SECONDS s, Buildx build of \`Dockerfile.hosted\` with its offline checks |"
             echo "| Gate time | $GATE_SECONDS s, \`npm run test:container:hosted\` against the built image |"
@@ -112,3 +136,74 @@ jobs:
             echo "| Tested image ID | \`$tested\` |"
             echo "| Config digest | \`$config\` |"
           } | tee -a "$GITHUB_STEP_SUMMARY"
+
+  deploy:
+    name: Deploy a pushed digest to a Render web service
+    if: github.event_name == 'workflow_dispatch' && (inputs.digest != '' || inputs.service_id != '' || inputs.confirm_production != '')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: read
+    # A second deploy of the same service waits for the first one.
+    concurrency:
+      group: hosted-image-deploy-${{ inputs.service_id }}
+      cancel-in-progress: false
+    env:
+      DIGEST: ${{ inputs.digest }}
+      SERVICE_ID: ${{ inputs.service_id }}
+      CONFIRM_PRODUCTION: ${{ inputs.confirm_production }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+      # The rules of the request hold before any registry or Render call: a run from another branch, an input that is
+      # missing or malformed, and the production service without confirm_production stop here.
+      - name: Check the deploy request
+        run: node script/release/deploy-hosted-image.ts check
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      # Render needs one linux/amd64 image. The build pushes one image manifest with no attestation index.
+      - name: Check that GHCR has the digest
+        run: |
+          reference="$IMAGE@$DIGEST"
+          if ! manifest=$(docker buildx imagetools inspect "$reference" --raw); then
+            echo "::error::GHCR has no image $reference. Give the digest of an image that a run of this workflow pushed."
+            exit 1
+          fi
+          if jq -e .manifests <<<"$manifest" >/dev/null; then
+            echo "::error::$reference is an image index, not one linux/amd64 image."
+            exit 1
+          fi
+          platform=$(docker buildx imagetools inspect "$reference" --format '{{json .Image}}' | jq -r '"\(.os)/\(.architecture)"')
+          if [ "$platform" != linux/amd64 ]; then
+            echo "::error::$reference is for $platform, not linux/amd64."
+            exit 1
+          fi
+          layers=$(jq '.layers | length' <<<"$manifest")
+          bytes=$(jq '[.layers[].size] | add' <<<"$manifest")
+          {
+            echo "### Image to deploy"
+            echo
+            echo "| Item | Value |"
+            echo "| --- | --- |"
+            echo "| Pull by digest | \`$reference\` |"
+            echo "| Compressed size | $bytes bytes ($(awk -v b="$bytes" 'BEGIN { printf "%.1f", b / 1048576 }') MiB), $layers layers, $platform |"
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+      # The Render API deploy with imageUrl, which keeps the image setting imagePath of the service current. No deploy
+      # hook: after a hook deploy with imgURL, later deploys keep the image of the service settings.
+      - name: Deploy the digest through the Render API
+        timeout-minutes: 20
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+        run: node script/release/deploy-hosted-image.ts deploy
