@@ -11,25 +11,43 @@ remain the approved behavior. This record changes no product requirement.
 ## Corrections and restack
 
 The owner requested the fixes, rebase, updated PRs and merge after this review.
-The source candidates now form UI-01 → UI-02 → UI-03 → UI-04 on main
-`2b3ad13b9e2e61e206479b82e91359192cae1d00`. The original review below remains
-history, with its original pins and evidence limits. Current status is in the
-linked plan table and maintained PR comments.
+The local source candidates now form UI-01 → UI-02 → UI-03 → UI-04 on main
+`9507e751215fec32748bf4e944f2393928e61cf5`. The linked plan table records the
+source pins before quality-record updates; maintained PR comments own the final
+heads, evidence and merge status. All four PRs were Draft at this preparation
+point. No deployment is claimed. The original review below remains
+history, with its original pins and evidence limits.
 
-The UI-02 density acceptance failed before the CSS correction and now passes.
-The short desktop rows measure 70.25, 70.25 and 60.25 pixels. Native semantics,
+Main's latest change adds operator-probe scripts, Knip configuration and
+documents. The recorded comparison verifies unchanged production source, tests,
+dependencies, build configuration, public declarations and registry. Earlier
+functional results keep their execution pins; the new scripts still require
+fresh type/quality evidence and change the Docker checked-build context.
+
+The UI-02 density acceptance failed before the CSS correction and then passed.
+The short desktop rows measured 70.25, 70.25 and 60.25 pixels. Native semantics,
 48-pixel action targets and natural growth for long or expanded rows remain.
-UI-03 now uses a semantic level-one heading for geometry and the exact fixture
+UI-03 uses a semantic level-one heading for geometry and the exact fixture
 count for route assertions. UI-04 preserves all 51 parent browser cases and
-adds its 20 pending-invitation cases. The combined 71-case browser group and
-130 focused HTTP/integration cases pass. The manager reviewed the source delta
-and screenshots. No new authority or protocol defect was found.
+adds its 20 pending-invitation cases. The earlier combined 71-case browser group
+and 130 focused HTTP/integration passes retain their original pins. Manager
+source review found no new authority or protocol defect.
 
-Fresh complete-candidate gates and quality evidence are in progress. UI-02
-staging passed 22 of 29 cases: six failures share the WorkOS sandbox invitation
-quota, and the separate reinvite HTTP 503 remains unexplained. Owned-resource
-cleanup completed. The required staging group must pass; no quota reset or
-provider fix is inferred. All four PRs remain Draft during this work.
+UI-01 native functional checks passed at their original `7acd90d4` pin and were
+rebound through verified inputs to `4a761fec`. UI-02 native checks passed at
+`82788735`, and UI-03 at `6ced8db3`. UI-03's Collector run first passed 7/10;
+a private dependency copy with the same package bytes allowed the full retry
+to pass 10/10. Both attempts and their environment provenance remain evidence.
+UI-04 native checks are in progress at `07285735`. The latest main rebase does
+not relabel these as new executions. Fresh type/quality pins, local Linux AMD64
+image proof and final gate verification remain. The owner chose local image
+checks; no Actions dispatch is planned.
+
+The earlier UI-02 staging run at `2ec671eb` passed 22 of 29 cases: six failures
+share the WorkOS sandbox invitation quota, and the separate reinvite HTTP 503
+remains unexplained. Owned-resource cleanup completed. The required staging
+groups and independent authorized current-head human approval remain holds.
+No quota reset, provider fix, common failure cause or final live pass is inferred.
 
 ## Original review decision
 
