@@ -23,7 +23,8 @@
         "script/spike/gateway-proxy-probe.ts",
         "script/spike/private-network-probe.ts",
         "script/spike/render-tenant-lifecycle.ts",
-        "script/spike/capacity-probe.ts"
+        "script/spike/capacity-probe.ts",
+        "script/spike/stripe-seat-sync-probe.ts"
       ]
     },
     ".habit-hooks": {
