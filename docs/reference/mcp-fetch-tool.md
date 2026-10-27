@@ -217,10 +217,14 @@ container renders pages with the same fetcher options.
 The hosted opener uses `createHostedToolOperations` and `fetchToolServers`.
 One `OperationCapacity` wraps both full operations in that application.
 WorkOS Connect tokens and the current User grant protect each request. Missing
-or revoked access is refused before fetching. The slot covers DNS, rendering,
-outgoing work, cleaning, and cleanup across requests and both operations;
-there is no queue or capacity setting. A cancelled caller gets cancellation
-before busy.
+or revoked access is refused before fetching. The capacity is the
+`OPERATION_CAPACITY` setting: a whole number from 1 to 100, default 10. Hosted
+startup reads it. An invalid value stops startup before listening, with an
+error that names the setting and the rule but not the value. Up to that number
+of fetch and search calls run at the same time in one process. Each call holds
+its slot through DNS, rendering, outgoing work, cleaning, and cleanup. When all
+slots are in use, the next call gets busy; there is no queue. A cancelled
+caller gets cancellation before busy.
 An abort does not free the slot before settlement. A busy call writes its own
 safe completion record with status `busy`. RHD-01 adds no onboarding or
 deployment. [RHD-02](../implementation/rhd-02.md) adds portal serving, local

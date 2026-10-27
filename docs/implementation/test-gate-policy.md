@@ -458,6 +458,7 @@ then runs these emitted files directly, without another build:
    `dist/test/acceptance/mcp/hosted-fetch-tool.test.js`,
    `dist/test/acceptance/mcp/search-pipeline.test.js`,
    `dist/test/acceptance/mcp/hosted-search-capacity.test.js`,
+   `dist/test/acceptance/mcp/hosted-capacity-setting.test.js`,
    `dist/test/acceptance/mcp/search-lifecycle.test.js`,
    `dist/test/acceptance/mcp/hosted-process-shutdown.test.js`,
    `dist/test/acceptance/mcp/server-only-modules.test.js`, and

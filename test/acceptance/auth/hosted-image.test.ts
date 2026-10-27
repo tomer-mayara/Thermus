@@ -83,7 +83,8 @@ test('Given a clean hosted build without live secrets, when checks pass, then th
   });
 
   await t.test('Given the final hosted runtime, when calls target private addresses, exceed capacity, disconnect or receive SIGTERM during rendering, then the guards refuse unsafe work, cancellation releases capacity after settlement, and the CLI exits within its shutdown bound', { timeout: 180_000 }, async (step) => {
-    const server = await gate.server({}, true, step.signal);
+    // The overload step shows the busy refusal of one hosted slot, so the runtime sets the capacity to one call.
+    const server = await gate.server({ OPERATION_CAPACITY: '1' }, true, step.signal);
     await server.started();
     for (const privateUrl of ['http://127.0.0.1:8090/story', 'http://10.0.0.1/story', 'http://[::1]:8090/story']) {
       const refused = await call(server.url, privateUrl, step.signal);

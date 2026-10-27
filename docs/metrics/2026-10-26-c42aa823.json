@@ -1,0 +1,863 @@
+{
+  "version": 1,
+  "tool": "0.43.1-thermus.1",
+  "commit": "c42aa8237b06e46df5f8d3914af6f4151f729e1a",
+  "date": "2026-10-26T16:02:32-06:00",
+  "title": "Add the self on-boarding decision records (#262)",
+  "modularity": 0.33,
+  "crossShare": 0.31,
+  "cycles": 1,
+  "maintainability": 55.2,
+  "paths": 4214,
+  "files": 188,
+  "functions": 1524,
+  "functionsOver30": 60,
+  "communities": [
+    {
+      "label": "accounts",
+      "files": 28,
+      "loc": 4370,
+      "maintainability": 56.9,
+      "paths": 794,
+      "functionsOver30": 21
+    },
+    {
+      "label": "app",
+      "files": 75,
+      "loc": 6039,
+      "maintainability": 59.3,
+      "paths": 1640,
+      "functionsOver30": 23
+    },
+    {
+      "label": "pipelines",
+      "files": 71,
+      "loc": 5053,
+      "maintainability": 49.4,
+      "paths": 1587,
+      "functionsOver30": 16
+    },
+    {
+      "label": "shared kernel",
+      "files": 3,
+      "loc": 258,
+      "maintainability": 57.5,
+      "paths": 78,
+      "functionsOver30": 0
+    }
+  ],
+  "components": [
+    {
+      "name": "app",
+      "files": 9,
+      "loc": 852,
+      "maintainability": 60,
+      "paths": 174,
+      "functionsOver30": 0,
+      "crap": {
+        "kind": "head-derived-estimate",
+        "coverageCommit": "10f50aac8feb81a49da5df099fac1e34200c640f",
+        "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+        "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+        "buildFingerprint": "919af81411ca465c563f6a728e65a913d3f4b45bb21e895681f98dd8ac827de3",
+        "measurementVersion": "own-characters-1",
+        "unknownFunctions": 15,
+        "captureProvenance": {
+          "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+          "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+          "runtime": "node-24.20.0",
+          "compiler": "typescript-7.0.2",
+          "measurementVersion": "own-characters-1",
+          "suite": "unit",
+          "completionProtocol": "normal-exit-or-sealed-or-loader-1",
+          "captureId": "fc1d067967f555700e4bfa551c7382d0a1d81f023b278e9896c8fe111e01a955",
+          "status": "verified",
+          "capturedCommit": "10f50aac8feb81a49da5df099fac1e34200c640f",
+          "buildFingerprint": "919af81411ca465c563f6a728e65a913d3f4b45bb21e895681f98dd8ac827de3",
+          "captureManifestFingerprint": "91050f52bb64983e873e3399b9028f5ebe7b111c38beabeb8f16646c960a11ec",
+          "comparisonIdentity": {
+            "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+            "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+            "runtime": "node-24.20.0",
+            "compiler": "typescript-7.0.2",
+            "measurementVersion": "own-characters-1",
+            "suite": "unit"
+          }
+        }
+      }
+    },
+    {
+      "name": "audit-logs",
+      "files": 21,
+      "loc": 1590,
+      "maintainability": 53.4,
+      "paths": 610,
+      "functionsOver30": 0,
+      "crap": {
+        "kind": "head-derived-estimate",
+        "coverageCommit": "10f50aac8feb81a49da5df099fac1e34200c640f",
+        "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+        "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+        "buildFingerprint": "919af81411ca465c563f6a728e65a913d3f4b45bb21e895681f98dd8ac827de3",
+        "measurementVersion": "own-characters-1",
+        "unknownFunctions": 16,
+        "captureProvenance": {
+          "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+          "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+          "runtime": "node-24.20.0",
+          "compiler": "typescript-7.0.2",
+          "measurementVersion": "own-characters-1",
+          "suite": "unit",
+          "completionProtocol": "normal-exit-or-sealed-or-loader-1",
+          "captureId": "fc1d067967f555700e4bfa551c7382d0a1d81f023b278e9896c8fe111e01a955",
+          "status": "verified",
+          "capturedCommit": "10f50aac8feb81a49da5df099fac1e34200c640f",
+          "buildFingerprint": "919af81411ca465c563f6a728e65a913d3f4b45bb21e895681f98dd8ac827de3",
+          "captureManifestFingerprint": "91050f52bb64983e873e3399b9028f5ebe7b111c38beabeb8f16646c960a11ec",
+          "comparisonIdentity": {
+            "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+            "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+            "runtime": "node-24.20.0",
+            "compiler": "typescript-7.0.2",
+            "measurementVersion": "own-characters-1",
+            "suite": "unit"
+          }
+        }
+      }
+    },
+    {
+      "name": "better-auth",
+      "files": 5,
+      "loc": 844,
+      "maintainability": 58.7,
+      "paths": 166,
+      "functionsOver30": 2,
+      "crap": {
+        "kind": "head-derived-estimate",
+        "coverageCommit": "10f50aac8feb81a49da5df099fac1e34200c640f",
+        "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+        "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+        "buildFingerprint": "919af81411ca465c563f6a728e65a913d3f4b45bb21e895681f98dd8ac827de3",
+        "measurementVersion": "own-characters-1",
+        "unknownFunctions": 5,
+        "captureProvenance": {
+          "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+          "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+          "runtime": "node-24.20.0",
+          "compiler": "typescript-7.0.2",
+          "measurementVersion": "own-characters-1",
+          "suite": "unit",
+          "completionProtocol": "normal-exit-or-sealed-or-loader-1",
+          "captureId": "fc1d067967f555700e4bfa551c7382d0a1d81f023b278e9896c8fe111e01a955",
+          "status": "verified",
+          "capturedCommit": "10f50aac8feb81a49da5df099fac1e34200c640f",
+          "buildFingerprint": "919af81411ca465c563f6a728e65a913d3f4b45bb21e895681f98dd8ac827de3",
+          "captureManifestFingerprint": "91050f52bb64983e873e3399b9028f5ebe7b111c38beabeb8f16646c960a11ec",
+          "comparisonIdentity": {
+            "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+            "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+            "runtime": "node-24.20.0",
+            "compiler": "typescript-7.0.2",
+            "measurementVersion": "own-characters-1",
+            "suite": "unit"
+          }
+        }
+      }
+    },
+    {
+      "name": "billing",
+      "files": 2,
+      "loc": 27,
+      "maintainability": 68.8,
+      "paths": 6,
+      "functionsOver30": 0,
+      "crap": {
+        "kind": "head-derived-estimate",
+        "coverageCommit": "10f50aac8feb81a49da5df099fac1e34200c640f",
+        "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+        "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+        "buildFingerprint": "919af81411ca465c563f6a728e65a913d3f4b45bb21e895681f98dd8ac827de3",
+        "measurementVersion": "own-characters-1",
+        "unknownFunctions": 0,
+        "captureProvenance": {
+          "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+          "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+          "runtime": "node-24.20.0",
+          "compiler": "typescript-7.0.2",
+          "measurementVersion": "own-characters-1",
+          "suite": "unit",
+          "completionProtocol": "normal-exit-or-sealed-or-loader-1",
+          "captureId": "fc1d067967f555700e4bfa551c7382d0a1d81f023b278e9896c8fe111e01a955",
+          "status": "verified",
+          "capturedCommit": "10f50aac8feb81a49da5df099fac1e34200c640f",
+          "buildFingerprint": "919af81411ca465c563f6a728e65a913d3f4b45bb21e895681f98dd8ac827de3",
+          "captureManifestFingerprint": "91050f52bb64983e873e3399b9028f5ebe7b111c38beabeb8f16646c960a11ec",
+          "comparisonIdentity": {
+            "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+            "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+            "runtime": "node-24.20.0",
+            "compiler": "typescript-7.0.2",
+            "measurementVersion": "own-characters-1",
+            "suite": "unit"
+          }
+        }
+      }
+    },
+    {
+      "name": "cli",
+      "files": 2,
+      "loc": 202,
+      "maintainability": 53.7,
+      "paths": 56,
+      "functionsOver30": 3,
+      "crap": {
+        "kind": "head-derived-estimate",
+        "coverageCommit": "10f50aac8feb81a49da5df099fac1e34200c640f",
+        "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+        "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+        "buildFingerprint": "919af81411ca465c563f6a728e65a913d3f4b45bb21e895681f98dd8ac827de3",
+        "measurementVersion": "own-characters-1",
+        "unknownFunctions": 0,
+        "captureProvenance": {
+          "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+          "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+          "runtime": "node-24.20.0",
+          "compiler": "typescript-7.0.2",
+          "measurementVersion": "own-characters-1",
+          "suite": "unit",
+          "completionProtocol": "normal-exit-or-sealed-or-loader-1",
+          "captureId": "fc1d067967f555700e4bfa551c7382d0a1d81f023b278e9896c8fe111e01a955",
+          "status": "verified",
+          "capturedCommit": "10f50aac8feb81a49da5df099fac1e34200c640f",
+          "buildFingerprint": "919af81411ca465c563f6a728e65a913d3f4b45bb21e895681f98dd8ac827de3",
+          "captureManifestFingerprint": "91050f52bb64983e873e3399b9028f5ebe7b111c38beabeb8f16646c960a11ec",
+          "comparisonIdentity": {
+            "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+            "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+            "runtime": "node-24.20.0",
+            "compiler": "typescript-7.0.2",
+            "measurementVersion": "own-characters-1",
+            "suite": "unit"
+          }
+        }
+      }
+    },
+    {
+      "name": "config",
+      "files": 3,
+      "loc": 258,
+      "maintainability": 57.6,
+      "paths": 78,
+      "functionsOver30": 0,
+      "crap": {
+        "kind": "head-derived-estimate",
+        "coverageCommit": "10f50aac8feb81a49da5df099fac1e34200c640f",
+        "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+        "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+        "buildFingerprint": "919af81411ca465c563f6a728e65a913d3f4b45bb21e895681f98dd8ac827de3",
+        "measurementVersion": "own-characters-1",
+        "unknownFunctions": 0,
+        "captureProvenance": {
+          "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+          "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+          "runtime": "node-24.20.0",
+          "compiler": "typescript-7.0.2",
+          "measurementVersion": "own-characters-1",
+          "suite": "unit",
+          "completionProtocol": "normal-exit-or-sealed-or-loader-1",
+          "captureId": "fc1d067967f555700e4bfa551c7382d0a1d81f023b278e9896c8fe111e01a955",
+          "status": "verified",
+          "capturedCommit": "10f50aac8feb81a49da5df099fac1e34200c640f",
+          "buildFingerprint": "919af81411ca465c563f6a728e65a913d3f4b45bb21e895681f98dd8ac827de3",
+          "captureManifestFingerprint": "91050f52bb64983e873e3399b9028f5ebe7b111c38beabeb8f16646c960a11ec",
+          "comparisonIdentity": {
+            "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+            "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+            "runtime": "node-24.20.0",
+            "compiler": "typescript-7.0.2",
+            "measurementVersion": "own-characters-1",
+            "suite": "unit"
+          }
+        }
+      }
+    },
+    {
+      "name": "execution",
+      "files": 4,
+      "loc": 69,
+      "maintainability": 83.4,
+      "paths": 10,
+      "functionsOver30": 0,
+      "crap": {
+        "kind": "head-derived-estimate",
+        "coverageCommit": "10f50aac8feb81a49da5df099fac1e34200c640f",
+        "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+        "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+        "buildFingerprint": "919af81411ca465c563f6a728e65a913d3f4b45bb21e895681f98dd8ac827de3",
+        "measurementVersion": "own-characters-1",
+        "unknownFunctions": 0,
+        "captureProvenance": {
+          "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+          "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+          "runtime": "node-24.20.0",
+          "compiler": "typescript-7.0.2",
+          "measurementVersion": "own-characters-1",
+          "suite": "unit",
+          "completionProtocol": "normal-exit-or-sealed-or-loader-1",
+          "captureId": "fc1d067967f555700e4bfa551c7382d0a1d81f023b278e9896c8fe111e01a955",
+          "status": "verified",
+          "capturedCommit": "10f50aac8feb81a49da5df099fac1e34200c640f",
+          "buildFingerprint": "919af81411ca465c563f6a728e65a913d3f4b45bb21e895681f98dd8ac827de3",
+          "captureManifestFingerprint": "91050f52bb64983e873e3399b9028f5ebe7b111c38beabeb8f16646c960a11ec",
+          "comparisonIdentity": {
+            "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+            "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+            "runtime": "node-24.20.0",
+            "compiler": "typescript-7.0.2",
+            "measurementVersion": "own-characters-1",
+            "suite": "unit"
+          }
+        }
+      }
+    },
+    {
+      "name": "html-processing",
+      "files": 37,
+      "loc": 3024,
+      "maintainability": 46.9,
+      "paths": 946,
+      "functionsOver30": 0,
+      "crap": {
+        "kind": "head-derived-estimate",
+        "coverageCommit": "10f50aac8feb81a49da5df099fac1e34200c640f",
+        "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+        "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+        "buildFingerprint": "919af81411ca465c563f6a728e65a913d3f4b45bb21e895681f98dd8ac827de3",
+        "measurementVersion": "own-characters-1",
+        "unknownFunctions": 11,
+        "captureProvenance": {
+          "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+          "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+          "runtime": "node-24.20.0",
+          "compiler": "typescript-7.0.2",
+          "measurementVersion": "own-characters-1",
+          "suite": "unit",
+          "completionProtocol": "normal-exit-or-sealed-or-loader-1",
+          "captureId": "fc1d067967f555700e4bfa551c7382d0a1d81f023b278e9896c8fe111e01a955",
+          "status": "verified",
+          "capturedCommit": "10f50aac8feb81a49da5df099fac1e34200c640f",
+          "buildFingerprint": "919af81411ca465c563f6a728e65a913d3f4b45bb21e895681f98dd8ac827de3",
+          "captureManifestFingerprint": "91050f52bb64983e873e3399b9028f5ebe7b111c38beabeb8f16646c960a11ec",
+          "comparisonIdentity": {
+            "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+            "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+            "runtime": "node-24.20.0",
+            "compiler": "typescript-7.0.2",
+            "measurementVersion": "own-characters-1",
+            "suite": "unit"
+          }
+        }
+      }
+    },
+    {
+      "name": "http",
+      "files": 4,
+      "loc": 235,
+      "maintainability": 64.5,
+      "paths": 66,
+      "functionsOver30": 0,
+      "crap": {
+        "kind": "head-derived-estimate",
+        "coverageCommit": "10f50aac8feb81a49da5df099fac1e34200c640f",
+        "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+        "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+        "buildFingerprint": "919af81411ca465c563f6a728e65a913d3f4b45bb21e895681f98dd8ac827de3",
+        "measurementVersion": "own-characters-1",
+        "unknownFunctions": 1,
+        "captureProvenance": {
+          "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+          "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+          "runtime": "node-24.20.0",
+          "compiler": "typescript-7.0.2",
+          "measurementVersion": "own-characters-1",
+          "suite": "unit",
+          "completionProtocol": "normal-exit-or-sealed-or-loader-1",
+          "captureId": "fc1d067967f555700e4bfa551c7382d0a1d81f023b278e9896c8fe111e01a955",
+          "status": "verified",
+          "capturedCommit": "10f50aac8feb81a49da5df099fac1e34200c640f",
+          "buildFingerprint": "919af81411ca465c563f6a728e65a913d3f4b45bb21e895681f98dd8ac827de3",
+          "captureManifestFingerprint": "91050f52bb64983e873e3399b9028f5ebe7b111c38beabeb8f16646c960a11ec",
+          "comparisonIdentity": {
+            "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+            "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+            "runtime": "node-24.20.0",
+            "compiler": "typescript-7.0.2",
+            "measurementVersion": "own-characters-1",
+            "suite": "unit"
+          }
+        }
+      }
+    },
+    {
+      "name": "identity",
+      "files": 5,
+      "loc": 221,
+      "maintainability": 66.4,
+      "paths": 19,
+      "functionsOver30": 0,
+      "crap": {
+        "kind": "head-derived-estimate",
+        "coverageCommit": "10f50aac8feb81a49da5df099fac1e34200c640f",
+        "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+        "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+        "buildFingerprint": "919af81411ca465c563f6a728e65a913d3f4b45bb21e895681f98dd8ac827de3",
+        "measurementVersion": "own-characters-1",
+        "unknownFunctions": 1,
+        "captureProvenance": {
+          "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+          "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+          "runtime": "node-24.20.0",
+          "compiler": "typescript-7.0.2",
+          "measurementVersion": "own-characters-1",
+          "suite": "unit",
+          "completionProtocol": "normal-exit-or-sealed-or-loader-1",
+          "captureId": "fc1d067967f555700e4bfa551c7382d0a1d81f023b278e9896c8fe111e01a955",
+          "status": "verified",
+          "capturedCommit": "10f50aac8feb81a49da5df099fac1e34200c640f",
+          "buildFingerprint": "919af81411ca465c563f6a728e65a913d3f4b45bb21e895681f98dd8ac827de3",
+          "captureManifestFingerprint": "91050f52bb64983e873e3399b9028f5ebe7b111c38beabeb8f16646c960a11ec",
+          "comparisonIdentity": {
+            "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+            "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+            "runtime": "node-24.20.0",
+            "compiler": "typescript-7.0.2",
+            "measurementVersion": "own-characters-1",
+            "suite": "unit"
+          }
+        }
+      }
+    },
+    {
+      "name": "mcp",
+      "files": 9,
+      "loc": 685,
+      "maintainability": 51.2,
+      "paths": 186,
+      "functionsOver30": 3,
+      "crap": {
+        "kind": "head-derived-estimate",
+        "coverageCommit": "10f50aac8feb81a49da5df099fac1e34200c640f",
+        "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+        "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+        "buildFingerprint": "919af81411ca465c563f6a728e65a913d3f4b45bb21e895681f98dd8ac827de3",
+        "measurementVersion": "own-characters-1",
+        "unknownFunctions": 4,
+        "captureProvenance": {
+          "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+          "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+          "runtime": "node-24.20.0",
+          "compiler": "typescript-7.0.2",
+          "measurementVersion": "own-characters-1",
+          "suite": "unit",
+          "completionProtocol": "normal-exit-or-sealed-or-loader-1",
+          "captureId": "fc1d067967f555700e4bfa551c7382d0a1d81f023b278e9896c8fe111e01a955",
+          "status": "verified",
+          "capturedCommit": "10f50aac8feb81a49da5df099fac1e34200c640f",
+          "buildFingerprint": "919af81411ca465c563f6a728e65a913d3f4b45bb21e895681f98dd8ac827de3",
+          "captureManifestFingerprint": "91050f52bb64983e873e3399b9028f5ebe7b111c38beabeb8f16646c960a11ec",
+          "comparisonIdentity": {
+            "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+            "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+            "runtime": "node-24.20.0",
+            "compiler": "typescript-7.0.2",
+            "measurementVersion": "own-characters-1",
+            "suite": "unit"
+          }
+        }
+      }
+    },
+    {
+      "name": "organizations",
+      "files": 11,
+      "loc": 803,
+      "maintainability": 69.9,
+      "paths": 192,
+      "functionsOver30": 1,
+      "crap": {
+        "kind": "head-derived-estimate",
+        "coverageCommit": "10f50aac8feb81a49da5df099fac1e34200c640f",
+        "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+        "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+        "buildFingerprint": "919af81411ca465c563f6a728e65a913d3f4b45bb21e895681f98dd8ac827de3",
+        "measurementVersion": "own-characters-1",
+        "unknownFunctions": 8,
+        "captureProvenance": {
+          "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+          "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+          "runtime": "node-24.20.0",
+          "compiler": "typescript-7.0.2",
+          "measurementVersion": "own-characters-1",
+          "suite": "unit",
+          "completionProtocol": "normal-exit-or-sealed-or-loader-1",
+          "captureId": "fc1d067967f555700e4bfa551c7382d0a1d81f023b278e9896c8fe111e01a955",
+          "status": "verified",
+          "capturedCommit": "10f50aac8feb81a49da5df099fac1e34200c640f",
+          "buildFingerprint": "919af81411ca465c563f6a728e65a913d3f4b45bb21e895681f98dd8ac827de3",
+          "captureManifestFingerprint": "91050f52bb64983e873e3399b9028f5ebe7b111c38beabeb8f16646c960a11ec",
+          "comparisonIdentity": {
+            "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+            "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+            "runtime": "node-24.20.0",
+            "compiler": "typescript-7.0.2",
+            "measurementVersion": "own-characters-1",
+            "suite": "unit"
+          }
+        }
+      }
+    },
+    {
+      "name": "page-fetch",
+      "files": 5,
+      "loc": 270,
+      "maintainability": 49.9,
+      "paths": 109,
+      "functionsOver30": 5,
+      "crap": {
+        "kind": "head-derived-estimate",
+        "coverageCommit": "10f50aac8feb81a49da5df099fac1e34200c640f",
+        "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+        "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+        "buildFingerprint": "919af81411ca465c563f6a728e65a913d3f4b45bb21e895681f98dd8ac827de3",
+        "measurementVersion": "own-characters-1",
+        "unknownFunctions": 0,
+        "captureProvenance": {
+          "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+          "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+          "runtime": "node-24.20.0",
+          "compiler": "typescript-7.0.2",
+          "measurementVersion": "own-characters-1",
+          "suite": "unit",
+          "completionProtocol": "normal-exit-or-sealed-or-loader-1",
+          "captureId": "fc1d067967f555700e4bfa551c7382d0a1d81f023b278e9896c8fe111e01a955",
+          "status": "verified",
+          "capturedCommit": "10f50aac8feb81a49da5df099fac1e34200c640f",
+          "buildFingerprint": "919af81411ca465c563f6a728e65a913d3f4b45bb21e895681f98dd8ac827de3",
+          "captureManifestFingerprint": "91050f52bb64983e873e3399b9028f5ebe7b111c38beabeb8f16646c960a11ec",
+          "comparisonIdentity": {
+            "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+            "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+            "runtime": "node-24.20.0",
+            "compiler": "typescript-7.0.2",
+            "measurementVersion": "own-characters-1",
+            "suite": "unit"
+          }
+        }
+      }
+    },
+    {
+      "name": "search",
+      "files": 6,
+      "loc": 331,
+      "maintainability": 48.3,
+      "paths": 131,
+      "functionsOver30": 7,
+      "crap": {
+        "kind": "head-derived-estimate",
+        "coverageCommit": "10f50aac8feb81a49da5df099fac1e34200c640f",
+        "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+        "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+        "buildFingerprint": "919af81411ca465c563f6a728e65a913d3f4b45bb21e895681f98dd8ac827de3",
+        "measurementVersion": "own-characters-1",
+        "unknownFunctions": 0,
+        "captureProvenance": {
+          "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+          "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+          "runtime": "node-24.20.0",
+          "compiler": "typescript-7.0.2",
+          "measurementVersion": "own-characters-1",
+          "suite": "unit",
+          "completionProtocol": "normal-exit-or-sealed-or-loader-1",
+          "captureId": "fc1d067967f555700e4bfa551c7382d0a1d81f023b278e9896c8fe111e01a955",
+          "status": "verified",
+          "capturedCommit": "10f50aac8feb81a49da5df099fac1e34200c640f",
+          "buildFingerprint": "919af81411ca465c563f6a728e65a913d3f4b45bb21e895681f98dd8ac827de3",
+          "captureManifestFingerprint": "91050f52bb64983e873e3399b9028f5ebe7b111c38beabeb8f16646c960a11ec",
+          "comparisonIdentity": {
+            "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+            "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+            "runtime": "node-24.20.0",
+            "compiler": "typescript-7.0.2",
+            "measurementVersion": "own-characters-1",
+            "suite": "unit"
+          }
+        }
+      }
+    },
+    {
+      "name": "search-engine",
+      "files": 2,
+      "loc": 134,
+      "maintainability": 33,
+      "paths": 56,
+      "functionsOver30": 0,
+      "crap": {
+        "kind": "head-derived-estimate",
+        "coverageCommit": "10f50aac8feb81a49da5df099fac1e34200c640f",
+        "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+        "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+        "buildFingerprint": "919af81411ca465c563f6a728e65a913d3f4b45bb21e895681f98dd8ac827de3",
+        "measurementVersion": "own-characters-1",
+        "unknownFunctions": 0,
+        "captureProvenance": {
+          "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+          "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+          "runtime": "node-24.20.0",
+          "compiler": "typescript-7.0.2",
+          "measurementVersion": "own-characters-1",
+          "suite": "unit",
+          "completionProtocol": "normal-exit-or-sealed-or-loader-1",
+          "captureId": "fc1d067967f555700e4bfa551c7382d0a1d81f023b278e9896c8fe111e01a955",
+          "status": "verified",
+          "capturedCommit": "10f50aac8feb81a49da5df099fac1e34200c640f",
+          "buildFingerprint": "919af81411ca465c563f6a728e65a913d3f4b45bb21e895681f98dd8ac827de3",
+          "captureManifestFingerprint": "91050f52bb64983e873e3399b9028f5ebe7b111c38beabeb8f16646c960a11ec",
+          "comparisonIdentity": {
+            "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+            "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+            "runtime": "node-24.20.0",
+            "compiler": "typescript-7.0.2",
+            "measurementVersion": "own-characters-1",
+            "suite": "unit"
+          }
+        }
+      }
+    },
+    {
+      "name": "system-logs",
+      "files": 3,
+      "loc": 199,
+      "maintainability": 63.1,
+      "paths": 39,
+      "functionsOver30": 0,
+      "crap": {
+        "kind": "head-derived-estimate",
+        "coverageCommit": "10f50aac8feb81a49da5df099fac1e34200c640f",
+        "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+        "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+        "buildFingerprint": "919af81411ca465c563f6a728e65a913d3f4b45bb21e895681f98dd8ac827de3",
+        "measurementVersion": "own-characters-1",
+        "unknownFunctions": 0,
+        "captureProvenance": {
+          "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+          "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+          "runtime": "node-24.20.0",
+          "compiler": "typescript-7.0.2",
+          "measurementVersion": "own-characters-1",
+          "suite": "unit",
+          "completionProtocol": "normal-exit-or-sealed-or-loader-1",
+          "captureId": "fc1d067967f555700e4bfa551c7382d0a1d81f023b278e9896c8fe111e01a955",
+          "status": "verified",
+          "capturedCommit": "10f50aac8feb81a49da5df099fac1e34200c640f",
+          "buildFingerprint": "919af81411ca465c563f6a728e65a913d3f4b45bb21e895681f98dd8ac827de3",
+          "captureManifestFingerprint": "91050f52bb64983e873e3399b9028f5ebe7b111c38beabeb8f16646c960a11ec",
+          "comparisonIdentity": {
+            "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+            "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+            "runtime": "node-24.20.0",
+            "compiler": "typescript-7.0.2",
+            "measurementVersion": "own-characters-1",
+            "suite": "unit"
+          }
+        }
+      }
+    },
+    {
+      "name": "user-portal",
+      "files": 8,
+      "loc": 491,
+      "maintainability": 51.2,
+      "paths": 71,
+      "functionsOver30": 0,
+      "crap": {
+        "kind": "head-derived-estimate",
+        "coverageCommit": "10f50aac8feb81a49da5df099fac1e34200c640f",
+        "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+        "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+        "buildFingerprint": "919af81411ca465c563f6a728e65a913d3f4b45bb21e895681f98dd8ac827de3",
+        "measurementVersion": "own-characters-1",
+        "unknownFunctions": 0,
+        "captureProvenance": {
+          "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+          "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+          "runtime": "node-24.20.0",
+          "compiler": "typescript-7.0.2",
+          "measurementVersion": "own-characters-1",
+          "suite": "unit",
+          "completionProtocol": "normal-exit-or-sealed-or-loader-1",
+          "captureId": "fc1d067967f555700e4bfa551c7382d0a1d81f023b278e9896c8fe111e01a955",
+          "status": "verified",
+          "capturedCommit": "10f50aac8feb81a49da5df099fac1e34200c640f",
+          "buildFingerprint": "919af81411ca465c563f6a728e65a913d3f4b45bb21e895681f98dd8ac827de3",
+          "captureManifestFingerprint": "91050f52bb64983e873e3399b9028f5ebe7b111c38beabeb8f16646c960a11ec",
+          "comparisonIdentity": {
+            "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+            "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+            "runtime": "node-24.20.0",
+            "compiler": "typescript-7.0.2",
+            "measurementVersion": "own-characters-1",
+            "suite": "unit"
+          }
+        }
+      }
+    },
+    {
+      "name": "web",
+      "files": 30,
+      "loc": 2638,
+      "maintainability": 60.2,
+      "paths": 613,
+      "functionsOver30": 22,
+      "crap": {
+        "kind": "head-derived-estimate",
+        "coverageCommit": "10f50aac8feb81a49da5df099fac1e34200c640f",
+        "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+        "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+        "buildFingerprint": "919af81411ca465c563f6a728e65a913d3f4b45bb21e895681f98dd8ac827de3",
+        "measurementVersion": "own-characters-1",
+        "unknownFunctions": 49,
+        "captureProvenance": {
+          "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+          "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+          "runtime": "node-24.20.0",
+          "compiler": "typescript-7.0.2",
+          "measurementVersion": "own-characters-1",
+          "suite": "unit",
+          "completionProtocol": "normal-exit-or-sealed-or-loader-1",
+          "captureId": "fc1d067967f555700e4bfa551c7382d0a1d81f023b278e9896c8fe111e01a955",
+          "status": "verified",
+          "capturedCommit": "10f50aac8feb81a49da5df099fac1e34200c640f",
+          "buildFingerprint": "919af81411ca465c563f6a728e65a913d3f4b45bb21e895681f98dd8ac827de3",
+          "captureManifestFingerprint": "91050f52bb64983e873e3399b9028f5ebe7b111c38beabeb8f16646c960a11ec",
+          "comparisonIdentity": {
+            "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+            "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+            "runtime": "node-24.20.0",
+            "compiler": "typescript-7.0.2",
+            "measurementVersion": "own-characters-1",
+            "suite": "unit"
+          }
+        }
+      }
+    },
+    {
+      "name": "website-fetcher",
+      "files": 6,
+      "loc": 439,
+      "maintainability": 60.9,
+      "paths": 133,
+      "functionsOver30": 1,
+      "crap": {
+        "kind": "head-derived-estimate",
+        "coverageCommit": "10f50aac8feb81a49da5df099fac1e34200c640f",
+        "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+        "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+        "buildFingerprint": "919af81411ca465c563f6a728e65a913d3f4b45bb21e895681f98dd8ac827de3",
+        "measurementVersion": "own-characters-1",
+        "unknownFunctions": 0,
+        "captureProvenance": {
+          "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+          "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+          "runtime": "node-24.20.0",
+          "compiler": "typescript-7.0.2",
+          "measurementVersion": "own-characters-1",
+          "suite": "unit",
+          "completionProtocol": "normal-exit-or-sealed-or-loader-1",
+          "captureId": "fc1d067967f555700e4bfa551c7382d0a1d81f023b278e9896c8fe111e01a955",
+          "status": "verified",
+          "capturedCommit": "10f50aac8feb81a49da5df099fac1e34200c640f",
+          "buildFingerprint": "919af81411ca465c563f6a728e65a913d3f4b45bb21e895681f98dd8ac827de3",
+          "captureManifestFingerprint": "91050f52bb64983e873e3399b9028f5ebe7b111c38beabeb8f16646c960a11ec",
+          "comparisonIdentity": {
+            "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+            "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+            "runtime": "node-24.20.0",
+            "compiler": "typescript-7.0.2",
+            "measurementVersion": "own-characters-1",
+            "suite": "unit"
+          }
+        }
+      }
+    },
+    {
+      "name": "workos",
+      "files": 16,
+      "loc": 3103,
+      "maintainability": 55.9,
+      "paths": 553,
+      "functionsOver30": 16,
+      "crap": {
+        "kind": "head-derived-estimate",
+        "coverageCommit": "10f50aac8feb81a49da5df099fac1e34200c640f",
+        "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+        "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+        "buildFingerprint": "919af81411ca465c563f6a728e65a913d3f4b45bb21e895681f98dd8ac827de3",
+        "measurementVersion": "own-characters-1",
+        "unknownFunctions": 23,
+        "captureProvenance": {
+          "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+          "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+          "runtime": "node-24.20.0",
+          "compiler": "typescript-7.0.2",
+          "measurementVersion": "own-characters-1",
+          "suite": "unit",
+          "completionProtocol": "normal-exit-or-sealed-or-loader-1",
+          "captureId": "fc1d067967f555700e4bfa551c7382d0a1d81f023b278e9896c8fe111e01a955",
+          "status": "verified",
+          "capturedCommit": "10f50aac8feb81a49da5df099fac1e34200c640f",
+          "buildFingerprint": "919af81411ca465c563f6a728e65a913d3f4b45bb21e895681f98dd8ac827de3",
+          "captureManifestFingerprint": "91050f52bb64983e873e3399b9028f5ebe7b111c38beabeb8f16646c960a11ec",
+          "comparisonIdentity": {
+            "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+            "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+            "runtime": "node-24.20.0",
+            "compiler": "typescript-7.0.2",
+            "measurementVersion": "own-characters-1",
+            "suite": "unit"
+          }
+        }
+      }
+    }
+  ],
+  "sourceFingerprint": "cf4a46d84e144cc72f7b785875282fdee37f043a3fffff135f3757532ebc56a1",
+  "crap": {
+    "kind": "head-derived-estimate",
+    "coverageCommit": "10f50aac8feb81a49da5df099fac1e34200c640f",
+    "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+    "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+    "buildFingerprint": "919af81411ca465c563f6a728e65a913d3f4b45bb21e895681f98dd8ac827de3",
+    "measurementVersion": "own-characters-1",
+    "unknownFunctions": 133,
+    "captureProvenance": {
+      "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+      "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+      "runtime": "node-24.20.0",
+      "compiler": "typescript-7.0.2",
+      "measurementVersion": "own-characters-1",
+      "suite": "unit",
+      "completionProtocol": "normal-exit-or-sealed-or-loader-1",
+      "captureId": "fc1d067967f555700e4bfa551c7382d0a1d81f023b278e9896c8fe111e01a955",
+      "status": "verified",
+      "capturedCommit": "10f50aac8feb81a49da5df099fac1e34200c640f",
+      "buildFingerprint": "919af81411ca465c563f6a728e65a913d3f4b45bb21e895681f98dd8ac827de3",
+      "captureManifestFingerprint": "91050f52bb64983e873e3399b9028f5ebe7b111c38beabeb8f16646c960a11ec",
+      "comparisonIdentity": {
+        "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d",
+        "inputsFingerprint": "1b7f10a0ae0ee979228c422c874c1b30897215e8e55e1848dffd49211f2ea32c",
+        "runtime": "node-24.20.0",
+        "compiler": "typescript-7.0.2",
+        "measurementVersion": "own-characters-1",
+        "suite": "unit"
+      }
+    }
+  }
+}

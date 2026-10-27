@@ -82,7 +82,8 @@ for (const cancelled of [false, true]) {
       }
       return execute.call(this, page, signal);
     });
-    const site = await openHostedFetchSite(t);
+    // The case shows the busy refusal of one hosted slot, so it sets the capacity to one call.
+    const site = await openHostedFetchSite(t, { OPERATION_CAPACITY: '1' });
     const renderer = RendererProcessDouble.install(t);
     const url = 'https://source.example/story';
     const markdown = 'The rendered article has enough words to keep this first paragraph.';

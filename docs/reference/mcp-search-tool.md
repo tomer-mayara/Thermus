@@ -65,7 +65,7 @@ cards on a results page causes a processing failure, not a no-results response.
 | Known scan withholding | `Search content withheld`; `withheld` |
 | Invalid arguments | `Invalid tool arguments`; `invalid_arguments` |
 | Missing product permission inside the operation | `Access denied`; `access_denied` |
-| Shared hosted slot occupied | `Server busy. Try again later.`; `busy` |
+| Shared hosted capacity full (`OPERATION_CAPACITY`) | `Server busy. Try again later.`; `busy` |
 | Provider, classifier, or outgoing failure | `Search failed`; `search_failed` |
 | Incoming or unexpected processing failure | `Search processing failed`; `processing_failed` |
 | Observed cancellation | `Request cancelled`; `cancelled` |

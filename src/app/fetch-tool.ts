@@ -1,6 +1,7 @@
 import type { AuditLog } from '../logs/audit/audit-log.ts';
 import type { SystemLog } from '../logs/system/system-logger.ts';
 import { AdRulesFileError, readAdRulesFile } from '../runtime/config/ad-rules-file.ts';
+import { loadOperationCapacity } from '../runtime/config/operation-capacity-config.ts';
 import { CleanHtmlAdsAdblockRs } from '../pipelines/html-processing/ad-cleaner/adb/clean-html-ads-adblock-rs.ts';
 import { HtmlToMarkdownPipeline } from '../pipelines/html-processing/html-to-markdown-pipeline.ts';
 import { ProcessHtmlStep } from '../pipelines/html-processing/process-html-step.ts';
@@ -49,9 +50,10 @@ export function createToolOperations(environment: Environment, logger: SystemLog
   return { fetch, search: (query, context, execution) => search.search(query, context, execution) };
 }
 
+// One capacity owner covers both tools, so OPERATION_CAPACITY bounds their sum in this process.
 export function createHostedToolOperations(environment: Environment, logger: SystemLog): ToolOperations {
+  const capacity = new OperationCapacity(loadOperationCapacity(environment));
   const operations = createToolOperations(environment, logger);
-  const capacity = new OperationCapacity();
   return { fetch: capacity.wrap(operations.fetch), search: capacity.wrap(operations.search) };
 }
 

@@ -72,7 +72,8 @@ test('Given production hosted composition with an outgoing step that owns pendin
     if (stepCalls === 1) { started.resolve(signal); await release.promise; }
     return { decision: 'allow', output: input };
   });
-  const site = await openHostedFetchSite(t);
+  // The case shows the busy refusal of one hosted slot, so it sets the capacity to one call.
+  const site = await openHostedFetchSite(t, { OPERATION_CAPACITY: '1' });
   const renderer = RendererProcessDouble.install(t);
   const url = 'https://source.example/story';
   const markdown = 'The rendered article has enough words to keep this first paragraph.';
