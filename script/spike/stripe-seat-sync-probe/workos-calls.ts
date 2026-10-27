@@ -2,7 +2,6 @@ import type { Organization, OrganizationMembership, User } from '@workos-inc/nod
 import { query } from './calls.ts';
 import type { WorkOSCall } from './workos-client.ts';
 
-// The WorkOS calls of the probe, through @workos-inc/node. The path is the REST call that the SDK sends.
 const PAGE_SIZE = 100;
 const MEMBER_ROLES = ['user'];
 
@@ -48,7 +47,6 @@ export function removeMemberCall(id: string): WorkOSCall<void> {
   return { method: 'DELETE', path: `/user_management/organization_memberships/${id}`, sdk, send: (workos) => workos.userManagement.deleteOrganizationMembership(id) };
 }
 
-// The active memberships of the organization, from every page.
 export function activeMembershipsCall(organizationId: string): WorkOSCall<readonly OrganizationMembership[]> {
   const params = { organizationId, statuses: ['active' as const], limit: PAGE_SIZE };
   return {

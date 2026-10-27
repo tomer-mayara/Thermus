@@ -47,13 +47,12 @@ interface Track {
   readonly clockId: string;
   readonly subscriptionId: string;
   readonly invoiceId: string;
-  // The creation time of the invoice, and the frozen time of the clock when the retries start.
-  readonly from: number;
+  readonly invoiceCreated: number;
   readonly clockTime: number;
 }
 
-// Each advance goes to one hour after the next payment attempt of the invoice, or 7 days on when the invoice has
-// none, until the subscription is canceled.
+// One hour after the next payment attempt lets that attempt run. When the invoice has no next attempt, the
+// subscription changes state at the end of the retry window, so the clock goes 7 days on.
 function nextTarget(invoice: Stripe.Invoice, frozen: number): number {
   return invoice.next_payment_attempt === null ? frozen + RETRY_STEP_S : Math.max(invoice.next_payment_attempt + HOUR, frozen + HOUR);
 }
@@ -64,15 +63,15 @@ export async function passRetries(context: ProbeContext, track: Track): Promise<
   for (let advances = 0; advances <= RETRY_ADVANCES; advances++) {
     const subscription = await stripe.read(subscriptionCall(track.subscriptionId), context.signal);
     const invoice = await stripe.read(invoiceCall(track.invoiceId), context.signal);
-    const days = Math.round((frozen - track.from) / DAY);
+    const days = Math.round((frozen - track.invoiceCreated) / DAY);
     if (subscription.status === 'canceled') return { subscription, invoice, advances, days };
     if (subscription.status !== 'past_due') throw new Error(`The subscription is ${subscription.status} during the payment retries, not past_due.`);
-    if (frozen - track.from >= RETRY_WINDOW_S || advances === RETRY_ADVANCES) break;
+    if (frozen - track.invoiceCreated >= RETRY_WINDOW_S || advances === RETRY_ADVANCES) break;
     const target = nextTarget(invoice, frozen);
     const { clock, ms } = await advanceTo(context, track.clockId, target);
     frozen = clock.frozen_time;
     const next = invoice.next_payment_attempt === null ? 'none' : day(invoice.next_payment_attempt);
     addRow(context, STEP, { check: `Retry advance ${advances + 1} to ${day(frozen)} UTC`, expected: 'ready; recorded', measured: `ready after ${(ms / 1_000).toFixed(1)} s; before it: invoice attempt_count ${invoice.attempt_count}, next attempt ${next}` });
   }
-  throw new Error(`The subscription stayed past_due ${Math.round((frozen - track.from) / DAY)} days after the first failed payment. Set Billing > Revenue recovery > Retries to cancel the subscription after the last retry.`);
+  throw new Error(`The subscription stayed past_due ${Math.round((frozen - track.invoiceCreated) / DAY)} days after the first failed payment. Set Billing > Revenue recovery > Retries to cancel the subscription after the last retry.`);
 }

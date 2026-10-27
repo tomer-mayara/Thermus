@@ -6,9 +6,7 @@ export type WorkStepId = (typeof WORK_STEP_IDS)[number];
 const SWEEP_STEP = 'cleanup';
 
 export interface ProbeInputs {
-  // The work steps of this run, in the fixed order. The cleanup of the run always follows them.
   readonly steps: readonly WorkStepId[];
-  // --steps cleanup: delete the objects of earlier runs, and run no other step.
   readonly sweep: boolean;
   readonly workosOnly: boolean;
   readonly dryRun: boolean;
@@ -85,12 +83,10 @@ export function parseInputs(args: readonly string[]): ProbeInputs {
   return Object.freeze({ steps, sweep, workosOnly, dryRun: values['dry-run'] === true, keep: values.keep === true });
 }
 
-// True when a step of this run calls Stripe: every work step, except seat-sync with --workos-only.
 export function usesStripe(inputs: ProbeInputs): boolean {
   return !inputs.workosOnly && inputs.steps.length > 0;
 }
 
-// True when a step of this run calls WorkOS: seat-sync, and the sweep of earlier runs.
 export function usesWorkOS(inputs: ProbeInputs): boolean {
   return inputs.sweep || inputs.steps.includes('seat-sync');
 }

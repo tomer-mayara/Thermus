@@ -3,7 +3,6 @@ import { query } from './calls.ts';
 import { PROBE_TAG } from './context.ts';
 import type { StripeCall } from './stripe-client.ts';
 
-// The Stripe calls of the probe, through the pinned stripe SDK. The path is the REST call that the SDK sends.
 export const PROBE_CUSTOMERS_QUERY = `metadata['thermus_probe']:'${PROBE_TAG}'`;
 
 export function priceCall(id: string): StripeCall<Stripe.Price> {

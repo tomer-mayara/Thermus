@@ -1,13 +1,11 @@
 import { addRow, type ProbeContext } from './context.ts';
 
-// A named condition on an answer. A check adds one row with every rule, and fails with the rules that do not hold.
 export type Rule<T> = readonly [string, (value: T) => boolean];
 
 export interface Subject<T> {
   readonly step: string;
   readonly what: string;
   readonly value: T;
-  // What the row shows in its Measured cell when each rule holds. The default is "each rule holds".
   readonly measured?: string;
 }
 

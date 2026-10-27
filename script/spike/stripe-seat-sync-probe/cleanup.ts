@@ -8,7 +8,6 @@ import { organizationsCall, usersCall } from './workos-calls.ts';
 const STEP = 'Cleanup';
 const SWEEP = 'Sweep';
 
-// Which objects belong to the probe: the objects of one run, or of every run (the sweep).
 interface Finder {
   readonly label: string;
   readonly prefix: string;
@@ -32,7 +31,7 @@ function found(kind: ObjectKind, id: string): CreatedObject {
   return { system: kind === 'user' || kind === 'organization' ? 'WorkOS' : 'Stripe', kind, id, step: 'found by its name or tag' };
 }
 
-// The objects of the probe in WorkOS and in Stripe. A create whose answer was lost still left a named object.
+// A create whose answer was lost still leaves an object with the run token, so the cleanup also searches by it.
 async function findObjects(context: ProbeContext, finder: Finder): Promise<readonly CreatedObject[]> {
   const objects: CreatedObject[] = [];
   if (context.workos !== undefined) {
@@ -50,7 +49,6 @@ async function findObjects(context: ProbeContext, finder: Finder): Promise<reado
   return objects;
 }
 
-// The objects that earlier runs left. The preflight refuses to start while one exists.
 export function earlierObjects(context: ProbeContext): Promise<readonly CreatedObject[]> {
   return findObjects(context, sweepFinder);
 }

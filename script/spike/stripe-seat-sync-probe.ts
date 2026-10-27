@@ -30,7 +30,6 @@ function allowWrites(context: ProbeContext): void {
   context.workos?.allowWrites();
 }
 
-// The preflight makes reads only: the clients refuse each write until it passes.
 const preflightThenWrites: ProbeStep = {
   ...preflightStep,
   run: async (context) => {

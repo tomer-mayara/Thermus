@@ -15,10 +15,8 @@ interface Observation {
   readonly delay: string;
 }
 
-// Reads the meter after a change, or says why it does not. answeredAt is the time of the WorkOS answer.
 export type Observe = (expected: number, answeredAt: number) => Promise<Observation>;
 
-// The memberships that this step made in its organization, in order.
 class Members {
   readonly #context: ProbeContext;
   readonly #step: string;
@@ -85,7 +83,6 @@ export async function changeMemberships(context: ProbeContext, changes: Membersh
   }
 }
 
-// The plan of the changes, for the dry run. meterRead is the planned meter read after each change, if any.
 export function membershipPlan(run: string, organizationId: string, meterRead: (expected: number) => readonly PlannedCall[]): readonly PlannedCall[] {
   const count = (expected: number): readonly PlannedCall[] => [
     planned(activeMembershipsCall(organizationId), `WorkOS must show ${memberships(expected)}.`),

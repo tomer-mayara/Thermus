@@ -7,7 +7,6 @@ import { checkoutCall, createCheckoutCall, createCustomerCall, subscriptionCall 
 import { CHECKOUT_LIFETIME_S, checkoutParams, customerParams } from './stripe-params.ts';
 
 const STEP = 'Checkout';
-// The operator has 15 minutes to pay in a browser. The session itself expires after 31 minutes.
 const CHECKOUT_POLL: PollPlan = { everyMs: 5_000, attempts: 180 };
 
 const OPERATOR_STEPS = [

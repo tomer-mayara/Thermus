@@ -27,7 +27,6 @@ interface Simulation {
   readonly subscription: Stripe.Subscription;
 }
 
-// A customer on a new test clock, with a card that Stripe attaches but cannot charge, and the metered price.
 async function simulation(context: ProbeContext, priceId: string): Promise<Simulation> {
   const stripe = stripeOf(context);
   const clock = await stripe.write(STEP, createClockCall(clockParams(context.run, Math.floor(Date.now() / 1_000))), context.signal);
@@ -88,14 +87,13 @@ async function testClock(context: ProbeContext): Promise<string> {
   const { invoice, clockTime } = await billPeriod(context, setup);
   const pastDue = await stripeOf(context).read(subscriptionCall(setup.subscription.id), context.signal);
   checkRules(context, { step: STEP, what: 'Subscription after the failed payment', value: pastDue, measured: pastDue.status }, [['status past_due', (value) => value.status === 'past_due']]);
-  const track = { clockId: setup.clock.id, subscriptionId: setup.subscription.id, invoiceId: invoice.id, from: invoice.created, clockTime };
+  const track = { clockId: setup.clock.id, subscriptionId: setup.subscription.id, invoiceId: invoice.id, invoiceCreated: invoice.created, clockTime };
   const ended = await passRetries(context, track);
   const facts = `${ended.subscription.status} ${ended.days} days after the invoice, after ${ended.advances} advances; attempt_count ${ended.invoice.attempt_count}; cancellation_details.reason ${ended.subscription.cancellation_details?.reason ?? 'none'}`;
   checkRules(context, { step: STEP, what: 'Subscription after the retries', value: ended.subscription, measured: facts }, [['status canceled', (value) => value.status === 'canceled']]);
   return `the invoice ${invoice.id} of the first period was ${invoice.subtotal} for ${CLOCK_SEATS} seats; the subscription ${setup.subscription.id} was past_due after the failed payment and canceled ${ended.days} days later, after ${ended.invoice.attempt_count} attempts.`;
 }
 
-// The dry run shows a parameter that real mode computes as a placeholder.
 function shown(call: PlannedCall, values: Readonly<Record<string, string>>): PlannedCall {
   return { ...call, params: { ...(call.params as object), ...values } };
 }

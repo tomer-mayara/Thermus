@@ -73,7 +73,6 @@ export interface ProbeStep {
   readonly plan: Plan;
 }
 
-// The UTC start time, YYYYMMDD-HHMMSS, and four hexadecimal digits.
 export function runTokenOf(now: Date): string {
   return `${runToken(now)}-${randomBytes(2).toString('hex')}`;
 }

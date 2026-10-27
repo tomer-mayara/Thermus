@@ -9,8 +9,6 @@ import { webhook, webhookPlan } from './webhook.ts';
 
 type WorkStep = ProbeStep & { readonly id: WorkStepId };
 
-// Each step asserts one Given-When-Then specification of the ticket, through the public APIs of Stripe and WorkOS.
-
 export const preflightStep: ProbeStep = {
   name: 'Preflight',
   spec: 'Given the inputs, when the probe reads the price, its meter, the settings that the steps need, and the objects of earlier runs, then the price is a metered monthly USD price on the meter workos_seat_count with the last aggregation, and no object of an earlier run exists.',

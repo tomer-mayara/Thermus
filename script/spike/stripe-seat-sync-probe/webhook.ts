@@ -35,7 +35,7 @@ async function post(listener: WebhookListener, check: { readonly label: string; 
   return response.status;
 }
 
-// The objects that the trigger made, from the events of this run: the customer and its subscription.
+// The CLI prints no ID, so the events of this run name the customer and the subscription to delete.
 function rememberTriggered(context: ProbeContext, deliveries: readonly Delivery[]): void {
   const ids = new Map<string, 'customer' | 'subscription'>();
   for (const delivery of deliveries.filter((item) => item.status === 200 && item.runMatch)) {

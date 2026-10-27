@@ -10,7 +10,7 @@ const DRY_RUN_TOKEN = 'YYYYMMDD-HHMMSS-xxxx';
 
 const FLAT_LIMIT = 110;
 
-// The parameters of a write, on one line when they are short. A read shows its parameters in the query of its path.
+// A read shows its parameters in the query of its path, so only a write prints them.
 function paramsText(call: PlannedCall): readonly string[] {
   if (call.params === undefined || call.line.startsWith('GET ')) return [];
   const flat = JSON.stringify(call.params);

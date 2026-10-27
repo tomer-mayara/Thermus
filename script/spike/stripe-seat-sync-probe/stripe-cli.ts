@@ -102,7 +102,6 @@ export function triggerArgs(run: string, priceId: string): readonly string[] {
   ];
 }
 
-// stripe listen as a child process, until stop().
 export class ListenSession {
   readonly #child: ChildProcess;
   #output = '';
