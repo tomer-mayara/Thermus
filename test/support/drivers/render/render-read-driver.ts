@@ -1,6 +1,6 @@
 // The protocol driver of the Render API v1 for the reads of the live interface test: the workspace, the registry
-// credentials, and the services of the workspace. It sends no write. The API key stays in a private field: no
-// output, error, or report holds the key or a request header.
+// credentials, the services of the workspace, and the slug and URL of one service. It sends no write. The API key
+// stays in a private field: no output, error, or report holds the key or a request header.
 
 const API_BASE = 'https://api.render.com/v1';
 const REQUEST_TIMEOUT_MS = 30_000;
@@ -25,6 +25,13 @@ export interface ServiceView {
   readonly id: string;
   readonly name: string;
   readonly type: string;
+}
+
+/** The fields of one service that name its private address: the slug and serviceDetails.url. */
+export interface AddressView {
+  readonly name: string;
+  readonly slug: string;
+  readonly url: string;
 }
 
 function record(value: unknown): Json {
@@ -69,6 +76,11 @@ export class RenderReadDriver {
       if (cursor === undefined) return found;
     }
     throw new Error(`The service list of the workspace has more than ${MAX_PAGES} pages`);
+  }
+
+  async address(serviceId: string): Promise<AddressView> {
+    const service = record(await this.read(`/services/${encodeURIComponent(serviceId)}`));
+    return { name: text(service, 'name'), slug: text(service, 'slug'), url: text(record(service.serviceDetails), 'url') };
   }
 
   private async read(path: string): Promise<unknown> {
