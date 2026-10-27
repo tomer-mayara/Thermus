@@ -3,7 +3,7 @@ import test from 'node:test';
 import { OrganizationAdministration } from '../../../src/accounts/organizations/organization-administration.ts';
 import { BillingFree } from '../../../src/accounts/billing/billing-free.ts';
 import { PgDestinationSettingsStore } from '../../../src/logs/audit/pg-destination-settings-store.ts';
-import { createPgSettingsRuntime } from '../../../src/logs/audit/bounded-sql-runtime.ts';
+import { createPgSettingsRuntime } from '../../../src/runtime/sql/bounded-sql-runtime.ts';
 import { composeLoggingStorage } from '../../../src/app/logging-storage.ts';
 import { OrganizationDirectoryDouble } from '../../support/doubles/organizations/organization-directory-double.ts';
 import { adminGrant, userGrant } from '../../support/fixtures/hosted-roles.ts';

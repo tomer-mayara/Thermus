@@ -2,7 +2,7 @@ import { OrganizationAdministration } from '../../../src/accounts/organizations/
 import { BillingFree } from '../../../src/accounts/billing/billing-free.ts';
 import type { RemovalOperationStore } from '../../../src/accounts/organizations/removal-operation-store.ts';
 import { PgDestinationSettingsStore } from '../../../src/logs/audit/pg-destination-settings-store.ts';
-import { createPgSettingsRuntime } from '../../../src/logs/audit/bounded-sql-runtime.ts';
+import { createPgSettingsRuntime } from '../../../src/runtime/sql/bounded-sql-runtime.ts';
 import { OrganizationDirectoryDouble } from '../doubles/organizations/organization-directory-double.ts';
 import { adminGrant } from '../fixtures/hosted-roles.ts';
 

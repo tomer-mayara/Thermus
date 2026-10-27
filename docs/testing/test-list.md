@@ -1,5 +1,38 @@
 # Test inventory
 
+## Current SO-04 inventory scope
+
+SO-04 of the [self on-boarding plan](../implementation/self-onboarding-plan.md#slice-2-free-tier-end-to-end)
+adds the tenant registry and moves the bounded SQL runtime to the `sql` owner.
+Inventory presence is not a passing result; the pull request records the runs.
+
+- `test/acceptance/tenants/tenant-registry.runtime.ts` has the nine acceptance
+  cases of the ticket on disposable PostgreSQL 17 with verified test TLS and the
+  scoped runtime role: the three tables and their columns and the seven states;
+  the state and internal address of a row; the refresh after 10 s and no stale
+  copy at 60 s, with a clock double and a stopped database; two requests for one
+  organization; an unchanged row on a repeat; the full cap; one free place for
+  two new organizations; the settings and removal stores on the moved runtime;
+  and only SELECT, INSERT, and UPDATE with forced RLS for the role.
+- `test/integration/tenants/tenant-registry-store.runtime.ts` adds the store on
+  the real runtime: lock races that two pools enter together after a held
+  table lock, reads during a request lock, places that failed and deleted rows
+  free, `FREE_TENANT_LIMIT` 0, a lost commit reply, and the production storage
+  composition with one shared pool and closure.
+- `test/unit/tenants/tenant-requests.test.ts`, `tenant-lookup.test.ts`, and
+  `pg-tenant-registry-store.test.ts` check the cap rule with a store fake, the
+  refresh bounds with a clock double, and the SQL of each store operation with
+  a double of the SQL runtime. `test/unit/config/free-tenant-limit-config.test.ts`
+  checks the setting rule, and `test/acceptance/auth/hosted-startup.test.ts`
+  checks that an invalid value stops the start.
+- `test/unit/sql/bounded-sql-runtime.test.ts` is the moved runtime test, with
+  unchanged cases. The settings and removal tests now import the runtime from
+  `src/runtime/sql/`.
+
+Both runtime files run in `npm run test:logging:postgres`, which needs Docker
+Engine and OpenSSL and is outside the ordinary suite. The other files are in
+the ordinary suite.
+
 ## Current S2.5-R1 inventory scope
 
 The [repair record](../implementation/admin-s2-5-r1.md) distinguishes the branch
@@ -696,6 +729,28 @@ Only the hosted edition reads `OPERATION_CAPACITY`.
 
 ```sh
 npm run build && node --test dist/test/unit/config/operation-capacity-config.test.js
+```
+
+**Free-tenant cap setting** (`test/unit/config/free-tenant-limit-config.test.ts`)
+
+Only the hosted edition reads `FREE_TENANT_LIMIT`.
+
+[V] Gives 25 when `FREE_TENANT_LIMIT` is missing or empty, and the number for each whole number from 0 to 1000; 0 closes free signup through the cap
+[V] Rejects `1001`, `10000`, `-1`, `2.5`, `abc`, ` 25`, `25 `, `0x10`, and `1e3` with a `DeploymentConfigError` whose message is exactly `FREE_TENANT_LIMIT must be a whole number from 0 to 1000.`, without the value
+
+**Tenant registry** (`test/unit/tenants/tenant-requests.test.ts`, `tenant-lookup.test.ts`, `pg-tenant-registry-store.test.ts`)
+
+A store fake keeps rows in memory, the lookup reads a clock double, and the SQL adapter runs on the real
+bounded runtime over a client double.
+
+[V] A request inserts one `requested` row; a row in any state stays as it is and the result names its state
+[V] At `FREE_TENANT_LIMIT` rows in `requested`, `creating`, `deploying`, `live`, or `suspended`, a new organization gets the full cap and nothing is inserted; failed and deleted rows hold no place; 0 refuses every new organization
+[V] Unavailable or unconfirmed storage gives an unavailable request, and a repeat finds a committed row
+[V] The lookup answers from its copy inside 10 s, refreshes at 10 s, serves a stale copy after a failed refresh until 60 s from the start of its read, then fails; concurrent asks share one read
+[V] The adapter locks the registry in `SHARE ROW EXCLUSIVE` mode, counts the rows by state, inserts only when the decision allows it, and commits in one transaction; a failure before the commit destroys the client, a failure after the insert is unconfirmed, and a route read maps each organization to its state and internal address
+
+```sh
+npm run build && node --test dist/test/unit/tenants/*.test.js
 ```
 
 **Local authentication migrations** (`test/unit/auth-better-auth/local-auth-migrations.test.ts`)
@@ -2582,6 +2637,7 @@ AUTH-06 replaced the placeholder specification, `hosted-placeholder.test.ts`. Ea
 [V] Test and demonstration settings (`NODE_ENV=test`, `AUTH_MODE=mock`, `THERMUS_DEMO`, and a test session setting) with the session cookie, form token, and organization values of the doubles still ask for a sign-in without a cookie, and the output names no organization, tenant, or user
 [V] An invalid common setting, also with every WorkOS setting, stops startup before it listens with a `FATAL` line that names the setting and the rule but not the value
 [V] An `OPERATION_CAPACITY` of `0`, `101`, `1.5`, `abc`, or ` 5` stops startup before it listens; the `FATAL` line ends with `OPERATION_CAPACITY must be a whole number from 1 to 100.` and holds no value
+[V] A `FREE_TENANT_LIMIT` of `1001`, `2.5`, `abc`, ` 25`, or `1e3` stops startup before it listens; the `FATAL` line ends with `FREE_TENANT_LIMIT must be a whole number from 0 to 1000.` and holds no value
 
 Run only these tests:
 

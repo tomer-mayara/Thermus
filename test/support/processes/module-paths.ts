@@ -55,11 +55,13 @@ export const hostedImageIdentity = containerModule('hosted-image-identity');
 export const fetchPublicScriptEntry = fileURLToPath(siblingModule('fetch-public-script-entry'));
 export const fetchUrlScript = fileURLToPath(new URL('script/fetch-url/fetch-url.ts', repositoryRoot));
 
-// The scoped owner setup used by the disposable PostgreSQL settings site.
-export const loggingSettingsMigrations = [
+// The scoped owner setup of the thermus_admin schema, in the order of the S2-01a process, used by the disposable
+// PostgreSQL settings site.
+export const thermusAdminMigrations = [
   '20261023211956_logging_destination_settings.sql',
   '20261024231921_add_logging_axiom_dataset.sql',
   '20261025082850_membership_removal_operations.sql',
+  '20261027175430_tenant_registry_and_billing.sql',
 ].map(name => fileURLToPath(new URL(`sql/migrations/${name}`, repositoryRoot)));
 
 // The audit sender gate copies only source modules and test support into an isolated Docker network.

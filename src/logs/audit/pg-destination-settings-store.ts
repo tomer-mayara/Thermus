@@ -1,7 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type { RemovalIntent, RemovalOperation, RemovalOperationStore, RemovalTerminal } from '../../accounts/organizations/removal-operation-store.ts';
-import { createPgSettingsRuntime } from './bounded-sql-runtime.ts';
-import type { BoundedSqlRuntime, SettingsSqlOptions } from './bounded-sql-runtime.ts';
+import type { BoundedSqlRuntime } from '../../runtime/sql/bounded-sql-runtime.ts';
 import type { DestinationSettings, DestinationSettingsStore, ReadSettingsResult, SaveSettingsResult, StoredDestinationSettings } from './destination-settings-store.ts';
 
 const columns = 'revision, endpoint, auth, enabled, encrypted_credential, axiom_dataset';
@@ -85,9 +84,4 @@ function removalOperation(row: Record<string, unknown>): RemovalOperation {
 
 function settings(row: Record<string, unknown>): StoredDestinationSettings {
   return { revision: row.revision as string, endpoint: row.endpoint as string, ...(row.axiom_dataset == null ? {} : { axiomDataset: row.axiom_dataset as string }), auth: row.auth as DestinationSettings['auth'], enabled: row.enabled as boolean, encryptedCredential: row.encrypted_credential as string | null };
-}
-
-export function openDestinationSettingsRuntime(options: SettingsSqlOptions): { store: DestinationSettingsStore & RemovalOperationStore; close(): Promise<void> } {
-  const runtime = createPgSettingsRuntime(options);
-  return { store: new PgDestinationSettingsStore(runtime), close: () => runtime.close() };
 }

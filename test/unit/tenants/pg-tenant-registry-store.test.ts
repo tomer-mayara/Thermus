@@ -1,0 +1,101 @@
+import assert from 'node:assert/strict';
+import { test } from 'node:test';
+import type { TestContext } from 'node:test';
+import { BoundedSqlRuntime } from '../../../src/runtime/sql/bounded-sql-runtime.ts';
+import { PgTenantRegistryStore } from '../../../src/tenancy/tenants/pg-tenant-registry-store.ts';
+import type { RegistryCount } from '../../../src/tenancy/tenants/tenant-registry-store.ts';
+
+type Rows = Record<string, unknown>[];
+
+const lock = 'LOCK TABLE thermus_admin.tenants IN SHARE ROW EXCLUSIVE MODE';
+const count = /^SELECT state, count\(\*\)::integer AS rows, bool_or\(organization_id = \$1\) AS current\s+FROM thermus_admin\.tenants GROUP BY state$/;
+const insert = "INSERT INTO thermus_admin.tenants (organization_id, state) VALUES ($1, 'requested')";
+const routes = 'SELECT organization_id, state, internal_url FROM thermus_admin.tenants';
+
+function registryStore(t: TestContext, answer: (text: string) => Rows | Error) {
+  const queries: { readonly text: string; readonly values?: unknown[] }[] = [];
+  const releases: boolean[] = [];
+  const runtime = new BoundedSqlRuntime({
+    connect: async () => ({
+      query: async (text: string, values?: unknown[]) => {
+        queries.push({ text, values });
+        const rows = answer(text);
+        if (rows instanceof Error) throw rows;
+        return { rows };
+      },
+      release: (destroy?: boolean) => { releases.push(Boolean(destroy)); },
+    }),
+    end: async () => {}, on: () => {},
+  });
+  t.after(() => runtime.close());
+  return { store: new PgTenantRegistryStore(runtime), queries, releases };
+}
+
+function counted(rows: Rows): (text: string) => Rows {
+  return (text) => count.test(text) ? rows : [];
+}
+
+test('Given a free place, when a request is admitted, then one transaction locks the registry, counts the rows, inserts the requested row, and commits', async (t) => {
+  const { store, queries, releases } = registryStore(t, counted([{ state: 'live', rows: 2, current: false }, { state: 'failed', rows: 1, current: false }]));
+  const seen: RegistryCount[] = [];
+  assert.deepEqual(await store.insertRequested('org_A', (registry) => { seen.push(registry); return true; }), { status: 'inserted' });
+  assert.deepEqual(seen, [{ rowsByState: new Map([['live', 2], ['failed', 1]]) }]);
+  assert.deepEqual(queries.map(({ text }) => text).filter((text) => !count.test(text)), ['BEGIN', lock, insert, 'COMMIT']);
+  assert.match(queries[2]?.text ?? '', count);
+  assert.deepEqual(queries.map(({ values }) => values), [undefined, undefined, ['org_A'], ['org_A'], []]);
+  assert.deepEqual(releases, [false]);
+});
+
+test('Given the row of the organization, when the decision refuses, then the transaction commits without an insert and returns the count it saw', async (t) => {
+  const { store, queries, releases } = registryStore(t, counted([{ state: 'live', rows: 1, current: true }, { state: 'requested', rows: 3, current: false }]));
+  assert.deepEqual(await store.insertRequested('org_A', () => false), { status: 'refused', count: { current: 'live', rowsByState: new Map([['live', 1], ['requested', 3]]) } });
+  assert.deepEqual(queries.map(({ text }) => text).filter((text) => !count.test(text)), ['BEGIN', lock, 'COMMIT']);
+  assert.deepEqual(releases, [false]);
+});
+
+test('Given an empty registry, when a request counts the rows, then the count has no row and no current state', async (t) => {
+  const { store } = registryStore(t, counted([]));
+  assert.deepEqual(await store.insertRequested('org_A', () => false), { status: 'refused', count: { rowsByState: new Map() } });
+});
+
+test('Given a query failure, when a request runs, then it is unavailable before the insert and unconfirmed after it, and the client is destroyed', async (t) => {
+  const beforeInsert = registryStore(t, (text) => text === lock ? new Error('private lock details') : []);
+  assert.deepEqual(await beforeInsert.store.insertRequested('org_A', () => true), { status: 'unavailable' });
+  assert.deepEqual(beforeInsert.releases, [true]);
+  const atCommit = registryStore(t, (text) => text === 'COMMIT' ? new Error('private commit details') : []);
+  assert.deepEqual(await atCommit.store.insertRequested('org_A', () => true), { status: 'unconfirmed' });
+  assert.deepEqual(atCommit.releases, [true]);
+});
+
+test('Given a decision that throws, when a request runs, then it is unavailable, nothing is inserted, and the open transaction is destroyed', async (t) => {
+  const { store, queries, releases } = registryStore(t, counted([]));
+  assert.deepEqual(await store.insertRequested('org_A', () => { throw new Error('decision failure'); }), { status: 'unavailable' });
+  assert.equal(queries.some(({ text }) => text === insert || text === 'COMMIT'), false);
+  assert.deepEqual(releases, [true]);
+});
+
+test('Given failed acquisition, when a request or a read runs, then no write is claimed', async (t) => {
+  const runtime = new BoundedSqlRuntime({ connect: async () => { throw new Error('private connection'); }, end: async () => {}, on: () => {} });
+  t.after(() => runtime.close());
+  const store = new PgTenantRegistryStore(runtime);
+  assert.deepEqual(await store.insertRequested('org_A', () => true), { status: 'unavailable' });
+  assert.deepEqual(await store.readRoutes(), { status: 'unavailable' });
+});
+
+test('Given registry rows, when the routes are read, then one plain read maps each organization to its state and internal address', async (t) => {
+  const { store, queries, releases } = registryStore(t, (text) => text === routes ? [
+    { organization_id: 'org_A', state: 'live', internal_url: 'http://thermus-tenant-org-a:8080' },
+    { organization_id: 'org_B', state: 'requested', internal_url: null },
+  ] : new Error('unexpected statement'));
+  assert.deepEqual(await store.readRoutes(), { status: 'complete', routes: new Map([
+    ['org_A', { state: 'live', internalUrl: 'http://thermus-tenant-org-a:8080' }],
+    ['org_B', { state: 'requested', internalUrl: null }],
+  ]) });
+  assert.deepEqual(queries, [{ text: routes, values: undefined }]);
+  assert.deepEqual(releases, [false]);
+});
+
+test('Given a failed read, when the routes are read, then the result is unavailable without the cause', async (t) => {
+  const { store } = registryStore(t, () => new Error('private storage details'));
+  assert.deepEqual(await store.readRoutes(), { status: 'unavailable' });
+});

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { BoundedSqlRuntime } from '../../../../src/logs/audit/bounded-sql-runtime.ts';
+import { BoundedSqlRuntime } from '../../../src/runtime/sql/bounded-sql-runtime.ts';
 
 interface TestSqlClient {
   query(text: string, values?: unknown[]): Promise<{ rows: Record<string, unknown>[] }>;
@@ -59,7 +59,7 @@ test('Given pending and active work, when runtime closes, then callers settle an
 });
 
 test('Given an unsafe direct factory URL, when a runtime is requested, then it fails before network work', async () => {
-  const { createPgSettingsRuntime } = await import('../../../../src/logs/audit/bounded-sql-runtime.ts');
+  const { createPgSettingsRuntime } = await import('../../../src/runtime/sql/bounded-sql-runtime.ts');
   for (const connectionString of ['postgresql://localhost/db', 'postgresql://user:password@%2Ftmp/db', 'postgresql://user:password@localhost/db?host=evil', 'postgresql://user:password@localhost/db#fragment', 'postgresql://user:password@localhost/db?', 'postgresql://us\ner:password@localhost/db']) {
     assert.throws(() => createPgSettingsRuntime({ connectionString }), /Invalid database connection configuration/);
   }

@@ -5,7 +5,7 @@ import { StreamableHTTPClientTransport } from '@modelcontextprotocol/client';
 import '../../../support/processes/use-hosted-portal-fixture.ts';
 import { HostedPortal } from '../../../../src/app/hosted-portal.ts';
 import { createHostedToolOperations, fetchToolServers } from '../../../../src/app/fetch-tool.ts';
-import { createPgSettingsRuntime } from '../../../../src/logs/audit/bounded-sql-runtime.ts';
+import { createPgSettingsRuntime } from '../../../../src/runtime/sql/bounded-sql-runtime.ts';
 import { PgDestinationSettingsStore } from '../../../../src/logs/audit/pg-destination-settings-store.ts';
 import { OrganizationAdministration } from '../../../../src/accounts/organizations/organization-administration.ts';
 import { BillingFree } from '../../../../src/accounts/billing/billing-free.ts';

@@ -7,7 +7,7 @@ import test from 'node:test';
 import { Pool } from 'pg';
 import { openLoggingStorage } from '../../../../src/app/logging-storage.ts';
 import { PgDestinationSettingsStore } from '../../../../src/logs/audit/pg-destination-settings-store.ts';
-import { BoundedSqlRuntime, createPgSettingsRuntime } from '../../../../src/logs/audit/bounded-sql-runtime.ts';
+import { BoundedSqlRuntime, createPgSettingsRuntime } from '../../../../src/runtime/sql/bounded-sql-runtime.ts';
 import type { RemovalIntent } from '../../../../src/accounts/organizations/removal-operation-store.ts';
 import { postgresSettingsSite } from '../../../support/in-process/postgres-settings-site.ts';
 
@@ -95,7 +95,7 @@ test('Given production logging storage configuration, when settings and removal 
   const certificate = join(directory, 'database-ca.pem');
   await writeFile(certificate, site.connection.ca);
   const errors: unknown[] = [];
-  const storage = await openLoggingStorage({ DATABASE_URL: site.connection.connectionString, DATABASE_CA_CERT_PATH: certificate, LOGGING_DESTINATION_ENCRYPTION_KEY: Buffer.alloc(32, 7).toString('base64') }, { info: () => {}, error: message => { errors.push(message); } });
+  const storage = await openLoggingStorage({ DATABASE_URL: site.connection.connectionString, DATABASE_CA_CERT_PATH: certificate, LOGGING_DESTINATION_ENCRYPTION_KEY: Buffer.alloc(32, 7).toString('base64') }, { info: () => {}, error: message => { errors.push(message); } }, 25);
   assert.ok(storage);
   t.after(() => storage.close());
   assert.ok(storage.removalStore);

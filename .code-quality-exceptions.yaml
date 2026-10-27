@@ -29,11 +29,21 @@ exceptions:
     bound: 60
     reason: Optional hosted storage composition keeps validation, safe failure, lazy adapter loading, and service/key wiring in one small boundary. Its three paths are unchanged; splitting construction from cleanup would hide ownership.
     expires: 2026-12-22
-  - path: src/logs/audit/bounded-sql-runtime.ts
+  - path: src/runtime/sql/bounded-sql-runtime.ts
     metric: mi
     bound: 41
-    reason: One SQL owner keeps admission, deadlines, late-work accounting and disposal together. The largest function has seven paths; reviewed unit and real PostgreSQL cases cover the lifetime invariants. A mechanical split would obscure shared ownership.
+    reason: One SQL owner keeps admission, deadlines, late-work accounting and disposal together. The largest function has seven paths; reviewed unit and real PostgreSQL cases cover the lifetime invariants. A mechanical split would obscure shared ownership. SO-04 moved the file unchanged from src/logs/audit/ to the sql owner.
     expires: 2026-12-22
+  - path: src/tenancy/tenants/pg-tenant-registry-store.ts
+    metric: mi
+    bound: 73.9
+    reason: One small SQL adapter keeps the registry lock, the row count, the conditional insert, and the commit in one transaction, with the decoding of its two row shapes. Its largest function has three paths. Unit cases check each statement and each failure phase, and real PostgreSQL cases check the lock races. A split of the statements from their transaction would hide the order that makes the cap check atomic.
+    expires: 2026-12-27
+  - path: src/tenancy/tenants/tenant-lookup.ts
+    metric: mi
+    bound: 77.9
+    reason: One small owner keeps the registry copy, its two time bounds, and the one shared read together. Its largest function has five paths, and clock-double cases cover each bound. A separate owner for the bounds or for the shared read would hide the rule that a copy never serves after 60 s from the start of its read.
+    expires: 2026-12-27
   - path: src/logs/audit/pg-destination-settings-store.ts
     metric: mi
     bound: 54

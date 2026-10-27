@@ -53,8 +53,9 @@ flowchart TB
 Scope: Thermus hosted system. The browser portal is a separate browser
 application. The Node server serves its assets and routes. Lightpanda is a
 short-lived process container even when it shares the server's Docker image.
-The optional PostgreSQL datastore uses a private schema for destination settings
-and removal intent. The Collector is the configured customer destination,
+The optional PostgreSQL datastore uses a private schema for destination settings,
+removal intent, and the tenant registry; its subscription and billing-event
+tables wait for Slice 3. The Collector is the configured customer destination,
 including compatible OTLP services such as Axiom; WorkOS includes AuthKit.
 The portal's HTTP arrow covers account requests and server-provided assets.
 
@@ -67,7 +68,7 @@ flowchart TB
     hosted_portal["Browser app: portal<br/>JavaScript / HTML / CSS<br/>Accounts and setup"]
     hosted_server["Server container<br/>Node.js / TypeScript<br/>Tools and accounts"]
     hosted_renderer["Renderer process<br/>Lightpanda<br/>One page per fetch"]
-    hosted_settings[("PostgreSQL datastore<br/>Private settings and<br/>removal intent")]
+    hosted_settings[("PostgreSQL datastore<br/>Private settings, removal<br/>intent, tenant registry")]
   end
   hosted_workos["External: WorkOS<br/>Identity and orgs"]
   hosted_public["External: public web<br/>Pages and Brave HTML"]
@@ -117,21 +118,21 @@ flowchart TB
 
 ### Containers and source owners
 
-This mapping lists principal contributors from the 20 registry IDs
-without turning them into 20 containers. Owners are logical source boundaries;
+This mapping lists principal contributors from the 22 registry IDs
+without turning them into 22 containers. Owners are logical source boundaries;
 some contribute code to both server and CLI. The [Ownership](#ownership) table retains the full source
 roots, responsibilities, and public contracts.
 
 | Container or artifact | Registry owners that contribute |
 | --- | --- |
 | Both Node server editions | `app`, `config`, `http`, `system-logs`, `mcp`, `web`, `identity`, `execution`, `page-fetch`, `search`, `html-processing`, `website-fetcher`, `search-engine` |
-| Hosted server additions | `organizations`, `billing`, `workos`, `audit-logs` (capture, dispatch, settings, removal intent, Test, and runtime) |
+| Hosted server additions | `organizations`, `billing`, `workos`, `audit-logs` (capture, dispatch, settings, removal intent, and Test), `sql` (the bounded SQL runtime), `tenants` (the tenant registry) |
 | Local server addition | `better-auth` |
 | Local administration CLI | `app`, `cli`, `config`, `http` (client-address helper), `system-logs`, `identity`, `better-auth` |
 | Hosted browser application and build assets | `user-portal`; app's `HostedPortal` loads its built files |
 | Renderer process | External Lightpanda binary, controlled by `website-fetcher`; no new source owner |
 | Local installation datastore | Opened and owned by `better-auth`; no new source owner |
-| Optional hosted admin datastore | `audit-logs` owns SQL access for settings and removal intent; `app` owns its runtime lifetime; no new source owner |
+| Optional hosted admin datastore | `sql` owns the pool and the bounded runtime; `audit-logs` owns the settings and removal statements, and `tenants` the registry statements; `app` opens the runtime and owns its lifetime |
 
 ### Selected C4 components: tool processing in the Node server
 
@@ -255,7 +256,8 @@ than a fallback identity. Profile data does not grant access.
 
 Scope: one hosted Node server container. Organizations owns the checked removal
 operation and its lifetime. App supplies the existing SQL adapter through the
-organizations-owned RemovalOperationStore role. Thick arrows show composition;
+organizations-owned RemovalOperationStore role; the adapter runs on the one
+bounded runtime of the `sql` owner, which app opens. Thick arrows show composition;
 solid arrows show runtime calls. The adapter's source type dependency points
 from audit-logs to organizations and is omitted from this runtime view.
 PostgreSQL is an existing supporting Level 2 container. Web invokes the operation
@@ -269,19 +271,22 @@ flowchart TB
     removal_web["web · TypeScript<br/>Trusted access and removal form gates<br/>Fixed result; safe navigation"]
     removal_app["app · TypeScript<br/>Supply directory and removal store<br/>Stop removal before SQL close"]
     removal_org["organizations · TypeScript<br/>Current Admin and target checks<br/>Last-Admin rule; bounded removal"]
-    removal_audit["audit-logs · TypeScript / pg<br/>Shared SQL runtime; intent / receipts<br/>Best-effort customer capture"]
+    removal_audit["audit-logs · TypeScript<br/>SQL adapter: intent / receipts<br/>Best-effort customer capture"]
+    removal_sql["sql · TypeScript / pg<br/>Bounded runtime and pool"]
     removal_workos["workos · TypeScript / SDK<br/>Current reads; stop signal checks<br/>One exact membership deletion"]
     removal_app ==>|supplies account routes| removal_web
     removal_web -->|checked removeMember call| removal_org
     removal_app ==>|composition / lifetime| removal_org
-    removal_app ==>|store / pool ownership| removal_audit
+    removal_app ==>|store composition| removal_audit
+    removal_app ==>|runtime / pool lifetime| removal_sql
     removal_web -->|trusted-tenant result capture| removal_audit
     removal_org -->|supplied RemovalOperationStore| removal_audit
+    removal_audit -->|bounded statements| removal_sql
     removal_org -->|supplied OrganizationDirectory| removal_workos
   end
   removal_db[("L2: PostgreSQL<br/>Private settings and removal intent")]
   removal_provider["External system: WorkOS<br/>Identity and memberships"]
-  removal_audit -->|SQL / verified TLS| removal_db
+  removal_sql -->|SQL / verified TLS| removal_db
   removal_workos -->|SDK HTTPS| removal_provider
   style removal_server fill:#fafafa,stroke:#777777,color:#222222
 ```
@@ -291,7 +296,8 @@ owns one [removal coordinator](../src/accounts/organizations/membership-removal.
 It checks current Admin authority before admission. The existing
 [SQL adapter](../src/logs/audit/pg-destination-settings-store.ts) implements the
 organizations-owned [store role](../src/accounts/organizations/removal-operation-store.ts)
-through its existing [bounded runtime](../src/logs/audit/bounded-sql-runtime.ts).
+through the shared [bounded runtime](../src/runtime/sql/bounded-sql-runtime.ts) of the
+`sql` owner.
 It admits at most one pending operation per organization in a short atomic
 statement. A conflicting pending row returns busy. Each statement releases its
 client before provider HTTP; no transaction spans those calls. A terminal receipt
@@ -368,15 +374,18 @@ flowchart TB
     storage_app["app · TypeScript<br/>Compose service and dispatch<br/>Own SQL and queue lifetime"]
     storage_web["web · TypeScript<br/>Audit logs read / Save / Test<br/>Trusted action capture"]
     storage_identity["identity · TypeScript<br/>Access contracts"]
-    storage_logging["audit-logs · TypeScript / pg<br/>Protect settings; atomic Save<br/>Snapshots; bounded export / Test"]
+    storage_logging["audit-logs · TypeScript<br/>Protect settings; atomic Save<br/>Snapshots; bounded export / Test"]
+    storage_sql["sql · TypeScript / pg<br/>Bounded runtime and pool"]
   end
   storage_data[("L2: PostgreSQL<br/>Private settings and removal intent")]
   storage_collector["External system: customer Audit destination<br/>Collector or compatible OTLP service<br/>Customer events and Test / includes Axiom"]
   storage_app -.->|supplies| storage_web
   storage_app -.->|service / dispatch / lifetime| storage_logging
+  storage_app -.->|runtime / pool lifetime| storage_sql
   storage_web -.->|source dependency| storage_identity
   storage_web -->|trusted settings / action capture| storage_logging
-  storage_logging -->|SQL / verified TLS| storage_data
+  storage_logging -->|bounded statements| storage_sql
+  storage_sql -->|SQL / verified TLS| storage_data
   storage_logging -->|authorized export and saved Test / HTTPS POST| storage_collector
   style storage_server fill:#fafafa,stroke:#777777,color:#222
 ```
@@ -385,6 +394,8 @@ flowchart TB
 and server key only when hosted storage configuration is available. It constructs
 one service, collector, and sender; saved Test and export use that same sender.
 The same adapter and pool implement the organizations-owned removal store.
+App opens the one [bounded SQL runtime](../src/runtime/sql/bounded-sql-runtime.ts)
+of the `sql` owner and gives it to this adapter and to the tenant registry.
 Destination settings and export keep their existing contracts.
 [Config](../src/runtime/config/logging-storage-config.ts) validates the URI,
 independent 32-byte base64 key, and optional PEM CA bundle. URI query parameters
@@ -433,6 +444,60 @@ Save validates endpoint syntax and literal addresses. Test uses the sender's
 actual-connection address and TLS checks. No provider SDK enters the
 [store contract](../src/logs/audit/destination-settings-store.ts).
 
+### Selected C4 components: hosted tenant registry in the Node server
+
+Scope: one hosted Node server container, the control plane of the self
+on-boarding plan. App reads `FREE_TENANT_LIMIT` through config, opens the one
+bounded SQL runtime of the `sql` owner, and composes the `tenants` owner on it
+next to the settings and removal adapter of audit-logs. Thick arrows show
+composition; solid arrows show runtime calls. PostgreSQL is the existing
+supporting Level 2 container. No component calls the registry yet: the gateway
+(SO-05) and signup (SO-07) are planned callers and are not in this view.
+
+```mermaid
+%%{init: {"flowchart": {"wrappingWidth": 180, "nodeSpacing": 40, "rankSpacing": 40, "subGraphTitleMargin": {"top": 10, "bottom": 25}}}}%%
+flowchart TB
+  subgraph tenancy_server["Container: Thermus Node server · hosted control plane"]
+    tenancy_config["config · TypeScript<br/>FREE_TENANT_LIMIT 0 to 1000<br/>Default 25; invalid stops start"]
+    tenancy_app["app · TypeScript<br/>Opens one SQL runtime<br/>Composes the stores; closes them"]
+    tenancy_tenants["tenants · TypeScript<br/>Tenant request inside the cap<br/>Lookup copy: 10 s; stale up to 60 s"]
+    tenancy_audit["audit-logs · TypeScript<br/>Settings and removal adapter"]
+    tenancy_sql["sql · TypeScript / pg<br/>Bounded runtime and pool<br/>The only owner of pg"]
+    tenancy_app -->|reads the limit at start| tenancy_config
+    tenancy_app ==>|composes with the limit| tenancy_tenants
+    tenancy_app ==>|composes| tenancy_audit
+    tenancy_app ==>|runtime / pool lifetime| tenancy_sql
+    tenancy_tenants -->|locked count and insert; route read| tenancy_sql
+    tenancy_audit -->|settings and removal statements| tenancy_sql
+  end
+  tenancy_db[("L2: PostgreSQL · thermus_admin<br/>tenants, subscriptions, billing_events<br/>Role thermus_logging")]
+  tenancy_sql -->|SQL / verified TLS| tenancy_db
+  style tenancy_server fill:#fafafa,stroke:#777777,color:#222222
+```
+
+[TenantRequests](../src/tenancy/tenants/tenant-requests.ts) makes the tenant
+request one idempotent insert of a `requested` row. The
+[SQL adapter](../src/tenancy/tenants/pg-tenant-registry-store.ts) takes the
+`tenants` table in `SHARE ROW EXCLUSIVE` mode, counts the rows by state, and
+inserts only when the request allows it, in one transaction. That mode conflicts
+with itself and with row writes but not with reads, so concurrent requests from
+any pool take turns at the cap while lookups read on. An existing row stays as
+it is in every state; a new row needs a free place under `FREE_TENANT_LIMIT`,
+where every row except a `failed` or a `deleted` one holds a place. At a full cap
+nothing is inserted and the result says full. A failure before the commit
+destroys the client, so PostgreSQL rolls back; an unconfirmed insert gives an
+unavailable result, and a repeat finds the committed row.
+
+[TenantLookup](../src/tenancy/tenants/tenant-lookup.ts) keeps an in-memory copy of
+every row's state and internal address. It reads the registry on demand, at the
+first ask and at an ask 10 s or more after the start of the last successful read;
+concurrent asks share one read. After a failed read, it serves the copy until it
+is 60 s old, then reports unavailable. It has no timer and opens no connection at
+startup. The [migration](../sql/migrations/20261027175430_tenant_registry_and_billing.sql)
+holds the row rules: seven states, a service ID and address for a `live` row,
+and a plain HTTP address to a private service name. The `subscriptions` and
+`billing_events` tables have no store until Slice 3.
+
 ### Selected C4 components: system and audit logs in the Node server
 
 Scope: one Thermus Node server container. Solid arrows show runtime calls;
@@ -453,7 +518,7 @@ flowchart TB
     logs_app["app · TypeScript<br/>Compose diagnostics and AuditLog<br/>Own settings and queue lifetime"]
     logs_mcp["mcp · TypeScript<br/>Final public capture<br/>Content-free diagnostics"]
     logs_web["web · TypeScript<br/>Trusted Admin capture<br/>Settings and Admin changes"]
-    logs_audit["audit-logs · TypeScript / pg<br/>Redact, bound, and gate capture<br/>Queue; authorize export; settings / Test"]
+    logs_audit["audit-logs · TypeScript<br/>Redact, bound, and gate capture<br/>Queue; authorize export; settings / Test"]
     logs_system["system-logs · TypeScript<br/>Internal diagnostics<br/>Caller location retained"]
   end
   logs_collector["External: customer Audit destination<br/>Collector or compatible OTLP service<br/>Customer events and Test / includes Axiom"]
@@ -748,8 +813,9 @@ flowchart TB
   processing["Content processing<br/>execution / html-processing"]
   fetching["Page providers<br/>search-engine / website-fetcher"]
   external_web(["Lightpanda → public web"])
-  runtime["Runtime owners<br/>app / config / http / system-logs / audit-logs"]
-  settings_data[("Hosted PostgreSQL<br/>Settings and removal intent")]
+  runtime["Runtime owners<br/>app / config / http / sql / system-logs / audit-logs"]
+  tenancy["Tenant registry<br/>tenants"]
+  settings_data[("Hosted PostgreSQL<br/>Settings, removal intent, tenants")]
   clients --> interfaces
   interfaces -->|MCP tools| tools
   interfaces -->|account calls| accounts
@@ -763,7 +829,9 @@ flowchart TB
   runtime -.->|compose / serve / close| interfaces
   interfaces -->|settings / capture| runtime
   accounts -->|removal store| runtime
-  runtime -->|settings + intent / SQL| settings_data
+  runtime -.->|compose| tenancy
+  tenancy -->|registry statements| runtime
+  runtime -->|settings + intent + tenants / SQL| settings_data
 ```
 
 App constructs the collaborators and selects one authentication edition. The
@@ -779,7 +847,9 @@ search uses Brave HTML rather than a separate external API. Within the runtime
 group, app owns composition and lifetimes, config validates settings, HTTP serves
 the composed handler, and system-logs formats internal engineering diagnostics.
 Audit-logs owns the optional hosted settings service, credential protection,
-store, bounded SQL runtime, and saved-destination Test. Web calls the service
+store, and saved-destination Test; sql owns the one bounded SQL runtime and pool
+of every hosted store. App composes the tenant registry on that runtime; no
+request adapter calls the registry yet. Web calls the service
 for the trusted current tenant and actor. Test sends one synthetic event; the
 separate tool and administration capture shares hosted activity-driven snapshots.
 Organizations calls the same SQL adapter through its supplied removal store for
@@ -1119,7 +1189,7 @@ flowchart TB
     end
     deploy_hosted_node -->|execFile / JSON| deploy_hosted_child
   end
-  deploy_settings[("Managed PostgreSQL<br/>Settings and removal intent<br/>Rollout unverified")]
+  deploy_settings[("Managed PostgreSQL<br/>Settings, removal intent, tenants<br/>Rollout unverified")]
   deploy_collector["External: Collector<br/>Events and Test"]
   deploy_workos["External: WorkOS<br/>Identity and orgs"]
   deploy_public["External: public web<br/>Pages and Brave HTML"]
@@ -1140,7 +1210,7 @@ includes the built portal and trusted rules and selects hosted operation.
 The [recorded Render topology](../docs/implementation/render-hosted-docker-plan.md)
 describes the earlier single-service target without a separate frontend, database,
 Redis, disk, or worker. Source now supports an optional external PostgreSQL
-datastore for destination settings and removal intent. The selected Supabase target and ordered setup are recorded in
+datastore for destination settings, removal intent, and the tenant registry. The selected Supabase target and ordered setup are recorded in
 the [organization-admin plan](../docs/design/organization-admin-plan.md#owner-setup-for-supabase--slice-2);
 the [rollout ledger](../docs/implementation/admin-s2-04.md#evidence-and-release-holds)
 records applied SQL and the remaining live connection, configuration, destination,
@@ -1150,17 +1220,18 @@ configuration or claims a deployed Axiom destination.
 Current replica count and activated database settings are unknown here. The
 [removal-operation migration](../sql/migrations/20261025082850_membership_removal_operations.sql)
 still needs deployment verification; this map does not claim that the live target
-has its new table.
+has its new table. The [tenant registry migration](../sql/migrations/20261027175430_tenant_registry_and_billing.sql)
+is not applied there: SO-12 of the self on-boarding plan applies it.
 Compose publishes only loopback HTTP. A different public address requires the
 HTTPS reverse proxy described by the installation contract; this diagram does
 not invent that infrastructure.
 
 ## Ownership
 
-The 20 IDs below are stable logical component names. Each root owns its source
+The 22 IDs below are stable logical component names. Each root owns its source
 files recursively. `app` also owns exactly `src/index.ts`. The directories
 `accounts`, `accounts/providers`, `interfaces`, `pipelines`,
-`pipelines/providers`, and `runtime` group components; they do not own code.
+`pipelines/providers`, `runtime`, and `tenancy` group components; they do not own code.
 Private subdirectories below an owner are implementation areas, not separate
 components. These source owners are logical boundaries in the Thermus codebase.
 They do not define deployment units.
@@ -1189,9 +1260,11 @@ surface and the narrower file-context restrictions.
 | `website-fetcher` — [`src/pipelines/providers/website-fetcher/`](../src/pipelines/providers/website-fetcher/) | Render pages with Lightpanda; destination/process policy; safe renderer failures and reports. | Fetcher/result/failure roles, renderer-failure-reports, and documented [network policy](../src/pipelines/providers/website-fetcher/network-policy.ts). App selects Lightpanda. |
 | `search-engine` — [`src/pipelines/providers/search-engine/`](../src/pipelines/providers/search-engine/) | Build Brave search requests, validate the returned origin/document, and fetch through a supplied website fetcher. | [Search engine/document roles](../src/pipelines/providers/search-engine/search-engine.ts). App selects the Brave HTTP adapter. |
 | `system-logs` — [`src/logs/system/`](../src/logs/system/) | Format internal engineering diagnostics with caller file and line. Customers cannot access this stream. | SystemLog for callers; concrete SystemLogger/LogLevel with a supplied SystemLogSink. ConsoleSystemLogSink and OtelSystemLogSink own output only. |
-| `audit-logs` — [`src/logs/audit/`](../src/logs/audit/) | Own customer audit event projection, activity snapshots, bounded queue and current-revision dispatch, tenant destination validation and credential protection, atomic settings revisions, saved-destination Tests, and one-shot OTLP requests to the configured Collector or compatible service, including direct Axiom. The shared pg adapter also stores removal intent and terminal receipts. | AuditLog event methods and AuditEventSink; AuditSnapshots and RevisionBoundAuditSink; AuditCollector; destination-settings service with fresh export authorization and Test outcomes; neutral settings store, private codec, pg adapter and SQL runtime; implementation of the organizations-owned removal store; OtlpAuditSender with tracked physical settlement. MCP and web share hosted snapshots and bounded dispatch; web reads, saves, and tests settings. |
+| `audit-logs` — [`src/logs/audit/`](../src/logs/audit/) | Own customer audit event projection, activity snapshots, bounded queue and current-revision dispatch, tenant destination validation and credential protection, atomic settings revisions, saved-destination Tests, and one-shot OTLP requests to the configured Collector or compatible service, including direct Axiom. Its SQL adapter also stores removal intent and terminal receipts on the shared `sql` runtime. | AuditLog event methods and AuditEventSink; AuditSnapshots and RevisionBoundAuditSink; AuditCollector; destination-settings service with fresh export authorization and Test outcomes; neutral settings store, private codec, and SQL adapter; implementation of the organizations-owned removal store; OtlpAuditSender with tracked physical settlement. MCP and web share hosted snapshots and bounded dispatch; web reads, saves, and tests settings. |
 | `http` — [`src/runtime/http/`](../src/runtime/http/) | Node listener, HTTP-to-Fetch exchange, trusted client address, request cancellation, connection tracking, and listener drain. | Server for app; client-address and request-cancellation modules for other consumers. Exchange mechanics remain private. |
-| `config` — [`src/runtime/config/`](../src/runtime/config/) | Validate deployment/listen settings, optional hosted logging storage settings, and the hosted operation capacity, and read trusted ad rules. Provider settings stay with their provider. | Deployment-config and ad-rules-file modules; app selects the logging-storage settings reader and the operation-capacity reader. |
+| `config` — [`src/runtime/config/`](../src/runtime/config/) | Validate deployment/listen settings, optional hosted logging storage settings, the hosted operation capacity, and the free-tenant cap, and read trusted ad rules. Provider settings stay with their provider. | Deployment-config and ad-rules-file modules; app selects the logging-storage settings reader, the operation-capacity reader, and the free-tenant-limit reader. |
+| `sql` — [`src/runtime/sql/`](../src/runtime/sql/) | Own the one bounded SQL runtime of the hosted stores: the `pg` pool with verified TLS, admission of active and pending work, acquisition, operation and statement deadlines, late-work accounting, and bounded close. The only owner that imports `pg`. | [Bounded SQL runtime](../src/runtime/sql/bounded-sql-runtime.ts) for the stores; app opens it and owns its lifetime. |
+| `tenants` — [`src/tenancy/tenants/`](../src/tenancy/tenants/) | Own the tenant registry of the control plane: the tenant request inside the free-tenant cap, the in-memory route lookup with its refresh bounds, and the SQL adapter of the `tenants` table. | No public module yet; app composes the request, the lookup, and the adapter. The gateway and signup use them in later tickets. |
 
 ## Behavior and resource ownership
 
@@ -1258,7 +1331,9 @@ fields. WorkOS organization metadata and the deterministic external ID retain
 creation/legal facts independently of the optional logging-settings datastore. Google enrollment is an optional explicit composition;
 production does not supply its onboarding settings.
 
-The shared hosted [SQL runtime](../src/logs/audit/bounded-sql-runtime.ts) bounds active
+The shared hosted [SQL runtime](../src/runtime/sql/bounded-sql-runtime.ts) of the
+`sql` owner serves the settings and removal adapter and the tenant registry with
+one pool and one role. It bounds active
 and pending work, acquisition, caller duration and PostgreSQL statements. Caller
 timeout does not free unsettled work from accounting. Late clients are destroyed;
 late results cannot complete an expired caller. Idle-pool errors are observed.
@@ -1329,6 +1404,15 @@ The following limits affect architectural decisions today:
   `OPERATION_CAPACITY` calls. It rejects a call above that limit instead of
   queuing work and does not coordinate multiple instances. A deployment change
   must account for that actual scope.
+- The free-tenant cap counts registry rows by state, not by tier, and a tenant
+  request keeps an existing row in every state, also `failed` and `deleted`.
+  Slice 3 must decide whether a team tenant holds a free place, and the repair
+  of SO-09 ("delete, then request") needs its own registry operation.
+- The tenant registry shares the two active and four pending slots of the one
+  SQL runtime with the settings and removal adapter, and it exists only when the
+  hosted storage settings are valid. The composition keeps its logging name
+  (`HostedLoggingStorage`) while it carries the registry; a rename can come with
+  the Slice 4 cleanup, together with the role name `thermus_logging`.
 
 These statements identify source behavior and its effects. They do not assign
 quality scores or claim that an unmeasured component needs a rewrite.

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import type { TestContext } from 'node:test';
-import { BoundedSqlRuntime } from '../../../../src/logs/audit/bounded-sql-runtime.ts';
+import { BoundedSqlRuntime } from '../../../../src/runtime/sql/bounded-sql-runtime.ts';
 import { PgDestinationSettingsStore } from '../../../../src/logs/audit/pg-destination-settings-store.ts';
 
 const revision = 'b0fd8b9d-c2df-4b31-bf56-50228825bb05';

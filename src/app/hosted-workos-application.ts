@@ -61,6 +61,8 @@ export async function openWorkOSApplication(config: RouteConfig, logger: SystemL
   const connection = await openWorkOSConnection(config, logger, environment);
   const { createHostedToolOperations } = await import('./fetch-tool.ts');
   const operations = createHostedToolOperations(environment, logger);
+  const { loadFreeTenantLimit } = await import('../runtime/config/free-tenant-limit-config.ts');
+  const freeTenantLimit = loadFreeTenantLimit(environment);
   if (new URL(config.publicBaseUrl).pathname !== '/') throw new Error('The hosted portal requires PUBLIC_BASE_URL with the base path /.');
   const { assertHostedRenderer } = await import('./hosted-renderer-startup.ts');
   await assertHostedRenderer(environment.LIGHTPANDA_BIN);
@@ -68,7 +70,7 @@ export async function openWorkOSApplication(config: RouteConfig, logger: SystemL
   const portal = await HostedPortal.load(['https://api.workos.com', connection.settings.authkitIssuer]);
   const { openLoggingStorage } = await import('./logging-storage.ts');
   await using resources = new AsyncDisposableStack();
-  const loggingStorage = await openLoggingStorage(environment, logger);
+  const loggingStorage = await openLoggingStorage(environment, logger, freeTenantLimit);
   if (loggingStorage !== undefined) resources.defer(() => loggingStorage.close());
   const application = await composeWorkOSApplication(config, connection, { logger, toolOperations: operations, signup, loggingStorage });
   resources.move();

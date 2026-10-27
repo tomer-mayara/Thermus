@@ -260,6 +260,7 @@ registerHooks({ resolve(specifier, context, nextResolve) {
     // The capacity rule ends its FATAL line, so that line holds no value. A value of one character, such as 0, can
     // also be part of the time stamp or the rule, so only the line end shows that the value is absent.
     const capacityRule = /FATAL\S* (?:\[[^\]]*\]: )?OPERATION_CAPACITY must be a whole number from 1 to 100\.$/m;
+    const freeTenantRule = /FATAL\S* (?:\[[^\]]*\]: )?FREE_TENANT_LIMIT must be a whole number from 0 to 1000\.$/m;
     const invalidSettings: ReadonlyArray<[ServerSettings, RegExp]> = [
       [{ PUBLIC_BASE_URL: 'http://localhost:8080' }, /FATAL.*PUBLIC_BASE_URL must use https\./],
       [{ PUBLIC_BASE_URL: 'https://thermus.example/?tenant=acme' }, /FATAL.*PUBLIC_BASE_URL must not contain a query\./],
@@ -268,6 +269,7 @@ registerHooks({ resolve(specifier, context, nextResolve) {
       [{ PUBLIC_BASE_URL: '' }, /FATAL.*PUBLIC_BASE_URL is required\./],
       [{ LISTEN_PORT: '80.5' }, /FATAL.*LISTEN_PORT must be a whole number/],
       ...['0', '101', '1.5', 'abc', ' 5'].map((value): [ServerSettings, RegExp] => [{ OPERATION_CAPACITY: value }, capacityRule]),
+      ...['1001', '2.5', 'abc', ' 25', '1e3'].map((value): [ServerSettings, RegExp] => [{ FREE_TENANT_LIMIT: value }, freeTenantRule]),
     ];
 
     for (const [overrides, message] of invalidSettings) {

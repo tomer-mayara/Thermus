@@ -1,7 +1,7 @@
 import type { TestContext } from 'node:test';
 import { composeLoggingStorage } from '../../../../src/app/logging-storage.ts';
 import type { ToolOperations } from '../../../../src/app/fetch-tool.ts';
-import { createPgSettingsRuntime } from '../../../../src/logs/audit/bounded-sql-runtime.ts';
+import { createPgSettingsRuntime } from '../../../../src/runtime/sql/bounded-sql-runtime.ts';
 import { PgDestinationSettingsStore } from '../../../../src/logs/audit/pg-destination-settings-store.ts';
 import type { TrackedAuditSender } from '../../../../src/logs/audit/audit-send.ts';
 import type { DestinationTestSender } from '../../../../src/logs/audit/destination-test.ts';
