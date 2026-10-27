@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { RemovalIntent, RemovalOperation, RemovalOperationStore, RemovalTerminal } from '../../accounts/organizations/removal-operation-store.ts';
-import { createPgSettingsRuntime } from './bounded-sql-runtime.ts';
-import type { BoundedSqlRuntime, SettingsSqlOptions } from './bounded-sql-runtime.ts';
+import { createPgSettingsRuntime } from '../../runtime/sql/bounded-sql-runtime.ts';
+import type { BoundedSqlRuntime, SettingsSqlOptions } from '../../runtime/sql/bounded-sql-runtime.ts';
 import type { DestinationSettings, DestinationSettingsStore, ReadSettingsResult, SaveSettingsResult, StoredDestinationSettings } from './destination-settings-store.ts';
 
 const columns = 'revision, endpoint, auth, enabled, encrypted_credential, axiom_dataset';

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { PgDestinationSettingsStore } from '../../../src/logs/audit/pg-destination-settings-store.ts';
-import { createPgSettingsRuntime } from '../../../src/logs/audit/bounded-sql-runtime.ts';
+import { createPgSettingsRuntime } from '../../../src/runtime/sql/bounded-sql-runtime.ts';
 import { postgresSettingsSite } from '../../support/in-process/postgres-settings-site.ts';
 import { MembershipRemovalProcess, type RemovalCrashStage } from '../../support/processes/membership-removal-process.ts';
 

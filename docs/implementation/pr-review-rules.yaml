@@ -187,6 +187,8 @@ public_surface:
     http:
       - src/runtime/http/client-address.ts
       - src/runtime/http/request-cancellation.ts
+    sql:
+      - src/runtime/sql/bounded-sql-runtime.ts # the one bounded SQL runtime of the stores; app opens it
     organizations:
       - src/accounts/organizations/administration-overviews.ts
       - src/accounts/organizations/change-records.ts
@@ -297,7 +299,8 @@ dependency_graph:
     - { from: http, to: system-logs, kind: type }
     - { from: cli, to: system-logs, kind: type }
     - { from: audit-logs, to: organizations, kind: type }
-    # 55 permitted owner edges on 2026-10-24; runtime includes public types.
+    - { from: audit-logs, to: sql, kind: runtime }
+    # 56 permitted owner edges on 2026-10-27; runtime includes public types.
   forbidden_edges:
     - { from: html-processing, to: [ mcp ] }
     - { from: website-fetcher, to: [ identity, workos, better-auth, web, cli ] }
@@ -328,10 +331,11 @@ dependency_graph:
     - { from: audit-logs, to: app }
     - { from: http, to: app }
     - { from: config, to: app }
+    - { from: sql, to: app }
   file_guards: keep # the eslint import rules in .habit-hooks continue to apply
   known_cycles: []
   allowed_external_imports:
-    # Observed per component; logging additions checked on 2026-10-23. No inherited parent allowances.
+    # Observed per component; logging additions checked on 2026-10-23; pg moved to sql on 2026-10-27. No inherited parent allowances.
     workos: [ "@workos-inc/node", jose ]
     web: [ linkedom, micromark, micromark-extension-gfm ]
     better-auth: [ "@better-auth/mcp", better-auth ]
@@ -339,7 +343,7 @@ dependency_graph:
     app: [ "@workos-inc/node", jose, linkedom ]
     html-processing: [ adblock-rs, agent-input-sanitizer, css-select, css-tree, defuddle, htmlparser2, linkedom, parse5, parse5-htmlparser2-tree-adapter ]
     system-logs: [ "@opentelemetry/api-logs" ]
-    audit-logs: [ pg ]
+    sql: [ pg ] # the only owner that imports pg
     mcp: [ "@modelcontextprotocol/server" ]
     search-engine: [ css-select, htmlparser2 ]
     user-portal: [ vite ]
@@ -382,6 +386,7 @@ dependency_graph:
     audit-logs: { roots: [ src/logs/audit/ ] }
     http: { roots: [ src/runtime/http/ ] }
     config: { roots: [ src/runtime/config/ ] }
+    sql: { roots: [ src/runtime/sql/ ] }
 
 # The facts that the check establishes from the merge base and HEAD. Each is
 # T2 Need architect: an architect reviews the pull request. The check reads the

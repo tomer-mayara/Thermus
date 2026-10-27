@@ -7,7 +7,7 @@ import test from 'node:test';
 import { Pool } from 'pg';
 import { openLoggingStorage } from '../../../../src/app/logging-storage.ts';
 import { PgDestinationSettingsStore } from '../../../../src/logs/audit/pg-destination-settings-store.ts';
-import { BoundedSqlRuntime, createPgSettingsRuntime } from '../../../../src/logs/audit/bounded-sql-runtime.ts';
+import { BoundedSqlRuntime, createPgSettingsRuntime } from '../../../../src/runtime/sql/bounded-sql-runtime.ts';
 import type { RemovalIntent } from '../../../../src/accounts/organizations/removal-operation-store.ts';
 import { postgresSettingsSite } from '../../../support/in-process/postgres-settings-site.ts';
 
