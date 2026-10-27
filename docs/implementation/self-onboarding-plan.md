@@ -703,7 +703,9 @@ SO-01c for its second part.
 
 **SO-01e Capacity and memory probe.** Size M. Depends on SO-01a, SO-01b,
 and SO-01c. Its result confirms or lowers the values of D-15 and sets the
-alert threshold and the words of the failure message.
+alert threshold and the words of the failure message. The probe, its runs,
+and the recommendation are in the record section
+[SO-01e: capacity and memory](self-onboarding-s1.md#so-01e-capacity-and-memory).
 
 - Setup: a disposable web service in the Thermus AI workspace, never on the
   production service
