@@ -27,7 +27,7 @@ test('Given a password-authenticated current Admin, when the Admin opens Audit l
   assert.match(page.body, /Thermus system logs are internal/);
   assert.match(page.body, /Save/);
   const members = await browser.open('members');
-  assert.match(members.body, /href="[^"]*logging"[^>]*>Audit logs/);
+  assert.match(members.body, /href="[^"]*logging"[^>]*>Audit Log/);
 });
 
 test('Given an Admin choosing an audit destination, when Audit logs opens, then a Bearer-only destination selector, short privacy notice and complete expandable help guide Save', async (t) => {

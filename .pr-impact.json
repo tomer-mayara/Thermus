@@ -14,35 +14,27 @@
     "uncertain": false
   },
   "architecture": {
-    "modelUpdated": true,
-    "summary": "SO-04 adds two components and one public module: the new owner sql (src/runtime/sql/) takes the bounded SQL runtime unchanged from audit-logs (a git rename) and becomes the only owner that imports pg, with the runtime as its public module; the new owner tenants (src/tenancy/tenants/) holds the tenant registry of the control plane. App now opens the one runtime and gives it to the settings and removal adapter of audit-logs, which keeps only a type edge, and to the registry: one role (thermus_logging) and one pool. New edges: app to sql and to tenants (runtime), audit-logs and tenants to sql (type). The tenant request is one idempotent insert of a requested row: under a SHARE ROW EXCLUSIVE lock on thermus_admin.tenants it counts the rows by state and inserts only for an organization without a row and with a free place under FREE_TENANT_LIMIT, where every row except failed and deleted holds a place; at a full cap it inserts nothing and answers full. The lookup gives the state and internal address from an in-memory copy that it reads on demand: after 10 s it reads again, after a failed read it serves the copy up to 60 s, then answers unavailable; it opens no connection at startup. The hosted start reads FREE_TENANT_LIMIT (0 to 1000, default 25, 0 closes free signup through the cap); an invalid value stops the start with a FATAL line that names the rule. Flags: component and internalInterface for the owners and edges; container and contract because the PostgreSQL datastore gains three tables (tenants, subscriptions, billing_events) with checks and grants, and operators get a new start setting; deployment because the migration must precede any caller and the registry shares the existing pool; crossCutting because SQL access and pg move to one shared owner for every store. Nothing calls the registry yet (the gateway of SO-05 and signup of SO-07 will), the migration is not applied to Supabase (SO-12 applies it), and no Render, WorkOS, or Stripe call is added.",
+    "modelUpdated": false,
+    "summary": "The Connect portal and server-rendered administration pages use one compact header menu: Connect, Switch Workspace, Members, Audit Log. The portal shows Members and Audit Log only for the existing exact admin grant. The web and user-portal owners retain separate renderers and styles. Existing routes, server access checks, browser session authority, public interfaces, dependencies, containers, and deployment remain unchanged. Registry prose names the menu; all diagrams remain accurate.",
     "views": [
       "C4 containers: hosted edition",
-      "Containers and source owners",
-      "Selected C4 components: hosted membership removal in the Node server",
+      "Selected C4 components: hosted authentication in the Node server",
       "Selected C4 components: hosted Audit logs settings and delivery in the Node server",
-      "Selected C4 components: hosted tenant registry in the Node server",
-      "Selected C4 components: system and audit logs in the Node server",
-      "Collaboration overview",
-      "Recorded hosted Render target",
+      "Scenario: hosted default sign-in landing",
+      "Scenario: hosted member read",
+      "Deployment view",
       "Ownership",
-      "Behavior and resource ownership",
-      "Design choices and current soft spots"
+      "Behavior and resource ownership"
     ],
     "evidence": [
-      "src/runtime/sql/bounded-sql-runtime.ts",
-      "src/tenancy/tenants/tenant-requests.ts",
-      "src/tenancy/tenants/tenant-lookup.ts",
-      "src/tenancy/tenants/pg-tenant-registry-store.ts",
-      "src/tenancy/tenants/tenant-registry-store.ts",
-      "src/app/logging-storage.ts",
-      "src/app/hosted-workos-application.ts",
-      "src/runtime/config/free-tenant-limit-config.ts",
-      "sql/migrations/20261027175430_tenant_registry_and_billing.sql",
-      "docs/implementation/pr-review-rules.yaml",
-      "architecture/components.md",
-      "test/acceptance/tenants/tenant-registry.runtime.ts",
-      "test/integration/tenants/tenant-registry-store.runtime.ts"
+      "src/interfaces/user-portal/portal.ts",
+      "src/interfaces/user-portal/style.css",
+      "src/interfaces/web/account/members-page-layout.ts",
+      "src/interfaces/web/account/members-style.ts",
+      "test/acceptance/user-portal/portal.test.ts",
+      "test/acceptance/auth/hosted-members.test.ts",
+      "test/acceptance/auth/hosted-member-removal-browser.runtime.ts",
+      "architecture/components.md"
     ]
   }
 }

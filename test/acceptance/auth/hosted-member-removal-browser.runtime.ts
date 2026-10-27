@@ -16,6 +16,7 @@ import { memberActionStyle, memberRemovalBrowser, tabTo } from '../../support/dr
 import { signInThroughServer } from '../../support/dsl/workos-sign-in.ts';
 import { otherOrganization, removalAdmin, removalOrganization, removalUser, serveMemberRemovalSite } from '../../support/in-process/hosted-member-removal-site.ts';
 import { portalBuild } from '../../support/processes/module-paths.ts';
+import { hostedRootConfig } from '../../support/fixtures/hosted-config.ts';
 
 test('Given three short member rows at 1280px and normal text, when Members loads its production fonts with removal closed, then labelled rows stay within 72px and quiet actions keep 48px targets', async (t) => {
   const { page } = await adminBrowser(t, { javaScriptEnabled: false });
@@ -499,12 +500,24 @@ for (const javaScriptEnabled of [false, true]) {
   }
 }
 
-async function adminBrowser(t: TestContext, options: { readonly javaScriptEnabled: boolean; readonly setUp?: (world: WorkOSFake) => void }) {
+for (const role of ['admin', 'user']) {
+  for (const width of [320, 1280]) {
+    test(`Given the built Connect page for ${role} at ${width}px, when workspace navigation opens and is used by keyboard, then compact header links follow the current role and fit the screen`, async (t) => {
+      const { page } = await adminBrowser(t, { javaScriptEnabled: true, root: true, setUp: world => {
+        world.memberships = world.memberships.map(member => member.userId === removalAdmin.id ? { ...member, roles: [role] } : member);
+      } });
+      await page.setViewportSize({ width, height: 844 });
+      await new AdminShellBrowser(page, { javaScriptEnabled: true, width }).inspectConnect(role === 'admin');
+    });
+  }
+}
+
+async function adminBrowser(t: TestContext, options: { readonly javaScriptEnabled: boolean; readonly root?: boolean; readonly setUp?: (world: WorkOSFake) => void }) {
   const portal = await HostedPortal.load([], pathToFileURL(portalBuild));
   const settingsStore = new DestinationSettingsFake();
   const testEvents: string[] = [];
   const loggingService = new DestinationSettingsService(settingsStore, new Uint8Array(32).fill(7), { send: async (_destination, event) => { testEvents.push(event.eventName); return { kind: 'accepted' }; } });
-  const site = await serveMemberRemovalSite(t, { portal, setUp: options.setUp, loggingService });
+  const site = await serveMemberRemovalSite(t, { config: options.root ? hostedRootConfig : undefined, portal, setUp: options.setUp, loggingService });
   const { browser: session } = await signInThroughServer(site, removalAdmin, removalOrganization);
   const page = await memberRemovalBrowser(t, site.transport, { cookieHeader: session.cookieHeader ?? '', javaScriptEnabled: options.javaScriptEnabled });
   return { site, page, settingsStore, testEvents };

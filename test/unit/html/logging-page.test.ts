@@ -8,6 +8,21 @@ import { membersPageLayout } from '../../../src/interfaces/web/account/members-p
 
 const navigation = { product: '/', members: '/members', organizations: '/organizations', logging: '/logging' };
 const settings = { revision: 'r1', endpoint: 'https://collector.example/v1/logs', auth: 'bearer' as const, enabled: false, tokenPresent: true };
+
+for (const current of ['members', 'logging'] as const) {
+  test(`Given the ${current} layout, when header navigation renders, then one ordered menu marks the current page and preserves safe workspace context`, async () => {
+    const { document } = parseHTML(await membersPageLayout(navigation, '', { title: current, current, organizationName: '<Acme>' }).text());
+    const links = [...document.querySelectorAll('header nav[aria-label="Workspace"] a')];
+    assert.deepEqual(links.map(link => [link.textContent, link.getAttribute('href')]), [
+      ['Connect', '/'], ['Switch Workspace', '/organizations'], ['Members', '/members'], ['Audit Log', '/logging'],
+    ]);
+    assert.deepEqual(links.filter(link => link.hasAttribute('aria-current')).map(link => [link.textContent, link.getAttribute('aria-current')]), [[current === 'members' ? 'Members' : 'Audit Log', 'page']]);
+    assert.equal(document.querySelector('.workspace-context')?.textContent, '<Acme>');
+    assert.equal(document.querySelector('.workspace-context a, acme'), null);
+    for (const link of links) assert.equal(link.getAttribute('tabindex'), null);
+  });
+}
+
 function render(axiomDataset?: string) {
   return loggingPage({ settings: { ...settings, ...(axiomDataset === undefined ? {} : { axiomDataset }) }, navigation, tenantId: 'tenant:a', csrfToken: 'csrf', action: '/logging/save', testAction: '/logging/test' });
 }

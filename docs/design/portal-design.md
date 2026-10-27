@@ -47,9 +47,10 @@ For signed-in users with product access, put the organization ID, roles, and
 browser-versus-MCP workspace explanation in a native Details disclosure below
 the MCP setup steps. Start it closed. Use small gray text and wrap long IDs on
 narrow screens. Keep the profile, Sign Out, endpoint, and setup steps visible.
-For current product access, show Product / Connect and Switch workspace in the
-workspace navigation. Show Members only when the current access response includes
-Admin. The Members route checks current Admin authority independently. Keep the
+For current product access, show compact underline links in the header, in this
+order: Connect, Switch Workspace, Members, Audit Log. Show Members and Audit Log
+only when the current access response includes the exact `admin` role. The
+protected routes check current Admin authority independently. Keep the
 no-access message and Start free access recovery action visible.
 
 Signup creates a named organization after identity sign-in. Show an editable
@@ -84,8 +85,8 @@ integration work and validation limits. The
 define the work; this selection changes no release or provider approval.
 
 Keep the dark Thermus palette, logo, and local IBM Plex fonts. Use a 32px Plex
-Serif title and Plex Sans labels. On Members, show the selected workspace name
-near Switch workspace. Connect, Members, and Audit logs are ordinary page links, with
+Serif title and Plex Sans labels. On Members, keep the trusted selected workspace
+name above the menu. Connect, Switch Workspace, Members, and Audit Log are ordinary page links, with
 `aria-current="page"` on the current link. “Tabs” describes their appearance;
 do not add an ARIA tab widget or sidebar. Audit logs shares shell styling only.
 Scope Members body styles to Members; preserve the Audit body, controls, script,
