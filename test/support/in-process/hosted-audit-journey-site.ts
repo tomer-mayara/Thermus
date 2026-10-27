@@ -78,7 +78,7 @@ export async function runHostedAuditJourney(t: TestContext, destination: { endpo
   await setImmediate();
   const product = await search('journey query token=journey-private-query-token');
 
-  const invitationForm = formLabelled(formsIn((await browser.open('members')).body), 'Invite');
+  const invitationForm = formLabelled(formsIn((await browser.open('members')).body), 'Send invitation');
   const invited = await browser.submit({ ...invitationForm, fields: { ...invitationForm.fields, email: invitedEmail, role: 'user' } });
   const pending = formsIn((await browser.open('members')).body);
   const resent = await browser.submit(formLabelled(pending, `Resend the invitation to ${invitedEmail}`));
