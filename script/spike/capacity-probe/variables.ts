@@ -9,7 +9,7 @@ const SECRET_KEYS: ReadonlySet<string> = new Set(['WORKOS_API_KEY', 'WORKOS_COOK
 
 // Render gives a web service the host <name>.onrender.com when the name is free; the setup checks the answer.
 export function predictedOrigin(name: string): string {
-  return `https://${name}.onrender.com`;
+  return new URL(`https://${name}.onrender.com`).origin;
 }
 
 // The hosted server takes its MCP resource from PUBLIC_BASE_URL: new URL('mcp', base) (deployment-config.ts).
