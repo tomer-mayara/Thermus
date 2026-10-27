@@ -17,7 +17,7 @@ const TRANSIENT_STATUSES: ReadonlySet<number> = new Set([429, 502, 503, 504]);
  * audit send. The outcome is never an exception: a refused, failed, or slow relay gives its outcome, and a redirect
  * is final, because the route never moves.
  */
-export async function postAuditRelay(relay: AuditRelay, signal: AbortSignal, timeoutMs = AUDIT_SEND_LIMITS.timeoutMs): Promise<AuditSendOutcome> {
+export async function postAuditRelay(relay: AuditRelay, signal: AbortSignal, timeoutMs: number = AUDIT_SEND_LIMITS.timeoutMs): Promise<AuditSendOutcome> {
   const timeout = AbortSignal.timeout(timeoutMs);
   try {
     const response = await fetch(relay.target, {

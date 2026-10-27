@@ -24,6 +24,13 @@ export interface McpRequestLifetime {
 
 export type RequestServerBuilder = (context: RequestContext, lifetime: McpRequestLifetime) => Server | McpServer;
 
+// The access and the tool server of one request, from a caller that admitted the request before the bearer check,
+// such as a tenant with a verified signed context. They replace the configured ones for that request only.
+export interface McpRequestScope {
+  readonly accessResolver: AccessResolver;
+  readonly buildServer?: RequestServerBuilder;
+}
+
 export interface FailureReport {
   readonly step: 'token-verification' | 'access-resolution';
   readonly cause: unknown;
@@ -44,7 +51,8 @@ export interface McpHttpAuthOptions {
 }
 
 type BearerGate = (request: Request) => Promise<AuthInfo | Response>;
-type AccessGate = (authInfo: AuthInfo) => Promise<RequestContext | Response>;
+type AccessGate = (authInfo: AuthInfo, accessResolver?: AccessResolver) => Promise<RequestContext | Response>;
+type BoundRequest = { context: RequestContext; lifetime: McpRequestLifetime; buildServer?: RequestServerBuilder };
 
 export class MCPServer {
   private connection?: StdioServerHandle;
@@ -55,7 +63,7 @@ export class MCPServer {
   private readonly cleanup = new Set<Promise<unknown>>();
   private readonly ownedCloses = new Set<() => Promise<void>>();
   private readonly cleanupErrors = new Set<unknown>();
-  private readonly contextsByRequestAuth = new WeakMap<AuthInfo, { context: RequestContext; lifetime: McpRequestLifetime }>();
+  private readonly contextsByRequestAuth = new WeakMap<AuthInfo, BoundRequest>();
   private readonly httpHandler = createMcpHandler(({ authInfo }) => this.serverForRequest(authInfo));
   private readonly http?: { authenticate: BearerGate; resolveAccess: AccessGate };
   private readonly buildServer?: RequestServerBuilder;
@@ -87,12 +95,12 @@ export class MCPServer {
     this.connection = serveStdio(() => serverWithoutTools(), { transport });
   }
 
-  async fetch(request: Request): Promise<Response> {
+  async fetch(request: Request, scope?: McpRequestScope): Promise<Response> {
     this.requireOpen();
-    return this.track(this.requests, Promise.resolve().then(() => this.serveRequest(request)));
+    return this.track(this.requests, Promise.resolve().then(() => this.serveRequest(request, scope)));
   }
 
-  private async serveRequest(request: Request): Promise<Response> {
+  private async serveRequest(request: Request, scope?: McpRequestScope): Promise<Response> {
     this.requireOpen();
     const http = this.http;
     if (http === undefined) {
@@ -102,11 +110,11 @@ export class MCPServer {
     const authInfo = await waitForRequest(signal, () => http.authenticate(request));
     signal.throwIfAborted();
     if (authInfo instanceof Response) return authInfo;
-    const context = await waitForRequest(signal, () => http.resolveAccess(authInfo));
+    const context = await waitForRequest(signal, () => http.resolveAccess(authInfo, scope?.accessResolver));
     signal.throwIfAborted();
     if (context instanceof Response) return context;
     const lifetime: McpRequestLifetime = Object.freeze({ signal, track: <T>(task: Promise<T>) => this.track(this.tasks, task) });
-    return this.dispatchRequest(request, this.newRequestAuthBoundTo(context, authInfo, lifetime), signal);
+    return this.dispatchRequest(request, this.newRequestAuthBoundTo(authInfo, { context, lifetime, buildServer: scope?.buildServer }), signal);
   }
 
   private async dispatchRequest(request: Request, authInfo: AuthInfo, signal: AbortSignal): Promise<Response> {
@@ -178,9 +186,9 @@ export class MCPServer {
     if (this.shutdown.signal.aborted) throw new Error('The MCP server is closed');
   }
 
-  private newRequestAuthBoundTo(context: RequestContext, authInfo: AuthInfo, lifetime: McpRequestLifetime): AuthInfo {
+  private newRequestAuthBoundTo(authInfo: AuthInfo, bound: BoundRequest): AuthInfo {
     const requestAuth = { ...authInfo };
-    this.contextsByRequestAuth.set(requestAuth, { context, lifetime });
+    this.contextsByRequestAuth.set(requestAuth, bound);
     return requestAuth;
   }
 
@@ -188,7 +196,7 @@ export class MCPServer {
     this.requireOpen();
     const bound = authInfo === undefined ? undefined : this.contextsByRequestAuth.get(authInfo);
     if (bound === undefined) throw new Error('The MCP request has no trusted access context');
-    const product = this.buildServer?.(bound.context, bound.lifetime) ?? serverWithoutTools();
+    const product = (bound.buildServer ?? this.buildServer)?.(bound.context, bound.lifetime) ?? serverWithoutTools();
     const server = product instanceof McpServer ? product.server : product;
     this.ownClose(server);
     const onclose = server.onclose;
@@ -231,8 +239,8 @@ function bearerGate(auth: McpHttpAuthOptions, reportFailure: FailureReporter): B
 }
 
 function accessGate(auth: Pick<McpHttpAuthOptions, 'accessResolver' | 'requiredPermission' | 'accessDeniedDescription'>, reportFailure: FailureReporter): AccessGate {
-  const { accessResolver, requiredPermission, accessDeniedDescription = 'Access denied' } = auth;
-  return async (authInfo) => {
+  const { requiredPermission, accessDeniedDescription = 'Access denied' } = auth;
+  return async (authInfo, accessResolver = auth.accessResolver) => {
     try {
       const decision = await accessResolver.resolve(verifiedUserOf(authInfo));
       if (decision.allowed !== true) return accessDenied(accessDeniedDescription);
