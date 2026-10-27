@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import type { Client } from '@modelcontextprotocol/client';
 import { samePlan } from '../render-tenant-lifecycle/answers.ts';
-import { progress, seconds, serviceIdOf, shown } from '../render-tenant-lifecycle/context.ts';
+import { addRow, progress, seconds, serviceIdOf, shown } from '../render-tenant-lifecycle/context.ts';
 import { sleep } from '../render-tenant-lifecycle/polls.ts';
 import { readService } from '../render-tenant-lifecycle/waits.ts';
 import { originOf, sessionOf, type CallRecord, type ProbeContext, type WindowRecord } from './context.ts';
@@ -115,16 +115,33 @@ export function firstKilled(windows: readonly WindowRecord[], plan: string): num
   return killed.length === 0 ? undefined : Math.min(...killed);
 }
 
+// In run A of 27 October 2026, ten 9 MiB calls got HTTP 502 and no server_failed event came in the window read, so
+// the step reads the events once more after its last window, and counts the kills of each window again.
+async function recountKills(context: ProbeContext, records: readonly WindowRecord[], stepStart: number): Promise<readonly WindowRecord[]> {
+  const late = await eventsSince(context, serviceIdOf(sessionOf(context, 'tenant')), stepStart);
+  addRow(context, `Calls on ${records[0]?.plan ?? 'the plan'}`, { check: 'Events of the step, read after the last window', expected: 'recorded; server_failed is a kill', measured: eventsText(late, stepStart) });
+  return records.map((record, index) => {
+    const from = Date.parse(record.start) - WINDOW_GAP_MS;
+    const to = index + 1 < records.length ? Date.parse(records[index + 1]?.start ?? '') - WINDOW_GAP_MS : Number.POSITIVE_INFINITY;
+    const kills = late.filter((event) => event.type === KILL_TYPE && event.at >= from && event.at < to).length;
+    return kills > record.kills ? { ...record, kills, events: `${record.events}; read after the step: ${eventsText(late.filter((event) => event.at >= from && event.at < to), Date.parse(record.start))}` } : record;
+  });
+}
+
 // Each parallelism, then each workload, in the order of the inputs. A kill does not stop the step; a service that does
 // not answer again does.
 export async function callsOn(context: ProbeContext, plan: string): Promise<string> {
   const service = await readService(sessionOf(context, 'tenant'));
   assert.ok(samePlan(service.plan, plan), `The tenant service is on ${shown(service.plan)}, not ${plan}`);
+  const stepStart = Date.now();
   const records: WindowRecord[] = [];
   for (const parallelism of context.inputs.parallelism) {
     for (const workload of context.inputs.workloads) records.push(await runWindow(context, { plan, parallelism, workload }));
   }
-  const kills = records.reduce((sum, item) => sum + item.kills, 0);
-  const first = firstKilled(records, plan);
-  return `${records.length} windows on ${plan}; ${kills} server_failed events; ${first === undefined ? 'no window was killed' : `the first killed parallelism is ${first}`}.`;
+  const recounted = await recountKills(context, records, stepStart);
+  const windows = context.report.windows;
+  windows.splice(windows.length - records.length, records.length, ...recounted);
+  const kills = recounted.reduce((sum, item) => sum + item.kills, 0);
+  const first = firstKilled(recounted, plan);
+  return `${recounted.length} windows on ${plan}; ${kills} server_failed events; ${first === undefined ? 'no window was killed' : `the first killed parallelism is ${first}`}.`;
 }
