@@ -79,6 +79,6 @@ targets remain at least 48 pixels. The 861-pixel confirmation check, long values
 200% text, counted heading and separate product-seat count remain intact.
 
 These checks characterize the resolved code before the rebase commit. They do
-not replace the complete candidate gates. The maintained PR evidence records
-their final input comparison, the full gate results, and the unresolved staging
-quota. No merge or deployment is claimed here.
+not replace the complete candidate gates. The maintained PR evidence will record
+their final input comparison and complete gate results, including unresolved
+staging failures. No merge or deployment is claimed here.
