@@ -47,7 +47,10 @@ for an unchanged form, access rule or provider behavior. Full red/green logs,
 screenshots, check results and quality reports are linked from the PR's
 maintained Validation and Quality review comments.
 
-## Validation and review
+## Original validation and review
+
+This section records the original candidate at `a017020e`. It is history, not
+fresh proof for a rebased head. The maintained PR comments pin current evidence.
 
 | Check | Result |
 | --- | --- |
@@ -95,3 +98,26 @@ The updated browser inventory row in the test-gate document selects T1 Team
 review through the policy's read-path rule. It changes no gate command or
 decision authority. Current-candidate owner/team approval is required before
 merge; agent review is not human approval.
+
+## Rebase verification
+
+The stack was rebased onto main `9a3ac1f9`, then onto `2b3ad13b` after the local
+gateway-probe tooling landed. The second main change affects probe scripts,
+Knip configuration and documentation. The application source, tests, dependencies,
+lockfile and build configuration are unchanged between those two UI-01 candidates.
+
+Fresh verification on the first rebased source passed 5,153 ordinary tests,
+49 portal tests, typecheck, portal build, seven Members browser cases and all
+11 self-hosted container cases. The standalone hosted offline build passed
+3,319 unit, 49 portal, 1,159 integration, 123 acceptance/interface and 13 renderer
+cases. An earlier offline attempt had a local port collision; its isolated retry
+passed. An AMD64 build hit the unchanged one-second authentication cancellation
+test timeout. That test passed in the isolated host run; no cause is asserted
+and no timeout or assertion was changed.
+
+Current typecheck, AMD64 image and quality evidence must use the final rebased
+inputs. The maintained PR comments record those results, original run pins,
+input comparisons and failure history. A check on an earlier candidate is not
+relabeled as a new execution. Independent source review found no defect in the
+UI-01 increment or the combined page; final gates and T1 human approval remain
+separate requirements.
