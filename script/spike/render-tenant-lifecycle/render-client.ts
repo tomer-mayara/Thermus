@@ -82,8 +82,8 @@ export class RenderClient {
   }
 
   private refuseOtherService(call: Call): void {
-    const id = /^\/services\/([^/?]+)/.exec(call.path)?.[1];
-    if (id !== undefined && (id === PRODUCTION_SERVICE_ID || !this.#ownServices.has(id))) {
+    const ids = servicesNamed(call.path);
+    if (ids === undefined || ids.some((id) => id === PRODUCTION_SERVICE_ID || !this.#ownServices.has(id))) {
       throw new Error(`${callLine(call)} refused: the probe touches only the ${SERVICE_PREFIX}* service of this run`);
     }
   }
@@ -142,6 +142,17 @@ export class RenderClient {
       throw new Error(`${callLine(call)} got no answer: ${causeOf(error)}`, { cause: error });
     }
   }
+}
+
+// The services that a call names. A metrics read names them in resource parameters; without one, it reads each service
+// of the owner, so it names no allowed set (undefined).
+function servicesNamed(path: string): readonly string[] | undefined {
+  if (path.startsWith('/metrics/')) {
+    const resources = new URLSearchParams(path.split('?')[1] ?? '').getAll('resource');
+    return resources.length === 0 ? undefined : resources;
+  }
+  const id = /^\/services\/([^/?]+)/.exec(path)?.[1];
+  return id === undefined ? [] : [id];
 }
 
 function rateLimits(headers: Headers): RateLimits {

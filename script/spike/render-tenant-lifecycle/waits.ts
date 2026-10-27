@@ -38,24 +38,30 @@ export async function recentDeploys(context: ServiceSession): Promise<readonly D
   return listItems(answer.json, 'deploy').items.map(deployOf);
 }
 
-export async function deployIds(context: ProbeContext): Promise<ReadonlySet<string>> {
+export async function deployIds(context: ServiceSession): Promise<ReadonlySet<string>> {
   return new Set((await recentDeploys(context)).map((deploy) => deploy.id));
 }
 
-async function unknownDeploy(context: ProbeContext, known: ReadonlySet<string>): Promise<DeployView | undefined> {
+async function unknownDeploy(context: ServiceSession, known: ReadonlySet<string>): Promise<DeployView | undefined> {
   return (await recentDeploys(context)).find((deploy) => !known.has(deploy.id));
 }
 
-export function deployStartedByRender(context: ProbeContext, known: ReadonlySet<string>): Promise<DeployView | undefined> {
+export function deployStartedByRender(context: ServiceSession, known: ReadonlySet<string>): Promise<DeployView | undefined> {
   return watch({ plan: POLLS.window, signal: context.signal, what: 'a deploy that Render started' }, () => unknownDeploy(context, known));
 }
 
-export function listedDeploy(context: ProbeContext, known: ReadonlySet<string>): Promise<DeployView> {
+export function listedDeploy(context: ServiceSession, known: ReadonlySet<string>): Promise<DeployView> {
   return poll({ plan: POLLS.newDeploy, signal: context.signal, what: 'a new deploy in the deploy list' }, () => unknownDeploy(context, known));
 }
 
-export async function deployImage2(context: ProbeContext, step: string, known: ReadonlySet<string>): Promise<{ readonly id: string; readonly status: number }> {
-  const call = deployImageCall(serviceIdOf(context), context.inputs.secondImage.ref);
+export function deployImage2(context: ProbeContext, step: string, known: ReadonlySet<string>): Promise<{ readonly id: string; readonly status: number }> {
+  return deployImage(context, step, { known, imageUrl: context.inputs.secondImage.ref });
+}
+
+// A 202 answer has no body, so the new deploy comes from the deploy list.
+export async function deployImage(context: ServiceSession, step: string, deploy: { readonly known: ReadonlySet<string>; readonly imageUrl: string }): Promise<{ readonly id: string; readonly status: number }> {
+  const { known, imageUrl } = deploy;
+  const call = deployImageCall(serviceIdOf(context), imageUrl);
   const answer = await context.client.write(step, call, context.signal);
   if (answer.status !== 201 && answer.status !== 202) throw new Error(`${call.method} ${call.path} answered ${answer.status}, not 201 or 202`);
   const id = answer.status === 201 ? deployOf(answer.json).id : (await listedDeploy(context, known)).id;
@@ -74,11 +80,11 @@ export async function waitForSuspended(context: ProbeContext, wanted: 'suspended
   return { service, ms: performance.now() - since };
 }
 
-export async function instanceIds(context: ProbeContext): Promise<readonly string[]> {
+export async function instanceIds(context: ServiceSession): Promise<readonly string[]> {
   return instanceIdsOf((await context.client.read(instancesCall(serviceIdOf(context)), context.signal)).json);
 }
 
-export async function eventTypesSince(context: ProbeContext, sinceEpochMs: number): Promise<readonly string[]> {
+export async function eventTypesSince(context: ServiceSession, sinceEpochMs: number): Promise<readonly string[]> {
   const answer = await context.client.read(eventsCall(serviceIdOf(context)), context.signal);
   const recent = eventsOf(answer.json).filter((event) => event.at >= sinceEpochMs - CLOCK_SKEW_MS);
   return recent.map((event) => `${event.type} (${event.at < sinceEpochMs ? '-' : '+'}${seconds(Math.abs(event.at - sinceEpochMs))})`);
