@@ -19,6 +19,10 @@ export interface FakeTenantRow {
 export type StoreOperation = 'claim' | 'service' | 'live' | 'failed';
 
 const PROVISIONING_STATES: ReadonlySet<TenantState> = new Set(['creating', 'deploying']);
+// The states that each change starts from, as the guarded updates of the SQL adapter have them.
+const FROM_STATES: Readonly<Record<Exclude<StoreOperation, 'claim'>, readonly TenantState[]>> = {
+  service: ['creating'], live: ['deploying'], failed: ['creating', 'deploying'],
+};
 
 /**
  * A working tenant registry in memory (a fake), with the claim order of the SQL adapter: a row in creating or
@@ -67,14 +71,14 @@ export class TenantProvisioningStoreFake implements TenantProvisioningStore {
   }
 
   async recordService(organizationId: string, serviceId: string): Promise<RecordResult> {
-    return this.move('service', organizationId, ['creating'], (row) => {
+    return this.move('service', organizationId, (row) => {
       this.change(row, 'deploying');
       row.serviceId = serviceId;
     });
   }
 
   async recordLive(organizationId: string, live: LiveRecord): Promise<RecordResult> {
-    return this.move('live', organizationId, ['deploying'], (row) => {
+    return this.move('live', organizationId, (row) => {
       this.change(row, 'live');
       row.internalUrl = live.internalUrl;
       row.imageDigest = live.imageDigest ?? row.imageDigest;
@@ -84,7 +88,7 @@ export class TenantProvisioningStoreFake implements TenantProvisioningStore {
   }
 
   async recordFailed(organizationId: string, reason: string): Promise<RecordResult> {
-    return this.move('failed', organizationId, ['creating', 'deploying'], (row) => {
+    return this.move('failed', organizationId, (row) => {
       this.change(row, 'failed');
       row.failureReason = reason;
     });
@@ -94,10 +98,10 @@ export class TenantProvisioningStoreFake implements TenantProvisioningStore {
     return [...this.rows.values()].some((row) => row.serviceId === serviceId);
   }
 
-  private move(operation: StoreOperation, organizationId: string, from: readonly TenantState[], apply: (row: FakeTenantRow) => void): RecordResult {
+  private move(operation: Exclude<StoreOperation, 'claim'>, organizationId: string, apply: (row: FakeTenantRow) => void): RecordResult {
     if (this.unavailable.has(operation)) return { status: 'unavailable' };
     const row = this.rows.get(organizationId);
-    if (row === undefined || !from.includes(row.state)) return { status: 'moved' };
+    if (row === undefined || !FROM_STATES[operation].includes(row.state)) return { status: 'moved' };
     apply(row);
     return { status: 'recorded' };
   }
