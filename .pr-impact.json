@@ -15,7 +15,7 @@
   },
   "architecture": {
     "modelUpdated": false,
-    "summary": "Probe tooling only: script/spike/gateway-proxy-probe.ts and its helper modules under script/spike/gateway-proxy/ model the MCP gateway in one local process (a stand-in upstream that checks a signed Thermus-Access header, a proxy that signs, streams, and passes the abort, and an SDK client), and knip lists the script as an entry point. No source, runtime, registry view, declaration, or deployment changes; the Slice 1 evidence record has the SO-01d section with the measured times, the findings, and the limits.",
+    "summary": "Probe tooling only: script/spike/render-tenant-lifecycle.ts and its helper modules under script/spike/render-tenant-lifecycle/ probe the Render private service lifecycle through the Render REST API (create, internal address, image deploy, plan change and back, suspend and resume, delete), with a dry-run mode, a reads-only preflight, and a client guard that touches only the thermus-spike-* service of the run and never the production service; knip lists the script as an entry point. The Slice 1 evidence record docs/implementation/self-onboarding-s1.md gains the section SO-01c: Render private service lifecycle, and the Slice 1 preamble of docs/implementation/self-onboarding-plan.md records the owner decision that Render probes run in the Thermus AI workspace. No source, runtime, registry view, declaration, or deployment change.",
     "views": [
       "Context",
       "C4 containers: hosted edition",
@@ -27,8 +27,9 @@
       "Behavior and resource ownership"
     ],
     "evidence": [
-      "script/spike/gateway-proxy-probe.ts",
-      "docs/implementation/self-onboarding-s1.md"
+      "script/spike/render-tenant-lifecycle.ts",
+      "docs/implementation/self-onboarding-s1.md",
+      "docs/implementation/self-onboarding-plan.md"
     ]
   }
 }
