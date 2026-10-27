@@ -1,3 +1,4 @@
+import { pendingInvitationsIn } from '../../support/drivers/browser/pending-invitations-page.ts';
 import { readFile } from 'node:fs/promises';
 import { parseHTML } from 'linkedom';
 import { micromark } from 'micromark';
@@ -8,6 +9,18 @@ import { formsIn } from '../../support/drivers/browser/hosted-browser.ts';
 import { administrationMembers, userOf } from '../../support/fixtures/hosted-members.ts';
 
 describe('Members through the hosted HTTP server', () => {
+  test('Given an invitation read whose later page fails after a pending entry, when Members opens through the public route, then the existing failure has no partial list or count', async (t) => {
+    const site = await serveAdministrationSite(t);
+    site.directory.addInvitations({ organizationId: 'org-a', email: 'partial@example.com', role: 'user' });
+    site.directory.invitationPageLayout = entries => [entries, new Error('later invitation page failed')];
+    const answer = await site.browserOf(userOf('user-eve', 'org-a')).open('members');
+    assert.equal(answer.status, 500);
+    assert.doesNotMatch(answer.body, /partial@example.com|Pending invitations|No pending invitations|Active product members|<form|later invitation page failed/);
+    assert.equal(site.directory.invitationPageReads.length, 2);
+    assert.equal(site.failures.length, 1);
+    assert.deepEqual(site.directory.invitationChanges, []);
+  });
+
   test('Given an Admin in Acme Labs and unavailable Audit storage, when Members and Audit logs open through their page links, then workspace context stays beside Switch workspace and only the current page is marked', async (t) => {
     const site = await serveAdministrationSite(t);
     site.directory.replaceMemberships(administrationMembers.map(member => ({ ...member, organizationName: member.organizationId === 'org-a' ? 'Acme Labs' : member.organizationName })));
@@ -63,7 +76,7 @@ describe('Members through the hosted HTTP server', () => {
     assert.match(answer.body, /href="\/team\/logging"[^>]*>Audit logs<\/a>/);
     assert.match(answer.body, /href="\/team\/organizations">Switch workspace<\/a>/);
     assert.match(answer.body, /eve@example\.com[\s\S]*?You/);
-    assert.match(answer.body, /new@example\.com: User invitation, pending\./);
+    assert.ok(pendingInvitationsIn(answer.body).some(entry => entry.email === 'new@example.com' && entry.role === 'User'));
     assert.match(answer.body, /Expires <time datetime="[^"]+">/);
     assert.doesNotMatch(answer.body, /old@example\.com|other@example\.com|ivy@example\.com|pia@example\.com/);
     assert.deepEqual(forms.filter(({ fields }) => fields.membership_id === undefined).map(({ label }) => label), ['Send invitation', 'Resend the invitation to new@example.com', 'Revoke the invitation to new@example.com']);
@@ -88,7 +101,7 @@ describe('Members through the hosted HTTP server', () => {
     assert.deepEqual(site.directory.invitationChanges, ['send org-a user new.user@example.com', 'send org-a admin new.admin@example.com', 'resend invitation-1', 'revoke invitation-1']);
     assert.deepEqual(site.directory.membershipIn('user-eve', 'org-a'), before);
     assert.doesNotMatch(after.body, /new\.user@example\.com/);
-    assert.match(after.body, /new\.admin@example\.com: Admin invitation, pending\./);
+    assert.ok(pendingInvitationsIn(after.body).some(entry => entry.email === 'new.admin@example.com' && entry.role === 'Admin'));
   });
 
   for (const [operation, path] of [['sendInvitation', 'invitations/send'], ['resendInvitation', 'invitations/resend'], ['revokeInvitation', 'invitations/revoke']] as const) {

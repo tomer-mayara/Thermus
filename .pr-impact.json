@@ -15,7 +15,7 @@
   },
   "architecture": {
     "modelUpdated": false,
-    "summary": "UI-03 changes invitation presentation inside the existing Web owner. A native closed Invite member disclosure contains the current protected form, Send invitation and a Members GET Cancel link. Last-Admin refusal adds instructions beside the existing recovery link. Allowed roles, recipient policy, POST fields, session/access checks, provider operations, server notices, removal authority and approved help remain unchanged. There is no new script, state, query, production component, dependency, public declaration, store or deployment change. All 15 registry views and current responsibility descriptions remain accurate. The browser gate inventory documents the added cases without changing gate selection or decision authority.",
+    "summary": "UI-04 changes pending invitation presentation inside the existing Web owner. A native disclosure counts the complete filtered pending collection and starts closed at zero or open when nonzero. Compact rows retain role, absolute UTC expiry and permitted protected Resend/Revoke forms. The existing full removal help moves after pending invitations without changing its text, version or hash. Complete-read failure, authorization, scopes, provider operations, fixed outcomes and UI-03 invitation behavior remain. No script, state, query, production component, dependency, public declaration, store or deployment changes. All 15 registry views and responsibility descriptions remain accurate. The browser gate inventory documents new cases without changing selection or authority.",
     "views": [
       "Context",
       "C4 containers: hosted edition",
@@ -29,12 +29,12 @@
     ],
     "evidence": [
       "src/interfaces/web/account/administration-pages.ts",
-      "src/interfaces/web/account/account-pages.ts",
       "src/interfaces/web/account/members-style.ts",
+      "src/accounts/organizations/administration-overviews.ts",
       "test/acceptance/auth/hosted-member-removal-browser.runtime.ts",
       "test/integration/hosted-admin/account-routes-administration-pages.test.ts",
       "test/acceptance/auth/hosted-invitations.test.ts",
-      "docs/implementation/admin-ui-03.md",
+      "docs/implementation/admin-ui-04.md",
       "docs/implementation/test-gate-policy.md",
       "architecture/components.md"
     ]

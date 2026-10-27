@@ -31,10 +31,10 @@ export function membersPage(form: MembersPageForm): Response {
 ${sendForm(form).join('\n')}</div>
 <div class="member-lists"><section class="members-card" aria-labelledby="active-heading"><h2 id="active-heading">Active members</h2>
 <p class="list-note">Active product members: ${form.members.activeUserSeats}</p>
-${members.length === 0 ? '<p>No active members.</p>' : `<ul class="member-list">${memberRows.join('\n')}</ul>`}${membersHelp}</section>
-<section class="members-card" aria-labelledby="pending-heading"><h2 id="pending-heading">Pending invitations</h2>
+${members.length === 0 ? '<p>No active members.</p>' : `<ul class="member-list">${memberRows.join('\n')}</ul>`}</section>
+<details class="pending-invitations members-card"${invitations.length > 0 ? ' open' : ''}><summary>Pending invitations · ${invitations.length}</summary>
 ${invitations.length === 0 ? '<p class="list-note">No pending invitations.</p>' : `<ul class="invitation-list">${invitations.map((invitation) => invitationRow(form, invitation)).join('\n')}</ul>`}
-</section></div>`;
+</details>${membersHelp}</div>`;
   return membersPageLayout(form.navigation, content, { title: 'Members', current: 'members', organizationName: form.members.organizationName });
 }
 
@@ -70,12 +70,17 @@ function sendForm(form: MembersPageForm): string[] {
 }
 
 function invitationRow(form: MembersPageForm, invitation: InvitationEntry): string {
-  const actions = invitation.changes.flatMap((change) => postForm(form.actions[change], [
-    hiddenField('csrf_token', form.csrfToken),
-    hiddenField('organization_id', form.members.organizationId),
-    hiddenField('invitation_id', invitation.invitationId),
-  ], `${change === 'resend' ? 'Resend' : 'Revoke'} the invitation to ${invitation.email}`));
-  return `<li><p>${escapeHtml(invitation.email)}: ${escapeHtml(roleLabel(invitation.role))} invitation, pending.</p>
+  const actions = invitation.changes.map((change) => {
+    const label = change === 'resend' ? 'Resend' : 'Revoke';
+    return `<form method="post" action="${escapeHtml(form.actions[change])}">
+${hiddenField('csrf_token', form.csrfToken)}
+${hiddenField('organization_id', form.members.organizationId)}
+${hiddenField('invitation_id', invitation.invitationId)}
+<button type="submit" aria-label="${escapeHtml(`${label} the invitation to ${invitation.email}`)}">${label}</button>
+</form>`;
+  });
+  return `<li class="invitation-row"><p class="invitation-email">${escapeHtml(invitation.email)}</p>
+<p class="invitation-role"><span class="invitation-fact-label">Role</span> ${escapeHtml(roleLabel(invitation.role))}</p>
 <p class="expiry">Expires <time datetime="${escapeHtml(invitation.expiresAt)}">${escapeHtml(invitation.expiresAt.replace('T', ' ').replace(/(?:\.\d+)?Z$/, ' UTC'))}</time></p>
 <div class="invitation-actions">${actions.join('\n')}</div></li>`;
 }

@@ -149,7 +149,9 @@ export class InvitationBrowser {
     assert.ok(post);
     assert.deepEqual(Object.fromEntries(post), { csrf_token: token, organization_id: organization, email, role: role.toLowerCase() });
     await this.assertClosed();
-    assert.equal(await this.page.getByText(`${email}: ${role} invitation, pending.`, { exact: true }).isVisible(), true);
+    const pending = this.page.locator('.pending-invitations .invitation-row').filter({ has: this.page.getByText(email, { exact: true }) });
+    assert.equal(await pending.locator('.invitation-role').evaluate(element => element.lastChild?.textContent?.trim()), role);
+    assert.equal(await pending.isVisible(), true);
     assert.doesNotMatch(await this.page.getByRole('main').innerText(), /email (?:was )?(?:sent|delivered)/i);
   }
 

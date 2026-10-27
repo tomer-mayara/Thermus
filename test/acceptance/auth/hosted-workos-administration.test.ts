@@ -1,3 +1,4 @@
+import { pendingInvitationsIn } from '../../support/drivers/browser/pending-invitations-page.ts';
 import assert from 'node:assert/strict';
 import { describe, test, type TestContext } from 'node:test';
 import { formLabelled, formsIn, type BrowserAnswer, type HostedBrowser, type PageForm } from '../../support/drivers/browser/hosted-browser.ts';
@@ -241,7 +242,7 @@ describe('Hosted WorkOS edition: organization invitations', () => {
     assertRedirectTo(repeated, 'members');
     assertNotice(asAdmin, 409, /This email address already belongs to a member of the organization, or it has a pending invitation\. Nothing changed\./);
     assertNotice(member, 409, /This email address already belongs to a member of the organization, or it has a pending invitation\. Nothing changed\./);
-    assert.match(pending.body, /new@example\.com: User invitation, pending\./);
+    assert.ok(pendingInvitationsIn(pending.body).some(entry => entry.email === 'new@example.com' && entry.role === 'User'));
     assertRedirectTo(resent, 'members');
     assertRedirectTo(revoked, 'members');
     assert.doesNotMatch(after.body, /new@example\.com/);
@@ -278,7 +279,7 @@ describe('Hosted WorkOS edition: organization invitations', () => {
     site.world.acceptInvitation(invitation.id);
     const members = await pageOf(browser, 'members');
 
-    assert.match(pendingMembers.body, /eve@example\.com: User invitation, pending\./);
+    assert.ok(pendingInvitationsIn(pendingMembers.body).some(entry => entry.email === 'eve@example.com' && entry.role === 'User'));
     assert.equal(seatsIn(pendingMembers.body), 6);
     assert.deepEqual(site.world.rolesOf(eve, acme), ['user']);
     assert.equal(site.world.statusOf(eve, acme), 'active');
@@ -306,7 +307,7 @@ describe('Hosted WorkOS edition: organization invitations', () => {
     assert.deepEqual(labelsOf(page.forms), ['Send invitation', ...removalLabels, 'Resend the invitation to boss@example.com', 'Revoke the invitation to boss@example.com']);
     assert.deepEqual(page.forms.filter(form => form.action === '/team/members/remove').map(form => form.label), removalLabels);
     assert.doesNotMatch(page.body, /old@example\.com/);
-    assert.match(page.body, /boss@example\.com: Admin invitation, pending\./);
+    assert.ok(pendingInvitationsIn(page.body).some(entry => entry.email === 'boss@example.com' && entry.role === 'Admin'));
     assertRedirectTo(adminInvite, 'members');
     assertNotice(resend, 409, /The invitation is no longer pending/);
     assert.deepEqual(changesIn(site), [{ method: 'POST', path: '/user_management/invitations', body: { email: 'x@example.com', organization_id: acme, role_slug: 'admin' } }]);
@@ -331,7 +332,7 @@ describe('Hosted WorkOS edition: the active product member count from every Work
     assert.ok(pageReads.length >= 5, `WorkOS gave the members on ${pageReads.length} pages.`);
     for (const path of pageReads) assert.match(path, new RegExp(`organization_id=${acme}.*statuses=active,inactive,pending|statuses=active,inactive,pending.*organization_id=${acme}`));
     assert.equal(page.body.split('ada@example.com: active').length, 2, 'A repeated membership is listed more than once.');
-    assert.match(page.body, /newcomer@example\.com: User invitation, pending\./);
+    assert.ok(pendingInvitationsIn(page.body).some(entry => entry.email === 'newcomer@example.com' && entry.role === 'User'));
   });
 
   test('Given a WorkOS outage on a later page of the members, when Dan opens the members page, then it gives the 500 failure page with an operator report and no partial count', async (t) => {

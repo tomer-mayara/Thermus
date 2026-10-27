@@ -1,3 +1,4 @@
+import { pendingInvitationsIn } from '../../support/drivers/browser/pending-invitations-page.ts';
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { statusesOf } from '../../support/dsl/hosted-access.ts';
@@ -10,9 +11,7 @@ const membersPage = 'https://thermus.example/team/members';
 const deniedChange = /Your account cannot make this change in the selected organization\./;
 const removalLabels = ['sam', 'otto', 'cy', 'fay', 'eve', 'una'].map(name => `Remove ${name}@example.com`);
 
-function invitationLines(body: string): readonly string[] {
-  return [...body.matchAll(/<p>([^<]* invitation, (?:pending|accepted|revoked|expired)\.)<\/p>/g)].map(([, line = '']) => line);
-}
+
 
 describe('Hosted invitations through the public routes, with session and directory doubles', () => {
   test('Given two Admins, when each sends a native invitation, then each can invite either role, unsupported roles are refused, and accepted Admin access includes product access', { timeout: 20_000 }, async (t) => {
@@ -33,7 +32,7 @@ describe('Hosted invitations through the public routes, with session and directo
     ];
     site.directory.acceptInvitation(site.directory.invitationTo('new.admin@example.com')?.invitationId ?? '', 'user-nia');
     const nia = await statusesOf(site.browserOf(userOf('user-nia', 'org-a')), ['members', 'portal']);
-    const shown = invitationLines((await eve.open('members')).body);
+    const shown = pendingInvitationsIn((await eve.open('members')).body);
 
     assert.deepEqual([labelsOf(evePage.forms), labelsOf(samPage.forms)], [['Send invitation', ...removalLabels], ['Send invitation', ...removalLabels]]);
     for (const page of [evePage, samPage]) assert.deepEqual(page.forms.filter(form => form.action === '/team/members/remove').map(form => form.label), removalLabels);
@@ -46,7 +45,7 @@ describe('Hosted invitations through the public routes, with session and directo
     assert.deepEqual(site.directory.invitationChanges, ['send org-a user new.user@example.com', 'send org-a admin new.admin@example.com']);
     assert.deepEqual(rolesOf(site, 'user-nia', 'org-a'), ['admin']);
     assert.deepEqual(nia, { members: 200, portal: 200 });
-    assert.deepEqual(shown, ['new.user@example.com: User invitation, pending.']);
+    assert.deepEqual(shown, [{ email: 'new.user@example.com', role: 'User' }]);
     assert.deepEqual(recordLines(site.records), [
       'user-eve in org-a: invite user for new.user@example.com: applied',
       'user-sam in org-a: invite admin for new.admin@example.com: applied',
@@ -80,16 +79,16 @@ describe('Hosted invitations through the public routes, with session and directo
     ];
     const after = await eve.open('members');
 
-    assert.deepEqual(invitationLines(page.answer.body), [
-      'pending.user@example.com: User invitation, pending.',
-      'pending.admin@example.com: Admin invitation, pending.',
+    assert.deepEqual(pendingInvitationsIn(page.answer.body), [
+      { email: 'pending.user@example.com', role: 'User' },
+      { email: 'pending.admin@example.com', role: 'Admin' },
     ]);
     assert.deepEqual(labelsOf(page.forms), ['Send invitation', ...removalLabels, 'Resend the invitation to pending.user@example.com', 'Revoke the invitation to pending.user@example.com', 'Resend the invitation to pending.admin@example.com', 'Revoke the invitation to pending.admin@example.com']);
     assert.deepEqual(page.forms.filter(form => form.action === '/team/members/remove').map(form => form.label), removalLabels);
     assert.deepEqual([resent.status, revoked.status, resentAgain.status], [303, 303, 409]);
     assert.match(resentAgain.body, /The invitation is no longer pending/);
     assert.deepEqual(forged.map(({ status }) => status), [303, 403, 409]);
-    assert.deepEqual(invitationLines(after.body), []);
+    assert.deepEqual(pendingInvitationsIn(after.body), []);
     assert.deepEqual(site.directory.invitationChanges, ['resend invitation-1', 'revoke invitation-1', 'revoke invitation-5']);
     assert.doesNotMatch(`${page.answer.body}${after.body}${JSON.stringify(site.records)}`, /secret-token/);
     assert.deepEqual(recordLines(site.records), [

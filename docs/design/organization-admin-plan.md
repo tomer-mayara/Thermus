@@ -3,7 +3,8 @@
 UI design selected: 26 October 2026 — Refined tabs. UI-01 is implemented in
 [PR #263](https://github.com/tomer-mayara/Thermus/pull/263). UI-02 ([PR #264](https://github.com/tomer-mayara/Thermus/pull/264)) and UI-03
 ([PR #266](https://github.com/tomer-mayara/Thermus/pull/266)) are separate candidates
-based on UI-01. UI-04 remains planned.
+based on UI-01. UI-04 ([PR #268](https://github.com/tomer-mayara/Thermus/pull/268))
+is stacked on UI-03 and does not include UI-02.
 See the [four UI tickets](#refined-tabs-ui--approved-design-26-october-2026).
 
 Plan reviewed: 25 October 2026. Slice 1 and Slice 2 are merged, and the internal
@@ -223,7 +224,8 @@ Organization unclear with multiple memberships: [Choose workspace]
 ### Members and invitations — Refined tabs
 
 **Approved design direction — 26 October 2026. UI-01 is implemented in PR #263;
-UI-02 and UI-03 have separate candidates in PR #264 and PR #266. UI-04 remains planned.**
+UI-02 and UI-03 have separate candidates in PR #264 and PR #266. UI-04 has a
+candidate in PR #268, stacked on UI-03.**
 The owner selected Refined tabs. The following wireframes replace the earlier
 conceptual Members layout; they do not claim that the application has changed.
 Follow [portal design](portal-design.md#members) and the
@@ -1216,7 +1218,7 @@ complete only when both of its child tickets are complete.
 ### Refined tabs UI — approved design, 26 October 2026
 
 **Status: UI-01 is implemented in PR #263. UI-02 and UI-03 have separate candidates
-in PR #264 and PR #266; UI-04 remains planned.** These four small,
+in PR #264 and PR #266; UI-04 has a candidate in PR #268 on UI-03.** These four small,
 plan-local tickets implement the selected Members presentation against existing
 member, invitation, and removal behavior. They add no provider or MFA feature
 and have no Slice 3 dependency. They do not reopen completed Slice 2.5 release
@@ -1546,6 +1548,11 @@ validation gate passes. The current pending list can show the new invitation;
 UI-04's counted disclosure is not needed yet.
 
 #### UI-04 — Compact pending invitations
+
+**Candidate: [PR #268](https://github.com/tomer-mayara/Thermus/pull/268), stacked
+on UI-03.** See the [implementation record](../implementation/admin-ui-04.md).
+UI-02 remains a sibling, so this candidate does not claim a combined review of
+all four UI tickets or include its member-row presentation.
 
 **BDD acceptance first.**
 
