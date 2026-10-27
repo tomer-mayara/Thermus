@@ -43,6 +43,14 @@ control plane, and the test plays the gateway with its own Ed25519 key pair.
   of a verified context for the user of its token, with the authority and the
   name of the context, and the denials for another organization, no
   organization, and another user.
+- `test/unit/app/tenant-requests.test.ts` (14 cases) checks the routes of a
+  tenant and its MCP handler with doubles of the verifier and the MCP server:
+  `/healthz` answers `GET` and `HEAD` with `ok` and `no-store`, and `405` with
+  `Allow: GET, HEAD` for another method; the MCP path reaches the MCP handler;
+  each other path gets `404`; a verified context reaches the MCP server with
+  the scope of that context; a refused context gets `403` and one error line
+  that names the reason, with no MCP handling; and the verifier gets only the
+  header and the bearer token that the request holds.
 - `test/unit/config/hosted-role.test.ts` (55 cases) checks `THERMUS_ROLE`
   through `loadDeploymentConfig()`: no value, an empty value, and
   `control-plane` select the control plane; the tenant role with its four
