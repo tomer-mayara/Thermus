@@ -100,6 +100,25 @@ for (const mcpUrl of ['javascript:alert(1)', '<img src=x>', undefined]) {
   });
 }
 
+for (const plan of [{ plan: 'free', memberLimit: 5 }, { plan: 'team' }]) {
+  test(`Given product access on the ${plan.plan} plan, when access loads, then the portal accepts the plan and shows the connection guide`, async () => {
+    const { document, options } = portal({ session: signedIn, 'portal/access': async () => Response.json({ organizationId: 'org_a', organizationName: 'Acme Labs', roles: ['user'], ...plan, mcpUrl: 'https://thermus.example/mcp' }) });
+    await initializePortal(options);
+    assert.ok(document.querySelector('.connection-guide'));
+    assert.doesNotMatch(document.body.textContent ?? '', /Failed to load your session/);
+    assert.equal(/Free access\. No card is required/.test(document.body.textContent ?? ''), plan.plan === 'free');
+  });
+}
+
+for (const answer of [{ plan: 'free' }, { plan: 'free', memberLimit: 0 }, { plan: 'free', memberLimit: 2.5 }, { plan: 'free', memberLimit: '5' }, { plan: 'paid' }, {}]) {
+  test(`Given a plan answer ${JSON.stringify(answer)}, when access loads, then the portal reads the member limit of a free plan as a whole number of 1 or more and refuses another plan with the safe error`, async () => {
+    const { document, options } = portal({ session: signedIn, 'portal/access': async () => Response.json({ organizationId: 'org_a', organizationName: 'Acme Labs', roles: ['user'], ...answer, mcpUrl: 'https://thermus.example/mcp' }) });
+    await initializePortal(options);
+    assert.match(document.body.textContent ?? '', /Failed to load your session/);
+    assert.equal(document.querySelector('.connection-guide'), null);
+  });
+}
+
 test('Given a portal under a public base path, when access is denied, then signup recovery uses the relative route', async () => {
   const { document, options } = portal({ session: signedIn, 'portal/access': async () => new Response(null, { status: 403 }) });
   Object.defineProperty(document, 'baseURI', { value: 'https://thermus.example/team/' });
