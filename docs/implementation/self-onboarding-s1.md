@@ -1,9 +1,11 @@
 # Self on-boarding Slice 1 evidence
 
 This record keeps the evidence of the Slice 1 tickets of the self on-boarding
-plan ([PR #259](https://github.com/tomer-mayara/Thermus/pull/259)). Each ticket
-or probe adds one section: what ran and where, the durations and limits, and
-what a client saw. The record holds no secret.
+plan ([PR #259](https://github.com/tomer-mayara/Thermus/pull/259)), and of two
+Slice 2 tickets: SO-03, the private address of the control plane, and SO-02,
+which makes the workflow of SO-01b the release path. Each ticket or probe adds
+one section: what ran and where, the durations and limits, and what a client
+saw. The record holds no secret.
 
 SO-03 of Slice 2 adds its measurement of the private address of the control
 plane here, because it extends the private network probe of SO-01d.
@@ -3187,3 +3189,132 @@ no service named `thermus-spike-*`.
   service with a custom domain and a disabled subdomain, stay unmeasured.
 - The services ran with the placeholder WorkOS values of SO-01c, so the web
   service was a control plane without real WorkOS settings.
+
+## SO-02: release path on each merge to main
+
+Date: 27 October 2026 (UTC). Branch `self-ob-s2-so-02-release-workflow-1d4667`,
+from main `77477864`. The workflow and the deploy script of the runs are those
+of commit `a0f94659`; the later commits of the branch change documents only.
+
+[`hosted-image.yml`](../../.github/workflows/hosted-image.yml) keeps the build,
+the gate, and the push of [SO-01b](#so-01b-hosted-image-on-a-native-amd64-runner)
+and adds two things, as the answers of 27 October 2026 decided:
+
+- The trigger `push` on `main`. Each merge builds, gates, and pushes by
+  digest, and deploys nothing. The build job has no concurrency group, so a
+  newer merge cannot cancel the pending build of an earlier one. The record
+  table names the event and the ref of the run.
+- The deploy job, only for a manual dispatch with the inputs `digest` and
+  `service_id`, and `confirm_production` for the production service. It runs
+  [`deploy-hosted-image.ts`](../../script/release/deploy-hosted-image.ts):
+  first the request check, which makes no call, then the GHCR check of the
+  digest, then the Render API deploy with `imageUrl`, the wait for `live`, the
+  image check, and `/healthz`. [Hosted release](../../README.md#hosted-release)
+  gives the rules.
+
+### Runs
+
+The digests: D1 `sha256:9c034b74b8a55c3faeb61c8ea6f063334e2e3fe78b0493b6530ed2e7008402e8`
+(commit `a0f94659`) and D2
+`sha256:3a9beb582cceb154b17dd8cbb248c06305ee9c704344021f24f36fe4d5a3a304`
+(throwaway commit `1ba8a4f0`). Each is 154.7 MB (147.6 MiB) compressed, in 16
+layers, `linux/amd64`. Neither is a release digest.
+
+| Run | Commit and event | Result | Times |
+| --- | --- | --- | --- |
+| A, [40582338941](https://github.com/tomer-mayara/Thermus/actions/runs/40582338941) | `a0f94659`, the candidate; dispatch without inputs | Passed: build, gate 7 of 7, push of D1, and record. The deploy job was skipped. | Build 370 s, gate 12 s, push 15 s; job 8 min 26 s |
+| B, [40582429843](https://github.com/tomer-mayara/Thermus/actions/runs/40582429843) | `ed4817e7`, throwaway branch `so-02-failing-gate`; dispatch without inputs | The build failed at the deliberate unit test: backend units 3,353 of 3,354. The gate, login, push, and record steps were skipped, and the deploy job was skipped. | Build step 3 min 51 s; job 6 min 0 s |
+| C, [40582571919](https://github.com/tomer-mayara/Thermus/actions/runs/40582571919) | `a0f94659`; dispatch with a digest of zeros, `service_id` the production service, no `confirm_production` | The request check failed with two errors: the run is not on `main`, and the production service needs `confirm_production`. The GHCR and deploy steps were skipped, and the build job was skipped. | Job 17 s |
+| D, [40582508603](https://github.com/tomer-mayara/Thermus/actions/runs/40582508603) | `1ba8a4f0`, throwaway branch `so-02-deploy-check`; push | Passed: build, gate 7 of 7, push of D2, and record. The deploy job was skipped. | Build 356 s, gate 13 s, push 15 s; job 8 min 11 s |
+| G, [40583680586](https://github.com/tomer-mayara/Thermus/actions/runs/40583680586) | `1ba8a4f0`; dispatch with a digest of zeros and the disposable service | The request check passed. The GHCR check failed with "not found", and the deploy step was skipped. | Job 23 s |
+| E, [40583851233](https://github.com/tomer-mayara/Thermus/actions/runs/40583851233) | `1ba8a4f0`; dispatch with D1 and the disposable service | Passed: GHCR check, deploy `dep-dbgh4l59el5s739oujgg` (`update_in_progress` > `live`), D1 in the live deploy and in `imagePath`, and `/healthz` `200` with `ok` at the first request. | Live 29.6 s after the deploy call; Render: 22.4 s; deploy step 30 s; job 60 s |
+
+In runs A and D, `npm run build:hosted` in the image build passed backend
+units 3,353 of 3,353, portal units 31 of 31, portal acceptance 20 of 20,
+integration 1,169 of 1,169, the selected acceptance and interface files 123
+of 123, and the renderer gate 13 of 13. The hosted image gate passed 7 of 7.
+No test failed, was cancelled, was skipped, or was todo. The gate wrote
+"Reused the caller-built image" with the tag of the run. Each run used the
+GitHub-hosted image `ubuntu-24.04` version 20261012.334.1, with 2 CPUs,
+7,938 MiB of memory, 12 GB of free disk of 72 GB, and Docker Engine 28.0.4.
+
+GitHub reads the trigger `push` on `main` and the branch rule of the deploy
+only on `main`, so they run for the first time at the merge. Before the merge,
+the throwaway branch `so-02-deploy-check` stood in for `main` with one
+temporary commit of two lines: `branches: [main, so-02-deploy-check]` in the
+trigger, and `refs/heads/so-02-deploy-check` as the release ref in
+[`deploy-request.ts`](../../script/release/deploy-request.ts). Run C shows the
+rule of the candidate: a deploy request from another branch stops at the
+request check. Both throwaway branches were deleted after their runs.
+
+### Disposable service
+
+The service came from the SO-01c create call, through the web step of the
+[SO-01d part two](#part-two-render-private-network) probe, with the owner's
+local key and the registry credential `ghcr-thermus-hosted-read`
+(`rgc-dbg1h0142hec73da9ra0`). Before any call, the probe refused
+`--owner tea-d3mlbrvdiees73ca4rdg` and `--web-service-id srv-db8mnqg473hc739d529g`
+with exit code 2; the network blocker preload saw no outbound attempt.
+
+| Time (UTC) | Step | Result |
+| --- | --- | --- |
+| 21:01:38 | Preflight, reads only | No service named `thermus-spike-*` of any type. |
+| 21:01:45 | Create, `--steps web --keep`, image `sha256:d6b8a8fd…` of main `9a3ac1f9` | `thermus-spike-web-20261027-210145` (`srv-dbgh2evf3r2c73ejo0fg`), `0.5c-512mb`, oregon: `201` after 2.9 s. The first deploy `dep-dbgh2fff3r2c73ejo1t0` was `live` 79.9 s after the create call (Render: 70.8 s). The public `/healthz` answered `502` and then `200` with `ok` at the second request. `Ratelimit-Remaining` 19 of 20 creates. |
+| 21:04:51 to 21:06:59 | Runs G and E | See the table above. |
+| After run E | Read only, with the SO-01c client and writes refused | `imagePath` D1. Two deploys: `dep-dbgh4l59el5s739oujgg`, `live`, trigger `api`, image D1; `dep-dbgh2fff3r2c73ejo1t0`, `deactivated`, trigger `manual`, image `sha256:d6b8a8fd…`. So runs C and G started no deploy. |
+| 21:07:56 | Check and delete, `--web-service-id` without `--keep`, image D1 | The last deploy was `live`, the image setting held D1, and `/healthz` answered `200` with `ok` at the first request. `DELETE` `204` after 0.4 s; no service named `thermus-spike-*` 0.3 s later. |
+| 21:08:04 | Preflight, reads only | No service named `thermus-spike-*` of any type. |
+
+Writes in the Thermus AI workspace: 1 create and 1 delete with the owner's key,
+and 1 deploy with the key of the dedicated Render user, from run E. One
+disposable service of the two allowed.
+
+### Checks before the runs
+
+These checks used scripts in the session scratchpad, not in the branch:
+
+- The request rules, in `check` and `deploy` mode, with the network blocker
+  preload: 13 cases passed, with no outbound attempt. Among them: another
+  branch, the production service without, with another, and with the right
+  `confirm_production`, `confirm_production` for another service, empty and
+  malformed inputs, and `deploy` without `RENDER_API_KEY`.
+- The `deploy` mode against a stand-in for the Render API, a module that
+  replaced `fetch` in the process: 12 scenarios passed. A `201` and a `202`
+  answer, a `502` and then `200`, a verified custom domain with a redirect
+  domain beside it, a deploy that ends as `update_failed`, `/healthz` `404`,
+  six `502` answers, an image setting that does not change, a private
+  service, a `docker` runtime, a suspended service, and another workspace. The
+  last four got no deploy call. No output held the key, and the health
+  requests had no `Authorization` header. The stand-in measures nothing about
+  Render.
+
+### Findings
+
+- The API deploy with `imageUrl` on an image-backed web service had the
+  trigger `api`, reached `live` 29.6 s after the call, and changed `imagePath`
+  to the deployed digest, as on the private service of SO-01c.
+- The existing web service answered `/healthz` at the first request after the
+  deploy. The new web service answered `502` once before `200`, as in SO-01d
+  part two, so the repeat after a `502` stays.
+- The image build took 356 and 370 s, against 472 to 490 s in SO-01b; the
+  push took 15 s. A merge run takes about 8 to 9 minutes.
+
+### Limits
+
+- The trigger `push` on `main` and the branch rule of the deploy run for the
+  first time at the merge; the pull request records that first run.
+- No deploy reached production. The rule for `confirm_production` and the
+  health URL on a custom domain ran only in the local checks and the
+  stand-in. Step 5 of the SO-12 order is their first real use. The production
+  service builds from Git (runtime `docker`), and the deploy job refuses a
+  service whose runtime is not `image`.
+- There is no GitHub environment, so a workflow on any branch of the
+  repository can read `RENDER_API_KEY`. The branch rule is in the workflow and
+  the script of the dispatched ref.
+- The deploy job takes each digest that GHCR has, also the image of a branch
+  build. The operator chooses a release digest.
+- The session cannot list the GHCR versions: its token has the scopes `repo`,
+  `workflow`, `gist`, and `admin:org`, not `read:packages`. The record step of
+  each run names its digest, and the skipped push steps show that runs B, C,
+  and G pushed nothing.
+- One run of each path, one region, and one disposable service.
