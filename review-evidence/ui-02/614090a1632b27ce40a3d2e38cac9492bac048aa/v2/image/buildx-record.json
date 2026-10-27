@@ -1,0 +1,15 @@
+{
+  "ref": "colima-thermus-s25-merge/colima-thermus-s25-merge/n9dhkqvyz8kb300puqb76xy8b",
+  "head": "614090a1632b27ce40a3d2e38cac9492bac048aa",
+  "context": "colima-thermus-s25-merge",
+  "recordAt": "2026-10-27T05:35:00.651196+00:00",
+  "initialRecord": {
+    "cached_steps": 0,
+    "completed_steps": 0,
+    "created_at": "2026-10-27T05:34:20.853002832Z",
+    "name": "Thermus/Dockerfile.hosted",
+    "ref": "colima-thermus-s25-merge/colima-thermus-s25-merge/n9dhkqvyz8kb300puqb76xy8b",
+    "status": "Running",
+    "total_steps": 0
+  }
+}

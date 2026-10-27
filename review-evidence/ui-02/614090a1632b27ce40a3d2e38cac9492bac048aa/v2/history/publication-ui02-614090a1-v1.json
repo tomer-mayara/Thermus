@@ -1,0 +1,12 @@
+{
+  "at": "2026-10-27T05:20:34.238269+00:00",
+  "ui": "ui02",
+  "head": "614090a1632b27ce40a3d2e38cac9492bac048aa",
+  "commit": "555ae4b96b1333ac952416307a41237640a72417",
+  "branch": "codex/ui-02-review-614090a1-v1",
+  "prefix": "review-evidence/ui-02/614090a1632b27ce40a3d2e38cac9492bac048aa/v1/",
+  "files": 322,
+  "bundleManifestSha256": "80a68437d182826be572e5b815cc3aecbe9cd45031b80edeef829a75dbf42a3f",
+  "status": "published-and-ref-verified",
+  "url": "https://github.com/tomer-mayara/Thermus/blob/555ae4b96b1333ac952416307a41237640a72417/review-evidence/ui-02/614090a1632b27ce40a3d2e38cac9492bac048aa/v1"
+}

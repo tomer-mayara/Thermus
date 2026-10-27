@@ -1,0 +1,12 @@
+{
+  "command": "npm",
+  "args": [
+    "run",
+    "test:container:hosted"
+  ],
+  "started": "2026-10-27T05:34:17.228Z",
+  "ended": "2026-10-27T05:56:10.664Z",
+  "exitCode": 0,
+  "signal": null,
+  "logPath": "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/.cache/ui-stack-finish/local-image/ui02/hosted-image.log"
+}

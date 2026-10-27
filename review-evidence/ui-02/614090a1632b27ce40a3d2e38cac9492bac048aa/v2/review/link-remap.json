@@ -1,0 +1,38 @@
+[
+  {
+    "original": "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/.cache/ui-stack-finish/bundles/ui02/614090a1632b27ce40a3d2e38cac9492bac048aa/historical-82788735/validation/hosted-live.log:105",
+    "published": "https://github.com/tomer-mayara/Thermus/blob/555ae4b96b1333ac952416307a41237640a72417/review-evidence/ui-02/614090a1632b27ce40a3d2e38cac9492bac048aa/v1/historical-82788735/validation/hosted-live.log#L105"
+  },
+  {
+    "original": "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/.cache/ui-stack-finish/bundles/ui02/614090a1632b27ce40a3d2e38cac9492bac048aa/historical-82788735/validation/live-summary.json",
+    "published": "https://github.com/tomer-mayara/Thermus/blob/555ae4b96b1333ac952416307a41237640a72417/review-evidence/ui-02/614090a1632b27ce40a3d2e38cac9492bac048aa/v1/historical-82788735/validation/live-summary.json"
+  },
+  {
+    "original": "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/.cache/ui-stack-finish/bundles/ui02/614090a1632b27ce40a3d2e38cac9492bac048aa/historical-82788735/validation/staging-removal-ledger.jsonl:21",
+    "published": "https://github.com/tomer-mayara/Thermus/blob/555ae4b96b1333ac952416307a41237640a72417/review-evidence/ui-02/614090a1632b27ce40a3d2e38cac9492bac048aa/v1/historical-82788735/validation/staging-removal-ledger.jsonl#L21"
+  },
+  {
+    "original": "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/.cache/ui04/review-bundle/3380afe663c6a2ef02a0adda525faccd6f5b726f/validation/hosted-live.log:105",
+    "published": "https://github.com/tomer-mayara/Thermus/blob/efef59fd51f92ebe90eb655f2f8b29fe965debee/review-evidence/ui-04/3380afe663c6a2ef02a0adda525faccd6f5b726f/validation/hosted-live.log#L105"
+  },
+  {
+    "original": "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/test/acceptance/auth/hosted-removal.live.ts:220",
+    "published": "https://github.com/tomer-mayara/Thermus/blob/057434b9c3ad313f656b03e033866cdecab7ae51/test/acceptance/auth/hosted-removal.live.ts#L220"
+  },
+  {
+    "original": "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/test/support/hosted-live/portal-visit.ts:63",
+    "published": "https://github.com/tomer-mayara/Thermus/blob/057434b9c3ad313f656b03e033866cdecab7ae51/test/support/hosted-live/portal-visit.ts#L63"
+  },
+  {
+    "original": "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/src/accounts/providers/workos/workos-organizations.ts:209",
+    "published": "https://github.com/tomer-mayara/Thermus/blob/057434b9c3ad313f656b03e033866cdecab7ae51/src/accounts/providers/workos/workos-organizations.ts#L209"
+  },
+  {
+    "original": "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/src/accounts/organizations/change-records.ts:63",
+    "published": "https://github.com/tomer-mayara/Thermus/blob/057434b9c3ad313f656b03e033866cdecab7ae51/src/accounts/organizations/change-records.ts#L63"
+  },
+  {
+    "original": "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/src/interfaces/web/account/administration-routes.ts:191",
+    "published": "https://github.com/tomer-mayara/Thermus/blob/057434b9c3ad313f656b03e033866cdecab7ae51/src/interfaces/web/account/administration-routes.ts#L191"
+  }
+]
