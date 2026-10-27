@@ -51,7 +51,7 @@ cover these candidates. Agent review and the local checker do not supply human
 approval. No PR, branch, provider setting or production resource was changed in
 this review.
 
-## New review evidence
+## Original review evidence
 
 Local ancestry checks confirmed the fork against the exact heads in the state
 table. Observed main was `c42aa8237b06e46df5f8d3914af6f4151f729e1a`; the common
