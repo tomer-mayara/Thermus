@@ -1,0 +1,132 @@
+{
+  "at": "2026-10-27T05:22:48.239Z",
+  "result": [
+    {
+      "status": "fulfilled",
+      "value": {
+        "pr": 263,
+        "head": "37046bbd1426566d90bf1a32f8578584d7173060",
+        "base": "main",
+        "draft": true,
+        "mergeable": true,
+        "exactBodiesVerified": true,
+        "maintainedComments": 2,
+        "evidence": "https://github.com/tomer-mayara/Thermus/blob/5ae98b9f2a7f4832e466ae5285d9698e99baab05/review-evidence/ui-01/37046bbd1426566d90bf1a32f8578584d7173060/v1"
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "pr": 264,
+        "head": "614090a1632b27ce40a3d2e38cac9492bac048aa",
+        "base": "codex/ui-01-refined-tabs",
+        "draft": true,
+        "mergeable": true,
+        "exactBodiesVerified": true,
+        "maintainedComments": 2,
+        "evidence": "https://github.com/tomer-mayara/Thermus/blob/555ae4b96b1333ac952416307a41237640a72417/review-evidence/ui-02/614090a1632b27ce40a3d2e38cac9492bac048aa/v1"
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "pr": 266,
+        "head": "aa8c56bb7e195e97d2362b2c661cc63a760a5cc9",
+        "base": "codex/ui-02-member-rows",
+        "draft": true,
+        "mergeable": true,
+        "exactBodiesVerified": true,
+        "maintainedComments": 2,
+        "evidence": "https://github.com/tomer-mayara/Thermus/blob/9c02340c6feab59357a30f3550217df911732d0a/review-evidence/ui-03/aa8c56bb7e195e97d2362b2c661cc63a760a5cc9/v1"
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "pr": 268,
+        "head": "057434b9c3ad313f656b03e033866cdecab7ae51",
+        "base": "codex/ui-03-invitation-disclosure",
+        "draft": true,
+        "mergeable": true,
+        "exactBodiesVerified": true,
+        "maintainedComments": 2,
+        "evidence": "https://github.com/tomer-mayara/Thermus/blob/a8840d027f4efeda49cba24d6366cc9610faa611/review-evidence/ui-04/057434b9c3ad313f656b03e033866cdecab7ae51/v1"
+      }
+    }
+  ],
+  "reviews": [
+    {
+      "pr": 263,
+      "result": {
+        "status": "fulfilled",
+        "value": {
+          "content": [
+            {
+              "type": "text",
+              "text": "Action completed."
+            }
+          ],
+          "structuredContent": {
+            "reviews": []
+          },
+          "isError": false
+        }
+      }
+    },
+    {
+      "pr": 264,
+      "result": {
+        "status": "fulfilled",
+        "value": {
+          "content": [
+            {
+              "type": "text",
+              "text": "Action completed."
+            }
+          ],
+          "structuredContent": {
+            "reviews": []
+          },
+          "isError": false
+        }
+      }
+    },
+    {
+      "pr": 266,
+      "result": {
+        "status": "fulfilled",
+        "value": {
+          "content": [
+            {
+              "type": "text",
+              "text": "Action completed."
+            }
+          ],
+          "structuredContent": {
+            "reviews": []
+          },
+          "isError": false
+        }
+      }
+    },
+    {
+      "pr": 268,
+      "result": {
+        "status": "fulfilled",
+        "value": {
+          "content": [
+            {
+              "type": "text",
+              "text": "Action completed."
+            }
+          ],
+          "structuredContent": {
+            "reviews": []
+          },
+          "isError": false
+        }
+      }
+    }
+  ],
+  "note": "Source branches and immutable v1 evidence published. Each existing PR body and exactly two maintained comments matched readback. All remain Draft; image/live/human holds persist. No workflow dispatch, merge or deployment."
+}

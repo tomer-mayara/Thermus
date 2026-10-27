@@ -1,0 +1,32 @@
+{
+  "ref": "colima-thermus-s25-merge/colima-thermus-s25-merge/yiwo7c6wzldmwec6gbifjucdo",
+  "head": "37046bbd1426566d90bf1a32f8578584d7173060",
+  "context": "colima-thermus-s25-merge",
+  "logReadAt": "2026-10-27T05:13:13.816719+00:00",
+  "logCommandExit": 1,
+  "records": [
+    {
+      "cached_steps": 0,
+      "completed_steps": 0,
+      "created_at": "2026-10-27T05:12:36.706389369Z",
+      "name": "Thermus/Dockerfile.hosted",
+      "ref": "colima-thermus-s25-merge/colima-thermus-s25-merge/yiwo7c6wzldmwec6gbifjucdo",
+      "status": "Running",
+      "total_steps": 0
+    }
+  ],
+  "followCommand": [
+    "docker",
+    "--context",
+    "colima-thermus-s25-merge",
+    "buildx",
+    "history",
+    "logs",
+    "--builder",
+    "colima-thermus-s25-merge",
+    "--progress",
+    "plain",
+    "yiwo7c6wzldmwec6gbifjucdo"
+  ],
+  "note": "The first read with the full ref returned no record. Explicit builder plus record ID streams the build log; this diagnostic did not alter the image run."
+}

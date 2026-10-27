@@ -1,0 +1,110 @@
+{
+  "at": "2026-10-27T05:34:00.671678+00:00",
+  "head": "37046bbd1426566d90bf1a32f8578584d7173060",
+  "base": "9507e751215fec32748bf4e944f2393928e61cf5",
+  "commandResult": {
+    "command": "npm",
+    "args": [
+      "run",
+      "test:container:hosted"
+    ],
+    "started": "2026-10-27T05:12:32.059Z",
+    "ended": "2026-10-27T05:33:48.519Z",
+    "exitCode": 0,
+    "signal": null,
+    "logPath": "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/.cache/ui-stack-finish/local-image/ui01/hosted-image.log"
+  },
+  "buildRecord": {
+    "cached_steps": 10,
+    "completed_at": "2026-10-27T05:33:03.480543004Z",
+    "completed_steps": 36,
+    "created_at": "2026-10-27T05:12:36.706389369Z",
+    "name": "Thermus/Dockerfile.hosted",
+    "ref": "colima-thermus-s25-merge/colima-thermus-s25-merge/yiwo7c6wzldmwec6gbifjucdo",
+    "status": "Completed",
+    "total_steps": 36
+  },
+  "trackedInputCount": 1539,
+  "trackedHashesAndModesUnchanged": true,
+  "treeClean": true,
+  "buildGroupSummaries": [
+    "#27 331.0 \u2139 tests 3319",
+    "#27 331.0 \u2139 pass 3319",
+    "#27 331.0 \u2139 fail 0",
+    "#27 331.0 \u2139 cancelled 0",
+    "#27 331.0 \u2139 skipped 0",
+    "#27 331.0 \u2139 todo 0",
+    "#27 334.8 \u2139 tests 29",
+    "#27 334.8 \u2139 pass 29",
+    "#27 334.8 \u2139 fail 0",
+    "#27 334.8 \u2139 cancelled 0",
+    "#27 334.8 \u2139 skipped 0",
+    "#27 334.8 \u2139 todo 0",
+    "#27 338.0 \u2139 tests 20",
+    "#27 338.0 \u2139 pass 20",
+    "#27 338.0 \u2139 fail 0",
+    "#27 338.0 \u2139 cancelled 0",
+    "#27 338.0 \u2139 skipped 0",
+    "#27 338.0 \u2139 todo 0",
+    "#27 625.6 \u2139 tests 1159",
+    "#27 625.6 \u2139 pass 1159",
+    "#27 625.6 \u2139 fail 0",
+    "#27 625.6 \u2139 cancelled 0",
+    "#27 625.6 \u2139 skipped 0",
+    "#27 625.6 \u2139 todo 0",
+    "#27 791.3 \u2139 tests 123",
+    "#27 791.3 \u2139 pass 123",
+    "#27 791.3 \u2139 fail 0",
+    "#27 791.3 \u2139 cancelled 0",
+    "#27 791.3 \u2139 skipped 0",
+    "#27 791.3 \u2139 todo 0",
+    "#27 883.0 \u2139 tests 13",
+    "#27 883.0 \u2139 pass 13",
+    "#27 883.0 \u2139 fail 0",
+    "#27 883.0 \u2139 cancelled 0",
+    "#27 883.0 \u2139 skipped 0",
+    "#27 883.0 \u2139 todo 0"
+  ],
+  "runtimeGroupSummaries": [
+    "\u2139 tests 7",
+    "\u2139 pass 7",
+    "\u2139 fail 0",
+    "\u2139 cancelled 0",
+    "\u2139 skipped 0",
+    "\u2139 todo 0"
+  ],
+  "imageDigestLines": [
+    "#36 exporting manifest sha256:4d5eee66ebf0db4d055a8e7fc12c108d05483a7a8c960ff653af6a51aefbd82f 0.0s done",
+    "#36 exporting config sha256:56c89552807b5720af15fa86b34cb55e646388c109e1bf579bc294a5091c11e4 0.0s done",
+    "#36 exporting manifest list sha256:b89ade4d1c6ceb784cdf4e928d41169fe9f3ab3789d8ed57fc12e4a9609c0036 0.0s done",
+    "#36 naming to docker.io/library/thermus-hosted-gate:2d96f5f7ba0f 0.0s done"
+  ],
+  "containersAfter": {
+    "command": [
+      "docker",
+      "--context",
+      "colima-thermus-s25-merge",
+      "ps",
+      "--all",
+      "--no-trunc",
+      "--format",
+      "{{json .}}"
+    ],
+    "exitCode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "activeContextAfter": {
+    "command": [
+      "docker",
+      "context",
+      "show"
+    ],
+    "exitCode": 0,
+    "stdout": "colima\n",
+    "stderr": ""
+  },
+  "localOnly": true,
+  "deadlinesOrAssertionsChanged": false,
+  "note": "Standard complete hosted image gate; fresh Linux AMD64 Docker build and runtime cases. Result is the recorded exit status; no remote workflow or deployment ran."
+}
