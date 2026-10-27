@@ -5,6 +5,7 @@ import { redacted, type ProbeContext, type ProbeStep } from './context.ts';
 import type { WorkStepId } from './inputs.ts';
 import { preflight, preflightPlan } from './preflight.ts';
 import { seatSync, seatSyncPlan, seatSyncWorkOSOnly, workosOnlyPlan } from './seat-sync.ts';
+import { webhook, webhookPlan } from './webhook.ts';
 
 type WorkStep = ProbeStep & { readonly id: WorkStepId };
 
@@ -39,7 +40,7 @@ export const workSteps: readonly WorkStep[] = [
   {
     id: 'webhook', name: 'Webhook',
     spec: "Given the Stripe CLI forwarding to the probe's local listener, when the CLI triggers a subscription event, then the listener accepts the signed event and refuses a changed payload.",
-    run: notBuilt('Webhook'), plan: notBuiltPlan('Webhook'),
+    run: redacted(webhook), plan: webhookPlan,
   },
   {
     id: 'test-clock', name: 'Test clock',
