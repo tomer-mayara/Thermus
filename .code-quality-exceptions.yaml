@@ -36,8 +36,28 @@ exceptions:
     expires: 2026-12-22
   - path: src/tenancy/tenants/pg-tenant-registry-store.ts
     metric: mi
-    bound: 73.9
-    reason: One small SQL adapter keeps the registry lock, the row count, the conditional insert, and the commit in one transaction, with the decoding of its two row shapes. Its largest function has three paths. Unit cases check each statement and each failure phase, and real PostgreSQL cases check the lock races. A split of the statements from their transaction would hide the order that makes the cap check atomic.
+    bound: 70.1
+    reason: One small SQL adapter keeps the registry lock, the row count, the conditional insert, and the commit in one transaction, with the decoding of its two row shapes, and the three conditional statements of the gateway (SO-05). Its largest function has three paths. Unit cases check each statement and each failure phase, and real PostgreSQL cases check the lock races and the gateway writes. A split of the statements from their transaction would hide the order that makes the cap check atomic.
+    expires: 2026-12-27
+  - path: src/interfaces/mcp/mcp-gateway.ts
+    metric: mi
+    bound: 80.3
+    reason: The decision of the gateway for each row of the registry copy (SO-05) stays in one owner - the live forward, the 503 of each state, the tenant request for an organization without a row, the one resume of a suspended row, and the one report for each failed organization. Two tables and two mappings give the refusals; the largest function has five paths. Unit cases cover each state and request result, and acceptance cases each answer. A separate owner for the resume or the tenant request would split one dispatch over two files.
+    expires: 2026-12-27
+  - path: src/interfaces/mcp/mcp-gateway-forward.ts
+    metric: mi
+    bound: 84.2
+    reason: The live forward of the gateway (SO-05) keeps the order of one request - the bounded body, the search places, the signed call, the release of the places, and the activity record. Its largest function has five paths, and each path must release the places one time. Unit and acceptance cases cover each path, among them both abort paths and both restart phases. A split would move the release away from the paths that must call it.
+    expires: 2026-12-27
+  - path: src/interfaces/mcp/mcp-gateway-stream.ts
+    metric: mi
+    bound: 82.1
+    reason: The upstream call of the gateway (SO-05) keeps the fetch, the restart detection before the first answer byte, and the first read together, so each failure before that byte gets the answer of the gateway. Its largest function has three paths; cases cover HTTP 502, a reset before and during the first read, and an abort before and after the answer headers. The answer stream after the first byte is its own module.
+    expires: 2026-12-27
+  - path: src/interfaces/mcp/mcp-gateway-answer-stream.ts
+    metric: mi
+    bound: 84.0
+    reason: The answer stream of the gateway (SO-05) keeps the pull of the tenant body, the cancel of the client, the abort of the request, and the one end of the stream together. Its functions have at most four paths; unit cases cover the stream, a cancel, both aborts, and a stream that the tenant breaks off. A split would separate the end of the stream from the paths that end it.
     expires: 2026-12-27
   - path: src/tenancy/tenants/tenant-lookup.ts
     metric: mi
