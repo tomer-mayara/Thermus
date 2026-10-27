@@ -1,6 +1,7 @@
 import { FREE_PLAN } from '../render-tenant-lifecycle/calls.ts';
 import type { ProbeStep } from './context.ts';
-import { controlPlaneJob, job } from './job.ts';
+import { controlPlaneJob } from './control-plane-job.ts';
+import { job } from './job.ts';
 import { preflight } from './preflight.ts';
 import { publicCheck } from './public-check.ts';
 import { privateService, webService } from './services.ts';

@@ -8,9 +8,10 @@ import {
   REQUEST_TIMEOUT_MS, startCommand,
 } from './calls.ts';
 import { newState, ROLES, type Role } from './context.ts';
+import { CONTROL_PLANE_SETTLE_MS, lastJobRole } from './control-plane-job.ts';
 import type { ProbeInputs, StepId } from './inputs.ts';
 import { LOG_POLL } from './job-logs.ts';
-import { CONTROL_PLANE_SETTLE_MS, JOB_POLL } from './job.ts';
+import { JOB_POLL } from './job.ts';
 import { ANY_TYPE, REUSE_OPTION } from './preflight.ts';
 import { PUBLIC_HEALTH } from './web-health.ts';
 
@@ -111,8 +112,7 @@ const builders: Readonly<Record<StepId, (plan: Plan) => PlannedStep>> = {
 };
 
 function cleanup(plan: Plan): PlannedStep {
-  // The job of control-plane runs on the private service; the job of job runs on the web service.
-  const jobService = plan.inputs.steps.includes('control-plane') ? plan.ids.private : plan.ids.web;
+  const jobService = plan.ids[lastJobRole(plan.inputs.steps)];
   const deleteNote = plan.inputs.keep ? 'Only after a failed step: --keep keeps the services when every step passed.' : 'Up to 3 attempts. A 404 answer means that the service is already gone.';
   const byName = ROLES.filter((role) => !plan.reused[role])
     .map((role) => api(servicesNamedCall(plan.inputs.owner, plan.names[role]), 'Only when the create answer gave no service ID: each service with this exact name is deleted.'));

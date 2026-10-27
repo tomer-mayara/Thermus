@@ -2,29 +2,27 @@ import assert from 'node:assert/strict';
 import { fieldJson, fieldText, renderId } from '../render-tenant-lifecycle/answers.ts';
 import { addRow, progress, seconds, serviceIdOf, shown } from '../render-tenant-lifecycle/context.ts';
 import { poll, sleep } from '../render-tenant-lifecycle/polls.ts';
-import { readService } from '../render-tenant-lifecycle/waits.ts';
-import { controlPlaneTargets, healthProgram, healthTargets, jobCall, jobStatusCall, lookupAndHealthProgram, startCommand, type Target } from './calls.ts';
+import { healthProgram, healthTargets, jobCall, jobStatusCall, startCommand, type Target } from './calls.ts';
 import { addressOf, sessionOf, type ProbeContext, type Role } from './context.ts';
 import { readProbeLines, transcriptOf, type LinesRead, type ProbeLine } from './job-logs.ts';
 
 export const JOB_POLL = { everyMs: 5_000, attempts: 60 } as const;
 export const JOB_ENDED = new Set(['succeeded', 'failed', 'canceled']);
-const SLUG = /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/;
 
-// One job: its step in the report, the service that runs it, and the requests of its program. SO-03 adds a program
-// with DNS lines, the requests that decide the step, and a wait before the job.
+// One job: its step in the report, the service that runs it, its program with the DNS lookups and the requests of
+// that program, and the requests that decide the step. SO-03 adds the lookups, the deciding requests, and a wait.
 interface JobPlan {
   readonly step: string;
   readonly on: Role;
+  readonly program: string;
+  readonly names: readonly string[];
   readonly targets: readonly Target[];
-  readonly names?: readonly string[];
-  readonly decides?: (line: ProbeLine) => boolean;
+  readonly decides: (line: ProbeLine) => boolean;
   readonly settleMs?: number;
 }
 
-// The router of Render answered 502 for a new web service once after its deploy was live (SO-01d), so the job
-// waits before it requests a web service that is new.
-export const CONTROL_PLANE_SETTLE_MS = 60_000;
+// In the job of SO-01d, each request decides the step.
+const EACH_REQUEST = (): boolean => true;
 
 export interface JobView {
   readonly id: string;
@@ -95,7 +93,7 @@ function readSummary(read: LinesRead): string {
 }
 
 function expectedLines(plan: JobPlan): string {
-  return plan.names === undefined ? `${plan.targets.length}, one for each request` : `${plan.targets.length + plan.names.length}, one for each lookup and request`;
+  return plan.names.length === 0 ? `${plan.targets.length}, one for each request` : `${plan.targets.length + plan.names.length}, one for each lookup and request`;
 }
 
 function recordLines(context: ProbeContext, plan: JobPlan, read: LinesRead): readonly ProbeLine[] {
@@ -105,7 +103,7 @@ function recordLines(context: ProbeContext, plan: JobPlan, read: LinesRead): rea
     const line = read.lines.find((item) => item.from === from);
     return line === undefined ? 'no line' : lineText(line);
   };
-  for (const name of plan.names ?? []) addRow(context, plan.step, { check: `DNS lookup of ${name} in the job`, expected: 'recorded', measured: measured(`dns:${name}`) });
+  for (const name of plan.names) addRow(context, plan.step, { check: `DNS lookup of ${name} in the job`, expected: 'recorded', measured: measured(`dns:${name}`) });
   for (const target of plan.targets) {
     addRow(context, plan.step, { check: `GET ${target.url} in the job (${target.from})`, expected: 'recorded; one request at least answers 200 with ok', measured: measured(target.from) });
   }
@@ -114,42 +112,29 @@ function recordLines(context: ProbeContext, plan: JobPlan, read: LinesRead): rea
 
 export function job(context: ProbeContext): Promise<string> {
   const address = addressOf(context);
-  return runJob(context, { step: 'Job', on: 'web', targets: healthTargets(address.slug, address.url) });
+  const targets = healthTargets(address.slug, address.url);
+  return runJob(context, { step: 'Job', on: 'web', program: healthProgram(targets, context.run), names: [], targets, decides: EACH_REQUEST });
 }
 
-// SO-03: the job runs on the private service, as a tenant would, and requests the web service, the control plane.
-// Only an answer of the web service on the private network decides the step; the other requests are controls.
-export async function controlPlaneJob(context: ProbeContext): Promise<string> {
-  const web = await readService(sessionOf(context, 'web'));
-  const slug = web.slug ?? '';
-  addRow(context, 'Control plane', { check: 'Slug of the web service', expected: 'a host name of letters, digits, and hyphens', measured: shown(web.slug) });
-  assert.ok(SLUG.test(slug), `The slug ${shown(web.slug)} of the web service is not a host name of letters, digits, and hyphens`);
-  const privateSlug = addressOf(context).slug;
-  const targets = controlPlaneTargets({ slug, publicUrl: web.url ?? '' }, privateSlug);
-  const decides = (line: ProbeLine): boolean => line.from === targets[1]?.from || line.from === targets[2]?.from;
-  return runJob(context, { step: 'Control plane', on: 'private', targets, names: [slug, privateSlug], decides, settleMs: CONTROL_PLANE_SETTLE_MS });
-}
-
-async function runJob(context: ProbeContext, plan: JobPlan): Promise<string> {
+export async function runJob(context: ProbeContext, plan: JobPlan): Promise<string> {
   const serviceId = serviceIdOf(sessionOf(context, plan.on));
   if (plan.settleMs !== undefined) {
     progress(`waiting ${seconds(plan.settleMs)} before the job`);
     await sleep(plan.settleMs, context.signal);
     addRow(context, plan.step, { check: 'Wait before the job', expected: 'recorded', measured: seconds(plan.settleMs) });
   }
-  const program = plan.names === undefined ? healthProgram(plan.targets, context.run) : lookupAndHealthProgram(plan.names, plan.targets, context.run);
-  const command = startCommand(program);
+  const command = startCommand(plan.program);
   context.report.startCommand = command;
   const created = await createJob(context, { ...plan, serviceId }, command);
   const ended = await waitForEnd(context, { ...plan, serviceId }, created);
   const createdAt = Date.parse(ended.createdAt ?? '');
-  const since = { createdAt: Number.isFinite(createdAt) ? createdAt : Date.now() - 600_000, targets: plan.targets.length + (plan.names?.length ?? 0) };
+  const since = { createdAt: Number.isFinite(createdAt) ? createdAt : Date.now() - 600_000, targets: plan.targets.length + plan.names.length };
   // The lines of a job carry the job ID as their resource, not the ID of its service (development run of SO-01d).
   const lines = recordLines(context, plan, await readProbeLines(context, [serviceId, ended.id], since));
   assert.ok(lines.length > 0, `The logs of ${serviceId} and ${ended.id} hold no line of this run (the job ended ${shown(ended.status)}). The job may not have run the start command.`);
-  const decides = plan.decides ?? ((): boolean => true);
-  const ok = lines.filter((line) => lineOk(line) && decides(line)).map((line) => line.from);
-  const failed = lines.filter((line) => !(lineOk(line) && decides(line))).map((line) => `${line.from}: ${lineText(line)}`);
+  const passed = (line: ProbeLine): boolean => lineOk(line) && plan.decides(line);
+  const ok = lines.filter(passed).map((line) => line.from);
+  const failed = lines.filter((line) => !passed(line)).map((line) => `${line.from}: ${lineText(line)}`);
   assert.ok(ok.length > 0, `No deciding request of the job answered 200 with ok: ${failed.join('; ')}`);
   return `the job ${ended.id} ended ${ended.status}; 200 with ok from ${ok.join(', ')}; ${failed.length === 0 ? 'no request failed' : `other answers: ${failed.join('; ')}`}.`;
 }
