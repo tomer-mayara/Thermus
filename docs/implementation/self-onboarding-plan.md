@@ -294,7 +294,9 @@ with a Render service update and then a deploy
 The update alone does not restart the container; the deploy replaces the
 instance with zero downtime: the new instance goes live, and the old one gets
 `SIGTERM` 60 s later. A tool call during that deploy gets a `503` with
-`Retry-After`.
+`Retry-After`. Open point for Slice 3: SO-01c showed that the old instance
+serves calls until the new one is live, so the tier change ticket decides
+whether this `503` window is still needed.
 
 **Signup.** The marketing page links to
 `https://app.thermus.ai/signup?tier=free`. Only `free` exists today, so the
@@ -629,7 +631,8 @@ check.
     workflow is dispatched, then no image is pushed.
   - Given the registry credential, when a Render service in the Thermus AI
     workspace pulls the digest, then it starts and `/healthz` answers `200`
-    (SO-01c shows it).
+    (SO-01c shows the start with the `live` deploy state; SO-01d part two
+    shows the `/healthz` answer from inside the private network).
 - Steps: 1. the workflow builds only; 2. it runs the gate and stops the
   build on a failure; 3. it pushes by digest; 4. record the GHCR quota, the
   retention of old images, and the visibility of the package.

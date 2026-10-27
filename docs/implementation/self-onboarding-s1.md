@@ -772,6 +772,16 @@ Writes in this run: 9. Reads: 75; the last read had Ratelimit-Limit 400, Ratelim
 A preflight at 03:38:22 UTC, with reads only, listed no service named
 `thermus-spike-*`.
 
+Manager verification run, 27 October 2026 at 03:52 UTC, with the script of
+commit `a4e861a3` (the same real-mode code): exit code 0, 9 writes, 75 reads;
+service `srv-dbg1vqt9fdbs73chii70`; first deploy `live` 81.6 s after the
+create call; image 2 deploy `live` 30.6 s after the call; plan `1c-2g`
+applied by a deploy `live` 19.8 s after the deploy call, back to
+`0.5c-512mb` in 40.9 s, each with a new instance; suspended after 0.7 s;
+resume deploy `live` 17.0 s after the resume call; delete `204` in 0.5 s; no
+service named `thermus-spike-*` left. The full tables are in the Validation
+comment of pull request #270.
+
 ### Findings for Slice 2
 
 The values come from the final run and the development runs. Where two
