@@ -10,7 +10,9 @@ const TIMEOUT_MS = 15_000;
 const DELETE_ATTEMPTS = 3;
 const RETRY_MS = 3_000;
 
-function statusOf(error: unknown): number | undefined {
+// The pinned WorkOS SDK puts the HTTP status of a refused call in the status property of its error. The client
+// wraps that error, so the status is on the cause.
+export function statusOf(error: unknown): number | undefined {
   const cause = error instanceof Error && error.cause !== undefined ? error.cause : error;
   if (typeof cause !== 'object' || cause === null || !('status' in cause)) return undefined;
   return typeof cause.status === 'number' ? cause.status : undefined;
