@@ -59,11 +59,12 @@ The [validation record](../../../../docs/implementation/auth-workos-mcp-url-fetc
 keeps the provider read-backs, historical gates, and completed live proof.
 
 The registered URIs of Staging serve the slice without a change: the redirect
-URI `https://localhost:46443/callback`, the sign-out URI
-`https://localhost:46443/`, the initiate login URI
-`https://localhost:46443/login`, and the MCP resource indicator
-`https://localhost:46443/mcp`. The hosted live gate uses the same origin, so
-the gate and the slice cannot run at the same time.
+URI `https://localhost:24443/callback`, the sign-out URI
+`https://localhost:24443/`, the initiate login URI
+`https://localhost:24443/login`, and the MCP resource indicator
+`https://localhost:24443/mcp`. The hosted live gate uses the same origin, so
+the gate and the slice cannot run at the same time. The one that starts second
+stops at once with an error that names the busy port.
 
 ## Settings
 
@@ -73,7 +74,7 @@ each value, and an exported value comes before the value in `.env.local`.
 | Setting | Default | Rule |
 | --- | --- | --- |
 | `DEPLOYMENT` | `hosted` | The slice is the hosted edition. |
-| `PUBLIC_BASE_URL` | `https://localhost:46443` | The slice refuses another origin or a path: the HTTPS front listens at this origin, and WorkOS Staging has its URIs. |
+| `PUBLIC_BASE_URL` | `https://localhost:24443` | The slice refuses another origin or a path: the HTTPS front listens at this origin, and WorkOS Staging has its URIs. |
 | `WORKOS_API_KEY`, `WORKOS_CLIENT_ID`, `WORKOS_AUTHKIT_ISSUER` | None | Required. The staging launcher gives them. |
 | `WORKOS_REDIRECT_URI` | `<PUBLIC_BASE_URL>/callback` | The registered callback. |
 | `WORKOS_COOKIE_PASSWORD` | A new value of `openssl rand -base64 32` for each start | At least 32 characters. A new value ends the browser sessions of the start before. |
@@ -123,7 +124,7 @@ it.
    security add-trusted-cert -r trustRoot -k ~/Library/Keychains/login.keychain-db "<repository root>/.cache/thermus-local-tls/cert.pem"
    ```
 
-3. Open `https://localhost:46443/`, click Sign In, click "Continue with
+3. Open `https://localhost:24443/`, click Sign In, click "Continue with
    Google", and sign in with a verified `@thermus.ai` Google account. Complete
    any AuthKit steps that the confirmed configuration requires. When AuthKit
    returns its code, the server uses the trusted WorkOS result to enroll
@@ -140,7 +141,7 @@ it.
 
    ```sh
    export NODE_EXTRA_CA_CERTS="<repository root>/.cache/thermus-local-tls/cert.pem"
-   claude mcp add-json thermus-hosted '{"type":"http","url":"https://localhost:46443/mcp","oauth":{"scopes":"openid profile email offline_access"}}'
+   claude mcp add-json thermus-hosted '{"type":"http","url":"https://localhost:24443/mcp","oauth":{"scopes":"openid profile email offline_access"}}'
    claude mcp login thermus-hosted
    ```
 
@@ -244,7 +245,7 @@ proofs.
 
 The connection to WorkOS writes one line at the start:
 `Hosted authentication uses WorkOS: the client <client ID> and the AuthKit issuer <issuer>.`
-The start writes `Listening on https://localhost:46443/` when the HTTPS front
+The start writes `Listening on https://localhost:24443/` when the HTTPS front
 listens, and the stop writes `Stopping after <signal>`. The slice records
 the first startup or stop signal and keeps both signal handlers through site
 cleanup and logging flush. Repeated forwarded signals do not replace the

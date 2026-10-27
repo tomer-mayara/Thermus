@@ -40,7 +40,7 @@ export function describeHostedServerCases(run: LiveRun): void {
     return authorizeWithConnect(run, { user: mixedUser, organizationName: organizationB.name, clientId: oauthApplication.clientId });
   });
 
-  describe('Hosted live gate (AUTH-06): the hosted server at https://localhost:46443/ with WorkOS', () => {
+  describe(`Hosted live gate (AUTH-06): the hosted server at ${localOrigin}/ with WorkOS`, () => {
     test('Given a member with User and Admin in organization A, when the member signs in with a password and chooses A, then no MFA is demanded, the sealed cookie is HttpOnly, Secure, and SameSite=Lax, the session has no MFA evidence, and the portal shows current product access in A', signInOptions, async (t) => {
       const { organizationA } = await run.fixtures();
       const { page, pages } = await admin();
@@ -104,7 +104,7 @@ export function describeHostedServerCases(run: LiveRun): void {
       assert.equal(allowed.status, 200, allowed.body);
       assert.equal(missing.status, 401);
       assert.match(String(missing.challenge), /^Bearer /);
-      assert.match(String(missing.challenge), /resource_metadata="https:\/\/localhost:46443\/\.well-known\/oauth-protected-resource\/mcp"/);
+      assert.equal(/resource_metadata="([^"]*)"/.exec(String(missing.challenge))?.[1], `${localOrigin}/.well-known/oauth-protected-resource/mcp`);
       assert.equal(metadata.resource, mcpResource);
       assert.deepEqual(metadata.authorization_servers, [settings.authkitIssuer]);
     });

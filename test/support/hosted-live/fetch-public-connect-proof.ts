@@ -12,10 +12,11 @@ import { startHttpServer } from '../../../src/runtime/http/server.ts';
 import { fetchToolServers } from '../../../src/app/fetch-tool.ts';
 import { mcpRequest, rpcResult } from '../drivers/mcp/mcp-http-request.ts';
 import { OperatorLogSpy } from '../doubles/application/operator-log-spy.ts';
+import { browserRedirectUri, localOrigin, mcpResource } from './settings.ts';
 
 const applicationClientId = 'client_01M561HD70DB58BEKMSF8GCAQN';
 const redirectUri = 'http://127.0.0.1:46481/callback';
-const resource = 'https://localhost:46443/mcp';
+const resource = mcpResource;
 const scope = 'openid offline_access';
 
 interface Tokens {
@@ -32,7 +33,7 @@ function stagingSettings() {
   assert.ok(apiKey.startsWith('sk_test_'), 'This proof requires a Staging key.');
   assert.equal(clientId, 'client_01M4VDKB7C7T2GV2NWPS84HADP', 'This proof requires the designated Staging environment.');
   assert.equal(authkitIssuer, 'https://reasonable-field-33-staging.authkit.app', 'This proof requires the designated Staging issuer.');
-  return { apiKey, clientId, authkitIssuer, redirectUri: 'https://localhost:46443/callback', cookiePassword: randomBytes(32).toString('base64url') };
+  return { apiKey, clientId, authkitIssuer, redirectUri: browserRedirectUri, cookiePassword: randomBytes(32).toString('base64url') };
 }
 
 async function exchange(issuer: string, fields: Readonly<Record<string, string>>): Promise<Tokens> {
@@ -129,7 +130,7 @@ export async function proveFirstPartyConnect() {
     };
     const claims = await verify(initial);
     const log = new OperatorLogSpy();
-    const config = loadDeploymentConfig({ DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://localhost:46443/' }, 'http');
+    const config = loadDeploymentConfig({ DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: `${localOrigin}/` }, 'http');
     const calls: Array<{ subject: string; organizationId?: string }> = [];
     const application = await composeWorkOSApplication(config, { settings, workos, authkitKeySet: keys }, {
       logger: log, buildServer: fetchToolServers({ fetch: async (_url, context) => {

@@ -28,7 +28,7 @@ fi
 
 export DEPLOYMENT="${DEPLOYMENT:-hosted}"
 # The HTTPS front of the slice listens at this origin, and WorkOS Staging has the URIs of this origin.
-export PUBLIC_BASE_URL="${PUBLIC_BASE_URL:-https://localhost:46443}"
+export PUBLIC_BASE_URL="${PUBLIC_BASE_URL:-https://localhost:24443}"
 export WORKOS_REDIRECT_URI="${WORKOS_REDIRECT_URI:-${PUBLIC_BASE_URL%/}/callback}"
 # A new value for each start ends the browser sessions of the start before. A plain assignment stops the script when
 # openssl fails; export would hide the failure.

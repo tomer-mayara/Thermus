@@ -76,6 +76,9 @@ if ('problems' in setup) {
   const run = new LiveRun(setup.settings);
   after(() => run.end());
   before(async (t) => {
+    // The site takes the fixed port of the registered URIs first. When another run holds it, this run stops here,
+    // before it makes, changes, or deletes any staging data.
+    await run.site();
     t.diagnostic('Hosted live password profile: provider MFA must be disabled.');
     await assertPasswordProfileBeforeLiveProofs(run);
   });

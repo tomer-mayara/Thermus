@@ -58,7 +58,11 @@ export function describeSignupServerCases(previous: LiveRun): void {
   });
 
   describe('Hosted live gate: organization creation and native MCP handoff', () => {
-    before(() => previous.stopSite());
+    // The test-only site takes the fixed port at once, so that no other run can take it between the two sites.
+    before(async () => {
+      await previous.stopSite();
+      await run.site();
+    });
     after(() => run.end());
 
     test('Given a verified new Staging user without memberships, when the user names Acme Labs and accepts the unchecked test authority agreement, then the saved record has ten exact fields, access is Admin, and a real MCP client fetches a public page with a token for that organization', options, async (t) => {

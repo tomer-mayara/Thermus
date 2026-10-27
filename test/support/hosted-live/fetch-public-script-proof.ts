@@ -11,8 +11,9 @@ import { assertProviderPasswordProfile } from './password-profile.ts';
 import { field, queryWidgetGraph } from './workos-api.ts';
 import { mcpRequest } from '../drivers/mcp/mcp-http-request.ts';
 import { runPublicFetchCommand } from './fetch-public-script-client.ts';
+import { mcpResource } from './settings.ts';
 
-const profile = { endpoint: 'https://localhost:46443/mcp', issuer: 'https://reasonable-field-33-staging.authkit.app', clientId: 'client_01M561HD70DB58BEKMSF8GCAQN' };
+const profile = { endpoint: mcpResource, issuer: 'https://reasonable-field-33-staging.authkit.app', clientId: 'client_01M561HD70DB58BEKMSF8GCAQN' };
 const command = ['--endpoint', profile.endpoint];
 const fetchArguments = [...command, '--url', 'https://example.com/', '--reason', 'Prove the Staging public OAuth fetch command'];
 

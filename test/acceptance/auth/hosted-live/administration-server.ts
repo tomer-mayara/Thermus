@@ -184,7 +184,7 @@ export function describeAdministrationServerCases(run: LiveRun): void {
     });
   });
 
-  describe('Hosted live gate (AUTH-08W): invitations of organization C at https://localhost:46443/ with WorkOS and AuthKit', () => {
+  describe(`Hosted live gate (AUTH-08W): invitations of organization C at ${localOrigin}/ with WorkOS and AuthKit`, () => {
     test('Given the administrator of C, when it invites an identity without a membership as User and an identity whose inactive membership had User and Admin as Admin, repeats the User invitation, invites the pending address as Admin and an active member, resends the User invitation, and sends and revokes a third invitation, then the sends, the repeat, the resend, and the revoke get 303, the other two sends get 409 address in use, WorkOS has one invitation to each address and the pending membership of the Admin invitation has only admin, Members shows only pending invitations with current actions, each change has its record, and no page or log line holds an invitation token or link', signInOptions, async (t) => {
       const { organizationC, users, memberships } = await run.administrationFixtures();
       const actor = users['c-administrator'];
