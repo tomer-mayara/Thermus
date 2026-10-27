@@ -1425,8 +1425,8 @@ of the control plane. With `MCP_TENANTS_ENABLED=true`, the provisioner of SO-06
 creates it through the Render API in the workspace `RENDER_OWNER_ID` and the
 region oregon, as an image-backed private service of `TENANT_IMAGE` with the
 registry credential `RENDER_REGISTRY_CREDENTIAL_ID`; the recorded target runs
-with the switch off. A live interface run created and deleted one such service
-in the workspace Thermus AI
+with the switch off. Two live interface runs each created and deleted one such
+service in the workspace Thermus AI
 ([record](../docs/implementation/self-onboarding-s1.md#so-06-live-interface-run-of-the-render-adapter)). Measured on disposable services, a
 private service reaches a web service at `http://<slug>:8080`, the
 `CONTROL_PLANE_INTERNAL_URL` of a tenant, once the private address of a new web
@@ -1663,8 +1663,8 @@ The following limits affect architectural decisions today:
   slow deploy holds the queue for up to 15 minutes, and the creates of one hour
   are 20 for each Render user. The tenants run in the region oregon, the region
   of the control plane, as a constant of the adapter.
-- In the live run, the slug of a name with an underscore was the name up to the
-  underscore. Each tenant name has one after `org`, so the slugs of the tenants
+- In both live runs, the slug of a name with an underscore was the name up to
+  the underscore. Each tenant name has one after `org`, so the slugs of the tenants
   can share a start; the adapter reads the address from Render and never
   computes it, but the slug of a second such service is not yet measured.
 - The free-tenant cap counts registry rows by state, not by tier, and a tenant
