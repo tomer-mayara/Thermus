@@ -96,7 +96,8 @@ export class WebhookListener {
       this.deliveries.push(verified(Stripe.webhooks.constructEvent(raw, signature ?? '', this.#secret), received, this.#run));
       return answer(response, 200, { received: true });
     } catch (error) {
-      this.deliveries.push({ ...received, status: 400, runMatch: false, error: error instanceof Error ? error.name : 'Error' });
+      const refused = error instanceof Stripe.errors.StripeSignatureVerificationError ? 'StripeSignatureVerificationError' : 'not an event';
+      this.deliveries.push({ ...received, status: 400, runMatch: false, error: refused });
       return answer(response, 400, { error: 'signature' });
     }
   }

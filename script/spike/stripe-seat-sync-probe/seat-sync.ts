@@ -75,21 +75,22 @@ async function seatSyncWorkOSOnly(context: ProbeContext): Promise<string> {
   return `WorkOS ${outcome.split(':')[0]} the stripe_customer_id ${fake} without the Stripe add-on (read back: ${read.stripeCustomerId ?? 'absent'}); ${organization.id} showed 1, 2, and 1 active memberships.`;
 }
 
-// The dry run shows the summary range of a step that starts now; real mode computes it for each read.
-function summaryRead(values: Placeholders, note: string): PlannedCall {
+// Real mode computes the summary range for each read; the dry run names its two ends.
+export function summaryRead(values: Placeholders, customer: string, note: string): PlannedCall {
   const now = Math.floor(Date.now() / 1_000);
-  return planned(meterSummaryCall(values.meterId, { customer: '{customerId}', ...summaryRange(now, now) }), note);
+  const call = planned(meterSummaryCall(values.meterId, { customer, ...summaryRange(now, now) }), note);
+  return { ...call, line: call.line.replace(/start_time=\d+&end_time=\d+/, 'start_time={startMinute}&end_time={nextMinute}') };
 }
 
 export function seatSyncPlan(_inputs: unknown, values: Placeholders): readonly PlannedCall[] {
   const organization = '{organizationId}';
-  const range = 'start_time is the minute boundary before the step start, and end_time the boundary after the read.';
+  const range = '{startMinute} is the minute boundary before the step start, and {nextMinute} the boundary after the read.';
   return [
     planned(createOrganizationCall(objectName(values.run, 'seat-sync')), 'The disposable organization of this run.'),
     planned(createCustomerCall(customerParams(values.run, 'seat-sync', { workos_organization_id: organization })), 'The Stripe customer of the organization.'),
     planned(setStripeCustomerCall(organization, '{customerId}'), 'The answer must show this stripe_customer_id.'),
-    summaryRead(values, `One read before the first membership, for the record. ${range}`),
-    ...membershipPlan(values.run, organization, (expected) => [summaryRead(values, `Every 2 s, at most 300 times, until aggregated_value is ${expected}.`)]),
+    summaryRead(values, '{customerId}', `One read before the first membership, for the record. ${range}`),
+    ...membershipPlan(values.run, organization, (expected) => [summaryRead(values, '{customerId}', `Every 2 s, at most 300 times, until aggregated_value is ${expected}.`)]),
   ];
 }
 

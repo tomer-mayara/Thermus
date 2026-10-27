@@ -11,7 +11,7 @@ const STEP = 'Checkout';
 export const CHECKOUT_POLL: PollPlan = { everyMs: 5_000, attempts: 180 };
 
 export const OPERATOR_STEPS = [
-  'Open the URL below in a browser within 15 minutes. Pay with the Stripe test card 4242 4242 4242 4242, any future',
+  'Open the Checkout URL in a browser within 15 minutes. Pay with the Stripe test card 4242 4242 4242 4242, any future',
   'expiry date, and any CVC. Tick the terms box, and enter a billing address, for example in the United States. Stripe',
   'then opens example.com; close that page. The probe reads the session from Stripe.',
 ].join(' ');
@@ -82,10 +82,10 @@ async function checkout(context: ProbeContext): Promise<string> {
 }
 
 export function checkoutPlan(_inputs: unknown, values: Placeholders): readonly PlannedCall[] {
-  const expiresAt = Math.floor(Date.now() / 1_000) + CHECKOUT_LIFETIME_S;
+  const params = { ...checkoutParams(values.run, { priceId: values.priceId, customer: '{customerId}', expiresAt: 0 }), expires_at: `{now + ${CHECKOUT_LIFETIME_S}}` };
   return [
     planned(createCustomerCall(customerParams(values.run, 'checkout')), 'The customer of the session, as SO-13 creates or reuses one before Checkout.'),
-    planned(createCheckoutCall(checkoutParams(values.run, { priceId: values.priceId, customer: '{customerId}', expiresAt })), 'expires_at is 31 minutes after the create. No quantity: the price is metered.'),
+    { ...planned(createCheckoutCall(checkoutParams(values.run, { priceId: values.priceId, customer: '{customerId}', expiresAt: 0 })), 'expires_at is 31 minutes after the create. No quantity: the price is metered.'), params },
     action('(operator)', `The probe prints the session URL on stderr. ${OPERATOR_STEPS}`),
     planned(checkoutCall('{sessionId}'), `Every ${CHECKOUT_POLL.everyMs / 1_000} s, at most ${CHECKOUT_POLL.attempts} times (15 minutes), until the status is complete; expired fails the step.`),
     action('(checks)', `status complete; consent.terms_of_service accepted; automatic_tax enabled; a billing address; the subscription active, with the price and no quantity, and the metadata of the run. client_reference_id is ${PREFIX}${values.run}.`),

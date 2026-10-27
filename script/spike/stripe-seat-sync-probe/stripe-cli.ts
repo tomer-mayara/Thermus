@@ -79,6 +79,11 @@ export async function readSigningSecret(signal: AbortSignal): Promise<string> {
   return secret;
 }
 
+// The command as a person types it in a shell. Real mode passes the arguments to the CLI with no shell.
+export function shellLine(args: readonly string[]): string {
+  return ['stripe', ...args].map((arg) => (/^[\w./:=@,{}+-]+$/.test(arg) ? arg : `'${arg.replaceAll("'", "'\\''")}'`)).join(' ');
+}
+
 export function listenArgs(url: string, events: readonly string[]): readonly string[] {
   return ['listen', '--forward-to', url, '--events', events.join(',')];
 }

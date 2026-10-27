@@ -8,11 +8,17 @@ type Environment = Readonly<Record<string, string | undefined>>;
 
 export const DRY_RUN_TOKEN = 'YYYYMMDD-HHMMSS-xxxx';
 
+const FLAT_LIMIT = 110;
+
+// The parameters of a write, on one line when they are short. A read shows its parameters in the query of its path.
+function paramsText(call: PlannedCall): readonly string[] {
+  if (call.params === undefined || call.line.startsWith('GET ')) return [];
+  const flat = JSON.stringify(call.params);
+  return flat.length <= FLAT_LIMIT ? [`  ${flat}`] : JSON.stringify(call.params, null, 2).split('\n').map((line) => `  ${line}`);
+}
+
 function callText(call: PlannedCall): readonly string[] {
-  const lines = [call.sdk === undefined ? call.line : `${call.line}   (${call.sdk})`];
-  if (call.params !== undefined) lines.push(...JSON.stringify(call.params, null, 2).split('\n').map((line) => `  ${line}`));
-  lines.push(`  -> ${call.note}`);
-  return lines;
+  return [call.sdk === undefined ? call.line : `${call.line}   (${call.sdk})`, ...paramsText(call), `  -> ${call.note}`];
 }
 
 function stepsOf(inputs: ProbeInputs): readonly ProbeStep[] {

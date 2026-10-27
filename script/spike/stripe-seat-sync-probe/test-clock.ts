@@ -1,10 +1,10 @@
 import type Stripe from 'stripe';
-import { action, planned, type Placeholders, type PlannedCall } from './calls.ts';
+import { planned, type Placeholders, type PlannedCall } from './calls.ts';
 import { advanceTo, CLOCK_POLL, day, HOUR, passRetries } from './clock.ts';
 import { addRow, remember, seconds, stripeOf, type ProbeContext } from './context.ts';
 import { waitForSeats } from './meter.ts';
 import { checkRules } from './rules.ts';
-import { meterOf } from './seat-sync.ts';
+import { meterOf, summaryRead } from './seat-sync.ts';
 import {
   advanceClockCall, attachPaymentMethodCall, clockCall, createClockCall, createCustomerCall, createSubscriptionCall, invoiceCall, invoicesCall,
   meterEventCall, setPaymentMethodCall, subscriptionCall,
@@ -95,18 +95,24 @@ async function testClock(context: ProbeContext): Promise<string> {
   return `the invoice ${invoice.id} of the first period was ${invoice.subtotal} for ${CLOCK_SEATS} seats; the subscription ${setup.subscription.id} was past_due after the failed payment and canceled ${ended.days} days later, after ${ended.invoice.attempt_count} attempts.`;
 }
 
+// The dry run shows a parameter that real mode computes as a placeholder.
+function shown(call: PlannedCall, values: Readonly<Record<string, string>>): PlannedCall {
+  return { ...call, params: { ...(call.params as object), ...values } };
+}
+
 export function testClockPlan(_inputs: unknown, values: Placeholders): readonly PlannedCall[] {
   const now = Math.floor(Date.now() / 1_000);
   const clock = '{testClockId}';
+  const event = planned(meterEventCall(seatEventParams(EXPECTED_METER, { run: values.run, customer: '{customerId}', timestamp: now })), 'Three seats, one second after the frozen time. Real mode uses the event name and payload keys of the meter.');
   return [
-    planned(createClockCall(clockParams(values.run, now)), 'frozen_time is the time of this machine at the step start.'),
+    shown(planned(createClockCall(clockParams(values.run, now)), 'The frozen time starts at the time of this machine.'), { frozen_time: '{now}' }),
     planned(createCustomerCall({ ...customerParams(values.run, 'test-clock'), test_clock: clock }), 'The customer of the clock.'),
     planned(attachPaymentMethodCall(FAILING_PAYMENT_METHOD, '{customerId}'), 'The test card 4000 0000 0000 0341: it attaches, but each charge fails. The answer gives {paymentMethodId}.'),
     planned(setPaymentMethodCall('{customerId}', '{paymentMethodId}'), 'The default payment method of the invoices.'),
     planned(createSubscriptionCall(clockSubscriptionParams(values.run, '{customerId}', values.priceId)), 'The status must be active: the first invoice has no usage to bill.'),
-    planned(meterEventCall(seatEventParams(EXPECTED_METER, { run: values.run, customer: '{customerId}', timestamp: now + 1 })), 'Three seats, one second after the frozen time. Real mode uses the event name and payload keys of the meter.'),
-    action('(reads)', 'The meter summary of the customer, every 2 s, until it shows 3.'),
-    planned(advanceClockCall(clock, now + 30 * 86_400 + AFTER_PERIOD_S), 'To the current_period_end of the subscription item plus 2 hours.'),
+    shown(event, { timestamp: '{frozen_time + 1}' }),
+    summaryRead(values, '{customerId}', 'Every 2 s, at most 300 times, until aggregated_value is 3.'),
+    shown(planned(advanceClockCall(clock, now), 'To the current_period_end of the subscription item plus 2 hours.'), { frozen_time: '{current_period_end + 7200}' }),
     planned(clockCall(clock), `Every ${CLOCK_POLL.everyMs / 1_000} s, at most ${CLOCK_POLL.attempts} times, until the status is ready; internal_failure fails the step.`),
     planned(invoicesCall('{subscriptionId}'), 'The subscription_cycle invoice: subtotal 3 times the unit_amount of the price, status open, attempt_count at least 1.'),
     planned(subscriptionCall('{subscriptionId}'), 'The status must be past_due.'),

@@ -89,33 +89,47 @@ async function left(context: ProbeContext, objects: readonly CreatedObject[]): P
   return remaining;
 }
 
-async function removeAndCheck(context: ProbeContext, step: string, objects: readonly CreatedObject[]): Promise<string> {
-  const failures = await removeAll(context, step, objects);
-  const remaining = await left(context, objects);
+function objects(count: number): string {
+  return `${count} ${count === 1 ? 'object' : 'objects'}`;
+}
+
+async function removeAndCheck(context: ProbeContext, step: string, items: readonly CreatedObject[]): Promise<string> {
+  const failures = await removeAll(context, step, items);
+  const remaining = await left(context, items);
   addRow(context, step, { check: 'Objects left', expected: '0', measured: remaining.length === 0 ? '0' : `${remaining.length}: ${remaining.join(', ')}` });
   if (failures.length > 0 || remaining.length > 0) {
     throw new Error(`Delete these objects by hand in the Stripe Dashboard (test mode) or the WorkOS Dashboard (Staging): ${[...failures, ...remaining].join('; ')}`);
   }
-  return `removed ${objects.length} objects; none is left.`;
+  return `removed ${objects(items.length)}; none is left.`;
 }
 
 function keepObjects(context: ProbeContext): string {
   const kept = context.state.created.map((object) => `${object.system} ${object.kind} ${object.id}`);
   for (const object of context.state.created) object.outcome = 'kept (--keep)';
   addRow(context, STEP, { check: 'Kept objects (--keep)', expected: 'the objects of this run', measured: kept.join(', ') || 'none' });
-  return `kept ${kept.length} objects. A later run with --steps cleanup deletes them, and the next run refuses to start before.`;
+  return `kept ${objects(kept.length)}. A later run with --steps cleanup deletes them, and the next run refuses to start before.`;
 }
 
+// A failed search does not stop the removal of the objects that the steps remember, but it fails the cleanup: an
+// object whose create answer was lost can remain.
 async function cleanup(context: ProbeContext): Promise<string> {
   if (context.inputs.keep) return keepObjects(context);
-  const objects = addFound(context, await findObjects(context, runFinder(context.run)));
-  return removeAndCheck(context, STEP, objects);
+  let searchFailure: string | undefined;
+  try {
+    addFound(context, await findObjects(context, runFinder(context.run)));
+  } catch (error) {
+    searchFailure = messageOf(error);
+    addRow(context, STEP, { check: 'Search for the objects of this run by name and tag', expected: 'listed', measured: `failed: ${searchFailure}` });
+  }
+  const removed = await removeAndCheck(context, STEP, context.state.created);
+  if (searchFailure !== undefined) throw new Error(`${removed} The search for other objects of this run failed, so check the dashboards: ${searchFailure}`);
+  return removed;
 }
 
 async function sweep(context: ProbeContext): Promise<string> {
-  const objects = addFound(context, await findObjects(context, sweepFinder));
+  const found = addFound(context, await findObjects(context, sweepFinder));
   const stripe = context.stripe === undefined ? ' Stripe was not swept: STRIPE_RESTRICTED_KEY is not set.' : '';
-  return `${objects.length === 0 ? 'no object of an earlier run exists; ' : ''}${await removeAndCheck(context, SWEEP, objects)}${stripe}`;
+  return `${found.length === 0 ? 'no object of an earlier run exists; ' : ''}${await removeAndCheck(context, SWEEP, found)}${stripe}`;
 }
 
 function findPlan(finder: Finder, systems: Systems): readonly PlannedCall[] {

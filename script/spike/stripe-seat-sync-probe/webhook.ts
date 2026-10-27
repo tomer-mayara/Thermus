@@ -1,6 +1,6 @@
 import { action, type Placeholders, type PlannedCall } from './calls.ts';
 import { addRow, remember, seconds, type ProbeContext } from './context.ts';
-import { ListenSession, listenArgs, runCli, tail, triggerArgs } from './stripe-cli.ts';
+import { ListenSession, listenArgs, runCli, shellLine, tail, triggerArgs } from './stripe-cli.ts';
 import { CHECK_HEADER, WEBHOOK_PATH, WebhookListener, type Delivery } from './webhook-listener.ts';
 
 const STEP = 'Webhook';
@@ -90,8 +90,8 @@ export function webhookPlan(_inputs: unknown, values: Placeholders): readonly Pl
   const url = `http://127.0.0.1:{port}${WEBHOOK_PATH}`;
   return [
     action(`(local) listener on ${url}`, 'Verifies each request with stripe.webhooks.constructEvent(raw body, Stripe-Signature, signing secret): 200 or 400.'),
-    action(`$ stripe ${listenArgs(url, EVENTS).join(' ')}`, 'Started as a child process; it forwards the signed events of test mode until the step ends.'),
-    action(`$ stripe ${triggerArgs(values.run, values.priceId).join(' ')}`, 'Makes a customer and a subscription on the price; both carry the run token, and the cleanup deletes the customer.'),
+    action(`$ ${shellLine(listenArgs(url, EVENTS))}`, 'Started as a child process; it forwards the signed events of test mode until the step ends.'),
+    action(`$ ${shellLine(triggerArgs(values.run, values.priceId))}`, 'Makes a customer and a subscription on the price; both carry the run token, and the cleanup deletes the customer.'),
     action('(local) wait', `At most ${DELIVERY_LIMIT_MS / 1_000} s for a customer.subscription.created of this run, accepted with 200.`),
     action(`(local) POST ${url} three times`, 'The event with a changed status and the original signature (400), without a signature (400), and unchanged again (200).'),
   ];
