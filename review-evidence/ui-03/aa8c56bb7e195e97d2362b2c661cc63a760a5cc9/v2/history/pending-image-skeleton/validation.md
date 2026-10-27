@@ -1,0 +1,17 @@
+## Validation
+
+Candidate `aa8c56bb7e195e97d2362b2c661cc63a760a5cc9`; actual parent/merge base `614090a1632b27ce40a3d2e38cac9492bac048aa`; main/main merge base `9507e751215fec32748bf4e944f2393928e61cf5`.
+
+**V2 SKELETON ONLY. No root-accepted image result yet; full selected live and current-head T1 human approval remain holds.** Do not finalize scan/hash manifests until image outcome is accepted. V1 text acceptance/readback is complete; no source/code/quality change.
+
+### Candidate image proof
+
+**PENDING_ROOT_ACCEPTED_IMAGE_RESULT** — add exact head/parent, times/exits, six checked-build group counts, runtime counts, clean tracked-input equivalence, same assertions/deadlines, cleanup/default context and [resource proof](EVIDENCE_ROOT/image/profile-resources.json). No partial log or another PR's pass supplies this result.
+
+### Original native and live provenance
+
+Native functional results retain actual execution `6ced8db3965190d1d859b60d7053f1830cf5a23c`/parent 827/main 2b3: ordinary 5,161+49, browser 51, SQL 26, self-hosted 11, full offline phases 3319/29/20/1166/123/13. Collector first 7/10 failed three package-resolution cases, then full 10/10 retry after same-package private dependency copy. Original manifests/inventory timing and approved launcher normalization remain in [immutable native archive](https://github.com/tomer-mayara/Thermus/blob/9c02340c6feab59357a30f3550217df911732d0a/review-evidence/ui-03/aa8c56bb7e195e97d2362b2c661cc63a760a5cc9/v1/historical-6ced8db3/README.md); no functional run is relabelled as current aa8. Historical original UI-03 staging 28/29 missing-Revoke result and later 429 setup diagnostic remain distinct, and neither establishes the earlier cause or current live success. Fresh current typecheck/coverage/quality remain in [v1 summary](https://github.com/tomer-mayara/Thermus/blob/9c02340c6feab59357a30f3550217df911732d0a/review-evidence/ui-03/aa8c56bb7e195e97d2362b2c661cc63a760a5cc9/v1/validation/evidence-summary.json) and [full quality](https://github.com/tomer-mayara/Thermus/blob/9c02340c6feab59357a30f3550217df911732d0a/review-evidence/ui-03/aa8c56bb7e195e97d2362b2c661cc63a760a5cc9/v1/publication/quality.md).
+
+[Read-only quota summary](EVIDENCE_ROOT/review/quota-read-only-summary.json): connector/dashboard expose no quota availability or reset information. Emails being enabled and no displayed events are not current capacity proof. No mutation, test send, provider setting change or new live pass. [Scoped 503 investigation](EVIDENCE_ROOT/review/live-503-investigation.md) retains exact source/journal lines; no local production defect or provider cause established. Those six proven quota 429 cases and the separate application 503 belong to UI-02/UI-04 historical 22/29 runs, not UI-03’s own 28/29 missing-Revoke run. Keep these histories and causes separate. Future success does not prove historical cause.
+
+[Published v1 metadata](EVIDENCE_ROOT/history/publication-ui03-aa8c56bb-v1.json), [exact bodies](EVIDENCE_ROOT/history/publication-payload-v1.json), [byte readback](EVIDENCE_ROOT/history/publication-readback-v1.json). [Published UI-02 v2](https://github.com/tomer-mayara/Thermus/blob/d80073505ccf446e247d50886c5f721c908d9dbf/review-evidence/ui-02/614090a1632b27ce40a3d2e38cac9492bac048aa/v2/README.md) supplies no result for this PR. Root records actual v2 publication/readback after image acceptance. No source/tests/provider/remote action ran for preparation.

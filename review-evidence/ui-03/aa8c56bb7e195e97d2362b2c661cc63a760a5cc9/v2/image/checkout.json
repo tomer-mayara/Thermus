@@ -1,0 +1,11 @@
+{
+  "command": [
+    "git",
+    "switch",
+    "--detach",
+    "aa8c56bb7e195e97d2362b2c661cc63a760a5cc9"
+  ],
+  "exitCode": 0,
+  "stdout": "",
+  "stderr": "Previous HEAD position was 614090a1 Clarify UI-02 rebase evidence and staging hold\nHEAD is now at aa8c56bb Show the invitation form on demand for UI-03\n"
+}

@@ -1,0 +1,26 @@
+{
+  "at": "2026-10-27T06:03:03.130Z",
+  "pr": 264,
+  "head": "614090a1632b27ce40a3d2e38cac9492bac048aa",
+  "base": "codex/ui-01-refined-tabs",
+  "baseSha": "37046bbd1426566d90bf1a32f8578584d7173060",
+  "draft": true,
+  "merged": false,
+  "mergeable": true,
+  "mainMatches": true,
+  "validationMatches": true,
+  "qualityMatches": true,
+  "maintainedCommentCount": 2,
+  "evidence": {
+    "at": "2026-10-27T06:02:09.636612+00:00",
+    "ui": "ui02",
+    "head": "614090a1632b27ce40a3d2e38cac9492bac048aa",
+    "commit": "d80073505ccf446e247d50886c5f721c908d9dbf",
+    "branch": "codex/ui-02-review-614090a1-v2",
+    "prefix": "review-evidence/ui-02/614090a1632b27ce40a3d2e38cac9492bac048aa/v2/",
+    "files": 25,
+    "bundleManifestSha256": "f43e25cbfd9d117be03ee606cb91397c7344fadea0076474f042f7596840c081",
+    "status": "published-and-ref-verified",
+    "url": "https://github.com/tomer-mayara/Thermus/blob/d80073505ccf446e247d50886c5f721c908d9dbf/review-evidence/ui-02/614090a1632b27ce40a3d2e38cac9492bac048aa/v2"
+  }
+}

@@ -1,0 +1,15 @@
+## Quality review
+
+Candidate `aa8c56bb7e195e97d2362b2c661cc63a760a5cc9`; actual parent/merge base `614090a1632b27ce40a3d2e38cac9492bac048aa`; main/main merge base `9507e751215fec32748bf4e944f2393928e61cf5`.
+
+**T1 Team review. Architecture: T0: no architecture fact.** Source, tests, committed impact, checker reasons and metric/habit dispositions are unchanged from [published v1 Quality review](https://github.com/tomer-mayara/Thermus/blob/9c02340c6feab59357a30f3550217df911732d0a/review-evidence/ui-03/aa8c56bb7e195e97d2362b2c661cc63a760a5cc9/v1/publication/quality.md). The only tier reason remains trusted read_paths for the test-gate inventory. [Full reports](https://github.com/tomer-mayara/Thermus/blob/9c02340c6feab59357a30f3550217df911732d0a/review-evidence/ui-03/aa8c56bb7e195e97d2362b2c661cc63a760a5cc9/v1/README.md) retain every finding, reason, coverage/identity limit and architecture assessment; no whole report tree is cloned.
+
+**Overall blocked; Draft. Image result pending root acceptance.** Full hosted-live and exact-head independent human approval remain holds. V1 text acceptance/readback is complete. No image/live pass, Ready/merge/deployment or evidence publication is claimed by this skeleton.
+
+[Accepted 503 investigation](EVIDENCE_ROOT/review/live-503-investigation.md), [original audit bytes](EVIDENCE_ROOT/review/live-503-investigation.original-local-links.md), [exact immutable link map](EVIDENCE_ROOT/review/link-remap.json): the six explicit quota 429 fixture failures and application 503 come from UI-02/UI-04 historical 22/29 runs. They are separate from UI-03’s own 28/29 missing-Revoke run and later 429 setup diagnostic. The scoped 503 provider cause remains unknown. The route's fixed 503 does not prove WorkOS returned 503. Missing request-correlated provider status/code/ID cannot be reconstructed from cleanup or future success. No local production defect/cause was established.
+
+[Sanitized read-only quota check](EVIDENCE_ROOT/review/quota-read-only-summary.json) exposed no quota balance/reset time in connector or dashboard. Invitation-email enabled state and no displayed events do not establish current availability. No settings mutation/test send ran. Full selected live verification remains required; no reset, provider fix or new live pass follows.
+
+Current image section: **PENDING_ROOT_ACCEPTED_IMAGE_RESULT**. Add exact-head result, six nested group totals/runtime counts, input hashes/modes, assertions/deadlines, resource proof, cleanup and final manager assessment after root accepts the outcome. [Shared profile proof](EVIDENCE_ROOT/image/profile-resources.json) establishes setup only, not a candidate pass.
+
+[Exact published v1 history](EVIDENCE_ROOT/history/publication-ui03-aa8c56bb-v1.json), [v1 payloads](EVIDENCE_ROOT/history/publication-payload-v1.json), [readback](EVIDENCE_ROOT/history/publication-readback-v1.json) preserve old text and immutable reports. This is preparation only; root records actual v2 publication/readback separately.
