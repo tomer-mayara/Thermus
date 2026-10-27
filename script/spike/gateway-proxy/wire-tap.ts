@@ -1,8 +1,5 @@
 import type { FetchLike } from '@modelcontextprotocol/client';
 
-// A fetch for one MCP client that records each request as the client sends it: the HTTP method, the JSON-RPC
-// message, the answer status, and how the answer stream ended at the client. It also keeps the errors that the client
-// reports. Times are performance.now() values of this process, the clock of the other parts.
 interface StreamEnd { readonly at: number; readonly how: 'ended' | 'aborted' | 'cancelled' }
 interface RpcMessage { readonly id?: unknown; readonly method?: unknown; readonly params?: { readonly [key: string]: unknown } }
 export interface WireRequest {
@@ -30,7 +27,7 @@ export function wireTap(): WireTap {
     const response = await fetch(url, init);
     request.status = response.status;
     request.answeredAt = performance.now();
-    return observed(response, request);
+    return withStreamEndRecorded(response, request);
   };
   return { requests, errors, fetch: tapFetch, recordError: (error) => { errors.push({ at: performance.now(), message: error.message }); } };
 }
@@ -45,8 +42,7 @@ function rpcMessageOf(body: unknown): RpcMessage | undefined {
   }
 }
 
-// The same answer, with a body that notes when the stream of the answer ends, fails, or is cancelled by the client.
-function observed(response: Response, request: WireRequest): Response {
+function withStreamEndRecorded(response: Response, request: WireRequest): Response {
   const body = response.body;
   if (body === null) {
     request.streamEnd = { at: performance.now(), how: 'ended' };

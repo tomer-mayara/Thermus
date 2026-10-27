@@ -44,7 +44,6 @@ function modernRun(): ProtocolRun {
   return { protocol: PROTOCOL_VERSION, steps: partSteps, newClient, connect: (client, proxy) => connectClient(client, proxy) };
 }
 
-// The wire tap records the requests of the 2025-11-25 client for the steps of that run.
 function notificationRun(): ProtocolRun {
   const tap = wireTap();
   return {

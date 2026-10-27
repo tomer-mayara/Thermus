@@ -1,34 +1,15 @@
 import assert from 'node:assert/strict';
 import { SdkError, type Client } from '@modelcontextprotocol/client';
 import { probeContext, signAccess } from './access-context.ts';
-import { connectClient, LEGACY_PROTOCOL_VERSION, newClient, PROTOCOL_VERSION, timedCall, type CallRun } from './client.ts';
+import { droppedAfter, droppedResult, measureCancel, type CancelMeasure, type Dropped, type ProxyExchange } from './cancel-measure.ts';
+import { connectClient, LEGACY_PROTOCOL_VERSION, newClient, PROTOCOL_VERSION } from './client.ts';
 import type { Proxy } from './proxy.ts';
 import { ABORT_AFTER_MS, ABORT_LIMIT_MS, messageOf, ms, STOP_LIMIT_MS, waitFor, type Parts, type ProbeStep, type Report, type Row } from './steps.ts';
-import { TICK_MS, TICKS, type SlowCall, type Upstream } from './upstream.ts';
+import { TICK_MS, TICKS, type SlowCall } from './upstream.ts';
 import { wireTap, type WireRequest, type WireTap } from './wire-tap.ts';
 
-// The steps of the 2025-11-25 run. In that protocol, the SDK client cancels a call with a notifications/cancelled
-// POST and keeps the stream of the call open. The upstream serves each POST with a new server from its factory, so
-// the server that gets the notification does not hold the running call. For the contrast, a client pinned to
-// 2026-07-28 aborts the same call; it closes the stream of the call instead.
-
-const CALL_END_WAIT_MS = TICKS * TICK_MS + 1_000;
-const DROPPED_PROGRESS = 'Received a progress notification for an unknown token';
-const DROPPED_RESULT = 'Received a response for an unknown message ID';
 const STREAM_REFUSED = 'Failed to open SSE stream';
 
-type ProxyExchange = Proxy['exchanges'][number];
-interface Wire { readonly client: Client; readonly tap: WireTap; readonly upstream: Upstream; readonly proxy: Proxy }
-interface Dropped { readonly progress: number; readonly results: number }
-interface CancelMeasure {
-  readonly run: CallRun;
-  readonly abortAt: number;
-  readonly settledAt: number;
-  readonly call: SlowCall;
-  readonly sent: WireRequest;
-  readonly afterAbort: readonly WireRequest[];
-  readonly answer: ProxyExchange;
-}
 interface Notice { readonly request: WireRequest; readonly requestId: unknown; readonly reason: string; readonly answer: ProxyExchange }
 interface Stop { readonly streamClosedAt: number; readonly clientGoneAt: number; readonly signalAt: number; readonly stoppedAt: number }
 
@@ -64,7 +45,7 @@ async function cancelByNotification(tap: WireTap, { client, upstream, proxy }: P
   const measure = await measureCancel({ client, tap, upstream, proxy }, 'notification-cancel');
   const notice = noticeOf(measure, proxy);
   assert.equal(upstream.stats.mcpRequests - serversBefore, 2, 'The upstream must make one server for the call and one for the notification');
-  const finishedAt = assertRanToItsEnd(measure);
+  const finishedAt = ranToItsEndAt(measure);
   const dropped = await waitFor(() => droppedResult(tap, measure.abortAt), 1_000, 'the client to drop the result of the call');
   assert.equal(dropped.progress, TICKS - measure.run.progressAt.length, 'The client must drop each progress notification after the abort');
   report.rows.push(...notificationRows(measure, notice, dropped));
@@ -79,28 +60,13 @@ async function contrast({ upstream, proxy }: Parts, report: Report): Promise<str
     assert.equal(client.getNegotiatedProtocolVersion(), PROTOCOL_VERSION, `The contrast client must negotiate ${PROTOCOL_VERSION}`);
     const measure = await measureCancel({ client, tap, upstream, proxy }, 'stream-close');
     assert.deepEqual(measure.afterAbort, [], `The ${PROTOCOL_VERSION} client must send no request on the abort`);
-    const stop = assertStoppedAtTheAbort(measure);
+    const stop = stoppedAtTheAbort(measure);
     assert.deepEqual(droppedAfter(tap, measure.abortAt), { progress: 0, results: 0 }, `The ${PROTOCOL_VERSION} client must drop no message after the abort`);
     report.rows.push(...contrastRows(measure, stop));
     return `the ${PROTOCOL_VERSION} client sent no request on the abort and closed the stream of the call; the upstream handler saw its signal ${ms(stop.signalAt - measure.abortAt)} after the abort and stopped.`;
   } finally {
     await client.close();
   }
-}
-
-async function measureCancel(wire: Wire, label: string): Promise<CancelMeasure> {
-  const first = wire.tap.requests.length;
-  const run = await timedCall(wire.client, label, ABORT_AFTER_MS);
-  const settledAt = performance.now();
-  const { abortAt } = run;
-  assert.ok(abortAt !== undefined && run.error !== undefined, 'The aborted call must fail at the client');
-  assert.ok(settledAt - abortAt <= ABORT_LIMIT_MS, `The call settled ${ms(settledAt - abortAt)} after the abort; the limit is ${ABORT_LIMIT_MS} ms`);
-  const call = await waitFor(() => endedCall(wire.upstream.calls.get(label)), CALL_END_WAIT_MS, 'the upstream handler to end');
-  const [sent, ...later] = wire.tap.requests.slice(first);
-  assert.equal(sent?.message?.method, 'tools/call', 'The client must send the call as its first request');
-  await waitFor(() => sent.streamEnd, 1_000, 'the stream of the call to end at the client');
-  const answer = await waitFor(() => endedAnswer(wire.proxy, sent.sentAt), 1_000, 'the proxy to end the answer of the call');
-  return { run, abortAt, settledAt, call, sent, afterAbort: later.filter((request) => request.sentAt >= abortAt), answer };
 }
 
 function noticeOf({ sent, afterAbort }: CancelMeasure, proxy: Proxy): Notice {
@@ -121,8 +87,7 @@ function cancelledParams({ message }: WireRequest, call: WireRequest): Pick<Noti
   return { requestId: params.requestId, reason: params.reason };
 }
 
-// Returns the time when the handler finished.
-function assertRanToItsEnd({ call, abortAt, sent, answer }: CancelMeasure): number {
+function ranToItsEndAt({ call, abortAt, sent, answer }: CancelMeasure): number {
   const { signalAt, finishedAt } = call;
   assert.ok(signalAt === undefined || (finishedAt !== undefined && signalAt >= finishedAt), `The upstream handler saw its signal ${ms((signalAt ?? abortAt) - abortAt)} after the abort, while it ran`);
   assert.ok(finishedAt !== undefined && call.stoppedAt === undefined, 'The upstream handler must run to its end');
@@ -133,7 +98,7 @@ function assertRanToItsEnd({ call, abortAt, sent, answer }: CancelMeasure): numb
   return finishedAt;
 }
 
-function assertStoppedAtTheAbort({ call, abortAt, sent, answer }: CancelMeasure): Stop {
+function stoppedAtTheAbort({ call, abortAt, sent, answer }: CancelMeasure): Stop {
   const { signalAt, stoppedAt } = call;
   assert.ok(sent.streamEnd?.how === 'aborted', `The client must close the stream of the call on the abort; it was ${String(sent.streamEnd?.how)}`);
   assert.ok(answer.clientGoneAt !== undefined, 'The proxy must see the client go');
@@ -192,26 +157,6 @@ function settleRow(part: string, { run, abortAt, settledAt }: CancelMeasure): Ro
 function signalAfterTheEnd({ signalAt, finishedAt }: SlowCall): string {
   if (signalAt === undefined) return 'none';
   return `none while it ran; it fired ${ms(signalAt - (finishedAt ?? signalAt))} after its end, when the SDK closed its server`;
-}
-
-function endedCall(call: SlowCall | undefined): SlowCall | undefined {
-  return call?.finishedAt !== undefined || call?.stoppedAt !== undefined ? call : undefined;
-}
-
-function endedAnswer(proxy: Proxy, sentAt: number): ProxyExchange | undefined {
-  const exchange = proxy.exchanges.find((item) => item.startedAt >= sentAt);
-  return exchange?.endedAt !== undefined || exchange?.clientGoneAt !== undefined ? exchange : undefined;
-}
-
-function droppedAfter(tap: WireTap, after: number): Dropped {
-  const later = tap.errors.filter((error) => error.at >= after);
-  const count = (start: string): number => later.filter((error) => error.message.startsWith(start)).length;
-  return { progress: count(DROPPED_PROGRESS), results: count(DROPPED_RESULT) };
-}
-
-function droppedResult(tap: WireTap, after: number): Dropped | undefined {
-  const dropped = droppedAfter(tap, after);
-  return dropped.results > 0 ? dropped : undefined;
 }
 
 function streamRefusals(tap: WireTap): number | undefined {
