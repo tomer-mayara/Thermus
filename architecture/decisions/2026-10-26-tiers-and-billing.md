@@ -9,8 +9,12 @@ D-10, D-11, and D-13. The
 [container record](2026-10-26-per-tenant-containers.md) keeps the other
 answers: D-1 one public origin, D-2 the free instance, D-6 the cost caps, and
 D-7 the image source. It also keeps D-9 Render Hobby, D-12 the team instance,
-D-14 no credential in a tenant, and D-15 the capacity of 10 calls. This record
-changes no code. Tickets SO-08 and SO-13 to SO-15 of the plan implement it.
+D-14 no credential in a tenant, and D-15 the capacity of 10 calls. On
+27 October 2026, the owner amended D-15 to 5 calls at a time for a free
+tenant and 10 for a team tenant
+([plan section 5](../../docs/implementation/self-onboarding-plan.md#5-owner-decisions-answered-on-26-october-2026)).
+This record changes no code. Tickets SO-08 and SO-13 to SO-15 of the plan
+implement it.
 
 ## Context
 
@@ -41,7 +45,7 @@ takes `?tier=free`, and only an upgrade gives `team`. The tier rules of
 | Invariant | An invitation from the control plane is the only way to add a member. SSO, Directory Sync, domain joining, and dashboard-created memberships stay off. | The same. |
 | Inviting again after a downgrade | Needs member removal or a new upgrade. | Not applicable. |
 | Container | `0.5c-512mb` (D-2), suspended when idle (D-6). | `1c-2g` (D-12), never suspended. |
-| Capacity | 10 calls at a time (D-15). | The same, with more memory. |
+| Capacity | 10 calls at a time (D-15). Amended on 27 October 2026: 5 calls at a time for `free` and 10 for `team` ([plan section 5](../../docs/implementation/self-onboarding-plan.md#5-owner-decisions-answered-on-26-october-2026)). | The same, with more memory. |
 | Portal | `plan: 'free'`, `memberLimit: 5`. | `plan: 'team'`. |
 
 The application cannot refuse an acceptance, so a pending invitation reserves

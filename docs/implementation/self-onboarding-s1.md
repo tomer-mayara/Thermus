@@ -2371,7 +2371,9 @@ the probe refreshed it 2 times in run A and 3 times in run B.
 
 ### Recommendation for D-15
 
-The owner decides D-15. These values come from the runs above.
+The owner decides D-15. These values come from the runs above. On
+27 October 2026, the owner accepted the free value 5 and the team value 10
+([plan section 5](self-onboarding-plan.md#5-owner-decisions-answered-on-26-october-2026)).
 
 - **Free tenants, `0.5c-512mb`: lower `OPERATION_CAPACITY` to 5.** With 10,
   ten 9 MiB calls restarted the container in run A and in the repeat. Each

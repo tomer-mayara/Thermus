@@ -31,8 +31,9 @@ Run the fetch and search work of each organization in its own Render
 **tenant role**. A free tenant runs on the smallest paid instance,
 `0.5c-512mb`; a paying tenant runs on `1c-2g`. A tenant has no public address
 and holds no credential: no WorkOS API key, no database password, no Stripe or
-Render key. Only the control plane reaches it, over the Render private network. Each
-container serves up to 10 tool calls at a time.
+Render key. Only the control plane reaches it, over the Render private network. A
+free container serves up to 5 tool calls at a time, and a team container up
+to 10 (D-15).
 
 MCP clients keep the one URL `https://app.thermus.ai/mcp`. The gateway
 verifies the Connect token and reads the current membership, as the single
@@ -235,7 +236,7 @@ One new setting, `THERMUS_ROLE`, selects the role of the hosted image.
 | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_TEAM` | new, required | not set |
 | `LIGHTPANDA_BIN`, `AD_RULES_FILE` | set by the image; read until SO-16 removes the tools | read, as today |
 | Routes | today's routes, plus `/billing/*`, `/billing/events`, `/workspace/status`, and `/internal/audit`; `/mcp` is the gateway when the switch is on | `/healthz` and `/mcp` only |
-| `OPERATION_CAPACITY` | new in SO-01a, default 10; applies while the control plane still serves tools | the same setting: the calls that run at the same time (D-15) |
+| `OPERATION_CAPACITY` | new in SO-01a, default 10; applies while the control plane still serves tools | the same setting: the calls that run at the same time. The default stays 10 in the source; the provisioner sets 5 for a free tenant and 10 for a team tenant (D-15). |
 | Tools and renderer | until SO-16: the tools of today, used when the switch is off | the fetch and search tools with the capacity above and today's page limits |
 
 The signed access context is one request header. The control plane signs it
@@ -291,6 +292,9 @@ sets the plan of the row: `TENANT_PLAN_TEAM` for `team`, `TENANT_PLAN_FREE`
 for `free`. The provisioner applies a plan that differs from the applied one
 with a Render service update and then a deploy
 ([SO-01c](self-onboarding-s1.md#so-01c-render-private-service-lifecycle)).
+The capacity follows the plan: before the deploy, the provisioner also sets
+`OPERATION_CAPACITY` to 5 for `TENANT_PLAN_FREE` and to 10 for
+`TENANT_PLAN_TEAM` (D-15), so the same deploy applies both.
 The update alone does not restart the container; the deploy replaces the
 instance with zero downtime: the new instance goes live, and the old one gets
 `SIGTERM` 60 s later. A tool call during that deploy gets a `503` with
@@ -429,7 +433,7 @@ that the registry and the billing store can use it and `pg` is declared once.
 | Invariant | An invitation from the control plane is the only way to add a member. SSO, Directory Sync, domain joining, and dashboard-created memberships stay off, as the production readback shows. | the same |
 | Inviting again after a downgrade | Needs member removal on the Members page, or an upgrade. | not applicable |
 | Container | `0.5c-512mb` with today's page limits; suspended when idle. | `1c-2g`; never suspended. |
-| Capacity | Up to 10 fetches or searches at a time in its own container (D-15); the next call gets `Server busy`. | The same capacity, with more memory for large pages. |
+| Capacity | Up to 5 fetches or searches at a time in its own container (D-15); the next call gets `Server busy`. | Up to 10 at a time, with more memory for large pages (D-15). |
 | Portal | `plan: 'free'`, `memberLimit: 5`. | `plan: 'team'`. |
 
 Native invitation acceptance happens in AuthKit, so the application cannot
@@ -477,10 +481,10 @@ New edges, at least: `app` to `tenants`, `render`, `stripe`, and `sql`;
 | D-9 | Render workspace plan | Hobby for now. | 7 days of logs and failure emails only. Alerts come from the failure emails and the daily fleet summary. Revisit when the fleet grows. |
 | D-10 | Existing organizations | Fresh inventory; delete the unused test organizations. The rest get a tenant on first use. | SO-12. |
 | D-11 | Legal and marketing | Proceed under the existing document process. | SO-12 for the free tier, SO-14 for the paid tier. No customer reaches Checkout before approval and publication. |
-| D-12 | Team container | A larger instance, `1c-2g`, with the same capacity. | The tier change resizes the container. Costs about 25 USD a month for each team tenant. |
+| D-12 | Team container | A larger instance, `1c-2g`, with the same capacity. Amended by D-15 on 27 October 2026: 10 calls at a time, against 5 on the free instance. | The tier change resizes the container and sets its capacity. Costs about 25 USD a month for each team tenant. |
 | D-13 | Payment provider | Stripe. | Closes D1 of the billing design. |
 | D-14 | Tenant credentials | No credential in a tenant: signed access context and audit relay. | Sections 4.1 and 4.2. |
-| D-15 | Calls at the same time in a container | 10, instead of today's 1. | `OperationCapacity` takes a limit from the new setting `OPERATION_CAPACITY`, default 10. The 11th call gets `Server busy`. One render reached 631 MiB, so 10 renders at once can exceed 512 MB and also 2 GB; SO-01e measures the real concurrent peak on both instances, and the owner then confirms the free and team values or lowers the free one. |
+| D-15 | Calls at the same time in a container | 10, instead of today's 1. Final answer on 27 October 2026, after SO-01e: 5 for a free tenant and 10 for a team tenant. | Measured basis ([SO-01e](self-onboarding-s1.md#recommendation-for-d-15)): on `0.5c-512mb`, five calls of the 9 MiB page peaked at 379 MiB with no restart and ten restarted the container, and on `1c-2g` ten needed 709 MiB. Consequence: `OperationCapacity` takes its limit from the setting `OPERATION_CAPACITY`, whose default stays 10. The provisioner sets 5 for a free tenant and 10 for a team tenant, and a tier change sets the value of the new tier. The next call gets `Server busy`. |
 
 Mapping to the billing design: D1 Stripe; D2 monthly, billed at the end of
 each period from the meter; D3 automatic charge; D4 no proration, because the
@@ -702,9 +706,11 @@ SO-01c for its second part.
   streaming; 3. the abort; 4. the signed header; 5. the Render shell check.
 
 **SO-01e Capacity and memory probe.** Size M. Depends on SO-01a, SO-01b,
-and SO-01c. Its result confirms or lowers the values of D-15 and sets the
-alert threshold and the words of the failure message. The probe, its runs,
-and the recommendation are in the record section
+and SO-01c. Its result lowered the free value of D-15 to 5 and kept the team
+value at 10, and it sets the alert threshold and the words of the failure
+message. The owner accepted this
+[recommendation for D-15](self-onboarding-s1.md#recommendation-for-d-15) on
+27 October 2026. The probe and its runs are in the record section
 [SO-01e: capacity and memory](self-onboarding-s1.md#so-01e-capacity-and-memory).
 
 - Setup: a disposable web service in the Thermus AI workspace, never on the
@@ -780,7 +786,7 @@ WorkOS Staging environment.
 
 At the end of this slice, a visitor creates a free organization on
 `thermus.ai`, its container is provisioned, the organization uses Thermus
-through the gateway with 10 calls at a time, the 5-member limit holds, idle
+through the gateway with 5 calls at a time, the 5-member limit holds, idle
 containers are suspended, and the owner can remove an organization and its
 container.
 
@@ -798,13 +804,14 @@ that signs and verifies the access context. `THERMUS_ROLE=tenant` composes
 `/healthz` and `/mcp` only, pinned to `TENANT_ORGANIZATION_ID`, with the
 settings of section 4.1 and an access resolver that takes the grants from
 the verified context. The audit relay sink. The capacity setting of SO-01a
-applies in both roles. Given a request with a
+applies in both roles; a tenant reads the value that the provisioner sets, 5
+or 10 (D-15). Given a request with a
 valid context and token for the pinned organization, when the client calls a
 tool, then it gets the cleaned Markdown and the relay receives one event; a
 context for another organization, an expired context, a bad signature, or a
-token with another hash gets `403`; given 10 running calls, when an 11th
-arrives, then it gets `Server busy`; the start needs no WorkOS API key and no
-database. Size L.
+token with another hash gets `403`; given `OPERATION_CAPACITY=5` and 5
+running calls, when a 6th arrives, then it gets `Server busy`; the start needs
+no WorkOS API key and no database. Size L.
 
 **SO-04 Tenant registry and SQL owner.** The `sql` owner with the moved
 runtime, the three tables of section 4.3, the migration, the control-plane
@@ -834,9 +841,12 @@ runs both roles as two local processes. Size L. Depends on SO-03, SO-04.
 **SO-06 Provisioner.** The state machine of section 4.2 behind a small
 `TenantPlatform` interface with a Render adapter: idempotent creation by
 name, the duplicate-name stop, deletion, bounded retries, failure reports,
-and the claim of one row at a time. The plan change comes with Slice 3.
+and the claim of one row at a time. The create call sets
+`OPERATION_CAPACITY=5`, the value of a free tenant (D-15). The plan change
+comes with Slice 3.
 Given a `requested` row, when the loop runs with a fake Render API, then the
-row reaches `live` with the service ID and the internal address; given a
+row reaches `live` with the service ID and the internal address, and the
+create call has `OPERATION_CAPACITY=5`; given a
 Render `429`, then the loop waits for `Retry-After` and creates no second
 service; given a restart after `creating`, then it finds the service by name
 and continues; given a row marked for deletion, then the service is deleted
@@ -935,18 +945,19 @@ Customer Portal, apply a verified event, reconcile a subscription. Routes
 `GET /billing`, and the public `POST /billing/events` before the account
 routes. The `stripe_customer_id` write to WorkOS, the metered price, the
 no-second-subscription rule, the applied mark, the daily reconciliation, the
-tier change that resizes the tenant through the provisioner plan change,
-team tenants excluded from suspension, the downgrade with the revoked
-invitations, and the dunning setting. Settings and an exact pin of the
-`stripe` package. The billing design records the decisions and the
+tier change that resizes the tenant and sets its capacity through the
+provisioner plan change, team tenants excluded from suspension, the downgrade
+with the revoked invitations, and the dunning setting. Settings and an exact
+pin of the `stripe` package. The billing design records the decisions and the
 superseded MFA precondition. Given an Admin on `free`, when Upgrade
 completes, then the organization is `team` before the webhook arrives, the
-WorkOS organization has the customer ID, the tenant row wants `1c-2g`, and a
-duplicate event changes nothing; given a second Upgrade while the
-subscription runs, then it is refused; given
+WorkOS organization has the customer ID, the tenant row wants `1c-2g`, with
+a capacity of 10, and a duplicate event changes nothing; given a second
+Upgrade while the subscription runs, then it is refused; given
 `customer.subscription.deleted` with 8 members, then the tier is `free`, the
 pending invitations above the limit are revoked, the members keep access,
-the tenant row wants `0.5c-512mb`, and a new invitation is refused. Offline
+the tenant row wants `0.5c-512mb`, with a capacity of 5, and a new invitation
+is refused. Offline
 tests use a local double of the Stripe API and the Stripe signature helper.
 The paid billing gate runs the scenarios in Stripe test mode with test
 clocks and the Staging Seat Sync. Size L. Depends on SO-08, SO-01f.
@@ -979,7 +990,7 @@ consider a smaller instance for it. Size S. Depends on SO-12.
 
 | Risk | Fact | Mitigation |
 | --- | --- | --- |
-| Memory on the free instance | 631 MiB peak recorded for one render against 512 MB. D-15 allows 10 renders at a time, which multiplies the peak. A kill ends every active call with a failure. | Accepted in D-2 and D-15 for the defaults. SO-01e measures the concurrent peak on both instances; if the free instance cannot hold 10, the owner lowers `OPERATION_CAPACITY` for free tenants or chooses a larger instance. Render restarts the container. SO-11 watches the failure emails. |
+| Memory on the free instance | 631 MiB peak recorded for one render against 512 MB. SO-01e measured the 9 MiB page: on `0.5c-512mb`, five calls at a time peaked at 379 MiB with no restart, and ten restarted the container; on `1c-2g`, ten needed 709 MiB. A restart ends every active call with a failure. | Accepted in D-2. D-15 sets 5 calls at a time for a free tenant and 10 for a team tenant (27 October 2026). Render restarts the container, but it reported no event for these restarts, so the failure emails of SO-11 can miss them ([SO-01e](self-onboarding-s1.md#recommendation-for-d-15)). |
 | Render API rate limits | 20 creates an hour for each Render user, and 10 updates, deploys, suspends, and resumes a minute for each service ([SO-01c](self-onboarding-s1.md#so-01c-render-private-service-lifecycle)). | A dedicated user for the control plane. The provisioner is a queue. Suspend only after 14 idle days, so resumes are rare. Ask Render for a higher limit before a launch campaign. |
 | PostgreSQL on Supabase Free | Pauses after 7 idle days; a pause stops provisioning, billing, and the audit export. | Accepted in D-8. The daily reconciliation keeps the project active. A runbook resumes it. Revisit at the first paying customer. |
 | Cost of free tenants | 7 USD a month for each live free tenant. Signup needs only a verified email. | `FREE_TENANT_LIMIT`, idle suspension from creation, deletion of dead organizations, the admission limits, the global switch. |

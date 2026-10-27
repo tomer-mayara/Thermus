@@ -98,6 +98,10 @@ alternative that lost.
    - Caveat: one render reached about 631 MiB, so 10 renders can exceed 512 MB
      and also 2 GB. Probe SO-01e must measure the real peak on both plans. The
      owner then confirms both values or lowers the free one.
+   - Amendment of 27 October 2026: after probe SO-01e, the owner set the final
+     values of D-15, 5 calls at a time for a free tenant and 10 for a team
+     tenant
+     ([plan section 5](../../docs/implementation/self-onboarding-plan.md#5-owner-decisions-answered-on-26-october-2026)).
 7. **Cost caps (D-6).** `FREE_TENANT_LIMIT` is 25; a full cap closes signup.
    `FREE_TENANT_IDLE_DAYS` is 14; an idle free tenant is suspended, and the
    next call resumes it. Team tenants are never suspended.
