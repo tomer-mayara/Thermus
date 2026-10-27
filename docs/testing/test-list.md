@@ -1,5 +1,97 @@
 # Test inventory
 
+## Current SO-03 inventory scope
+
+SO-03 of the [self on-boarding plan](../implementation/self-onboarding-plan.md#slice-2-free-tier-end-to-end)
+adds the tenant role of the hosted image, the signed access context, and the
+audit relay. The [authentication design](../design/authentication-design.md#tenant-role-and-signed-access-context)
+gives the contract. These files are in the ordinary suite and run offline: a
+local key set stands in for AuthKit, a loopback spy for the relay route of the
+control plane, and the test plays the gateway with its own Ed25519 key pair.
+
+- `test/acceptance/mcp/hosted-tenant-role.test.ts` (9 cases) runs the
+  production composition from `loadDeploymentConfig()` and `createApplication()`
+  with `THERMUS_ROLE=tenant`, the renderer double, and an MCP SDK client
+  through the test gateway, which signs a context for each request. It checks
+  the cleaned Markdown with one relayed event and the same context; `403` for
+  a context of another organization, an expired context, a bad signature, a
+  token of another hash, and a missing context, with no tool run and no relay;
+  the bearer refusal of today for a token without a valid AuthKit signature;
+  `404` for each path other than `/healthz` and `/mcp`; `405` for the `GET`
+  stream of a 2025-era client; a refusing relay target that stops after three
+  attempts and a silent one that holds one request open, while each client
+  gets its result; and an event without the token or the context.
+- `test/acceptance/mcp/hosted-tenant-capacity.test.ts` (2 cases) holds the
+  running calls in incoming processing: at `OPERATION_CAPACITY=5`, the sixth
+  call gets `Server busy` with completion `busy`, and the relay receives its
+  `busy` event and then the five others; without the setting, the eleventh
+  call is busy: the default stays 10.
+- `test/acceptance/auth/hosted-startup.test.ts` gains the suite "Hosted image
+  in the tenant role" (5 cases) on the built server process with outbound
+  access denied: the tenant listens and answers `/healthz`, `404`, and `403`
+  without a network call; a missing tenant setting, an unknown `THERMUS_ROLE`,
+  and a secret of the control plane stop the start with a `FATAL` line that
+  names the setting but no value; `THERMUS_ROLE=control-plane` keeps the
+  control plane.
+- `test/unit/auth/signed-access-context.test.ts` (15 cases) checks the signer
+  and the verifier: a signed context verifies with the public key alone; a
+  changed body, another key pair, an expired context, another organization,
+  another or no bearer token, a missing or empty header, a value that is not a
+  JWT, and a header above 8 KiB each fail with their reason; several keys
+  verify in turn; and wrong key kinds are refused.
+- `test/unit/auth/context-access-resolver.test.ts` (5 cases) checks the access
+  of a verified context for the user of its token, with the authority and the
+  name of the context, and the denials for another organization, no
+  organization, and another user.
+- `test/unit/config/hosted-role.test.ts` (55 cases) checks `THERMUS_ROLE`
+  through `loadDeploymentConfig()`: no value, an empty value, and
+  `control-plane` select the control plane; the tenant role with its four
+  settings, several gateway keys, and the internal origin; the settings that a
+  tenant reads; unknown roles; missing settings; each refused secret and their
+  combined message; and the rule of each tenant setting, with no value in any
+  message. `test/unit/config/deployment-config.test.ts` (86 cases) adds the
+  `role` of the hosted record, the read of `THERMUS_ROLE`, and the settings
+  that the self-hosted edition and the control plane ignore.
+- `test/unit/logging/audit/audit-relay-sink.test.ts` (9 cases) checks the
+  relay of an event with the context of its request to `/internal/audit`,
+  the drop after a permanent failure, three attempts with the backoff, the
+  age of 30 seconds, the bounds of the audit collector, one send for each
+  tenant and two in all, close, and that the sink never throws.
+- `test/unit/logging/audit/audit-relay-request.test.ts` (14 cases) checks one
+  relay against a loopback route: the method, path, headers, and body; `2xx`
+  accepted; `429`, `502`, `503` with `Retry-After`, and `504` transient; other
+  statuses and redirects final; a time-out, an abort, and a refused
+  connection.
+- `test/interface/auth/signed-access-context.test.ts` (5 cases) checks the
+  header contract: the header name and lifetime, the JWS form, the protected
+  header, exactly the documented claims in whole seconds, a context of another
+  writer, a lifetime that the reader bounds from `iat`, and a refused type or
+  algorithm.
+- `test/integration/mcp/hosted-tenant-composition.test.ts` (2 cases) runs
+  `composeTenantApplication()` with the real `mcp`, `identity`, `audit-logs`,
+  and `config` packages: only `/healthz` and `/mcp`, and the capacity of
+  `OPERATION_CAPACITY` with relayed events.
+- `test/integration/mcp/request-scope.test.ts` (4 cases) checks the request
+  scope of `MCPServer.fetch()`: the access and the tool server of the scope,
+  the configured access without a scope, the bearer check first, and a denial.
+- `test/integration/auth/workos-provider-verification.test.ts` gains one case:
+  `WorkOSTokenVerifier` alone gives the identity of the provider and refuses a
+  token of another key.
+
+```sh
+npm run build && node --test dist/test/acceptance/mcp/hosted-tenant-role.test.js dist/test/acceptance/mcp/hosted-tenant-capacity.test.js
+npm run build && node --test --test-name-pattern="tenant role" dist/test/acceptance/auth/hosted-startup.test.js
+npm run build && node --test dist/test/unit/auth/signed-access-context.test.js dist/test/unit/auth/context-access-resolver.test.js
+npm run build && node --test dist/test/unit/config/deployment-config.test.js dist/test/unit/config/hosted-role.test.js
+npm run build && node --test dist/test/unit/logging/audit/audit-relay-sink.test.js dist/test/unit/logging/audit/audit-relay-request.test.js
+npm run build && node --test dist/test/interface/auth/signed-access-context.test.js
+npm run build && node --test dist/test/integration/mcp/hosted-tenant-composition.test.js dist/test/integration/mcp/request-scope.test.js
+```
+
+`npm run build:hosted` runs both tenant files too. The hosted live gate,
+the self-hosted container gate, and the hosted image gate stay selected for
+this source candidate under the [test gate policy](../implementation/test-gate-policy.md).
+
 ## Current SO-04 inventory scope
 
 SO-04 of the [self on-boarding plan](../implementation/self-onboarding-plan.md#slice-2-free-tier-end-to-end)
@@ -695,7 +787,7 @@ records are type-only imports; these cases execute no shared-auth behavior.
 
 [V] Returns the self-hosted and hosted records with the exact MCP resource and metadata URLs for root and sub-path base URLs
 [V] Accepts only `self-hosted` or `hosted` in `DEPLOYMENT`; no other setting selects or changes the edition, and `AUTH_MODE`, mock, and paid-feature settings have no effect
-[V] Reads only the settings of the selected edition from the supplied record and ignores `process.env`; the hosted edition reads only `DEPLOYMENT` and `PUBLIC_BASE_URL`, also when every `WORKOS_*` setting has a value
+[V] Reads only the settings of the selected edition from the supplied record and ignores `process.env`; the control plane of the hosted edition reads only `DEPLOYMENT`, `PUBLIC_BASE_URL`, and `THERMUS_ROLE`, also when every `WORKOS_*` setting or a tenant setting has a value; the self-hosted edition does not read `THERMUS_ROLE`
 [V] Gives the same hosted record without WorkOS settings and with valid, invalid, or empty `WORKOS_*` values; no WorkOS value turns on a provider or access
 [V] Rejects a missing, relative, padded, non-HTTPS, credential, query, or fragment URL; allows HTTP only for a self-hosted loopback host; WorkOS values do not change these rejections
 [V] Rejects a missing or relative `DATA_DIR`
@@ -704,6 +796,18 @@ records are type-only imports; these cases execute no shared-auth behavior.
 [V] Uses listen host `127.0.0.1` and port 8080 when `LISTEN_HOST` and `LISTEN_PORT` are missing or empty; returns a frozen address for valid hosts and ports from 0 to 65535
 [V] Rejects a `LISTEN_PORT` that is not a whole number from 0 to 65535 and a `LISTEN_HOST` with spaces or control characters, without the value in the message; reads only `LISTEN_HOST` and `LISTEN_PORT`
 [V] `loadPublicUrls()` makes the public base, MCP resource, and metadata URLs from `PUBLIC_BASE_URL` for each edition; it requires the setting, applies the HTTPS rule of the edition, gives a frozen record, and reads no `process.env`
+
+**Hosted role** (`test/unit/config/hosted-role.test.ts`)
+
+[V] No `THERMUS_ROLE`, an empty value, and `control-plane` select the control plane; another value stops the start with exactly `THERMUS_ROLE must be control-plane or tenant.`
+[V] `THERMUS_ROLE=tenant` gives the tenant record with the pinned organization, the gateway keys in their order, the internal origin with a final slash, and the AuthKit issuer; the record, its settings, and its keys are frozen
+[V] Requires each of `TENANT_ORGANIZATION_ID`, `GATEWAY_PUBLIC_KEY`, `CONTROL_PLANE_INTERNAL_URL`, and `WORKOS_AUTHKIT_ISSUER`, and refuses a value that breaks its rule, also a private key in `GATEWAY_PUBLIC_KEY`; the tenant needs `https` and the root base path
+[V] Refuses each secret of the control plane, also each `STRIPE_*` setting, with a message that names it; names several in one message in order; an empty value holds no secret
+[V] Reads only the tenant settings and the names that it refuses; no message holds a value
+
+```sh
+npm run build && node --test dist/test/unit/config/hosted-role.test.js
+```
 
 **Ad rules file** (`test/unit/config/ad-rules-file.test.ts`)
 

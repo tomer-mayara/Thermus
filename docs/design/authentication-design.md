@@ -1089,6 +1089,155 @@ token. An identity stays valid until its access token expires: the
 Connect access tokens after a logout, a session revocation, or a consent
 revocation. This is the accepted revocation limit of the identity.
 
+### Tenant role and signed access context
+
+SO-03 of the [self on-boarding plan](../implementation/self-onboarding-plan.md#41-one-image-two-roles)
+adds the tenant role of the hosted image. The control plane keeps every
+credential; a tenant serves the tools of one organization and holds no secret.
+`THERMUS_ROLE` selects the role: `control-plane`, the default, or `tenant`.
+An empty value is `control-plane`; another value stops the start with
+`THERMUS_ROLE must be control-plane or tenant.`. The self-hosted edition does
+not read the setting.
+
+The tenant reads only these settings, and the
+[deployment config](../../src/runtime/config/deployment-config.ts) checks them
+before the server listens:
+
+| Setting | Rule |
+| --- | --- |
+| `PUBLIC_BASE_URL` | The public value of the control plane, `https` with the root base path, so the token audience and the metadata URLs stay public. |
+| `TENANT_ORGANIZATION_ID` | The one organization of the tenant: 1 to 256 visible ASCII characters. |
+| `GATEWAY_PUBLIC_KEY` | One or more Ed25519 public keys in PEM form, `-----BEGIN PUBLIC KEY-----`, separated by commas. A private key is refused, also when Node could derive its public key. |
+| `CONTROL_PLANE_INTERNAL_URL` | The `http` or `https` origin of the control plane on the private network, without a path, a username, a password, a query, or a fragment. A final slash is accepted. SO-03 measured the value `http://<slug of the control plane>:8080` ([record](../implementation/self-onboarding-s1.md#so-03-private-address-of-the-control-plane)). |
+| `WORKOS_AUTHKIT_ISSUER` | The rule of the control plane: the exact `https` origin of the AuthKit domain. |
+| `AD_RULES_FILE`, `LIGHTPANDA_BIN`, `OPERATION_CAPACITY` | As on the control plane. The provisioner sets the capacity of the tier: 5 free, 10 team (D-15); the default stays 10. |
+
+A missing setting gives `<NAME> is required.`; a refused value gives the rule
+of its setting. No message shows a value. The tenant refuses to start when a
+secret of the control plane has a value: `WORKOS_API_KEY`,
+`WORKOS_CLIENT_SECRET`, `WORKOS_COOKIE_PASSWORD`, `GATEWAY_SIGNING_KEY`,
+`DATABASE_URL`, `LOGGING_DESTINATION_ENCRYPTION_KEY`, `RENDER_API_KEY`, or
+each `STRIPE_*` setting. The message names each such setting in order:
+`The tenant role refuses <names>: a tenant holds no secret of the control plane.`
+The owner answer of 27 October 2026 names five of them; SO-03 adds the cookie
+password, the signing key of the gateway, and the encryption key of the
+destination settings, because each is a secret that the plan does not give a
+tenant. An empty value holds no secret, as for each other setting.
+
+The signed access context is the contract between the gateway of the control
+plane (SO-05) and a tenant. The
+[contract module](../../src/accounts/identity/signed-access-context.ts) holds
+its constants and types;
+[`AccessContextSigner`](../../src/accounts/identity/access-context-signer.ts)
+writes it and
+[`AccessContextVerifier`](../../src/accounts/identity/access-context-verifier.ts)
+reads it, both with the pinned `jose`.
+
+| Item | Contract |
+| --- | --- |
+| Header | `Thermus-Access`, one value for each request. |
+| Format | A compact JWS in base64url: an EdDSA JWT with Ed25519 keys. The protected header is exactly `{"alg":"EdDSA","typ":"thermus-access+jwt"}`. |
+| `iss` | The identity authority of the control plane, `workos:<WORKOS_CLIENT_ID>`. With `sub`, it names the user; a tenant knows no client ID. |
+| `sub` | The user ID. |
+| `aud` | The organization ID, one string. |
+| `grants` | The current grants that the control plane read: a list of `{ "role", "permissions" }`. |
+| `tokenHash` | The SHA-256 of the bearer token of the request, the token text without `Bearer `, in base64url without padding: 43 characters. |
+| `name` | Optional display name of the user, as the control plane read it. It never authorizes. |
+| `iat`, `exp` | Whole seconds since the Unix epoch. `exp` is `iat` plus 120: a context is valid for 2 minutes. |
+| Keys | `GATEWAY_SIGNING_KEY` is the Ed25519 private key of the control plane, read by SO-05. `GATEWAY_PUBLIC_KEY` holds the public keys of a tenant. |
+
+The owner answer names `aud`, `sub`, `exp`, `grants`, and `tokenHash`. The
+writer adds `iss` so that the tenant ID and the authority of the audit events
+of a tenant are those of the control plane, `iat` so that a reader can bound
+the lifetime, `name` so that the audit events keep the display name, and `typ`
+so that no other JWT of the same key can pass as a context.
+
+A tenant accepts a context only when each check passes, in this order, and
+each refusal has its reason:
+
+1. The header is present (`missing`) and has at most 8,192 characters
+   (`malformed`).
+2. One of the public keys verifies its signature with `EdDSA` only and the type
+   `thermus-access+jwt` (`signature` when no key verifies it; another
+   algorithm or type is `malformed`). The tenant tries each key, for a key
+   rotation (SO-09).
+3. `aud` is the pinned organization (`organization`).
+4. `exp` has not passed and `iat` is at most 120 seconds old, with a clock
+   tolerance of 5 seconds (`expired`). Thus a writer that gives `exp` in
+   milliseconds still gets at most 2 minutes.
+5. Each claim has its type (`malformed`).
+6. `tokenHash` is the hash of the bearer token of the request, compared in
+   constant time (`token`). A request without a bearer token fails here.
+
+A refused request gets `403` with `{"error":"access_denied","error_description":"Access denied"}`
+before any MCP handling, and the tenant writes one operator `ERROR` line with
+the reason and no value. An admitted request goes to the MCP server of the
+tenant with the access of its context. That server keeps the serving of the
+control plane: the bearer check of the
+[Connect token rules](#hosted-access-of-auth-06), with the key set of
+`WORKOS_AUTHKIT_ISSUER` and the public MCP resource as the audience; one MCP
+server for each request; `405` for `GET` and `DELETE`; and `product:access`
+for each request. A token without a valid AuthKit signature gets the bearer
+refusal of today, `401` with the `WWW-Authenticate` challenge that names the
+public metadata URL. Because the context names the hash of the token, a
+context of one token is useless with another token, and a context for
+organization A is useless at the tenant of organization B.
+
+[`ContextAccessResolver`](../../src/accounts/identity/context-access-resolver.ts)
+then gives the access of the request. The token proves the user and the
+organization at the AuthKit issuer: its user must have the subject and the
+selected organization of the context, else the decision is a denial. The
+access context of the request has the authority, the name, the organization,
+and the grants of the signed context, and the tenant ID
+`<authority>:<organization ID>`, the tenant ID of the control plane. The
+tenant makes no WorkOS read. Its token check is
+[`WorkOSTokenVerifier`](../../src/accounts/providers/workos/workos-auth-provider.ts),
+the token part of `WorkOSAuthProvider`; it knows the AuthKit issuer but no
+client ID, so its user carries the issuer as a stand-in authority that the
+context replaces.
+
+The tenant relays the audit events of its tools to the control plane with the
+[relay sink](../../src/logs/audit/audit-relay-sink.ts) of `audit-logs`. Each
+event of a request goes with the context of that request:
+
+- `POST <CONTROL_PLANE_INTERNAL_URL>internal/audit` with the headers
+  `Thermus-Access: <the context of the request>` and
+  `Content-Type: application/json`, and the audit event as the body: the
+  projection that `AuditLog` gives, also the `busy` event of a refused call.
+  No redirect is followed.
+- A `2xx` answer ends the relay. `429`, `502`, `503`, and `504`, a network
+  failure, and a time-out of 5 seconds are tried again; `Retry-After` can make
+  the wait longer. Each other answer ends the relay and drops the event.
+- The bounds are those of the audit collector: 128 pending events and 8 MiB
+  in all, 32 tenants with 16 events and 1 MiB each, 128 KiB for one event,
+  2 active sends and one send at a time for each tenant, so the events of a
+  tenant keep their order, 30 seconds of age, and 3 attempts with a backoff
+  from 250 ms to 2 s. An event beyond a bound is lost.
+- The relay is best effort, as the capture of today: a refused, failed, slow,
+  or excess relay loses its event and never changes a tool result. A stop of
+  the tenant drops the pending events.
+
+SO-05 adds the gateway that writes the context and the route
+`/internal/audit`. The route accepts a relay only with a valid context for the
+same organization and decides its own tolerance for a context that expires
+while an event waits: the age bound of 30 seconds and the time limits of a
+tool call keep that window short. Traffic on the private network is plain
+HTTP, as the plan accepts. A context can be used again within its 2 minutes,
+but only with its own token and at the tenant of its organization. A 2025-era
+`notifications/cancelled` POST does not stop a running call (board ticket
+d60b3d).
+
+The tests of this contract: the unit tests of the
+[context](../../test/unit/auth/signed-access-context.test.ts) and the
+[resolver](../../test/unit/auth/context-access-resolver.test.ts), the
+[header contract](../../test/interface/auth/signed-access-context.test.ts),
+the [tenant composition](../../test/integration/mcp/hosted-tenant-composition.test.ts),
+and the [tenant role acceptance](../../test/acceptance/mcp/hosted-tenant-role.test.ts)
+with its [capacity cases](../../test/acceptance/mcp/hosted-tenant-capacity.test.ts),
+and the start cases in the [hosted startup](../../test/acceptance/auth/hosted-startup.test.ts).
+They run offline with a local key set for AuthKit and a loopback spy of the
+relay route; they are no proof of WorkOS or Render behavior.
+
 ### Pinned WorkOS SDK proof
 
 `package.json` pins `@workos-inc/node` at exactly 11.0.0 and `jose` at exactly
@@ -2194,6 +2343,14 @@ shows a separate role, invariant, or lifecycle.
 | Paid billing files | The [AUTH-11 specification](billing-design.md#auth-11-implementation-specification) lists them. | 6 |
 | `package.json`, `pnpm-lock.yaml`, `.env.example` | Pinned dependencies, commands, and documented settings. | 1–5 |
 | `Dockerfile`, `compose.yaml`, `.dockerignore` | Implemented: the offline evaluation image, its Compose service with one persistent data volume, and the allowlist of the build context. | 5 |
+| `src/accounts/identity/signed-access-context.ts` | Implemented in SO-03: the contract of the signed access context, its header, type, algorithm, lifetime, claims, token hash, and key rule. A public identity module. | SO-03 |
+| `src/accounts/identity/access-context-signer.ts`, `access-context-verifier.ts`, `access-context-signature.ts`, and `access-context-claims.ts` | Implemented in SO-03: `AccessContextSigner` of the control plane, and `AccessContextVerifier` of a tenant with its signature check over each public key and its claim check. | SO-03 |
+| `src/accounts/identity/context-access-resolver.ts` | Implemented in SO-03: `ContextAccessResolver`, the access of one tenant request from its verified context. | SO-03 |
+| `src/accounts/providers/workos/workos-auth-provider.ts` | SO-03 split out `WorkOSTokenVerifier`, the Connect token check without membership reads, which a tenant uses. | SO-03 |
+| `src/interfaces/mcp/mcp-server.ts` | SO-03 added the optional request scope of `fetch()`: the access resolver and the server builder of one admitted request. | SO-03 |
+| `src/runtime/config/deployment-config.ts`, `tenant-settings.ts`, `control-plane-secrets.ts`, `gateway-public-keys.ts`, and `setting-origins.ts` | Implemented in SO-03: `THERMUS_ROLE`, the tenant settings, and the refusal of the secrets of the control plane. | SO-03 |
+| `src/app/tenant-application.ts`, `tenant-mcp.ts`, and `tenant-requests.ts` | Implemented in SO-03: the composition of the tenant role, its MCP server, its routes, and its `403` before MCP handling. | SO-03 |
+| `src/logs/audit/audit-relay-sink.ts` and its parts `audit-relay-item.ts`, `audit-relay-queue.ts`, `audit-relay-scheduler.ts`, and `audit-relay-request.ts` | Implemented in SO-03: the bounded relay of the audit events of a tenant to `/internal/audit` of the control plane. | SO-03 |
 
 Keep `IdentityVerifierSpy` at
 `test/support/doubles/auth/identity-verifier-spy.ts`; extend its configurable claims
