@@ -6,7 +6,7 @@ import { answeredOk, outcomeText, requestHere, type Outcome } from './here.ts';
 
 export const PUBLIC_HEALTH = { everyMs: 5_000, attempts: 6, timeoutMs: 10_000 } as const;
 
-// The status or the error of a request that did not answer ok. No page contents.
+// The record keeps no page contents, so an earlier request gives only its status or its error.
 function shortText(outcome: Outcome): string {
   return outcome.status === undefined ? outcome.error : String(outcome.status);
 }

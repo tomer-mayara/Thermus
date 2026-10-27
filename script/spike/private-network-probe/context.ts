@@ -62,7 +62,6 @@ export interface ProbeStep {
 
 export const ROLES: readonly Role[] = ['private', 'web'];
 
-// The service names of a run end with its UTC start time, YYYYMMDD-HHMMSS. A reused service gets its listed name.
 export function newState(inputs: ProbeInputs, run: string): RunState {
   return {
     services: {
@@ -72,7 +71,6 @@ export function newState(inputs: ProbeInputs, run: string): RunState {
   };
 }
 
-// The SO-01c waits and reads take one service; this gives them the service of one role.
 export function sessionOf(context: ProbeContext, role: Role): ServiceSession {
   return { client: context.client, signal: context.signal, state: context.state.services[role] };
 }

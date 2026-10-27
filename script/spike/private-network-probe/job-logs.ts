@@ -50,7 +50,7 @@ function numberOf(value: unknown, key: string): number | undefined {
   return typeof field === 'number' ? field : undefined;
 }
 
-// A line of this run is a JSON object with the probe mark and the run of this probe. Text before the object is allowed.
+// The logs of a reused web service hold the lines of earlier runs, so a line counts only with the run of this probe.
 function probeLine(entry: LogEntry, run: string): ProbeLine | undefined {
   const start = entry.message.indexOf('{');
   if (start < 0) return undefined;
@@ -80,7 +80,6 @@ async function readWindow(context: ProbeContext, resources: readonly string[], s
   throw new Error(`The log list has more than ${MAX_PAGES} pages for one window`);
 }
 
-// Reads the log lines of the job until each target has its line, at most LOG_POLL.attempts times.
 export async function readProbeLines(context: ProbeContext, resources: readonly string[], since: { readonly createdAt: number; readonly targets: number }): Promise<LinesRead> {
   const started = performance.now();
   const startTime = new Date(since.createdAt - WINDOW_SLACK_MS).toISOString();

@@ -428,7 +428,8 @@ ran the probe, and then reverted the change. No change is in the branch.
 Date: 27 October 2026 (UTC). Pull request
 [#271](https://github.com/tomer-mayara/Thermus/pull/271), branch
 `self-ob-s1-so-01d-private-network-012463`, from main `9507e751`. The final
-run used the script of commit `eb3f920c`.
+run used the script of commit `eb3f920c`. A later commit changed only
+comments and the name of one function in the script.
 
 Status: the probe is complete. The final complete run passed each step with 5
 writes, and its cleanup deleted both of its services. From inside the private

@@ -9,7 +9,7 @@ import { lookupHere, outcomeText, requestHere } from './here.ts';
 const STEP = 'Public check';
 const PUBLIC_DOMAIN = /onrender\.com/i;
 
-// The fields that name the public Render domain. The dashboardUrl field names dashboard.render.com, not a service address.
+// Only onrender.com counts: each answer also has dashboardUrl, an https URL of dashboard.render.com.
 function publicFields(value: unknown, path = 'service'): readonly string[] {
   if (typeof value === 'string') return PUBLIC_DOMAIN.test(value) ? [`${path} ${value}`] : [];
   if (Array.isArray(value)) return value.flatMap((item, index) => publicFields(item, `${path}[${index}]`));
@@ -17,8 +17,7 @@ function publicFields(value: unknown, path = 'service'): readonly string[] {
   return Object.entries(value).flatMap(([key, item]) => publicFields(item, `${path}.${key}`));
 }
 
-// Extra, recorded only: the private service name under the public onrender.com domain.
-async function renderDomain(context: ProbeContext, slug: string): Promise<void> {
+async function recordRenderDomain(context: ProbeContext, slug: string): Promise<void> {
   const host = `${slug}.onrender.com`;
   const lookup = await lookupHere(host);
   let measured = `DNS fails: ${lookup.address === undefined ? lookup.code : ''}`;
@@ -40,7 +39,7 @@ export async function publicCheck(context: ProbeContext): Promise<string> {
   const address = serviceOf(answer.json).url ?? '';
   const fields = publicFields(answer.json);
   addRow(context, STEP, { check: 'Public URL in the private service answer', expected: 'none: serviceDetails.url has no scheme, and no field names onrender.com', measured: `serviceDetails.url ${shown(address)}; ${fields.length === 0 ? 'no field names onrender.com' : fields.join('; ')}` });
-  await renderDomain(context, slug);
+  await recordRenderDomain(context, slug);
   assert.ok(lookup.address === undefined, `${slug} resolves to ${lookup.address} from this machine`);
   assert.ok(outcome.status === undefined, `GET ${url} from this machine answered ${outcome.status}`);
   assert.ok(!/^https?:\/\//i.test(address), `serviceDetails.url of the private service is ${address}, a URL with a scheme`);

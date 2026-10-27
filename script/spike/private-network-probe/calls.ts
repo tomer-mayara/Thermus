@@ -49,9 +49,8 @@ export function healthTargets(slug: string, url: string): readonly Target[] {
   ];
 }
 
-// One line of JavaScript for node -e. It requests each target in turn, with a timeout, and prints one JSON line for
-// each answer or error. It has no single quote, backslash, dollar sign, or backtick, so that the start command can
-// quote it in single quotes for a shell or for a shell-style word split.
+// The docs do not say whether Render runs a start command through a shell. Without quotes, backslashes, dollar
+// signs, and backticks, the single-quoted program reaches node -e the same way through a shell or a word split.
 export function healthProgram(targets: readonly Target[], run: string): string {
   const mark = `probe:"${PROBE_MARK}",run:"${run}"`;
   const program = [

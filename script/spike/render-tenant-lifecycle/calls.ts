@@ -8,7 +8,7 @@ export interface Call {
 
 export type ServiceType = 'private_service' | 'web_service';
 
-// What a create call needs from the inputs. Without serviceType, the call creates a private service.
+// The SO-01c inputs have no serviceType, so the SO-01c create call stays a private service.
 interface ServiceSource {
   readonly owner: string;
   readonly region: string;

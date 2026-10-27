@@ -5,7 +5,6 @@ import { addRow, type ProbeContext, type Row } from './context.ts';
 import type { RenderClient } from './render-client.ts';
 import { probeServices } from './waits.ts';
 
-// The part of a probe context that the workspace and credential reads need.
 interface PreflightContext {
   readonly inputs: { readonly owner: string; readonly registryCredential: string };
   readonly client: RenderClient;

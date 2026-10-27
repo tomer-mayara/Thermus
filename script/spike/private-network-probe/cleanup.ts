@@ -23,7 +23,7 @@ async function cancelOpenJob(context: ProbeContext): Promise<void> {
   addRow(context, STEP, { check: `Cancel ${job.id} (status ${current.status ?? 'absent'})`, expected: '200', measured: `${answer.status} after ${seconds(answer.ms)}` });
 }
 
-// Without a service ID from the create answer, each service with the exact name of this run is deleted (SO-01c rule).
+// A create that got no answer can still have made the service, so the cleanup looks for its exact name (SO-01c rule).
 async function idsToDelete(context: ProbeContext, role: Role): Promise<readonly string[]> {
   const state = context.state.services[role];
   if (state.serviceId !== undefined) return [state.serviceId];
