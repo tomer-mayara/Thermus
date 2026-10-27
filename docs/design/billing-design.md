@@ -147,8 +147,8 @@ implementation, and it adds the billing changes that the approved rules need.
 rules and these rules:
 
 - Each organization is on the free plan, with the member limit 5 and 0
-  billed seats, from its creation. There is no checkout, payment method, invoice, charge, credit,
-  refund, renewal, or cancellation.
+  billed seats, from its creation. There is no checkout, payment method,
+  invoice, charge, credit, refund, renewal, or cancellation.
 - `updateSeats` checks the count and changes nothing.
 - `BillingFree` keeps no state and makes no external call. It needs no
   storage, settings, or provider account.
