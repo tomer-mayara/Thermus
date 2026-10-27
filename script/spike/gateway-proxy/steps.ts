@@ -9,15 +9,15 @@ import { TICK_MS, TICKS, type SlowCall, type Upstream } from './upstream.ts';
 
 // A buffered answer delivers every notification at about 3000 ms; a streamed answer delivers each one near its tick.
 const ARRIVAL_SLACK_MS = 250;
-const ABORT_AFTER_MS = 500;
+export const ABORT_AFTER_MS = 500;
 const EARLY_ABORT_AFTER_MS = 50;
-const ABORT_LIMIT_MS = 100;
-const STOP_LIMIT_MS = 20;
+export const ABORT_LIMIT_MS = 100;
+export const STOP_LIMIT_MS = 20;
 const RESULT_TEXT = `slow finished for ${ORGANIZATION_ID}`;
 
 interface Keys { readonly gateway: { readonly privateKey: KeyObject }; readonly other: { readonly privateKey: KeyObject } }
 export interface Parts { readonly keys: Keys; readonly upstream: Upstream; readonly proxy: Proxy; readonly client: Client }
-interface Row { readonly part: string; readonly event: string; readonly expected: string; readonly measured: string }
+export interface Row { readonly part: string; readonly event: string; readonly expected: string; readonly measured: string }
 export interface Report { readonly rows: Row[]; readonly conclusions: string[] }
 export interface ProbeStep { readonly name: string; readonly spec: string; run(parts: Parts, report: Report): Promise<string> }
 type StoppedCall = SlowCall & { readonly signalAt: number; readonly stoppedAt: number };
@@ -163,7 +163,7 @@ function tcpHandles(): string[] {
   return process.getActiveResourcesInfo().filter((name) => name.startsWith('TCP'));
 }
 
-async function waitFor<T>(read: () => T | undefined, timeoutMs: number, what: string): Promise<T> {
+export async function waitFor<T>(read: () => T | undefined, timeoutMs: number, what: string): Promise<T> {
   const deadline = performance.now() + timeoutMs;
   for (let value = read(); ; value = read()) {
     if (value !== undefined) return value;
@@ -172,7 +172,7 @@ async function waitFor<T>(read: () => T | undefined, timeoutMs: number, what: st
   }
 }
 
-function ms(value: number): string {
+export function ms(value: number): string {
   return `${value.toFixed(1)} ms`;
 }
 

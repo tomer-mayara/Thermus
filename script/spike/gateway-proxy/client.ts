@@ -1,6 +1,7 @@
-import { Client, StreamableHTTPClientTransport, type CallToolResult } from '@modelcontextprotocol/client';
+import { Client, StreamableHTTPClientTransport, type CallToolResult, type FetchLike } from '@modelcontextprotocol/client';
 
 export const PROTOCOL_VERSION = '2026-07-28';
+export const LEGACY_PROTOCOL_VERSION = '2025-11-25';
 export const BEARER_TOKEN = 'probe-bearer-token';
 export const FORGED_ACCESS = 'forged.forged';
 const probeHopHeaders = { TE: 'trailers', Trailer: 'x-probe-trailer', 'Proxy-Probe': 'drop' };
@@ -13,10 +14,19 @@ export function newClient(): Client {
   return new Client({ name: 'gateway-probe-client', version: '0.0.0' }, { versionNegotiation: { mode: { pin: PROTOCOL_VERSION } } });
 }
 
-export async function connectClient(client: Client, proxy: URL): Promise<void> {
+// The SDK refuses { pin } for a version before 2026-07-28. Mode legacy runs the initialize handshake, and the one
+// supported version is the only version that the client offers and accepts.
+export function newLegacyClient(): Client {
+  return new Client({ name: 'gateway-probe-client', version: '0.0.0' }, {
+    versionNegotiation: { mode: 'legacy' }, supportedProtocolVersions: [LEGACY_PROTOCOL_VERSION],
+  });
+}
+
+export async function connectClient(client: Client, proxy: URL, tapFetch?: FetchLike): Promise<void> {
   await client.connect(new StreamableHTTPClientTransport(proxy, {
     authProvider: { token: async () => BEARER_TOKEN },
     requestInit: { headers: { ...probeHopHeaders, 'Thermus-Access': FORGED_ACCESS } },
+    fetch: tapFetch,
   }), { timeout: 5_000 });
 }
 
