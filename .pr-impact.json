@@ -19,6 +19,7 @@
     "views": [
       "C4 containers: hosted edition",
       "Selected C4 components: hosted authentication in the Node server",
+      "Selected C4 components: tenant role in the hosted image",
       "Selected C4 components: hosted membership removal in the Node server",
       "Collaboration overview",
       "Scenario: hosted member read",
