@@ -1,0 +1,102 @@
+{
+  "state": "Queued only. Do not run before root releases exclusive host lane.",
+  "cwd": "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus",
+  "head": "317075ca0bec0034854a2c09c6a642a06d54e3dc",
+  "nodePath": "/Users/tomermayara/.nvm/versions/node/v24.20.0/bin",
+  "runner": "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/.cache/ui04/run-check.cjs",
+  "logDirectory": "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus/.cache/ui-stack-finish/ui02",
+  "browserEnvironment": {
+    "THERMUS_BROWSER_EVIDENCE_DIR": "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus/.cache/ui-stack-finish/ui02/screenshots-current"
+  },
+  "steps": [
+    {
+      "name": "ordinary",
+      "command": [
+        "node",
+        "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/.cache/ui04/with-test-env.cjs",
+        "npm",
+        "test"
+      ],
+      "log": "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus/.cache/ui-stack-finish/ui02/ordinary-current.log"
+    },
+    {
+      "name": "typecheck",
+      "command": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "log": "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus/.cache/ui-stack-finish/ui02/typecheck-current.log"
+    },
+    {
+      "name": "portal-build",
+      "command": [
+        "npm",
+        "run",
+        "build:user-portal"
+      ],
+      "log": "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus/.cache/ui-stack-finish/ui02/portal-build-current.log"
+    },
+    {
+      "name": "members-browser",
+      "command": [
+        "node",
+        "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/.cache/ui04/with-test-env.cjs",
+        "node",
+        "--test",
+        "dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js"
+      ],
+      "log": "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus/.cache/ui-stack-finish/ui02/members-browser-current.log"
+    },
+    {
+      "name": "self-hosted-container",
+      "command": [
+        "npm",
+        "run",
+        "test:container"
+      ],
+      "log": "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus/.cache/ui-stack-finish/ui02/self-hosted-container-current.log"
+    },
+    {
+      "name": "hosted-build",
+      "command": [
+        "docker",
+        "buildx",
+        "build",
+        "--platform",
+        "linux/amd64",
+        "--progress=plain",
+        "--no-cache-filter",
+        "checked-build",
+        "--file",
+        "Dockerfile.hosted",
+        "--label",
+        "thermus.ui-stack-validation=ui02",
+        "--tag",
+        "thermus-ui02-rebased:317075ca",
+        "--load",
+        "."
+      ],
+      "log": "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus/.cache/ui-stack-finish/ui02/hosted-build-current.log"
+    },
+    {
+      "name": "hosted-image",
+      "command": [
+        "env",
+        "THERMUS_HOSTED_GATE_IMAGE=thermus-ui02-rebased:317075ca",
+        "npm",
+        "run",
+        "test:container:hosted"
+      ],
+      "log": "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus/.cache/ui-stack-finish/ui02/hosted-image-current.log"
+    }
+  ],
+  "notes": [
+    "Ordinary builds backend first. Portal build precedes browser and no source edits may intervene.",
+    "Hosted build forces the complete checked-build stage; retain Docker plain progress and prove its RUN --network=none npm run build:hosted executed without CACHED.",
+    "Run the complete hosted-image gate with the fresh caller-built linux/amd64 image. Retain image identity and compiled source hashes before exact-tag cleanup.",
+    "Keep the original live log/result/ledger and pins unchanged. No live retry without root quota clearance.",
+    "No standalone npm run check. Its required nested hosted build remains selected.",
+    "Metrics remain deferred until root confirms both functional lanes finished and final inputs/head are frozen."
+  ]
+}

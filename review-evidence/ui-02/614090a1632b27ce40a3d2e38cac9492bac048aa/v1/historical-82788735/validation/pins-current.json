@@ -1,0 +1,10 @@
+{
+  "head": "317075ca0bec0034854a2c09c6a642a06d54e3dc",
+  "parent": "639827bcf410d325d25bbf77582c4d0c32ff3c29",
+  "main": "2b3ad13b9e2e61e206479b82e91359192cae1d00",
+  "parentMergeBase": "639827bcf410d325d25bbf77582c4d0c32ff3c29",
+  "mainMergeBase": "2b3ad13b9e2e61e206479b82e91359192cae1d00",
+  "originalLiveHead": "2ec671ebb30741055f380f7f7a3866ecca549c21",
+  "hostLane": "Held by UI01; no new gates or metrics started",
+  "liveRetry": "Forbidden until root confirms quota clearance"
+}

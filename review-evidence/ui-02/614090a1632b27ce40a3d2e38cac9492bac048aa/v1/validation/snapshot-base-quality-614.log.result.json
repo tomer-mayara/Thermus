@@ -1,0 +1,18 @@
+{
+  "command": "node",
+  "args": [
+    "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/.cache/ui04/with-test-env.cjs",
+    "pnpm",
+    "--config.verifyDepsBeforeRun=false",
+    "exec",
+    "node",
+    "script/code-quality/ast-metrics-snapshot.ts",
+    "--base",
+    "37046bbd1426566d90bf1a32f8578584d7173060"
+  ],
+  "started": "2026-10-27T04:56:20.267Z",
+  "ended": "2026-10-27T04:56:23.683Z",
+  "exitCode": 0,
+  "signal": null,
+  "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus/.cache/ui-stack-finish/ui02/snapshot-base-quality-614.log"
+}

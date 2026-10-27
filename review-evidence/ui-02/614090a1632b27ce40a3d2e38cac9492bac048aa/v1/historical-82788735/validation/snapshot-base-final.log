@@ -1,0 +1,11 @@
+Scope: all 2 workspace projects
+✓ Lockfile passes supply-chain policies (verified 3d ago)
+Lockfile is up to date, resolution step is skipped
+Already up to date
+Error:   × installing dependencies
+  ╰─▶ Failed to create directory at "/Users/tomermayara/.codex/worktrees/ui-
+      stack-validation-02/Thermus/node_modules/.pnpm": workspace hoist
+      directory is not a real directory
+
+[WARN] The install that runs before scripts failed, so your node_modules may be out of sync with your lockfile. Set "verifyDepsBeforeRun: false" to skip this install.
+Wrote ast-report/snapshot-base.json: 4 communities, 189 files, 1526 functions.

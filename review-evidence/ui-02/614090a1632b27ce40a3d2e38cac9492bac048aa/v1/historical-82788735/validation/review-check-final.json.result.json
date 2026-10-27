@@ -1,0 +1,31 @@
+{
+  "command": "pnpm",
+  "args": [
+    "--config.verifyDepsBeforeRun=false",
+    "exec",
+    "node",
+    "script/pr-review/check.ts",
+    "--base",
+    "4a761fecf5ed1719959d286f104ecd3884068478",
+    "--repo",
+    "tomer-mayara/Thermus",
+    "--impact",
+    "ast-report/impact.json",
+    "--base-snapshot",
+    "ast-report/snapshot-base.json",
+    "--head-snapshot",
+    "ast-report/snapshot.json",
+    "--crap",
+    "ast-report/crap.json",
+    "--process",
+    "ast-report/process.json",
+    "--review",
+    "ast-report/review.json",
+    "--json"
+  ],
+  "started": "2026-10-27T03:56:49.798Z",
+  "ended": "2026-10-27T03:56:52.591Z",
+  "exitCode": 0,
+  "signal": null,
+  "logPath": ".cache/ui-stack-finish/ui02/review-check-final.json"
+}

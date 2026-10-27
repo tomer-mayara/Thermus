@@ -1,0 +1,382 @@
+Scope: all 2 workspace projects
+✓ Lockfile passes supply-chain policies (verified 3d ago)
+Lockfile is up to date, resolution step is skipped
+Already up to date
+Error:   × installing dependencies
+  ╰─▶ Failed to create directory at "/Users/tomermayara/.codex/worktrees/ui-
+      stack-validation-02/Thermus/node_modules/.pnpm": workspace hoist
+      directory is not a real directory
+
+[WARN] The install that runs before scripts failed, so your node_modules may be out of sync with your lockfile. Set "verifyDepsBeforeRun: false" to skip this install.
+{
+  "coupling": {
+    "afferent": 1,
+    "efferent": 11,
+    "instability": 0.9166666666666666
+  },
+  "cyclomatic_complexity": 27,
+  "functions": [
+    {
+      "cyclomatic_complexity": 1,
+      "name": "",
+      "source_range": {
+        "coordinates": "utf8-bytes",
+        "end": 972,
+        "start": 887
+      },
+      "volume": {
+        "cloc": 0,
+        "halstead_difficulty": 0,
+        "halstead_effort": 0,
+        "halstead_volume": 0,
+        "lloc": 0,
+        "loc": 1
+      }
+    },
+    {
+      "cyclomatic_complexity": 3,
+      "maintainability": {
+        "comment_weight": 0,
+        "maintainability_index": 64.74062977128025,
+        "maintainability_index_without_comments": 64.74062977128025
+      },
+      "name": "membersPage",
+      "source_range": {
+        "coordinates": "utf8-bytes",
+        "end": 3831,
+        "start": 1700
+      },
+      "volume": {
+        "cloc": 0,
+        "halstead_bugs": 0.2105210353593042,
+        "halstead_difficulty": 5.1891891891891895,
+        "halstead_effort": 3277.3004423502493,
+        "halstead_volume": 631.5631060779126,
+        "lloc": 5,
+        "loc": 17
+      }
+    },
+    {
+      "cyclomatic_complexity": 1,
+      "maintainability": {
+        "comment_weight": 0,
+        "maintainability_index": 89.23284250314286,
+        "maintainability_index_without_comments": 89.23284250314286
+      },
+      "name": "",
+      "source_range": {
+        "coordinates": "utf8-bytes",
+        "end": 1837,
+        "start": 1802
+      },
+      "volume": {
+        "cloc": 0,
+        "halstead_bugs": 0.011,
+        "halstead_difficulty": 3.3333333333333335,
+        "halstead_effort": 110,
+        "halstead_volume": 33,
+        "lloc": 1,
+        "loc": 1
+      }
+    },
+    {
+      "cyclomatic_complexity": 1,
+      "maintainability": {
+        "comment_weight": 0,
+        "maintainability_index": 89.23284250314286,
+        "maintainability_index_without_comments": 89.23284250314286
+      },
+      "name": "",
+      "source_range": {
+        "coordinates": "utf8-bytes",
+        "end": 1932,
+        "start": 1898
+      },
+      "volume": {
+        "cloc": 0,
+        "halstead_bugs": 0.011,
+        "halstead_difficulty": 3.3333333333333335,
+        "halstead_effort": 110,
+        "halstead_volume": 33,
+        "lloc": 1,
+        "loc": 1
+      }
+    },
+    {
+      "cyclomatic_complexity": 3,
+      "maintainability": {
+        "comment_weight": 0,
+        "maintainability_index": 84.95825692370225,
+        "maintainability_index_without_comments": 84.95825692370225
+      },
+      "name": "",
+      "source_range": {
+        "coordinates": "utf8-bytes",
+        "end": 2476,
+        "start": 1968
+      },
+      "volume": {
+        "cloc": 0,
+        "halstead_bugs": 0.04106329929662132,
+        "halstead_difficulty": 3.7916666666666665,
+        "halstead_effort": 467.09502949906755,
+        "halstead_volume": 123.18989788986397,
+        "lloc": 1,
+        "loc": 1
+      }
+    },
+    {
+      "cyclomatic_complexity": 1,
+      "maintainability": {
+        "comment_weight": 0,
+        "maintainability_index": 0,
+        "maintainability_index_without_comments": 0
+      },
+      "name": "",
+      "source_range": {
+        "coordinates": "utf8-bytes",
+        "end": 3645,
+        "start": 3598
+      },
+      "volume": {
+        "cloc": 0,
+        "halstead_bugs": 0.018450301966065584,
+        "halstead_difficulty": 3.6,
+        "halstead_effort": 199.26326123350833,
+        "halstead_volume": 55.35090589819676,
+        "lloc": 0,
+        "loc": 1
+      }
+    },
+    {
+      "cyclomatic_complexity": 4,
+      "maintainability": {
+        "comment_weight": 0,
+        "maintainability_index": 65.62409850503546,
+        "maintainability_index_without_comments": 65.62409850503546
+      },
+      "name": "removalForm",
+      "source_range": {
+        "coordinates": "utf8-bytes",
+        "end": 4968,
+        "start": 3833
+      },
+      "volume": {
+        "cloc": 0,
+        "halstead_bugs": 0.15063045422447158,
+        "halstead_difficulty": 7.6,
+        "halstead_effort": 3434.374356317952,
+        "halstead_volume": 451.89136267341473,
+        "lloc": 5,
+        "loc": 13
+      }
+    },
+    {
+      "cyclomatic_complexity": 2,
+      "maintainability": {
+        "comment_weight": 0,
+        "maintainability_index": 72.29287730697554,
+        "maintainability_index_without_comments": 72.29287730697554
+      },
+      "name": "sendForm",
+      "source_range": {
+        "coordinates": "utf8-bytes",
+        "end": 5716,
+        "start": 4970
+      },
+      "volume": {
+        "cloc": 0,
+        "halstead_bugs": 0.0901709291808494,
+        "halstead_difficulty": 8.038461538461538,
+        "halstead_effort": 2174.5066383227913,
+        "halstead_volume": 270.5127875425482,
+        "lloc": 3,
+        "loc": 11
+      }
+    },
+    {
+      "cyclomatic_complexity": 2,
+      "maintainability": {
+        "comment_weight": 0,
+        "maintainability_index": 86.84704666625228,
+        "maintainability_index_without_comments": 86.84704666625228
+      },
+      "name": "",
+      "source_range": {
+        "coordinates": "utf8-bytes",
+        "end": 5321,
+        "start": 5138
+      },
+      "volume": {
+        "cloc": 0,
+        "halstead_bugs": 0.02306287745758198,
+        "halstead_difficulty": 5.4,
+        "halstead_effort": 373.6186148128281,
+        "halstead_volume": 69.18863237274594,
+        "lloc": 1,
+        "loc": 1
+      }
+    },
+    {
+      "cyclomatic_complexity": 1,
+      "maintainability": {
+        "comment_weight": 0,
+        "maintainability_index": 75.36306333822625,
+        "maintainability_index_without_comments": 75.36306333822625
+      },
+      "name": "invitationRow",
+      "source_range": {
+        "coordinates": "utf8-bytes",
+        "end": 6518,
+        "start": 5718
+      },
+      "volume": {
+        "cloc": 0,
+        "halstead_bugs": 0.1214495248781893,
+        "halstead_difficulty": 7.105263157894737,
+        "halstead_effort": 2588.7925039824563,
+        "halstead_volume": 364.3485746345679,
+        "lloc": 2,
+        "loc": 10
+      }
+    },
+    {
+      "cyclomatic_complexity": 2,
+      "maintainability": {
+        "comment_weight": 0,
+        "maintainability_index": 84.09611426382703,
+        "maintainability_index_without_comments": 84.09611426382703
+      },
+      "name": "",
+      "source_range": {
+        "coordinates": "utf8-bytes",
+        "end": 6154,
+        "start": 5848
+      },
+      "volume": {
+        "cloc": 0,
+        "halstead_bugs": 0.056988975019711605,
+        "halstead_difficulty": 5.6,
+        "halstead_effort": 957.4147803311548,
+        "halstead_volume": 170.9669250591348,
+        "lloc": 1,
+        "loc": 5
+      }
+    },
+    {
+      "cyclomatic_complexity": 1,
+      "maintainability": {
+        "comment_weight": 0,
+        "maintainability_index": 90.04489473439764,
+        "maintainability_index_without_comments": 90.04489473439764
+      },
+      "name": "roleLabel",
+      "source_range": {
+        "coordinates": "utf8-bytes",
+        "end": 6604,
+        "start": 6520
+      },
+      "volume": {
+        "cloc": 0,
+        "halstead_bugs": 0.008422064766172813,
+        "halstead_difficulty": 3.3333333333333335,
+        "halstead_effort": 84.22064766172814,
+        "halstead_volume": 25.26619429851844,
+        "lloc": 1,
+        "loc": 3
+      }
+    },
+    {
+      "cyclomatic_complexity": 2,
+      "maintainability": {
+        "comment_weight": 0,
+        "maintainability_index": 91.72069099256635,
+        "maintainability_index_without_comments": 91.72069099256635
+      },
+      "name": "identityPolicyText",
+      "source_range": {
+        "coordinates": "utf8-bytes",
+        "end": 6955,
+        "start": 6606
+      },
+      "volume": {
+        "cloc": 0,
+        "halstead_bugs": 0.004643856189774725,
+        "halstead_difficulty": 2.25,
+        "halstead_effort": 31.34602928097939,
+        "halstead_volume": 13.931568569324174,
+        "lloc": 1,
+        "loc": 5
+      }
+    },
+    {
+      "cyclomatic_complexity": 2,
+      "maintainability": {
+        "comment_weight": 0,
+        "maintainability_index": 86.7982273103039,
+        "maintainability_index_without_comments": 86.7982273103039
+      },
+      "name": "rolesText",
+      "source_range": {
+        "coordinates": "utf8-bytes",
+        "end": 7113,
+        "start": 6957
+      },
+      "volume": {
+        "cloc": 0,
+        "halstead_bugs": 0.02343611821489358,
+        "halstead_difficulty": 3.4285714285714284,
+        "halstead_effort": 241.0572159246197,
+        "halstead_volume": 70.30835464468075,
+        "lloc": 1,
+        "loc": 3
+      }
+    },
+    {
+      "cyclomatic_complexity": 1,
+      "maintainability": {
+        "comment_weight": 0,
+        "maintainability_index": 87.47575920039756,
+        "maintainability_index_without_comments": 87.47575920039756
+      },
+      "name": "",
+      "source_range": {
+        "coordinates": "utf8-bytes",
+        "end": 7098,
+        "start": 7061
+      },
+      "volume": {
+        "cloc": 0,
+        "halstead_bugs": 0.019603445838944685,
+        "halstead_difficulty": 3.6,
+        "halstead_effort": 211.7172150606026,
+        "halstead_volume": 58.81033751683405,
+        "lloc": 1,
+        "loc": 1
+      }
+    }
+  ],
+  "language": "TypeScript",
+  "lines_of_code": {
+    "comment_lines": 1,
+    "lines_of_code": 93,
+    "logical_lines": 20
+  },
+  "maintainability": {
+    "comment_weight": 7.99769077059706,
+    "maintainability_index": 59.468834274547625,
+    "maintainability_index_without_comments": 51.471143503950564
+  },
+  "path": "src/interfaces/web/account/administration-pages.ts",
+  "risk_score": 0,
+  "source_sha256": "072f22a2a60823eaa98bf17219c95d83823f341d48e4f3d6444b76a353ac3258",
+  "volume": {
+    "cloc": 1,
+    "halstead_bugs": 0.07615924785170695,
+    "halstead_difficulty": 4.618102330931278,
+    "halstead_effort": 1478.949729230097,
+    "halstead_volume": 228.47774355512087,
+    "lloc": 20,
+    "loc": 93
+  }
+}

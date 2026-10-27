@@ -1,0 +1,10 @@
+{
+  "recordedAt": "2026-10-27T04:23:32.640042+00:00",
+  "path": "node_modules/.bin/node",
+  "before": "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus/node_modules/node/bin/node",
+  "after": "../node/bin/node",
+  "executableSha256": "9d050fd455b56426e25d4d603c7c501cbb2630348e836cf221dcce748e90588a",
+  "version": "v24.20.0",
+  "equalExecutableBytes": true,
+  "reason": "Remove the cross-worktree alias dependency before validation-worktree cleanup. Only this ignored launcher symlink changed; no package version, source or configuration change."
+}

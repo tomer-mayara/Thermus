@@ -1,0 +1,14 @@
+{
+  "command": "node",
+  "args": [
+    "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/.cache/ui04/with-test-env.cjs",
+    "habit-hooks",
+    "--branch",
+    "37046bbd1426566d90bf1a32f8578584d7173060"
+  ],
+  "started": "2026-10-27T04:57:03.883Z",
+  "ended": "2026-10-27T04:57:06.543Z",
+  "exitCode": 1,
+  "signal": null,
+  "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus/.cache/ui-stack-finish/ui02/habit-hooks-quality-614.log"
+}

@@ -1,0 +1,148 @@
+{
+  "head": "8278873552601ed156a9aaeeb31c41cdb84ad77a",
+  "base": "4a761fecf5ed1719959d286f104ecd3884068478",
+  "main": "2b3ad13b9e2e61e206479b82e91359192cae1d00",
+  "checks": {
+    "ordinary": {
+      "exitCode": 0,
+      "started": "2026-10-27T03:38:21.158Z",
+      "ended": "2026-10-27T03:44:58.614Z",
+      "log": ".cache/ui-stack-finish/ui02/ordinary-final.log"
+    },
+    "typecheck": {
+      "exitCode": 0,
+      "started": "2026-10-27T03:45:28.974Z",
+      "ended": "2026-10-27T03:45:32.318Z",
+      "log": ".cache/ui-stack-finish/ui02/typecheck-final.log"
+    },
+    "portal-build": {
+      "exitCode": 0,
+      "started": "2026-10-27T03:45:32.361Z",
+      "ended": "2026-10-27T03:45:33.526Z",
+      "log": ".cache/ui-stack-finish/ui02/portal-build-final.log"
+    },
+    "members-browser": {
+      "exitCode": 0,
+      "started": "2026-10-27T03:45:33.563Z",
+      "ended": "2026-10-27T03:47:21.913Z",
+      "log": ".cache/ui-stack-finish/ui02/members-browser-final.log"
+    },
+    "self-hosted-container": {
+      "exitCode": 0,
+      "started": "2026-10-27T03:47:21.980Z",
+      "ended": "2026-10-27T03:50:27.268Z",
+      "log": ".cache/ui-stack-finish/ui02/self-hosted-container-final.log"
+    },
+    "hosted-offline": {
+      "exitCode": 0,
+      "started": "2026-10-27T03:50:27.312Z",
+      "ended": "2026-10-27T03:53:04.341Z",
+      "log": ".cache/ui-stack-finish/ui02/hosted-offline-final.log"
+    },
+    "integration-coverage": {
+      "exitCode": 0,
+      "started": "2026-10-27T03:53:19.428Z",
+      "ended": "2026-10-27T03:54:07.659Z",
+      "log": ".cache/ui-stack-finish/ui02/integration-coverage-final.log"
+    },
+    "snapshot-base": {
+      "exitCode": 0,
+      "started": "2026-10-27T03:54:07.702Z",
+      "ended": "2026-10-27T03:54:13.488Z",
+      "log": ".cache/ui-stack-finish/ui02/snapshot-base-final.log"
+    },
+    "snapshot-head": {
+      "exitCode": 0,
+      "started": "2026-10-27T03:54:13.561Z",
+      "ended": "2026-10-27T03:54:16.481Z",
+      "log": ".cache/ui-stack-finish/ui02/snapshot-head-final.log"
+    },
+    "metrics-process": {
+      "exitCode": 1,
+      "started": "2026-10-27T03:54:16.522Z",
+      "ended": "2026-10-27T03:54:41.762Z",
+      "log": ".cache/ui-stack-finish/ui02/metrics-process-final.log"
+    },
+    "metrics-crap": {
+      "exitCode": 0,
+      "started": "2026-10-27T03:54:41.858Z",
+      "ended": "2026-10-27T03:54:47.180Z",
+      "log": ".cache/ui-stack-finish/ui02/metrics-crap-final.log"
+    },
+    "api-surface": {
+      "exitCode": 0,
+      "started": "2026-10-27T03:54:47.223Z",
+      "ended": "2026-10-27T03:54:49.447Z",
+      "log": ".cache/ui-stack-finish/ui02/api-surface-final.log"
+    },
+    "habit-hooks": {
+      "exitCode": 1,
+      "started": "2026-10-27T03:54:49.490Z",
+      "ended": "2026-10-27T03:54:51.775Z",
+      "log": ".cache/ui-stack-finish/ui02/habit-hooks-final.log"
+    }
+  },
+  "tier": "T1 Team review",
+  "checkerEligibility": "eligible",
+  "checkerBlockers": [],
+  "architectureFacts": [],
+  "architectureReason": "T0: no architecture fact",
+  "remainingHolds": [
+    "Hosted-live failed22/29 at original2ec pinned source/test/build-identical head. Six shared fixture429quota failures and separate reinvite503 with unproven cause; no retry.",
+    "LinuxAMD64 hosted image explicitly deferred to dedicatedlocalthermus-s25-mergeVM, not passed.",
+    "T1 independent authorized human approval of current candidate remains required."
+  ],
+  "coverageProvenance": {
+    "sourceFingerprint": "986a25b40baee948c8269540d45ff4eac504d320322fe28dd8f26dd749b66453",
+    "inputsFingerprint": "ee42e733d2bee61c778c4f8b3025e56d07ca667fe22e12dbe729c352fb1326c8",
+    "runtime": "node-24.20.0",
+    "compiler": "typescript-7.0.2",
+    "measurementVersion": "own-characters-1",
+    "suite": [
+      "integration"
+    ],
+    "comparisonIdentity": {
+      "sourceFingerprint": "986a25b40baee948c8269540d45ff4eac504d320322fe28dd8f26dd749b66453",
+      "inputsFingerprint": "ee42e733d2bee61c778c4f8b3025e56d07ca667fe22e12dbe729c352fb1326c8",
+      "runtime": "node-24.20.0",
+      "compiler": "typescript-7.0.2",
+      "measurementVersion": "own-characters-1",
+      "suite": "unit"
+    },
+    "status": "verified",
+    "capturedCommit": "8278873552601ed156a9aaeeb31c41cdb84ad77a",
+    "buildFingerprint": "f2c19f6f6cb6f97d1151a8e0c3c8d13dfe539cb4d1b34a7fe35abe424cb26034",
+    "captureManifestFingerprint": "d733cbbd7e24e9ead62db3fb4a73a68e81a358ccdd871ab79513963bd019197f",
+    "captures": [
+      {
+        "sourceFingerprint": "986a25b40baee948c8269540d45ff4eac504d320322fe28dd8f26dd749b66453",
+        "inputsFingerprint": "137d826c9d74d5a8495f9735a699f549331cb301e8684daa6084223db254ef21",
+        "runtime": "node-24.20.0",
+        "compiler": "typescript-7.0.2",
+        "measurementVersion": "own-characters-1",
+        "suite": "integration",
+        "completionProtocol": "normal-exit-or-sealed-or-loader-1",
+        "captureId": "6e67950bdf45f666b1007150f1a5bce986c4991d2c468f1fbf9f279a5149eabe",
+        "comparisonIdentity": {
+          "sourceFingerprint": "986a25b40baee948c8269540d45ff4eac504d320322fe28dd8f26dd749b66453",
+          "inputsFingerprint": "ee42e733d2bee61c778c4f8b3025e56d07ca667fe22e12dbe729c352fb1326c8",
+          "runtime": "node-24.20.0",
+          "compiler": "typescript-7.0.2",
+          "measurementVersion": "own-characters-1",
+          "suite": "unit"
+        },
+        "status": "verified",
+        "capturedCommit": "8278873552601ed156a9aaeeb31c41cdb84ad77a",
+        "buildFingerprint": "f2c19f6f6cb6f97d1151a8e0c3c8d13dfe539cb4d1b34a7fe35abe424cb26034",
+        "captureManifestFingerprint": "bb9b3da5f3cffeffbbab9dc0e4b999ec69a638c8415b5d82059e1cfca1a8df16"
+      }
+    ]
+  },
+  "rawCoverageFileCount": 433,
+  "newHistoryRecord": false,
+  "historyDisposition": "Process: No record:4a761fec is not on origin/main.",
+  "trackedInputsIdenticalBeforeAfter": true,
+  "snooze": [],
+  "processesRunning": false,
+  "hostLaneReleased": true
+}

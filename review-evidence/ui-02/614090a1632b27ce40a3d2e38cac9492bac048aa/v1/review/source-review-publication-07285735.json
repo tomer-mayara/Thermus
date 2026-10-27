@@ -1,0 +1,12 @@
+{
+  "recordedAt": "2026-10-27T04:39:41.519366+00:00",
+  "branch": "codex/ui-stack-review-source-07285735",
+  "head": "07285735ff92af7dd35908d79e47460256cb8415",
+  "remoteHeadVerified": true,
+  "reviewedAncestors": [
+    "4a761fecf5ed1719959d286f104ecd3884068478",
+    "8278873552601ed156a9aaeeb31c41cdb84ad77a",
+    "6ced8db3965190d1d859b60d7053f1830cf5a23c"
+  ],
+  "purpose": "Preserve source and review links for the stack tested against main2b3 before the main950 rebase. No PR or deployment created."
+}

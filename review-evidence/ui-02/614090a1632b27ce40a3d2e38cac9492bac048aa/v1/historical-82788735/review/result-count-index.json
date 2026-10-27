@@ -1,0 +1,350 @@
+{
+  "results": {
+    "typecheck-final.log.result.json": {
+      "command": "node",
+      "args": [
+        "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/.cache/ui04/with-test-env.cjs",
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "started": "2026-10-27T03:45:28.974Z",
+      "ended": "2026-10-27T03:45:32.318Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus/.cache/ui-stack-finish/ui02/typecheck-final.log"
+    },
+    "api-surface-final.log.result.json": {
+      "command": "node",
+      "args": [
+        "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/.cache/ui04/with-test-env.cjs",
+        "pnpm",
+        "exec",
+        "node",
+        "script/pr-review/api-surface.ts",
+        "--check"
+      ],
+      "started": "2026-10-27T03:54:47.223Z",
+      "ended": "2026-10-27T03:54:49.447Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus/.cache/ui-stack-finish/ui02/api-surface-final.log"
+    },
+    "habit-hooks-final.log.result.json": {
+      "command": "node",
+      "args": [
+        "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/.cache/ui04/with-test-env.cjs",
+        "habit-hooks",
+        "--branch",
+        "4a761fecf5ed1719959d286f104ecd3884068478"
+      ],
+      "started": "2026-10-27T03:54:49.490Z",
+      "ended": "2026-10-27T03:54:51.775Z",
+      "exitCode": 1,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus/.cache/ui-stack-finish/ui02/habit-hooks-final.log"
+    },
+    "portal-build-final.log.result.json": {
+      "command": "node",
+      "args": [
+        "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/.cache/ui04/with-test-env.cjs",
+        "npm",
+        "run",
+        "build:user-portal"
+      ],
+      "started": "2026-10-27T03:45:32.361Z",
+      "ended": "2026-10-27T03:45:33.526Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus/.cache/ui-stack-finish/ui02/portal-build-final.log"
+    },
+    "snapshot-head-final.log.result.json": {
+      "command": "node",
+      "args": [
+        "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/.cache/ui04/with-test-env.cjs",
+        "pnpm",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-snapshot.ts"
+      ],
+      "started": "2026-10-27T03:54:13.561Z",
+      "ended": "2026-10-27T03:54:16.481Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus/.cache/ui-stack-finish/ui02/snapshot-head-final.log"
+    },
+    "review-check-final.json.result.json": {
+      "command": "pnpm",
+      "args": [
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/pr-review/check.ts",
+        "--base",
+        "4a761fecf5ed1719959d286f104ecd3884068478",
+        "--repo",
+        "tomer-mayara/Thermus",
+        "--impact",
+        "ast-report/impact.json",
+        "--base-snapshot",
+        "ast-report/snapshot-base.json",
+        "--head-snapshot",
+        "ast-report/snapshot.json",
+        "--crap",
+        "ast-report/crap.json",
+        "--process",
+        "ast-report/process.json",
+        "--review",
+        "ast-report/review.json",
+        "--json"
+      ],
+      "started": "2026-10-27T03:56:49.798Z",
+      "ended": "2026-10-27T03:56:52.591Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": ".cache/ui-stack-finish/ui02/review-check-final.json"
+    },
+    "self-hosted-container-final.log.result.json": {
+      "command": "node",
+      "args": [
+        "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/.cache/ui04/with-test-env.cjs",
+        "npm",
+        "run",
+        "test:container"
+      ],
+      "started": "2026-10-27T03:47:21.980Z",
+      "ended": "2026-10-27T03:50:27.268Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus/.cache/ui-stack-finish/ui02/self-hosted-container-final.log"
+    },
+    "metrics-crap-final.log.result.json": {
+      "command": "node",
+      "args": [
+        "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/.cache/ui04/with-test-env.cjs",
+        "pnpm",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-crap.ts",
+        "--base",
+        "4a761fecf5ed1719959d286f104ecd3884068478",
+        "--json",
+        "ast-report/crap.json"
+      ],
+      "started": "2026-10-27T03:54:41.858Z",
+      "ended": "2026-10-27T03:54:47.180Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus/.cache/ui-stack-finish/ui02/metrics-crap-final.log"
+    },
+    "members-browser-final.log.result.json": {
+      "command": "node",
+      "args": [
+        "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/.cache/ui04/with-test-env.cjs",
+        "node",
+        "--test",
+        "dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js"
+      ],
+      "started": "2026-10-27T03:45:33.563Z",
+      "ended": "2026-10-27T03:47:21.913Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus/.cache/ui-stack-finish/ui02/members-browser-final.log"
+    },
+    "snapshot-base-final.log.result.json": {
+      "command": "node",
+      "args": [
+        "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/.cache/ui04/with-test-env.cjs",
+        "pnpm",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-snapshot.ts",
+        "--base",
+        "4a761fecf5ed1719959d286f104ecd3884068478"
+      ],
+      "started": "2026-10-27T03:54:07.702Z",
+      "ended": "2026-10-27T03:54:13.488Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus/.cache/ui-stack-finish/ui02/snapshot-base-final.log"
+    },
+    "low-file-inspection-final.log.result.json": {
+      "command": "pnpm",
+      "args": [
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-mcp.ts",
+        "file",
+        "src/interfaces/web/account/administration-pages.ts",
+        "--json"
+      ],
+      "started": "2026-10-27T03:55:43.243Z",
+      "ended": "2026-10-27T03:55:45.973Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": ".cache/ui-stack-finish/ui02/low-file-inspection-final.log"
+    },
+    "ordinary-final.log.result.json": {
+      "command": "node",
+      "args": [
+        "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/.cache/ui04/with-test-env.cjs",
+        "npm",
+        "test"
+      ],
+      "started": "2026-10-27T03:38:21.158Z",
+      "ended": "2026-10-27T03:44:58.614Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": ".cache/ui-stack-finish/ui02/ordinary-final.log"
+    },
+    "hosted-live.log.result.json": {
+      "command": "node",
+      "args": [
+        "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/.cache/ui04/with-test-env.cjs",
+        "node",
+        "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/.cache/ui04/with-workos-staging.cjs",
+        "npm",
+        "run",
+        "test:hosted-live"
+      ],
+      "started": "2026-10-27T02:37:37.838Z",
+      "ended": "2026-10-27T02:47:36.059Z",
+      "exitCode": 1,
+      "signal": null,
+      "logPath": ".cache/ui-stack-finish/ui02/hosted-live.log"
+    },
+    "integration-coverage-final.log.result.json": {
+      "command": "node",
+      "args": [
+        "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/.cache/ui04/with-test-env.cjs",
+        "pnpm",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-coverage.ts",
+        "--suite",
+        "integration"
+      ],
+      "started": "2026-10-27T03:53:19.428Z",
+      "ended": "2026-10-27T03:54:07.659Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus/.cache/ui-stack-finish/ui02/integration-coverage-final.log"
+    },
+    "metrics-process-final.log.result.json": {
+      "command": "node",
+      "args": [
+        "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/.cache/ui04/with-test-env.cjs",
+        "pnpm",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-process.ts",
+        "--base",
+        "4a761fecf5ed1719959d286f104ecd3884068478",
+        "--json",
+        "ast-report/process.json"
+      ],
+      "started": "2026-10-27T03:54:16.522Z",
+      "ended": "2026-10-27T03:54:41.762Z",
+      "exitCode": 1,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus/.cache/ui-stack-finish/ui02/metrics-process-final.log"
+    },
+    "hosted-offline-final.log.result.json": {
+      "command": "node",
+      "args": [
+        "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/.cache/ui04/with-test-env.cjs",
+        "npm",
+        "run",
+        "build:hosted"
+      ],
+      "started": "2026-10-27T03:50:27.312Z",
+      "ended": "2026-10-27T03:53:04.341Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus/.cache/ui-stack-finish/ui02/hosted-offline-final.log"
+    }
+  },
+  "counts": {
+    "snapshot-head-final.log": [],
+    "snapshot-base-final.log": [],
+    "portal-build-final.log": [],
+    "typecheck-final.log": [],
+    "habit-hooks-final.log": [],
+    "metrics-crap-final.log": [],
+    "metrics-process-final.log": [],
+    "low-file-inspection-final.log": [],
+    "api-surface-final.log": [],
+    "members-browser-final.log": [
+      "\u2139 tests 20",
+      "\u2139 pass 20",
+      "\u2139 fail 0",
+      "\u2139 skipped 0",
+      "\u2139 todo 0"
+    ],
+    "integration-coverage-final.log": [
+      "\u2139 tests 1160",
+      "\u2139 pass 1160",
+      "\u2139 fail 0",
+      "\u2139 skipped 0",
+      "\u2139 todo 0"
+    ],
+    "hosted-live.log": [
+      "\u2139 tests 29",
+      "\u2139 pass 22",
+      "\u2139 fail 7",
+      "\u2139 skipped 0",
+      "\u2139 todo 0"
+    ],
+    "self-hosted-container-final.log": [
+      "\u2139 tests 11",
+      "\u2139 pass 11",
+      "\u2139 fail 0",
+      "\u2139 skipped 0",
+      "\u2139 todo 0"
+    ],
+    "hosted-offline-final.log": [
+      "\u2139 tests 3319",
+      "\u2139 pass 3319",
+      "\u2139 fail 0",
+      "\u2139 skipped 0",
+      "\u2139 todo 0",
+      "\u2139 tests 29",
+      "\u2139 pass 29",
+      "\u2139 fail 0",
+      "\u2139 skipped 0",
+      "\u2139 todo 0",
+      "\u2139 tests 20",
+      "\u2139 pass 20",
+      "\u2139 fail 0",
+      "\u2139 skipped 0",
+      "\u2139 todo 0",
+      "\u2139 tests 1160",
+      "\u2139 pass 1160",
+      "\u2139 fail 0",
+      "\u2139 skipped 0",
+      "\u2139 todo 0",
+      "\u2139 tests 123",
+      "\u2139 pass 123",
+      "\u2139 fail 0",
+      "\u2139 skipped 0",
+      "\u2139 todo 0",
+      "\u2139 tests 13",
+      "\u2139 pass 13",
+      "\u2139 fail 0",
+      "\u2139 skipped 0",
+      "\u2139 todo 0"
+    ],
+    "ordinary-final.log": [
+      "\u2139 tests 5155",
+      "\u2139 pass 5155",
+      "\u2139 fail 0",
+      "\u2139 skipped 0",
+      "\u2139 todo 0",
+      "\u2139 tests 49",
+      "\u2139 pass 49",
+      "\u2139 fail 0",
+      "\u2139 skipped 0",
+      "\u2139 todo 0"
+    ]
+  }
+}

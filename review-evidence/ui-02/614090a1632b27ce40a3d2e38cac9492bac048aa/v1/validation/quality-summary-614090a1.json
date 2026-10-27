@@ -1,0 +1,226 @@
+{
+  "head": "614090a1632b27ce40a3d2e38cac9492bac048aa",
+  "base": "37046bbd1426566d90bf1a32f8578584d7173060",
+  "main": "9507e751215fec32748bf4e944f2393928e61cf5",
+  "branch": "codex/validate-ui-02-614090a1",
+  "checks": {
+    "typecheck": {
+      "exitCode": 0,
+      "started": "2026-10-27T04:55:27.157Z",
+      "ended": "2026-10-27T04:55:29.996Z",
+      "log": ".cache/ui-stack-finish/ui02/typecheck-quality-614.log"
+    },
+    "integration-coverage": {
+      "exitCode": 0,
+      "started": "2026-10-27T04:55:30.081Z",
+      "ended": "2026-10-27T04:56:20.123Z",
+      "log": ".cache/ui-stack-finish/ui02/integration-coverage-quality-614.log"
+    },
+    "snapshot-base": {
+      "exitCode": 0,
+      "started": "2026-10-27T04:56:20.267Z",
+      "ended": "2026-10-27T04:56:23.683Z",
+      "log": ".cache/ui-stack-finish/ui02/snapshot-base-quality-614.log"
+    },
+    "snapshot-head": {
+      "exitCode": 0,
+      "started": "2026-10-27T04:56:23.745Z",
+      "ended": "2026-10-27T04:56:26.272Z",
+      "log": ".cache/ui-stack-finish/ui02/snapshot-head-quality-614.log"
+    },
+    "metrics-process": {
+      "exitCode": 1,
+      "started": "2026-10-27T04:56:26.351Z",
+      "ended": "2026-10-27T04:56:51.619Z",
+      "log": ".cache/ui-stack-finish/ui02/metrics-process-quality-614.log"
+    },
+    "metrics-crap": {
+      "exitCode": 0,
+      "started": "2026-10-27T04:56:51.688Z",
+      "ended": "2026-10-27T04:57:01.030Z",
+      "log": ".cache/ui-stack-finish/ui02/metrics-crap-quality-614.log"
+    },
+    "api-surface": {
+      "exitCode": 0,
+      "started": "2026-10-27T04:57:01.258Z",
+      "ended": "2026-10-27T04:57:03.819Z",
+      "log": ".cache/ui-stack-finish/ui02/api-surface-quality-614.log"
+    },
+    "habit-hooks": {
+      "exitCode": 1,
+      "started": "2026-10-27T04:57:03.883Z",
+      "ended": "2026-10-27T04:57:06.543Z",
+      "log": ".cache/ui-stack-finish/ui02/habit-hooks-quality-614.log"
+    },
+    "low-file-inspection": {
+      "exitCode": 0,
+      "started": "2026-10-27T04:57:19.957Z",
+      "ended": "2026-10-27T04:57:33.544Z",
+      "log": ".cache/ui-stack-finish/ui02/low-file-inspection-quality-614.log"
+    }
+  },
+  "checker": {
+    "exitCode": 0,
+    "tier": "T1 Team review",
+    "eligibility": "eligible",
+    "blockers": [],
+    "reasons": [
+      {
+        "tier": "T1",
+        "key": "read_paths",
+        "fact": "docs/implementation/test-gate-policy.md"
+      }
+    ],
+    "architecture": {
+      "policy": "facts",
+      "facts": [],
+      "summary": "T0: no architecture fact"
+    },
+    "informational": [
+      "49 public modules, 0 snapshots changed"
+    ]
+  },
+  "processOutcomes": [
+    {
+      "name": "Delta",
+      "status": "goal miss"
+    },
+    {
+      "name": "Review",
+      "status": "goal miss"
+    },
+    {
+      "name": "CRAP",
+      "status": "passed"
+    },
+    {
+      "name": "Architecture",
+      "status": "passed"
+    }
+  ],
+  "reviewCounts": {
+    "filesChanged": 13,
+    "filesAdded": 0,
+    "filesDeleted": 0,
+    "high": 1,
+    "medium": 0,
+    "low": 2,
+    "improvements": 0
+  },
+  "requiredCrapRows": [
+    {
+      "file": "src/interfaces/web/account/administration-pages.ts",
+      "function": "removalForm",
+      "change": "changed",
+      "paths": 4,
+      "share": 1,
+      "crap": 4,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"removalForm\",\"start\":3832,\"end\":4963,\"body\":\"f5457b363e30c21678f7c3cf047621336c79378126016cfbe7eb22b0d50f8034\",\"signature\":\"9132db80a4c5a3629bc50d2ae11fe2f401200979dbdd038d9a42bb388eff2c99\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/administration-pages.ts",
+      "function": "membersPage",
+      "change": "changed",
+      "paths": 3,
+      "share": 0.981,
+      "crap": 3.000061731,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"membersPage\",\"start\":1693,\"end\":3830,\"body\":\"75c1e5b92cd5cab62823abb0de564284f0b83e0483d4c333fcc15e511945565f\",\"signature\":\"16f0253aee78552103740607de26a07553eb2fa08b12f8236a13d5c5758cc2dc\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/administration-pages.ts",
+      "function": "(anonymous)",
+      "change": "new",
+      "paths": 3,
+      "share": 1,
+      "crap": 3,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:membersPage\",\"name\":\"(anonymous)\",\"start\":1968,\"end\":2476,\"body\":\"8fabb24e53999a180fa031ded109fb383112398f50dcfb4760b798d0715dab5b\",\"signature\":\"a12528639c242ac6a651440c7c2593376be9ce0ea91009a89537f7ffc84fbcc2\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/administration-pages.ts",
+      "function": "(anonymous)",
+      "change": "new",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"\",\"name\":\"(anonymous)\",\"start\":887,\"end\":972,\"body\":\"8759331c3cc75ac46bc61c45d51e2f614529a7e4d5d002360df60999094ca864\",\"signature\":\"fce7b55878c3b96254fb565eaee750d1b12cf515a1d7d4f17ee0cbe125b5eab0\"}"
+    }
+  ],
+  "coverage": {
+    "tests": 1160,
+    "files": 164,
+    "processes": 288,
+    "provenance": {
+      "sourceFingerprint": "986a25b40baee948c8269540d45ff4eac504d320322fe28dd8f26dd749b66453",
+      "inputsFingerprint": "3fc8ba0f8d8b98f7f85cc8f0505160657d76de932d8daf4f6c1ffed0c56cdc64",
+      "runtime": "node-24.20.0",
+      "compiler": "typescript-7.0.2",
+      "measurementVersion": "own-characters-1",
+      "suite": [
+        "integration"
+      ],
+      "comparisonIdentity": {
+        "sourceFingerprint": "986a25b40baee948c8269540d45ff4eac504d320322fe28dd8f26dd749b66453",
+        "inputsFingerprint": "3fc8ba0f8d8b98f7f85cc8f0505160657d76de932d8daf4f6c1ffed0c56cdc64",
+        "runtime": "node-24.20.0",
+        "compiler": "typescript-7.0.2",
+        "measurementVersion": "own-characters-1",
+        "suite": "unit"
+      },
+      "status": "verified",
+      "capturedCommit": "614090a1632b27ce40a3d2e38cac9492bac048aa",
+      "buildFingerprint": "f2c19f6f6cb6f97d1151a8e0c3c8d13dfe539cb4d1b34a7fe35abe424cb26034",
+      "captureManifestFingerprint": "d92a524b7eb5004be299ca7798f9145bb00c39d39696cc6d872de3977d485353",
+      "captures": [
+        {
+          "sourceFingerprint": "986a25b40baee948c8269540d45ff4eac504d320322fe28dd8f26dd749b66453",
+          "inputsFingerprint": "a4554b6b0b9757c5a2b4c39a379546fdd98302a1dad0fc6344619f5474cad43c",
+          "runtime": "node-24.20.0",
+          "compiler": "typescript-7.0.2",
+          "measurementVersion": "own-characters-1",
+          "suite": "integration",
+          "completionProtocol": "normal-exit-or-sealed-or-loader-1",
+          "captureId": "a6dd7856b79567d114c50d97523cba7e34d3d7eec42fd8798a55f7371ce583b8",
+          "comparisonIdentity": {
+            "sourceFingerprint": "986a25b40baee948c8269540d45ff4eac504d320322fe28dd8f26dd749b66453",
+            "inputsFingerprint": "3fc8ba0f8d8b98f7f85cc8f0505160657d76de932d8daf4f6c1ffed0c56cdc64",
+            "runtime": "node-24.20.0",
+            "compiler": "typescript-7.0.2",
+            "measurementVersion": "own-characters-1",
+            "suite": "unit"
+          },
+          "status": "verified",
+          "capturedCommit": "614090a1632b27ce40a3d2e38cac9492bac048aa",
+          "buildFingerprint": "f2c19f6f6cb6f97d1151a8e0c3c8d13dfe539cb4d1b34a7fe35abe424cb26034",
+          "captureManifestFingerprint": "01b3fb801953bf0d80d2130efc2e85ab1949d3776ddcd5da9f0cd7151e1cc15a"
+        }
+      ]
+    },
+    "rawFileCount": 433
+  },
+  "retainedFindings": "retained-findings-quality-614.json contains a reviewed reason for every habit and metric finding; the 21 habit findings and all fresh review findings match the prior increment. Snooze remains [].",
+  "historyDisposition": "The process reports: No record: 37046bbd is not on origin/main. No new record was generated, forced or edited.",
+  "inputIdentity": {
+    "trackedFiles": 1540,
+    "beforeAfterHashesAndModesIdentical": true,
+    "oldNativeHead": "8278873552601ed156a9aaeeb31c41cdb84ad77a",
+    "oldNativeMapping": "old-native-to-current-comparison.json verifies 947 relevant paths; parent-rebind-comparison-614.json verifies 937 parent paths. Old native logs retain old pins. The broad typecheck and all current quality reports are fresh at614.",
+    "originalLiveHead": "2ec671ebb30741055f380f7f7a3866ecca549c21",
+    "originalLiveEvidence": "original-live-provenance.json hashes the untouched 22/29 failed run and exact cleanup ledger. It is not a current live pass."
+  },
+  "remainingHolds": [
+    "The selected hosted-live gate remains failed at its recorded original head: six shared fixture quota429 failures and a separate reinvitation503 whose cause was not established. No retry ran.",
+    "The required local LinuxAMD64 image gate remains deferred to the dedicated VM, not passed.",
+    "T1 requires independent authorized human approval of the current head. Local checker eligibility does not prove approval or resolve these gate holds."
+  ],
+  "nativeThresholdNotes": "No new-function finding above10paths. Fresh review has1high,0medium,2low, all explicitly retained with reasons.",
+  "toolLimits": [
+    "The API snapshot tool ignored33 compiler errors in2 unlisted files; it verified49 public snapshots current. The full broad typecheck passed.",
+    "The global architecture report retains unchanged incomplete coverage and the unresolved CSS import on both sides; required changed/new functions have complete identity and assessment.",
+    "Base CRAP derived from head integration coverage is an estimate.",
+    "All stacked metric comparisons use the actual parent as AGENTS requires, despite the lower-priority guide sentence that keeps process at main."
+  ],
+  "treeClean": true,
+  "heavyLaneReleased": true,
+  "noTestsBuildsMetricsProcessesRunning": true,
+  "publication": "No tracked edits, commits, PR writes, provider changes, image or live runs were made in this quality turn."
+}

@@ -1,0 +1,13 @@
+{
+  "head": "614090a1632b27ce40a3d2e38cac9492bac048aa",
+  "branch": "codex/validate-ui-02-614090a1",
+  "parent": "37046bbd1426566d90bf1a32f8578584d7173060",
+  "main": "9507e751215fec32748bf4e944f2393928e61cf5",
+  "parentMergeBase": "37046bbd1426566d90bf1a32f8578584d7173060",
+  "mainMergeBase": "9507e751215fec32748bf4e944f2393928e61cf5",
+  "oldNativeHead": "8278873552601ed156a9aaeeb31c41cdb84ad77a",
+  "originalLiveHead": "2ec671ebb30741055f380f7f7a3866ecca549c21",
+  "state": "Preparedonly; UI01ownsqualitylane. No checks started.",
+  "dependencies": "Reuse privatecp-cRmaterialization withrelativeNodealias; identical package/lock/workspace/npmrc. No install.",
+  "privateDependencyProvenance": "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus/.cache/ui-stack-finish/archives/ui04-07285735ff92af7dd35908d79e47460256cb8415/evidence/environment/materialization-provenance.json"
+}

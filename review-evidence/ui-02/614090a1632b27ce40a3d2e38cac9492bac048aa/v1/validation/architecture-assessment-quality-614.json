@@ -1,0 +1,29 @@
+{
+  "head": "614090a1632b27ce40a3d2e38cac9492bac048aa",
+  "base": "37046bbd1426566d90bf1a32f8578584d7173060",
+  "registryIdentical": true,
+  "mermaidBlockCount": 15,
+  "changedViews": [],
+  "assessment": "Production architecture remains unchanged. Within hosted Node server Web, membersPage formats complete overview facts and native disclosure labels, and CSS controls layout. No source imports, callable signature, public module, component ownership, provider/storage/deployment boundary, runtime collaboration, operation authority/order/payload/lifetime or approved help bytes changed. The Members heading counts all active rows; activeUserSeats remains a separate product-access count. Trusted subject identifies You/Leave. Existing removable hints and checked POST route authority remain in force.",
+  "checkedViews": [
+    "Context",
+    "C4 containers: hosted edition",
+    "Containers and source owners",
+    "Selected C4 components: hosted authentication in the Node server",
+    "Selected C4 components: hosted membership removal in the Node server",
+    "Selected C4 components: hosted Audit logs settings and delivery in the Node server",
+    "Scenario: hosted member read",
+    "Behavior and resource ownership",
+    "Deployment view"
+  ],
+  "l4Rationale": "No production callable contract changed; L4 is not required. Registry drawings are unchanged, so parsing/rendering them is not selected.",
+  "sourceEvidence": [
+    "src/interfaces/web/account/administration-pages.ts",
+    "src/interfaces/web/account/members-style.ts",
+    "src/interfaces/web/account/administration-routes.ts",
+    "src/interfaces/web/account/account-pages.ts",
+    "architecture/components.md"
+  ],
+  "browserSupportConsumers": "Only hosted-member-removal-browser.runtime consumes changed browser drivers. Changed hosted-member-removal-site in complete-vs-main candidate serves ordinary Members/removal cases and Members browser; no SQL or Collector runtime entry consumes it.",
+  "rebindEvidence": "Currentandparent relevantsource/test/registry pathblobs+ modes verifiedidentical to oldincrement. Freshchecker willverify declaredfacts/publicsnapshots."
+}

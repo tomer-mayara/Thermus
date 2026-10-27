@@ -1,0 +1,38 @@
+{
+  "head": "2ec671ebb30741055f380f7f7a3866ecca549c21",
+  "exitCode": 1,
+  "counts": {
+    "tests": 29,
+    "suites": 8,
+    "pass": 22,
+    "fail": 7,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0
+  },
+  "failures": [
+    {
+      "case": "six cases sharing administration fixture promise",
+      "classification": "WorkOS sandbox invitation email quota",
+      "status": 429,
+      "requestID": "3f0e35e9-82e2-46fa-807a-c42ba0e80d93",
+      "retryAfter": null
+    },
+    {
+      "case": "scoped removal reinvitation POST",
+      "status": 503,
+      "expected": 303,
+      "classification": "Cause not established by current response assertion; do not attribute to quota as fact",
+      "reached": "Removal/refusal/retained access confirmed; invitation acceptance, replacement membership, fresh role/access not reached"
+    }
+  ],
+  "scopedCleanup": {
+    "at": "2026-10-27T02:39:31.631Z",
+    "runId": "s25-02-mvq2sd9t-649702",
+    "event": "cleanup-complete",
+    "failures": []
+  },
+  "portsReleased": true,
+  "furtherHostChecks": "Paused until root releases lane; no retry of live",
+  "trackedChanges": ""
+}

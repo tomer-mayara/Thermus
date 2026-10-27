@@ -1,0 +1,19 @@
+{
+  "command": "node",
+  "args": [
+    "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/.cache/ui04/with-test-env.cjs",
+    "pnpm",
+    "exec",
+    "node",
+    "script/code-quality/ast-metrics-crap.ts",
+    "--base",
+    "4a761fecf5ed1719959d286f104ecd3884068478",
+    "--json",
+    "ast-report/crap.json"
+  ],
+  "started": "2026-10-27T03:54:41.858Z",
+  "ended": "2026-10-27T03:54:47.180Z",
+  "exitCode": 0,
+  "signal": null,
+  "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus/.cache/ui-stack-finish/ui02/metrics-crap-final.log"
+}

@@ -1,0 +1,11 @@
+{
+  "assets": {
+    "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/.cache/ui04/run-check.cjs": "b4bb967ea0a07d579d6f3ed3069fa27961f155d53c73bc9d305dc3684d77a0b8",
+    "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/.cache/ui04/with-test-env.cjs": "2a42771e3075e2e16f7a9e8e2cc3831b79ebd20563c44d4b15ecac99753ac9fa",
+    "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/.cache/ui04/with-workos-staging.cjs": "08c7b1d9a8bc70d55b7f6746a71adbe193ef71bde7daf76aea92b2127fc66a4b",
+    "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/.cache/lightpanda/1.0.0/lightpanda": "955440053a84754dd64c62f970449a56a2b350cdf43ea5f2e809a73047b8173d"
+  },
+  "parentMergeBase": "7acd90d44e90769e335c4b2f095d3791d82dc3d4",
+  "mainMergeBase": "9a3ac1f9763b9d8927ec2d1d5cd4527982d33619",
+  "selection": "Full ordinary; typecheck; portal build; 20-case Members browser; self-hosted container; hosted offline build and Linux AMD64 image; both complete hosted-live entries. SQL and Collector not selected: changed support consumers only Members browser and hosted Members ordinary consumers; source changes are presentation only."
+}

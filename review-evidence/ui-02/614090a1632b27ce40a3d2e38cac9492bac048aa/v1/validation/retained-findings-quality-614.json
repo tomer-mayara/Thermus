@@ -1,0 +1,182 @@
+{
+  "head": "614090a1632b27ce40a3d2e38cac9492bac048aa",
+  "base": "37046bbd1426566d90bf1a32f8578584d7173060",
+  "habitHooks": {
+    "exitCode": 1,
+    "reportedFindings": 21,
+    "retained": [
+      {
+        "rule": "high-complexity",
+        "path": "test/acceptance/auth/hosted-member-removal.test.ts",
+        "lines": [
+          27
+        ],
+        "reason": "The existing parameterized acceptance case checks ten independent unsafe-request inputs through public routes. UI-02 changes only its confirmation selector. Keep each named refusal and its no-deletion assertion in this matrix; splitting the matrix would not simplify the product rule."
+      },
+      {
+        "rule": "too-many-parameters",
+        "path": "test/support/drivers/browser/member-removal-browser.ts",
+        "lines": [
+          5
+        ],
+        "reason": "The existing protocol driver receives test cleanup, public transport, a signed-in cookie, and an optional JavaScript setting. These have separate test roles. No repeated domain value group is established for a new abstraction; UI-02 adds only a style observation helper."
+      },
+      {
+        "rule": "non-essential-comment",
+        "path": "test/acceptance/auth/hosted-removal.live.ts",
+        "lines": [
+          230
+        ],
+        "reason": "The comment limits the privileged API acceptance proof: it does not establish recipient or invitation-link behavior. Keep this evidence boundary explicit."
+      },
+      {
+        "rule": "non-essential-comment",
+        "path": "test/acceptance/auth/hosted-workos-administration.test.ts",
+        "lines": [
+          9,
+          10,
+          11,
+          12
+        ],
+        "reason": "The four-line comment states the real composition and external fake boundary. It prevents controlled application results from being read as provider/live evidence."
+      },
+      {
+        "rule": "non-essential-comment",
+        "path": "test/acceptance/auth/hosted-workos-administration.test.ts",
+        "lines": [
+          17
+        ],
+        "reason": "The external-ID comment connects fixture setup to the operator runbook constraint."
+      },
+      {
+        "rule": "non-essential-comment",
+        "path": "test/acceptance/auth/hosted-workos-administration.test.ts",
+        "lines": [
+          35,
+          36
+        ],
+        "reason": "The fixture summary makes active-product count exclusions clear across the two organizations and mixed role/status data."
+      },
+      {
+        "rule": "non-essential-comment",
+        "path": "test/acceptance/auth/hosted-workos-administration.test.ts",
+        "lines": [
+          82,
+          83
+        ],
+        "reason": "The comment explains why refused pages obtain the session CSRF token through the session endpoint instead of a missing form."
+      },
+      {
+        "rule": "non-essential-comment",
+        "path": "test/acceptance/auth/hosted-workos-administration.test.ts",
+        "lines": [
+          109,
+          110
+        ],
+        "reason": "The comment defines which observed WorkOS writes count as administration changes and excludes sign-in/refresh traffic."
+      },
+      {
+        "rule": "non-essential-comment",
+        "path": "test/acceptance/auth/hosted-workos-administration.test.ts",
+        "lines": [
+          137,
+          138
+        ],
+        "reason": "The comment distinguishes organization-wide member reads from access resolution reads filtered by the signed-in user."
+      },
+      {
+        "rule": "non-essential-comment",
+        "path": "src/interfaces/web/account/administration-pages.ts",
+        "lines": [
+          25
+        ],
+        "reason": "The existing comment records the complete-read invariant. A partial member or invitation read must never produce a plausible partial count or page."
+      },
+      {
+        "rule": "oversized-file",
+        "path": "test/acceptance/auth/hosted-member-removal-browser.runtime.ts",
+        "lines": [],
+        "reason": "Keep one executable browser inventory for the user journey and viewport/JavaScript/keyboard matrix. It uses the existing protocol driver and measurement helpers. The added cases directly verify row geometry, native disclosures and safety; test volume has no MI goal."
+      },
+      {
+        "rule": "oversized-file",
+        "path": "test/acceptance/auth/hosted-removal.live.ts",
+        "lines": [],
+        "reason": "The single scoped provider journey deliberately owns exact fresh fixture IDs from setup through cleanup and checks safety/access preservation before fresh reinvitation. Splitting it would obscure lifetime and shared proof state."
+      },
+      {
+        "rule": "oversized-file",
+        "path": "test/acceptance/auth/hosted-workos-administration.test.ts",
+        "lines": [],
+        "reason": "This existing acceptance inventory groups the hosted administration behavior through one real HTTP composition and controlled provider seam. UI-02 changes observations and adds default-role rows; it adds no production collaboration."
+      },
+      {
+        "rule": "oversized-file",
+        "path": "test/integration/hosted-admin/account-routes-administration-pages.test.ts",
+        "lines": [],
+        "reason": "Keep the related current-access, member-count, native-form and escaping specifications at the public account route. The new focused cases state the changed rendering contracts; a size-only split adds no clearer owner."
+      }
+    ],
+    "snooze": [],
+    "disposition": "All reported findings retained with reasons; no suppression or source change."
+  },
+  "metrics": {
+    "processExitCode": 1,
+    "stages": {
+      "Delta": "completed goal miss",
+      "Review": "completed goal miss",
+      "CRAP": "passed",
+      "Architecture": "passed"
+    },
+    "existingFileMI": {
+      "path": "src/interfaces/web/account/administration-pages.ts",
+      "before": 61.25134231438237,
+      "after": 59.468834274547625,
+      "reason": "Keep the existing cohesive member/invitation HTML owner. Added labels and native disclosure text increase template volume; changed functions have at most four paths and CRAP1\u20134 with verified coverage. A size-only split does not improve this UI contract. This is an existing file; no new-file exception is needed."
+    },
+    "retainedHigh": [
+      {
+        "path": "test/acceptance/auth/hosted-member-removal-browser.runtime.ts",
+        "before": 28.1507108226631,
+        "after": 11.426883393121521,
+        "reason": "The added user-required browser cases cover compact rows, native Remove/Leave, keyboard Cancel/Confirm and expanded reflow. Keep the behavior inventory and existing drivers; the test file has no MI goal, and the high native finding is recorded as an informational retained finding under the trusted policy."
+      }
+    ],
+    "retainedLow": [
+      {
+        "path": "test/acceptance/auth/hosted-members.test.ts",
+        "kind": "Halstead estimated bugs1.80\u21922.44",
+        "reason": "New assertions distinguish all active rows from product-access seats and check default-role rendering. The size-derived estimate reflects the added executable specification, not an observed product failure."
+      },
+      {
+        "path": "test/integration/hosted-admin/account-routes-administration-pages.test.ts",
+        "kind": "Halstead estimated bugs2.83\u21923.35",
+        "reason": "New public-route cases verify labelled facts, count meaning and identity-specific disclosure labels. Keep those observable checks together; no production decision complexity is added by the test."
+      }
+    ],
+    "styleMeasurement": {
+      "path": "src/interfaces/web/account/members-style.ts",
+      "disposition": "N/A: string-only CSS module, no callable functions; both source snapshots explicitly report functions[] and complete source evidence."
+    },
+    "exceptionsAdded": false,
+    "baselineChanged": false,
+    "historyDisposition": "No record:37046bbd is not on origin/main. The fresh process reports this explicitly; no record forced/edited. The canonical9507e751 record is inherited.",
+    "limits": [
+      "Global architecture coverage remains incomplete in unchanged functions; all required changed/new functions are assessed.",
+      "The known unresolved CSS import src/interfaces/user-portal/main.ts\u2192./style.css appears on both sides, so the architecture report withholds uncertain edge/cycle deltas. Registry and checker facts independently cover declared production boundaries.",
+      "Base CRAP using head integration coverage is an estimate, not measured base coverage.",
+      "AGENTS directs all stacked metrics comparisons against the actual parent; this run follows it despite the lower-priority check-guide sentence that keeps process at origin/main."
+    ],
+    "nativeReviewThresholdNotes": "No new-function >10path note; fresh review reports1high,0medium,2low, identicalto oldfindings."
+  },
+  "toolWarning": "Fresh tools use pnpm --config.verifyDepsBeforeRun=false exec node. No automaticinstall attempt or dependencyverificationwarning. Preserve the native metrics gatefailed diagnostic and33APIcompiler errors ignored outsidepublic_surface; fulltypecheck passed.",
+  "rebindProvenance": {
+    "oldHead": "8278873552601ed156a9aaeeb31c41cdb84ad77a",
+    "currentHead": "614090a1632b27ce40a3d2e38cac9492bac048aa",
+    "evidence": "old-native-to-current-comparison.json and parent-rebind-comparison-614.json",
+    "habitOutputByteIdentical": true,
+    "freshReviewFindingsIdentical": true,
+    "currentLowFileInspection": "low-file-inspection-quality-614.log",
+    "claim": "Reasons reviewed against fresh current reports and byte-identical relevant code on bothcomparison sides; original reports stay archived at oldpins."
+  }
+}

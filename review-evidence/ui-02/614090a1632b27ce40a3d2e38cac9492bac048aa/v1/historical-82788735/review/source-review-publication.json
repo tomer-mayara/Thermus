@@ -1,0 +1,13 @@
+{
+  "recordedAt": "2026-10-27T03:54:00.343815+00:00",
+  "branch": "codex/ui-stack-review-source-a9629766",
+  "head": "a9629766ed65c501f316b11aa846095747204cdb",
+  "remoteHeadVerified": true,
+  "reviewedAncestors": [
+    "7acd90d44e90769e335c4b2f095d3791d82dc3d4",
+    "2ec671ebb30741055f380f7f7a3866ecca549c21",
+    "2189f24e74fe9aa5c381b7bb81eae7c0f2026e11"
+  ],
+  "githubContentsReadVerifiedAtEachPin": "src/interfaces/web/account/administration-pages.ts:24-29",
+  "purpose": "Preserve original source-review links after restacking. No PR or deployment created."
+}

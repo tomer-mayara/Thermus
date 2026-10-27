@@ -1,0 +1,38 @@
+{
+  "head": "8278873552601ed156a9aaeeb31c41cdb84ad77a",
+  "base": "4a761fecf5ed1719959d286f104ecd3884068478",
+  "reasons": [
+    {
+      "note": "T1 read_paths docs/implementation/test-gate-policy.md",
+      "reason": "The increment edits/removes text in the protected browser gate inventory; keep the policy accurate and obtain current-head independent human review."
+    },
+    {
+      "note": "T0: no architecture fact;49 public modules,0snapshotschanged",
+      "reason": "No component/edge/public declaration/registry diagram changes; existing source interfaces and registry remain accurate."
+    },
+    {
+      "note": "ExistingfileMI61.25134231438237\u219259.468834274547625",
+      "reason": "Recorded cohesiveHTML-template retention reason in retained-findings-final.json. No new-file exception or\u22655pointsource drop."
+    },
+    {
+      "note": "No rawMI for CSS string module",
+      "reason": "Bothsnapshots explicitly list nofunctions with complete source evidence; staticCSS behavior was checked by browser gate."
+    },
+    {
+      "note": "Outside scopes.production:browser-testMI28\u219211",
+      "reason": "Retaineduser-required executableviewport/keyboardmatrix; testfiles have noMIgoal. Full reason in retained-findings-final.json."
+    },
+    {
+      "note": "0 findings on unchangedfiles",
+      "reason": "No unchanged-file finding needs a retained reason in the increment."
+    },
+    {
+      "note": "Ignored33compilererrors in2nonpublicfiles",
+      "reason": "API surface tool explicitly excludes these diagnostics from its listed-module verification. Fulltypecheck passed; all49publicsnapshots verifiedcurrent. Preserve the tool diagnostic as a limit; do not claim an error-freeAPIcompiler run."
+    },
+    {
+      "note": "Local eligibility preliminary",
+      "reason": "The checkerdoesnot validate live/container status or humanidentity; stagingfailure, deferredAMD64gate,andT1approvalholdremain."
+    }
+  ]
+}

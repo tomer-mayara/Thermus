@@ -1,0 +1,12 @@
+{
+  "originalLiveHead": "2ec671ebb30741055f380f7f7a3866ecca549c21",
+  "archive": "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus/.cache/ui-stack-finish/archives/ui02-8278873552601ed156a9aaeeb31c41cdb84ad77a/evidence",
+  "sha256": {
+    "hosted-live.log": "08a3ca1840685b066b19a35d337aa0c5cabe0e0440128eb868e20c2577697530",
+    "hosted-live.log.result.json": "5a0f6cc4c4c767942bd9ff89e7ca4b13d98aa28cf446100fcc4ec055e5247181",
+    "staging-removal-ledger.jsonl": "064bdb04fb61486c9090b7fa60a73b55bf0a3b77428d0cc17636f65a3fbd00ef",
+    "live-summary.json": "545c645e4213b203aa6e93a7d07b33b31a4d9a6d9a647215d15f466f89bc5d37",
+    "pins.json": "4d5a82c5e818e99b98cd06dceb3b0bb561ec77d32f99966ec857c76d3028a53d"
+  },
+  "claim": "Original22/29failedlive evidence untouched; no retry or relabel."
+}

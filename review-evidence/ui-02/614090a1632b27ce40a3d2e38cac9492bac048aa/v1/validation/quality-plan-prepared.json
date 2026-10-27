@@ -1,0 +1,97 @@
+{
+  "head": "614090a1632b27ce40a3d2e38cac9492bac048aa",
+  "parent": "37046bbd1426566d90bf1a32f8578584d7173060",
+  "state": "Queuedonly; require rootlanegrant before first command.",
+  "steps": [
+    {
+      "name": "typecheck",
+      "command": [
+        "npm",
+        "run",
+        "typecheck"
+      ]
+    },
+    {
+      "name": "integration-coverage",
+      "command": [
+        "pnpm",
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-coverage.ts",
+        "--suite",
+        "integration"
+      ]
+    },
+    {
+      "name": "snapshot-base",
+      "command": [
+        "pnpm",
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-snapshot.ts",
+        "--base",
+        "37046bbd1426566d90bf1a32f8578584d7173060"
+      ]
+    },
+    {
+      "name": "snapshot-head",
+      "command": [
+        "pnpm",
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-snapshot.ts"
+      ]
+    },
+    {
+      "name": "metrics-process",
+      "command": [
+        "pnpm",
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-process.ts",
+        "--base",
+        "37046bbd1426566d90bf1a32f8578584d7173060",
+        "--json",
+        "ast-report/process.json"
+      ]
+    },
+    {
+      "name": "metrics-crap",
+      "command": [
+        "pnpm",
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-crap.ts",
+        "--base",
+        "37046bbd1426566d90bf1a32f8578584d7173060",
+        "--json",
+        "ast-report/crap.json"
+      ]
+    },
+    {
+      "name": "api-surface",
+      "command": [
+        "pnpm",
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/pr-review/api-surface.ts",
+        "--check"
+      ]
+    },
+    {
+      "name": "habit-hooks",
+      "command": [
+        "habit-hooks",
+        "--branch",
+        "37046bbd1426566d90bf1a32f8578584d7173060"
+      ]
+    }
+  ],
+  "afterSteps": "Reviewalloutcomes/retainedfindings; pause for anynew immutablemetricrecordcommit. Otherwise stampHEAD:.pr-impact withactualbase/head and runfullchecker. No fullordinary/browser/SQL/Collector/container, image or live rerun."
+}

@@ -1,0 +1,16 @@
+{
+  "command": "node",
+  "args": [
+    "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/.cache/ui04/with-test-env.cjs",
+    "node",
+    "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/.cache/ui04/with-workos-staging.cjs",
+    "npm",
+    "run",
+    "test:hosted-live"
+  ],
+  "started": "2026-10-27T02:37:37.838Z",
+  "ended": "2026-10-27T02:47:36.059Z",
+  "exitCode": 1,
+  "signal": null,
+  "logPath": ".cache/ui-stack-finish/ui02/hosted-live.log"
+}
