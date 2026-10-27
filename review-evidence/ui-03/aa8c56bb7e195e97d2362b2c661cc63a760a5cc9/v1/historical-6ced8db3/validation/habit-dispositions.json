@@ -1,0 +1,248 @@
+{
+  "head": "6ced8db3965190d1d859b60d7053f1830cf5a23c",
+  "parent": "8278873552601ed156a9aaeeb31c41cdb84ad77a",
+  "exitCode": 1,
+  "snooze": [],
+  "findings": [
+    {
+      "kind": "high-complexity",
+      "file": "test/acceptance/auth/hosted-admin-journey.test.ts",
+      "line": 13,
+      "disposition": "retain",
+      "reason": "One acceptance journey verifies creation, invitation, fake acceptance, workspace selection, browser/MCP roles and creator-only agreement storage in sequence. Its role/identity assertions need the full temporal story; no production behavior is added by its test complexity."
+    },
+    {
+      "kind": "non-essential-comment",
+      "file": "test/acceptance/auth/hosted-admin-journey.test.ts",
+      "line": 53,
+      "disposition": "retain",
+      "reason": "States that invitation acceptance is a provider fake. This prevents the application journey from being presented as native password or invitation proof."
+    },
+    {
+      "kind": "non-essential-comment",
+      "file": "test/acceptance/auth/hosted-workos-administration.test.ts",
+      "line": 9,
+      "disposition": "retain",
+      "reason": "Defines the boundary between the real HTTP/application composition and the WorkOS fake. It prevents offline cases from being presented as live provider proof."
+    },
+    {
+      "kind": "non-essential-comment",
+      "file": "test/acceptance/auth/hosted-workos-administration.test.ts",
+      "line": 10,
+      "disposition": "retain",
+      "reason": "Defines the boundary between the real HTTP/application composition and the WorkOS fake. It prevents offline cases from being presented as live provider proof."
+    },
+    {
+      "kind": "non-essential-comment",
+      "file": "test/acceptance/auth/hosted-workos-administration.test.ts",
+      "line": 11,
+      "disposition": "retain",
+      "reason": "Defines the boundary between the real HTTP/application composition and the WorkOS fake. It prevents offline cases from being presented as live provider proof."
+    },
+    {
+      "kind": "non-essential-comment",
+      "file": "test/acceptance/auth/hosted-workos-administration.test.ts",
+      "line": 12,
+      "disposition": "retain",
+      "reason": "Defines the boundary between the real HTTP/application composition and the WorkOS fake. It prevents offline cases from being presented as live provider proof."
+    },
+    {
+      "kind": "non-essential-comment",
+      "file": "test/acceptance/auth/hosted-workos-administration.test.ts",
+      "line": 17,
+      "disposition": "retain",
+      "reason": "Explains why this customer fixture needs an external organization ID, matching the operator runbook."
+    },
+    {
+      "kind": "non-essential-comment",
+      "file": "test/acceptance/auth/hosted-workos-administration.test.ts",
+      "line": 35,
+      "disposition": "retain",
+      "reason": "Explains the mixed-role fixture and its expected active product-member count. The count and default/inactive exclusions are the subject of the tests."
+    },
+    {
+      "kind": "non-essential-comment",
+      "file": "test/acceptance/auth/hosted-workos-administration.test.ts",
+      "line": 36,
+      "disposition": "retain",
+      "reason": "Explains the mixed-role fixture and its expected active product-member count. The count and default/inactive exclusions are the subject of the tests."
+    },
+    {
+      "kind": "non-essential-comment",
+      "file": "test/acceptance/auth/hosted-workos-administration.test.ts",
+      "line": 82,
+      "disposition": "retain",
+      "reason": "Explains why the CSRF token comes from the session answer when an access refusal has no form. This preserves the real protected-form flow."
+    },
+    {
+      "kind": "non-essential-comment",
+      "file": "test/acceptance/auth/hosted-workos-administration.test.ts",
+      "line": 83,
+      "disposition": "retain",
+      "reason": "Explains why the CSRF token comes from the session answer when an access refusal has no form. This preserves the real protected-form flow."
+    },
+    {
+      "kind": "non-essential-comment",
+      "file": "test/acceptance/auth/hosted-workos-administration.test.ts",
+      "line": 109,
+      "disposition": "retain",
+      "reason": "Defines which captured provider requests count as administration writes. Sign-in and refresh requests must not create a false mutation result."
+    },
+    {
+      "kind": "non-essential-comment",
+      "file": "test/acceptance/auth/hosted-workos-administration.test.ts",
+      "line": 110,
+      "disposition": "retain",
+      "reason": "Defines which captured provider requests count as administration writes. Sign-in and refresh requests must not create a false mutation result."
+    },
+    {
+      "kind": "non-essential-comment",
+      "file": "test/acceptance/auth/hosted-workos-administration.test.ts",
+      "line": 137,
+      "disposition": "retain",
+      "reason": "Separates organization member enumeration from current-user access reads. The distinction protects the no-extra-member-read assertions."
+    },
+    {
+      "kind": "non-essential-comment",
+      "file": "test/acceptance/auth/hosted-workos-administration.test.ts",
+      "line": 138,
+      "disposition": "retain",
+      "reason": "Separates organization member enumeration from current-user access reads. The distinction protects the no-extra-member-read assertions."
+    },
+    {
+      "kind": "non-essential-comment",
+      "file": "test/support/container/audit-sender-site.ts",
+      "line": 59,
+      "disposition": "retain",
+      "reason": "Explains why public-shaped addresses are safe in this fixture: Docker prevents overlap and the internal bridge has no Internet route."
+    },
+    {
+      "kind": "non-essential-comment",
+      "file": "test/support/container/audit-sender-site.ts",
+      "line": 75,
+      "disposition": "retain",
+      "reason": "Explains why disposable fixture TLS keys have container-readable modes. They are not service credentials."
+    },
+    {
+      "kind": "non-essential-comment",
+      "file": "test/support/container/audit-sender-site.ts",
+      "line": 182,
+      "disposition": "retain",
+      "reason": "States the fixture proof boundary: real sender and TLS policy on an isolated Docker bridge, without a live external destination claim."
+    },
+    {
+      "kind": "non-essential-comment",
+      "file": "test/support/in-process/browser-transport-site.ts",
+      "line": 11,
+      "disposition": "retain",
+      "reason": "Explains why a real TLS front replaces route interception: Chromium must keep the public hostname and real redirects through the same transport."
+    },
+    {
+      "kind": "non-essential-comment",
+      "file": "test/support/in-process/hosted-audit-journey-site.ts",
+      "line": 40,
+      "disposition": "retain",
+      "reason": "Defines the integrated proof: both public channels share real capture while the page operation remains controlled."
+    },
+    {
+      "kind": "non-essential-comment",
+      "file": "src/interfaces/web/account/account-pages.ts",
+      "line": 13,
+      "disposition": "retain",
+      "reason": "Records the fixed-text safety invariant. These notices contain no request values, so their fixed paragraphs do not need escaping."
+    },
+    {
+      "kind": "non-essential-comment",
+      "file": "src/interfaces/web/account/account-pages.ts",
+      "line": 96,
+      "disposition": "retain",
+      "reason": "Records the write/read separation after removal, including self-removal. A fixed write result must not start a new authorization-dependent read."
+    },
+    {
+      "kind": "non-essential-comment",
+      "file": "src/interfaces/web/account/account-pages.ts",
+      "line": 118,
+      "disposition": "retain",
+      "reason": "Explains the recovery destination when an access refusal occurs before the user has an organization."
+    },
+    {
+      "kind": "non-essential-comment",
+      "file": "src/interfaces/web/account/administration-pages.ts",
+      "line": 25,
+      "disposition": "retain",
+      "reason": "Records read-failure atomicity: both complete reads must succeed before Members renders current access and pending invitations."
+    },
+    {
+      "kind": "non-essential-comment",
+      "file": "test/acceptance/auth/hosted-live/administration-server.ts",
+      "line": 43,
+      "disposition": "retain",
+      "reason": "Defines safe failure diagnostics for the live helper: operator reports may name a path or cause but must not expose credentials."
+    },
+    {
+      "kind": "non-essential-comment",
+      "file": "test/acceptance/auth/hosted-live/administration-server.ts",
+      "line": 44,
+      "disposition": "retain",
+      "reason": "Defines safe failure diagnostics for the live helper: operator reports may name a path or cause but must not expose credentials."
+    },
+    {
+      "kind": "non-essential-comment",
+      "file": "test/acceptance/auth/hosted-live/administration-server.ts",
+      "line": 79,
+      "disposition": "retain",
+      "reason": "Records that the secret check returns a Boolean rather than secret values. Failure reporting must not leak the value it detects."
+    },
+    {
+      "kind": "non-essential-comment",
+      "file": "test/acceptance/auth/hosted-live/administration-server.ts",
+      "line": 101,
+      "disposition": "retain",
+      "reason": "Explains the intentional session lifetime across live cases. This is important when current provider state changes between operations."
+    },
+    {
+      "kind": "non-essential-comment",
+      "file": "test/acceptance/auth/hosted-live/administration-server.ts",
+      "line": 104,
+      "disposition": "retain",
+      "reason": "Keeps the live step tied to the actual page form and its labelled button, rather than a fabricated request payload."
+    },
+    {
+      "kind": "non-essential-comment",
+      "file": "test/acceptance/auth/hosted-live/administration-server.ts",
+      "line": 129,
+      "disposition": "retain",
+      "reason": "Marks invitation tokens and links as credentials. Only the fixture reads them; report and diagnostic output must not expose them."
+    },
+    {
+      "kind": "oversized-file",
+      "file": "test/acceptance/auth/hosted-live/administration-server.ts",
+      "disposition": "retain",
+      "reason": "One live administration protocol helper owns session use, protected form selection, provider fixture reads and safe diagnostics. Keeping that credential flow together makes its proof boundary reviewable; the label migration adds no new production responsibility."
+    },
+    {
+      "kind": "oversized-file",
+      "file": "test/acceptance/auth/hosted-member-removal-browser.runtime.ts",
+      "disposition": "retain",
+      "reason": "The dedicated browser gate keeps the independent JS/viewport/removal/invitation cases together. Protocol details already live in browser drivers. Its 51 cases are an acceptance matrix, not a production module; no production file-size or MI goal applies."
+    },
+    {
+      "kind": "oversized-file",
+      "file": "test/acceptance/auth/hosted-workos-administration.test.ts",
+      "disposition": "retain",
+      "reason": "One acceptance module groups shared role fixtures and independent public HTTP administration outcomes. The extensive fixture matrix explains its size; the current change migrates the existing button label without combining production responsibilities."
+    },
+    {
+      "kind": "oversized-file",
+      "file": "test/integration/hosted-admin/account-routes-administration-pages.test.ts",
+      "disposition": "retain",
+      "reason": "The cases verify the same public administration page contract, including absence of controls, trusted values and fixed outcomes. Each case remains independent; added assertions specify the disclosure behavior rather than production complexity."
+    },
+    {
+      "kind": "oversized-file",
+      "file": "test/support/container/audit-sender-site.ts",
+      "disposition": "retain",
+      "reason": "One fixture owns the Docker network, TLS material, receiver/client containers and their cleanup. The cases need that shared resource lifetime and isolated address policy; a mechanical split would separate the ownership flow."
+    }
+  ]
+}

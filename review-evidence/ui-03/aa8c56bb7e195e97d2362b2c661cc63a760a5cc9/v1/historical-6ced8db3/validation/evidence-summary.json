@@ -1,0 +1,602 @@
+{
+  "candidate": "6ced8db3965190d1d859b60d7053f1830cf5a23c",
+  "parent": "8278873552601ed156a9aaeeb31c41cdb84ad77a",
+  "main": "2b3ad13b9e2e61e206479b82e91359192cae1d00",
+  "branch": "codex/validate-ui-03-6ced8db3",
+  "treeClean": true,
+  "hostLane": "Released; no test/build/metrics processes remain.",
+  "selection": "Complete candidate functional validation against main; incremental quality and classification against actual UI02 parent.",
+  "counts": {
+    "ordinary": 5161,
+    "portal": 49,
+    "browser": 51,
+    "selfHostedContainer": 11,
+    "offlineUnit": 3319,
+    "offlinePortalUnit": 29,
+    "offlinePortalAcceptance": 20,
+    "offlineIntegration": 1166,
+    "offlineAcceptanceInterface": 123,
+    "offlineRenderer": 13,
+    "postgresFiles": 7,
+    "postgresTests": 26,
+    "collectorFiles": 2,
+    "collectorFinalTests": 10,
+    "collectorInitialPass": 7,
+    "collectorInitialFail": 3
+  },
+  "functionalEvidence": "6ced8db3-functional-selected.json",
+  "browserBuildReuse": "6ced8db3-browser-build-reuse.json",
+  "dependencyRepair": "dependency-copy-provenance.json",
+  "collectorRetry": "The first full group failed three mounted-package imports because immediate links escaped the container mount. The private clone and package bytes were verified; the full two-file retry passed ten tests. No source/assertion/deadline change. Final full inventory completed after the passing retry; this timing and later approved Node alias normalization are explicit in provenance.",
+  "coverage": {
+    "commit": "6ced8db3965190d1d859b60d7053f1830cf5a23c",
+    "suite": [
+      "integration"
+    ],
+    "status": "verified",
+    "files": 164,
+    "processes": 288,
+    "provenance": {
+      "sourceFingerprint": "0db6859d5858f106c9233680696a565e18950c6b7fd057afaa1153ce25dfad58",
+      "inputsFingerprint": "5263719bb0c124608ca14271b55896481c76ac2296dd2b9d930777d5e02c6d61",
+      "runtime": "node-24.20.0",
+      "compiler": "typescript-7.0.2",
+      "measurementVersion": "own-characters-1",
+      "suite": [
+        "integration"
+      ],
+      "comparisonIdentity": {
+        "sourceFingerprint": "0db6859d5858f106c9233680696a565e18950c6b7fd057afaa1153ce25dfad58",
+        "inputsFingerprint": "5263719bb0c124608ca14271b55896481c76ac2296dd2b9d930777d5e02c6d61",
+        "runtime": "node-24.20.0",
+        "compiler": "typescript-7.0.2",
+        "measurementVersion": "own-characters-1",
+        "suite": "unit"
+      },
+      "status": "verified",
+      "capturedCommit": "6ced8db3965190d1d859b60d7053f1830cf5a23c",
+      "buildFingerprint": "76d70652a784cfb64d50a3bff72966377696b6c9dac6ae54755ba437938ef9c1",
+      "captureManifestFingerprint": "94a4609c20091603cd8175ac4857220eddc0a4ef06b0e6ed9bffa5a6c10ebe98",
+      "captures": [
+        {
+          "sourceFingerprint": "0db6859d5858f106c9233680696a565e18950c6b7fd057afaa1153ce25dfad58",
+          "inputsFingerprint": "9bde5775e2e784e87a0f17ebc796b9c67fff43af969168c76190eb745d7bf65a",
+          "runtime": "node-24.20.0",
+          "compiler": "typescript-7.0.2",
+          "measurementVersion": "own-characters-1",
+          "suite": "integration",
+          "completionProtocol": "normal-exit-or-sealed-or-loader-1",
+          "captureId": "e6a73131e6e12cb1b5d3869f8ec9a0f5bf89606458b2ba08b445ad396445a76f",
+          "comparisonIdentity": {
+            "sourceFingerprint": "0db6859d5858f106c9233680696a565e18950c6b7fd057afaa1153ce25dfad58",
+            "inputsFingerprint": "5263719bb0c124608ca14271b55896481c76ac2296dd2b9d930777d5e02c6d61",
+            "runtime": "node-24.20.0",
+            "compiler": "typescript-7.0.2",
+            "measurementVersion": "own-characters-1",
+            "suite": "unit"
+          },
+          "status": "verified",
+          "capturedCommit": "6ced8db3965190d1d859b60d7053f1830cf5a23c",
+          "buildFingerprint": "76d70652a784cfb64d50a3bff72966377696b6c9dac6ae54755ba437938ef9c1",
+          "captureManifestFingerprint": "43a6e664078d1fca1d193f7c69237951c85e39a5362ccd0415bfffb0beaaa76e"
+        }
+      ]
+    }
+  },
+  "quality": {
+    "process": [
+      {
+        "name": "Delta",
+        "status": "goal miss"
+      },
+      {
+        "name": "Review",
+        "status": "goal miss"
+      },
+      {
+        "name": "CRAP",
+        "status": "passed"
+      },
+      {
+        "name": "Architecture",
+        "status": "passed"
+      }
+    ],
+    "requiredCrap": [
+      {
+        "file": "src/interfaces/web/account/administration-pages.ts",
+        "function": "membersPage",
+        "change": "changed",
+        "paths": 3,
+        "share": 0.975,
+        "crap": 3.000140625,
+        "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"membersPage\",\"start\":1693,\"end\":3490,\"body\":\"c75457af52eb5122bfc17beb5e6a2dbd4bf0cf6ba9eb291776f86219507057bf\",\"signature\":\"16f0253aee78552103740607de26a07553eb2fa08b12f8236a13d5c5758cc2dc\"}"
+      },
+      {
+        "file": "src/interfaces/web/account/account-pages.ts",
+        "function": "removalResultPage",
+        "change": "changed",
+        "paths": 2,
+        "share": 1,
+        "crap": 2,
+        "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"removalResultPage\",\"start\":5391,\"end\":6102,\"body\":\"59a3ae21029c8c28100c7c9f515d0b68ca69326bab8cb8c04f6a0a0e2e6c861b\",\"signature\":\"5c442275f3315587b86807edc9b2e734ac0196ba4e2055c9c261e223df13b134\"}"
+      },
+      {
+        "file": "src/interfaces/web/account/administration-pages.ts",
+        "function": "sendForm",
+        "change": "changed",
+        "paths": 2,
+        "share": 1,
+        "crap": 2,
+        "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"sendForm\",\"start\":4625,\"end\":5942,\"body\":\"3ed886b5944a9d30adfd8b1f0155562b9316d39ff3a7758d1272dff6984cc528\",\"signature\":\"49d7301d22edfdd1e36c9b8a4159dbb6bd0bc35cd07c3223fe0f7f1f3fda7efb\"}"
+      },
+      {
+        "file": "src/interfaces/web/account/account-pages.ts",
+        "function": "(anonymous)",
+        "change": "new",
+        "paths": 1,
+        "share": 1,
+        "crap": 1,
+        "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:noticeResponse\",\"name\":\"(anonymous)\",\"start\":7346,\"end\":7382,\"body\":\"592d9c7c4d42763f95b7c30bcd862b2452411074b786098fa96449f423fb8347\",\"signature\":\"fbbc13cdbc7fe04c1943b05f0dc6db19f9f8b6e4f49ca7aeb7144a30914d06cc\"}"
+      },
+      {
+        "file": "src/interfaces/web/account/administration-pages.ts",
+        "function": "(anonymous)",
+        "change": "new",
+        "paths": 1,
+        "share": 1,
+        "crap": 1,
+        "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"\",\"name\":\"(anonymous)\",\"start\":887,\"end\":972,\"body\":\"8759331c3cc75ac46bc61c45d51e2f614529a7e4d5d002360df60999094ca864\",\"signature\":\"fce7b55878c3b96254fb565eaee750d1b12cf515a1d7d4f17ee0cbe125b5eab0\"}"
+      }
+    ],
+    "metricDispositions": "metric-dispositions.json",
+    "habitDispositions": "habit-dispositions.json",
+    "habitResult": "Exit1; 35 retained findings, each with reason. No ESLint failure, suppression or snooze.",
+    "api": "49 snapshots current; generator filters 33 compiler errors in two non-public files. Full typecheck passed.",
+    "newHistoryRecord": "None. Actual parent is not on main; no immutable file was added."
+  },
+  "checker": {
+    "tier": "T1",
+    "tierName": "T1 Team review",
+    "eligibility": "eligible",
+    "blockers": [],
+    "candidate": "6ced8db3965190d1d859b60d7053f1830cf5a23c",
+    "mergeBase": "8278873552601ed156a9aaeeb31c41cdb84ad77a",
+    "architecture": {
+      "policy": "facts",
+      "facts": [],
+      "summary": "T0: no architecture fact"
+    },
+    "reasons": [
+      {
+        "tier": "T1",
+        "key": "read_paths",
+        "fact": "docs/implementation/test-gate-policy.md"
+      }
+    ],
+    "questions": [],
+    "changedPaths": [
+      {
+        "status": "M",
+        "path": ".pr-impact.json"
+      },
+      {
+        "status": "M",
+        "path": "docs/design/organization-admin-plan.md"
+      },
+      {
+        "status": "M",
+        "path": "docs/design/portal-design.md"
+      },
+      {
+        "status": "A",
+        "path": "docs/implementation/admin-ui-03.md"
+      },
+      {
+        "status": "M",
+        "path": "docs/implementation/test-gate-policy.md"
+      },
+      {
+        "status": "M",
+        "path": "src/interfaces/web/account/account-pages.ts"
+      },
+      {
+        "status": "M",
+        "path": "src/interfaces/web/account/administration-pages.ts"
+      },
+      {
+        "status": "M",
+        "path": "src/interfaces/web/account/members-style.ts"
+      },
+      {
+        "status": "M",
+        "path": "test/acceptance/auth/hosted-admin-journey.test.ts"
+      },
+      {
+        "status": "M",
+        "path": "test/acceptance/auth/hosted-invitation-refusals.test.ts"
+      },
+      {
+        "status": "M",
+        "path": "test/acceptance/auth/hosted-invitations.test.ts"
+      },
+      {
+        "status": "M",
+        "path": "test/acceptance/auth/hosted-live/administration-server.ts"
+      },
+      {
+        "status": "M",
+        "path": "test/acceptance/auth/hosted-member-removal-browser.runtime.ts"
+      },
+      {
+        "status": "M",
+        "path": "test/acceptance/auth/hosted-member-removal-scope.test.ts"
+      },
+      {
+        "status": "M",
+        "path": "test/acceptance/auth/hosted-members.test.ts"
+      },
+      {
+        "status": "M",
+        "path": "test/acceptance/auth/hosted-membership-access.test.ts"
+      },
+      {
+        "status": "M",
+        "path": "test/acceptance/auth/hosted-workos-administration.test.ts"
+      },
+      {
+        "status": "M",
+        "path": "test/acceptance/auth/hosted-workos-role-access.test.ts"
+      },
+      {
+        "status": "M",
+        "path": "test/acceptance/logging/audit/administration-capture.test.ts"
+      },
+      {
+        "status": "M",
+        "path": "test/acceptance/logging/audit/hosted-storage-failure.runtime.ts"
+      },
+      {
+        "status": "M",
+        "path": "test/integration/auth/hosted-administration.test.ts"
+      },
+      {
+        "status": "M",
+        "path": "test/integration/hosted-admin/account-routes-administration-pages.test.ts"
+      },
+      {
+        "status": "M",
+        "path": "test/integration/hosted-admin/account-routes-removal.test.ts"
+      },
+      {
+        "status": "M",
+        "path": "test/support/container/audit-sender-site.ts"
+      },
+      {
+        "status": "M",
+        "path": "test/support/drivers/browser/admin-shell-browser.ts"
+      },
+      {
+        "status": "A",
+        "path": "test/support/drivers/browser/invitation-browser.ts"
+      },
+      {
+        "status": "M",
+        "path": "test/support/drivers/browser/member-removal-browser.ts"
+      },
+      {
+        "status": "A",
+        "path": "test/support/in-process/browser-transport-site.ts"
+      },
+      {
+        "status": "M",
+        "path": "test/support/in-process/hosted-audit-journey-site.ts"
+      },
+      {
+        "status": "M",
+        "path": "test/support/in-process/hosted-audit-snapshot-site.ts"
+      }
+    ],
+    "lineCounts": {
+      "production": 42,
+      "productionLimit": 400,
+      "total": 675,
+      "totalLimit": 1500
+    },
+    "tests": {
+      "added": 13,
+      "removed": 0,
+      "skippedOrTodo": []
+    },
+    "mi": [
+      "changed: src/interfaces/web/account/account-pages.ts: 72.76076629466495 to 72.76076629466495",
+      "changed: src/interfaces/web/account/administration-pages.ts: 59.468834274547625 to 59.20233572948304",
+      "not applicable: src/interfaces/web/account/members-style.ts: no raw MI in the base snapshot"
+    ],
+    "crap": [
+      "src/interfaces/web/account/administration-pages.ts: membersPage: 3.0",
+      "src/interfaces/web/account/account-pages.ts: removalResultPage: 2.0",
+      "src/interfaces/web/account/administration-pages.ts: sendForm: 2.0",
+      "src/interfaces/web/account/account-pages.ts: (anonymous): 1.0",
+      "src/interfaces/web/account/administration-pages.ts: (anonymous): 1.0"
+    ],
+    "metrics": [
+      "Delta: goal miss",
+      "Review: goal miss",
+      "CRAP: passed",
+      "Architecture: passed",
+      "outside scopes.production: test/acceptance/auth/hosted-member-removal-browser.runtime.ts: Maintainability index: 11 -> 6 (below 85 is hard to maintain)",
+      "0 findings on unchanged files, reason unchanged by this PR"
+    ],
+    "factsToDeclare": [],
+    "declaredFacts": [],
+    "surfaceDifferences": [
+      "src/interfaces/web/account/account-form.ts (imports changed src/interfaces/web/account/account-pages.ts)"
+    ],
+    "informational": [
+      "49 public modules, 0 snapshots changed",
+      "public module touched, declarations unchanged: src/interfaces/web/account/account-form.ts (imports changed src/interfaces/web/account/account-pages.ts)"
+    ],
+    "notes": [
+      "Local eligibility is preliminary. The manager or Delamain session must verify current local checks, holds, and required independent human approval."
+    ],
+    "label": "gh pr edit <n> --repo tomer-mayara/Thermus --add-label 'T1 Team review' --remove-label 'T2 Need architect' --remove-label 'T0 Auto merge'"
+  },
+  "checkerDispositions": "checker-notes.json",
+  "checks": {
+    "6ced8db3-api-surface": {
+      "command": "pnpm",
+      "args": [
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/pr-review/api-surface.ts",
+        "--check"
+      ],
+      "started": "2026-10-27T04:28:25.791Z",
+      "ended": "2026-10-27T04:28:28.193Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui03/6ced8db3-api-surface.log"
+    },
+    "6ced8db3-integration-coverage": {
+      "command": "pnpm",
+      "args": [
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-coverage.ts",
+        "--suite",
+        "integration"
+      ],
+      "started": "2026-10-27T04:26:57.415Z",
+      "ended": "2026-10-27T04:27:48.435Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui03/6ced8db3-integration-coverage.log"
+    },
+    "6ced8db3-checker": {
+      "command": "pnpm",
+      "args": [
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/pr-review/check.ts",
+        "--base",
+        "8278873552601ed156a9aaeeb31c41cdb84ad77a",
+        "--repo",
+        "tomer-mayara/Thermus",
+        "--impact",
+        "ast-report/impact.json",
+        "--base-snapshot",
+        "ast-report/snapshot-base.json",
+        "--head-snapshot",
+        "ast-report/snapshot.json",
+        "--crap",
+        "ast-report/crap.json",
+        "--process",
+        "ast-report/process.json",
+        "--review",
+        "ast-report/review.json",
+        "--json"
+      ],
+      "started": "2026-10-27T04:31:58.142Z",
+      "ended": "2026-10-27T04:32:01.247Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui03/6ced8db3-checker.log"
+    },
+    "6ced8db3-snapshot-head": {
+      "command": "pnpm",
+      "args": [
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-snapshot.ts"
+      ],
+      "started": "2026-10-27T04:27:52.527Z",
+      "ended": "2026-10-27T04:27:55.128Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui03/6ced8db3-snapshot-head.log"
+    },
+    "6ced8db3-ordinary": {
+      "command": "npm",
+      "args": [
+        "test"
+      ],
+      "started": "2026-10-27T04:00:03.317Z",
+      "ended": "2026-10-27T04:07:10.108Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui03/6ced8db3-ordinary.log"
+    },
+    "6ced8db3-habit-hooks": {
+      "command": "habit-hooks",
+      "args": [
+        "--branch",
+        "8278873552601ed156a9aaeeb31c41cdb84ad77a"
+      ],
+      "started": "2026-10-27T04:28:28.324Z",
+      "ended": "2026-10-27T04:28:30.808Z",
+      "exitCode": 1,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui03/6ced8db3-habit-hooks.log"
+    },
+    "6ced8db3-process": {
+      "command": "pnpm",
+      "args": [
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-process.ts",
+        "--base",
+        "8278873552601ed156a9aaeeb31c41cdb84ad77a",
+        "--json",
+        "ast-report/process.json"
+      ],
+      "started": "2026-10-27T04:27:55.287Z",
+      "ended": "2026-10-27T04:28:20.234Z",
+      "exitCode": 1,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui03/6ced8db3-process.log"
+    },
+    "6ced8db3-snapshot-base": {
+      "command": "pnpm",
+      "args": [
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-snapshot.ts",
+        "--base",
+        "8278873552601ed156a9aaeeb31c41cdb84ad77a"
+      ],
+      "started": "2026-10-27T04:27:48.663Z",
+      "ended": "2026-10-27T04:27:52.409Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui03/6ced8db3-snapshot-base.log"
+    },
+    "6ced8db3-self-hosted-container": {
+      "command": "npm",
+      "args": [
+        "run",
+        "test:container"
+      ],
+      "started": "2026-10-27T04:07:55.245Z",
+      "ended": "2026-10-27T04:10:15.492Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui03/6ced8db3-self-hosted-container.log"
+    },
+    "6ced8db3-typecheck": {
+      "command": "npm",
+      "args": [
+        "run",
+        "typecheck"
+      ],
+      "started": "2026-10-27T04:07:10.250Z",
+      "ended": "2026-10-27T04:07:12.359Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui03/6ced8db3-typecheck.log"
+    },
+    "6ced8db3-portal-build": {
+      "command": "npm",
+      "args": [
+        "run",
+        "build:user-portal"
+      ],
+      "started": "2026-10-27T04:07:12.483Z",
+      "ended": "2026-10-27T04:07:13.438Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui03/6ced8db3-portal-build.log"
+    },
+    "6ced8db3-hosted-offline": {
+      "command": "npm",
+      "args": [
+        "run",
+        "build:hosted"
+      ],
+      "started": "2026-10-27T04:10:15.733Z",
+      "ended": "2026-10-27T04:14:44.168Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui03/6ced8db3-hosted-offline.log"
+    },
+    "6ced8db3-crap": {
+      "command": "pnpm",
+      "args": [
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-crap.ts",
+        "--base",
+        "8278873552601ed156a9aaeeb31c41cdb84ad77a",
+        "--json",
+        "ast-report/crap.json"
+      ],
+      "started": "2026-10-27T04:28:20.366Z",
+      "ended": "2026-10-27T04:28:25.665Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui03/6ced8db3-crap.log"
+    },
+    "6ced8db3-collector-2": {
+      "command": "npm",
+      "args": [
+        "run",
+        "test:logging:collector"
+      ],
+      "started": "2026-10-27T04:17:02.467Z",
+      "ended": "2026-10-27T04:17:57.126Z",
+      "exitCode": 1,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui03/6ced8db3-collector-2.log"
+    },
+    "6ced8db3-browser-51": {
+      "command": "node",
+      "args": [
+        "--test",
+        "dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js"
+      ],
+      "started": "2026-10-27T04:07:13.777Z",
+      "ended": "2026-10-27T04:07:55.005Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui03/6ced8db3-browser-51.log"
+    },
+    "6ced8db3-collector-2-private-deps-retry": {
+      "command": "npm",
+      "args": [
+        "run",
+        "test:logging:collector"
+      ],
+      "started": "2026-10-27T04:21:15.545Z",
+      "ended": "2026-10-27T04:22:03.973Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": ".cache/ui-stack-finish/ui03/6ced8db3-collector-2-private-deps-retry.log"
+    },
+    "6ced8db3-postgres-7": {
+      "command": "npm",
+      "args": [
+        "run",
+        "test:logging:postgres"
+      ],
+      "started": "2026-10-27T04:14:44.603Z",
+      "ended": "2026-10-27T04:17:01.922Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui03/6ced8db3-postgres-7.log"
+    }
+  },
+  "holds": [
+    "Hosted-live: selected but held by known staging invitation quota exhaustion; no retry ran.",
+    "Linux AMD64 hosted image: not run in this native phase; awaiting separate root authorization.",
+    "T1 Team review: independent authorized approval of the current candidate is still required."
+  ],
+  "archiveUI01": "../archive-ui01-4a761fec/archive-index.json",
+  "bundleExclusion": "Do not bundle node_modules-immediate-links-before-repair or private node_modules. They preserve local dependencies, not review artifacts. Dependency JSON manifests and provenance are safe review evidence."
+}

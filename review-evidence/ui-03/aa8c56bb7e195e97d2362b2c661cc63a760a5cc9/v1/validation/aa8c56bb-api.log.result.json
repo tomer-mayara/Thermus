@@ -1,0 +1,15 @@
+{
+  "command": "pnpm",
+  "args": [
+    "--config.verifyDepsBeforeRun=false",
+    "exec",
+    "node",
+    "script/pr-review/api-surface.ts",
+    "--check"
+  ],
+  "started": "2026-10-27T05:04:05.443Z",
+  "ended": "2026-10-27T05:04:07.146Z",
+  "exitCode": 0,
+  "signal": null,
+  "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui03/aa8c56bb-api.log"
+}

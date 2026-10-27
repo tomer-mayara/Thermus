@@ -1,0 +1,17 @@
+
+> thermus@0.0.0 build:user-portal
+> npm run typecheck:user-portal && vite build --config src/interfaces/user-portal/vite.config.ts
+
+
+> thermus@0.0.0 typecheck:user-portal
+> tsc --project tsconfig.user-portal.json
+
+vite v6.4.4 building for production...
+transforming...
+✓ 9 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                  0.64 kB │ gzip: 0.38 kB
+dist/assets/index-D5W7cptp.css   9.40 kB │ gzip: 2.63 kB
+dist/assets/index-vf7lpPWV.js   16.60 kB │ gzip: 5.89 kB
+✓ built in 147ms

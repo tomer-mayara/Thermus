@@ -1,0 +1,12 @@
+{
+  "command": "node",
+  "args": [
+    "--test",
+    "dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js"
+  ],
+  "started": "2026-10-27T04:07:13.777Z",
+  "ended": "2026-10-27T04:07:55.005Z",
+  "exitCode": 0,
+  "signal": null,
+  "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui03/6ced8db3-browser-51.log"
+}

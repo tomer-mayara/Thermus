@@ -1,0 +1,15 @@
+{
+  "head": "aa8c56bb7e195e97d2362b2c661cc63a760a5cc9",
+  "base": "614090a1632b27ce40a3d2e38cac9492bac048aa",
+  "reviewedAt": "2026-10-27T05:10:25.757875+00:00",
+  "decision": "Accept the fresh quality/checker rebind. No new actionable finding.",
+  "evidence": "Read current evidence-summary.json, ast-report/review.json, checker-notes.json, metric-dispositions.json; match independent historical audit and source rebind.",
+  "notes": [
+    "All five required CRAP goals pass with verified integration coverage at current head.",
+    "35 Habit Hooks findings retain audited reasons; no snooze.",
+    "Native inspectOpenForm 10-path note remains visible; trusted policy is >10.",
+    "Native filesAdded6-to8 context change is preserved; findings unchanged.",
+    "T1 read path only, no architecture facts or local checker blockers.",
+    "Image, live staging and independent human approval remain separate holds."
+  ]
+}

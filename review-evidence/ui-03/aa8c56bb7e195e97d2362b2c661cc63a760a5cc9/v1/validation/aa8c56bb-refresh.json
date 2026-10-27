@@ -1,0 +1,107 @@
+[
+  {
+    "name": "typecheck",
+    "command": [
+      "npm",
+      "run",
+      "typecheck"
+    ],
+    "exitCode": 0,
+    "log": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui03/aa8c56bb-typecheck.log"
+  },
+  {
+    "name": "integration-coverage",
+    "command": [
+      "pnpm",
+      "--config.verifyDepsBeforeRun=false",
+      "exec",
+      "node",
+      "script/code-quality/ast-metrics-coverage.ts",
+      "--suite",
+      "integration"
+    ],
+    "exitCode": 0,
+    "log": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui03/aa8c56bb-integration-coverage.log"
+  },
+  {
+    "name": "snapshot-base",
+    "command": [
+      "pnpm",
+      "--config.verifyDepsBeforeRun=false",
+      "exec",
+      "node",
+      "script/code-quality/ast-metrics-snapshot.ts",
+      "--base",
+      "614090a1632b27ce40a3d2e38cac9492bac048aa"
+    ],
+    "exitCode": 0,
+    "log": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui03/aa8c56bb-snapshot-base.log"
+  },
+  {
+    "name": "snapshot-head",
+    "command": [
+      "pnpm",
+      "--config.verifyDepsBeforeRun=false",
+      "exec",
+      "node",
+      "script/code-quality/ast-metrics-snapshot.ts"
+    ],
+    "exitCode": 0,
+    "log": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui03/aa8c56bb-snapshot-head.log"
+  },
+  {
+    "name": "process",
+    "command": [
+      "pnpm",
+      "--config.verifyDepsBeforeRun=false",
+      "exec",
+      "node",
+      "script/code-quality/ast-metrics-process.ts",
+      "--base",
+      "614090a1632b27ce40a3d2e38cac9492bac048aa",
+      "--json",
+      "ast-report/process.json"
+    ],
+    "exitCode": 1,
+    "log": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui03/aa8c56bb-process.log"
+  },
+  {
+    "name": "crap",
+    "command": [
+      "pnpm",
+      "--config.verifyDepsBeforeRun=false",
+      "exec",
+      "node",
+      "script/code-quality/ast-metrics-crap.ts",
+      "--base",
+      "614090a1632b27ce40a3d2e38cac9492bac048aa",
+      "--json",
+      "ast-report/crap.json"
+    ],
+    "exitCode": 0,
+    "log": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui03/aa8c56bb-crap.log"
+  },
+  {
+    "name": "api",
+    "command": [
+      "pnpm",
+      "--config.verifyDepsBeforeRun=false",
+      "exec",
+      "node",
+      "script/pr-review/api-surface.ts",
+      "--check"
+    ],
+    "exitCode": 0,
+    "log": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui03/aa8c56bb-api.log"
+  },
+  {
+    "name": "habit-hooks",
+    "command": [
+      "habit-hooks",
+      "--branch",
+      "614090a1632b27ce40a3d2e38cac9492bac048aa"
+    ],
+    "exitCode": 1,
+    "log": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui03/aa8c56bb-habit-hooks.log"
+  }
+]

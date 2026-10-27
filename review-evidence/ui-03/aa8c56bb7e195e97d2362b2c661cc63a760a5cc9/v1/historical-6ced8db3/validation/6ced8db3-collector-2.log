@@ -1,0 +1,120 @@
+
+> thermus@0.0.0 test:logging:collector
+> npm run build && node --test --test-concurrency=1 dist/test/integration/logging/audit/audit-sender.runtime.js dist/test/acceptance/logging/audit/hosted-audit-journey.runtime.js
+
+
+> thermus@0.0.0 build
+> test ! -L dist && { test ! -e dist || test -d dist; } && rm -rf dist && tsc --project tsconfig.build.json --outDir dist
+
+✖ S2-04 Given a current password-authenticated Admin and a reachable Collector, when the Admin saves disabled, Tests once, enables, uses MCP after snapshot expiry, and uses MCP and shipped Admin actions, then the Collector receives the first and later bounded results and administration metadata while product outcomes and system output stay independent (6478.182208ms)
+✖ Given a saved Axiom dataset and a verified TLS receiver, when saved Test and normal export run, then only the configured dataset and Bearer headers reach the destination (2664.45125ms)
+✔ Given a trusted public-address TLS receiver, when None and Bearer events are sent, then only the supplied audit data and auth reach that socket (2705.423ms)
+✔ Given an open-source Collector with None and Bearer receivers, when audit events are sent, then the Collector accepts both and rejects the wrong token (5055.342041ms)
+ℹ Collector otel/opentelemetry-collector-contrib:0.163.2@sha256:7f22d2a6748110ffb6a59bc0df448bccbf501cdb667d610ede4c61d3863d5849; isolated public-address TLS 93.184.216.10.
+✖ Given disabled saved Bearer destinations at two receivers, when their real logging form Tests each saved revision, then the Collector receives one labelled synthetic event per destination and settings do not change (3520.660292ms)
+✔ Given a trusted public-address receiver, when its hostname or trust chain is wrong, then no event or Bearer token reaches HTTP (5696.010375ms)
+✔ Given a hostname that changes from public to loopback, when the same sender sends again, then the new DNS answer is refused before HTTP (4585.087459ms)
+✔ Given a receiver that redirects, when an authenticated audit event is sent, then the redirect target gets no request (4137.595917ms)
+✔ Given an actual stalled TLS response, when its caller cancels, then the send settles and the sender can send a later event (4887.461667ms)
+✔ Given enabled saved Bearer settings and the production audit assembly, when the first bounded redacted tool capture occurs, then the real Collector receives that event and one separate saved Test without event writes to settings (7499.643667ms)
+ℹ Real production logging-storage factory, AuditLog, snapshots, queue, fresh destination authorization, shared sender, and Collector; settings storage is controlled.
+ℹ tests 10
+ℹ suites 0
+ℹ pass 7
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 47764.261792
+
+✖ failing tests:
+
+test at dist/test/acceptance/logging/audit/hosted-audit-journey.runtime.js:20:1
+✖ S2-04 Given a current password-authenticated Admin and a reachable Collector, when the Admin saves disabled, Tests once, enables, uses MCP after snapshot expiry, and uses MCP and shipped Admin actions, then the Collector receives the first and later bounded results and administration metadata while product outcomes and system output stay independent (6478.182208ms)
+  Error: docker start -a exited with 1:
+  node:internal/modules/package_json_reader:301
+    throw new ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base), null);
+          ^
+  
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@modelcontextprotocol/server' imported from /workspace/src/interfaces/mcp/fetch-tool-server.js
+      at Object.getPackageJSONURL (node:internal/modules/package_json_reader:301:9)
+      at packageResolve (node:internal/modules/esm/resolve:784:25)
+      at moduleResolve (node:internal/modules/esm/resolve:873:18)
+      at defaultResolve (node:internal/modules/esm/resolve:1006:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:705:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:725:38)
+      at ModuleLoader.resolveSync (node:internal/modules/esm/loader:763:56)
+      at #resolve (node:internal/modules/esm/loader:687:17)
+      at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:607:35)
+      at ModuleJob.syncLink (node:internal/modules/esm/module_job:276:33) {
+    code: 'ERR_MODULE_NOT_FOUND'
+  }
+  
+  Node.js v24.20.0
+  
+      at dockerOutput (file:///Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/dist/test/support/container/docker-cli.js:19:15)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Object.publicJourney (file:///Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/dist/test/support/container/audit-sender-site.js:192:28)
+      at async TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/dist/test/acceptance/logging/audit/hosted-audit-journey.runtime.js:22:21)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+
+test at dist/test/integration/logging/audit/audit-sender.runtime.js:11:1
+✖ Given a saved Axiom dataset and a verified TLS receiver, when saved Test and normal export run, then only the configured dataset and Bearer headers reach the destination (2664.45125ms)
+  Error: docker start -a exited with 1:
+  node:internal/modules/package_json_reader:301
+    throw new ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base), null);
+          ^
+  
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'micromark' imported from /workspace/src/interfaces/web/account/logging-page.js
+      at Object.getPackageJSONURL (node:internal/modules/package_json_reader:301:9)
+      at packageResolve (node:internal/modules/esm/resolve:784:25)
+      at moduleResolve (node:internal/modules/esm/resolve:873:18)
+      at defaultResolve (node:internal/modules/esm/resolve:1006:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:705:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:725:38)
+      at ModuleLoader.resolveSync (node:internal/modules/esm/loader:763:56)
+      at #resolve (node:internal/modules/esm/loader:687:17)
+      at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:607:35)
+      at ModuleJob.syncLink (node:internal/modules/esm/module_job:276:33) {
+    code: 'ERR_MODULE_NOT_FOUND'
+  }
+  
+  Node.js v24.20.0
+  
+      at dockerOutput (file:///Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/dist/test/support/container/docker-cli.js:19:15)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Object.testSavedDestinations (file:///Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/dist/test/support/container/audit-sender-site.js:228:28)
+      at async TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/dist/test/integration/logging/audit/audit-sender.runtime.js:14:20)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+
+test at dist/test/integration/logging/audit/audit-sender.runtime.js:81:1
+✖ Given disabled saved Bearer destinations at two receivers, when their real logging form Tests each saved revision, then the Collector receives one labelled synthetic event per destination and settings do not change (3520.660292ms)
+  Error: docker start -a exited with 1:
+  node:internal/modules/package_json_reader:301
+    throw new ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base), null);
+          ^
+  
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'micromark' imported from /workspace/src/interfaces/web/account/logging-page.js
+      at Object.getPackageJSONURL (node:internal/modules/package_json_reader:301:9)
+      at packageResolve (node:internal/modules/esm/resolve:784:25)
+      at moduleResolve (node:internal/modules/esm/resolve:873:18)
+      at defaultResolve (node:internal/modules/esm/resolve:1006:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:705:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:725:38)
+      at ModuleLoader.resolveSync (node:internal/modules/esm/loader:763:56)
+      at #resolve (node:internal/modules/esm/loader:687:17)
+      at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:607:35)
+      at ModuleJob.syncLink (node:internal/modules/esm/module_job:276:33) {
+    code: 'ERR_MODULE_NOT_FOUND'
+  }
+  
+  Node.js v24.20.0
+  
+      at dockerOutput (file:///Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/dist/test/support/container/docker-cli.js:19:15)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Object.testSavedDestinations (file:///Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/dist/test/support/container/audit-sender-site.js:228:28)
+      at async TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/dist/test/integration/logging/audit/audit-sender.runtime.js:83:21)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7)

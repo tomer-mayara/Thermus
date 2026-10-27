@@ -1,0 +1,16 @@
+{
+  "command": "pnpm",
+  "args": [
+    "--config.verifyDepsBeforeRun=false",
+    "exec",
+    "node",
+    "script/code-quality/ast-metrics-coverage.ts",
+    "--suite",
+    "integration"
+  ],
+  "started": "2026-10-27T05:01:44.190Z",
+  "ended": "2026-10-27T05:03:27.943Z",
+  "exitCode": 0,
+  "signal": null,
+  "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui03/aa8c56bb-integration-coverage.log"
+}

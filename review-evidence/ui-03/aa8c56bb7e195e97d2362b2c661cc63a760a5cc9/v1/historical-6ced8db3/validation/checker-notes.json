@@ -1,0 +1,34 @@
+{
+  "candidate": "6ced8db3965190d1d859b60d7053f1830cf5a23c",
+  "parent": "8278873552601ed156a9aaeeb31c41cdb84ad77a",
+  "reasons": [
+    {
+      "key": "read_paths",
+      "path": "docs/implementation/test-gate-policy.md",
+      "reason": "The changed inventory row documents the browser matrix and its existing command. It does not weaken gate selection or approval authority."
+    }
+  ],
+  "informational": [
+    {
+      "text": "49 public modules, 0 snapshots changed",
+      "reason": "All 49 committed public declaration snapshots match regeneration; the increment adds no public module or signature."
+    },
+    {
+      "text": "public module touched, declarations unchanged: src/interfaces/web/account/account-form.ts (imports changed src/interfaces/web/account/account-pages.ts)",
+      "reason": "The public account-form module reaches the changed account-pages implementation. Only fixed last-Admin recovery text changes there; exported declarations, status and navigation paths stay the same. No production boundary or callable signature changes."
+    }
+  ],
+  "checkerNote": {
+    "text": "Local eligibility is preliminary. The manager or Delamain session must verify current local checks, holds, and required independent human approval.",
+    "reason": "The checker is local structural/metric evidence. Required staging, image and current-head human approval remain separate holds."
+  },
+  "nativeThresholdNote": {
+    "file": "test/support/drivers/browser/invitation-browser.ts",
+    "subject": "InvitationBrowser::inspectOpenForm",
+    "paths": 10,
+    "nativeSeverity": "medium",
+    "nativeThreshold": ">=10",
+    "trustedWrapperThreshold": ">10",
+    "disposition": "Not a warning under the approved wrapper rule. Native evidence is retained in review.json.nativeReview; the method checks one open-form browser contract."
+  }
+}

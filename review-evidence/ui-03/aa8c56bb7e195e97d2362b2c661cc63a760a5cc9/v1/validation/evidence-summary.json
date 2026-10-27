@@ -1,0 +1,535 @@
+{
+  "candidate": "aa8c56bb7e195e97d2362b2c661cc63a760a5cc9",
+  "parent": "614090a1632b27ce40a3d2e38cac9492bac048aa",
+  "main": "9507e751215fec32748bf4e944f2393928e61cf5",
+  "branch": "codex/validate-ui-03-aa8c56bb",
+  "treeClean": true,
+  "hostLane": "Released; all subprocesses settled.",
+  "functionalRebind": "functional-rebind.json",
+  "historicalFunctional": {
+    "actualHead": "6ced8db3965190d1d859b60d7053f1830cf5a23c",
+    "actualParent": "8278873552601ed156a9aaeeb31c41cdb84ad77a",
+    "mainAtExecution": "2b3ad13b9e2e61e206479b82e91359192cae1d00",
+    "summary": ".cache/ui-stack-finish/archive-ui03-6ced8db3/validation/evidence-summary.json",
+    "selectedEvidence": ".cache/ui-stack-finish/archive-ui03-6ced8db3/validation/6ced8db3-functional-selected.json",
+    "counts": {
+      "ordinary": 5161,
+      "portal": 49,
+      "browser": 51,
+      "selfHostedContainer": 11,
+      "offlineUnit": 3319,
+      "offlinePortalUnit": 29,
+      "offlinePortalAcceptance": 20,
+      "offlineIntegration": 1166,
+      "offlineAcceptanceInterface": 123,
+      "offlineRenderer": 13,
+      "postgresFiles": 7,
+      "postgresTests": 26,
+      "collectorFiles": 2,
+      "collectorFinalTests": 10,
+      "collectorInitialPass": 7,
+      "collectorInitialFail": 3
+    },
+    "claim": "Original functional executions keep their original pins. The current feature and source/test increment match them byte-for-byte; main advancement only adds script/Knip/prose and immutable history context. No functional group was repeated."
+  },
+  "historicalCollectorRepair": {
+    "provenance": ".cache/ui-stack-finish/archive-ui03-6ced8db3/validation/dependency-copy-provenance.json",
+    "initial": "7 passed /3 module-resolution failures under mounted absolute dependency links.",
+    "retry": "The complete two-file Collector group passed10/10 after a private dependency clone.",
+    "timing": "Full inventory finished after the passing retry; approved private Node launcher normalization followed. This chronology is preserved in the original provenance.",
+    "copyReuse": "The same self-contained dependency copy is retained. No new install, assertion or deadline change."
+  },
+  "freshTypecheck": {
+    "head": "aa8c56bb7e195e97d2362b2c661cc63a760a5cc9",
+    "log": "aa8c56bb-typecheck.log",
+    "result": "passed",
+    "scope": "Includes the new main probe scripts."
+  },
+  "freshCoverage": {
+    "commit": "aa8c56bb7e195e97d2362b2c661cc63a760a5cc9",
+    "suite": [
+      "integration"
+    ],
+    "status": "verified",
+    "tests": 1166,
+    "files": 164,
+    "processes": 288,
+    "provenance": {
+      "sourceFingerprint": "0db6859d5858f106c9233680696a565e18950c6b7fd057afaa1153ce25dfad58",
+      "inputsFingerprint": "3c7a6ee3fb59a7c996582c7dde0b362b7ea6cd56fc6adc5ce4fb5208be263d70",
+      "runtime": "node-24.20.0",
+      "compiler": "typescript-7.0.2",
+      "measurementVersion": "own-characters-1",
+      "suite": [
+        "integration"
+      ],
+      "comparisonIdentity": {
+        "sourceFingerprint": "0db6859d5858f106c9233680696a565e18950c6b7fd057afaa1153ce25dfad58",
+        "inputsFingerprint": "3c7a6ee3fb59a7c996582c7dde0b362b7ea6cd56fc6adc5ce4fb5208be263d70",
+        "runtime": "node-24.20.0",
+        "compiler": "typescript-7.0.2",
+        "measurementVersion": "own-characters-1",
+        "suite": "unit"
+      },
+      "status": "verified",
+      "capturedCommit": "aa8c56bb7e195e97d2362b2c661cc63a760a5cc9",
+      "buildFingerprint": "76d70652a784cfb64d50a3bff72966377696b6c9dac6ae54755ba437938ef9c1",
+      "captureManifestFingerprint": "b2b54e1f87b911b7c9293a11c1d4b91d5e759503cc46ac60dc0925db35743d1d",
+      "captures": [
+        {
+          "sourceFingerprint": "0db6859d5858f106c9233680696a565e18950c6b7fd057afaa1153ce25dfad58",
+          "inputsFingerprint": "5d4fb5eed1d3bf3762ced25bf5f93b839e7007981023c2bdb91884de5a86e800",
+          "runtime": "node-24.20.0",
+          "compiler": "typescript-7.0.2",
+          "measurementVersion": "own-characters-1",
+          "suite": "integration",
+          "completionProtocol": "normal-exit-or-sealed-or-loader-1",
+          "captureId": "93178594da99fca66c4a4c2c7dc3d7cc61c18b6128fc1df3ca1f749a580c021b",
+          "comparisonIdentity": {
+            "sourceFingerprint": "0db6859d5858f106c9233680696a565e18950c6b7fd057afaa1153ce25dfad58",
+            "inputsFingerprint": "3c7a6ee3fb59a7c996582c7dde0b362b7ea6cd56fc6adc5ce4fb5208be263d70",
+            "runtime": "node-24.20.0",
+            "compiler": "typescript-7.0.2",
+            "measurementVersion": "own-characters-1",
+            "suite": "unit"
+          },
+          "status": "verified",
+          "capturedCommit": "aa8c56bb7e195e97d2362b2c661cc63a760a5cc9",
+          "buildFingerprint": "76d70652a784cfb64d50a3bff72966377696b6c9dac6ae54755ba437938ef9c1",
+          "captureManifestFingerprint": "65fd41062bf5d1723b3ab346720f94feb44dfe7b3d223c6efbdeca844207b7a8"
+        }
+      ]
+    }
+  },
+  "quality": {
+    "head": "aa8c56bb7e195e97d2362b2c661cc63a760a5cc9",
+    "base": "614090a1632b27ce40a3d2e38cac9492bac048aa",
+    "outcomes": [
+      {
+        "name": "Delta",
+        "status": "goal miss"
+      },
+      {
+        "name": "Review",
+        "status": "goal miss"
+      },
+      {
+        "name": "CRAP",
+        "status": "passed"
+      },
+      {
+        "name": "Architecture",
+        "status": "passed"
+      }
+    ],
+    "requiredCrap": [
+      {
+        "file": "src/interfaces/web/account/administration-pages.ts",
+        "function": "membersPage",
+        "change": "changed",
+        "paths": 3,
+        "share": 0.975,
+        "crap": 3.000140625,
+        "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"membersPage\",\"start\":1693,\"end\":3490,\"body\":\"c75457af52eb5122bfc17beb5e6a2dbd4bf0cf6ba9eb291776f86219507057bf\",\"signature\":\"16f0253aee78552103740607de26a07553eb2fa08b12f8236a13d5c5758cc2dc\"}"
+      },
+      {
+        "file": "src/interfaces/web/account/account-pages.ts",
+        "function": "removalResultPage",
+        "change": "changed",
+        "paths": 2,
+        "share": 1,
+        "crap": 2,
+        "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"removalResultPage\",\"start\":5391,\"end\":6102,\"body\":\"59a3ae21029c8c28100c7c9f515d0b68ca69326bab8cb8c04f6a0a0e2e6c861b\",\"signature\":\"5c442275f3315587b86807edc9b2e734ac0196ba4e2055c9c261e223df13b134\"}"
+      },
+      {
+        "file": "src/interfaces/web/account/administration-pages.ts",
+        "function": "sendForm",
+        "change": "changed",
+        "paths": 2,
+        "share": 1,
+        "crap": 2,
+        "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"sendForm\",\"start\":4625,\"end\":5942,\"body\":\"3ed886b5944a9d30adfd8b1f0155562b9316d39ff3a7758d1272dff6984cc528\",\"signature\":\"49d7301d22edfdd1e36c9b8a4159dbb6bd0bc35cd07c3223fe0f7f1f3fda7efb\"}"
+      },
+      {
+        "file": "src/interfaces/web/account/account-pages.ts",
+        "function": "(anonymous)",
+        "change": "new",
+        "paths": 1,
+        "share": 1,
+        "crap": 1,
+        "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:noticeResponse\",\"name\":\"(anonymous)\",\"start\":7346,\"end\":7382,\"body\":\"592d9c7c4d42763f95b7c30bcd862b2452411074b786098fa96449f423fb8347\",\"signature\":\"fbbc13cdbc7fe04c1943b05f0dc6db19f9f8b6e4f49ca7aeb7144a30914d06cc\"}"
+      },
+      {
+        "file": "src/interfaces/web/account/administration-pages.ts",
+        "function": "(anonymous)",
+        "change": "new",
+        "paths": 1,
+        "share": 1,
+        "crap": 1,
+        "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"\",\"name\":\"(anonymous)\",\"start\":887,\"end\":972,\"body\":\"8759331c3cc75ac46bc61c45d51e2f614529a7e4d5d002360df60999094ca864\",\"signature\":\"fce7b55878c3b96254fb565eaee750d1b12cf515a1d7d4f17ee0cbe125b5eab0\"}"
+      }
+    ],
+    "metricDispositions": "metric-dispositions.json",
+    "habitDispositions": "habit-dispositions.json",
+    "habit": "Exit1 with35 retained findings, exactly matching the audited historical output; each has a reason. Snooze remains[].",
+    "nativeThreshold": "The full nativeReview retains inspectOpenForm at10 paths. The approved wrapper warns only above10, so it is excluded from the top-level warning count.",
+    "inventoryNote": "Native filesAdded changed6\u21928 in the current whole-project summary. Selected findings, native warning set and trusted policy are identical; current summary is retained without rewriting it.",
+    "api": "49 snapshots current. Scoped declaration generator filters33 compiler errors in2 nonpublic files; fresh full typecheck passed.",
+    "history": "No new immutable record was created; actual parent is off main. Both inherited main records remain historical and unchanged."
+  },
+  "checker": {
+    "tier": "T1",
+    "tierName": "T1 Team review",
+    "eligibility": "eligible",
+    "blockers": [],
+    "candidate": "aa8c56bb7e195e97d2362b2c661cc63a760a5cc9",
+    "mergeBase": "614090a1632b27ce40a3d2e38cac9492bac048aa",
+    "architecture": {
+      "policy": "facts",
+      "facts": [],
+      "summary": "T0: no architecture fact"
+    },
+    "reasons": [
+      {
+        "tier": "T1",
+        "key": "read_paths",
+        "fact": "docs/implementation/test-gate-policy.md"
+      }
+    ],
+    "questions": [],
+    "changedPaths": [
+      {
+        "status": "M",
+        "path": ".pr-impact.json"
+      },
+      {
+        "status": "M",
+        "path": "docs/design/organization-admin-plan.md"
+      },
+      {
+        "status": "M",
+        "path": "docs/design/portal-design.md"
+      },
+      {
+        "status": "A",
+        "path": "docs/implementation/admin-ui-03.md"
+      },
+      {
+        "status": "M",
+        "path": "docs/implementation/test-gate-policy.md"
+      },
+      {
+        "status": "M",
+        "path": "src/interfaces/web/account/account-pages.ts"
+      },
+      {
+        "status": "M",
+        "path": "src/interfaces/web/account/administration-pages.ts"
+      },
+      {
+        "status": "M",
+        "path": "src/interfaces/web/account/members-style.ts"
+      },
+      {
+        "status": "M",
+        "path": "test/acceptance/auth/hosted-admin-journey.test.ts"
+      },
+      {
+        "status": "M",
+        "path": "test/acceptance/auth/hosted-invitation-refusals.test.ts"
+      },
+      {
+        "status": "M",
+        "path": "test/acceptance/auth/hosted-invitations.test.ts"
+      },
+      {
+        "status": "M",
+        "path": "test/acceptance/auth/hosted-live/administration-server.ts"
+      },
+      {
+        "status": "M",
+        "path": "test/acceptance/auth/hosted-member-removal-browser.runtime.ts"
+      },
+      {
+        "status": "M",
+        "path": "test/acceptance/auth/hosted-member-removal-scope.test.ts"
+      },
+      {
+        "status": "M",
+        "path": "test/acceptance/auth/hosted-members.test.ts"
+      },
+      {
+        "status": "M",
+        "path": "test/acceptance/auth/hosted-membership-access.test.ts"
+      },
+      {
+        "status": "M",
+        "path": "test/acceptance/auth/hosted-workos-administration.test.ts"
+      },
+      {
+        "status": "M",
+        "path": "test/acceptance/auth/hosted-workos-role-access.test.ts"
+      },
+      {
+        "status": "M",
+        "path": "test/acceptance/logging/audit/administration-capture.test.ts"
+      },
+      {
+        "status": "M",
+        "path": "test/acceptance/logging/audit/hosted-storage-failure.runtime.ts"
+      },
+      {
+        "status": "M",
+        "path": "test/integration/auth/hosted-administration.test.ts"
+      },
+      {
+        "status": "M",
+        "path": "test/integration/hosted-admin/account-routes-administration-pages.test.ts"
+      },
+      {
+        "status": "M",
+        "path": "test/integration/hosted-admin/account-routes-removal.test.ts"
+      },
+      {
+        "status": "M",
+        "path": "test/support/container/audit-sender-site.ts"
+      },
+      {
+        "status": "M",
+        "path": "test/support/drivers/browser/admin-shell-browser.ts"
+      },
+      {
+        "status": "A",
+        "path": "test/support/drivers/browser/invitation-browser.ts"
+      },
+      {
+        "status": "M",
+        "path": "test/support/drivers/browser/member-removal-browser.ts"
+      },
+      {
+        "status": "A",
+        "path": "test/support/in-process/browser-transport-site.ts"
+      },
+      {
+        "status": "M",
+        "path": "test/support/in-process/hosted-audit-journey-site.ts"
+      },
+      {
+        "status": "M",
+        "path": "test/support/in-process/hosted-audit-snapshot-site.ts"
+      }
+    ],
+    "lineCounts": {
+      "production": 42,
+      "productionLimit": 400,
+      "total": 675,
+      "totalLimit": 1500
+    },
+    "tests": {
+      "added": 13,
+      "removed": 0,
+      "skippedOrTodo": []
+    },
+    "mi": [
+      "changed: src/interfaces/web/account/account-pages.ts: 72.76076629466495 to 72.76076629466495",
+      "changed: src/interfaces/web/account/administration-pages.ts: 59.468834274547625 to 59.20233572948304",
+      "not applicable: src/interfaces/web/account/members-style.ts: no raw MI in the base snapshot"
+    ],
+    "crap": [
+      "src/interfaces/web/account/administration-pages.ts: membersPage: 3.0",
+      "src/interfaces/web/account/account-pages.ts: removalResultPage: 2.0",
+      "src/interfaces/web/account/administration-pages.ts: sendForm: 2.0",
+      "src/interfaces/web/account/account-pages.ts: (anonymous): 1.0",
+      "src/interfaces/web/account/administration-pages.ts: (anonymous): 1.0"
+    ],
+    "metrics": [
+      "Delta: goal miss",
+      "Review: goal miss",
+      "CRAP: passed",
+      "Architecture: passed",
+      "outside scopes.production: test/acceptance/auth/hosted-member-removal-browser.runtime.ts: Maintainability index: 11 -> 6 (below 85 is hard to maintain)",
+      "0 findings on unchanged files, reason unchanged by this PR"
+    ],
+    "factsToDeclare": [],
+    "declaredFacts": [],
+    "surfaceDifferences": [
+      "src/interfaces/web/account/account-form.ts (imports changed src/interfaces/web/account/account-pages.ts)"
+    ],
+    "informational": [
+      "49 public modules, 0 snapshots changed",
+      "public module touched, declarations unchanged: src/interfaces/web/account/account-form.ts (imports changed src/interfaces/web/account/account-pages.ts)"
+    ],
+    "notes": [
+      "Local eligibility is preliminary. The manager or Delamain session must verify current local checks, holds, and required independent human approval."
+    ],
+    "label": "gh pr edit <n> --repo tomer-mayara/Thermus --add-label 'T1 Team review' --remove-label 'T2 Need architect' --remove-label 'T0 Auto merge'"
+  },
+  "checkerDispositions": "checker-notes.json",
+  "checks": {
+    "aa8c56bb-process": {
+      "command": "pnpm",
+      "args": [
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-process.ts",
+        "--base",
+        "614090a1632b27ce40a3d2e38cac9492bac048aa",
+        "--json",
+        "ast-report/process.json"
+      ],
+      "started": "2026-10-27T05:03:34.806Z",
+      "ended": "2026-10-27T05:03:59.627Z",
+      "exitCode": 1,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui03/aa8c56bb-process.log"
+    },
+    "aa8c56bb-api": {
+      "command": "pnpm",
+      "args": [
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/pr-review/api-surface.ts",
+        "--check"
+      ],
+      "started": "2026-10-27T05:04:05.443Z",
+      "ended": "2026-10-27T05:04:07.146Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui03/aa8c56bb-api.log"
+    },
+    "aa8c56bb-checker": {
+      "command": "pnpm",
+      "args": [
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/pr-review/check.ts",
+        "--base",
+        "614090a1632b27ce40a3d2e38cac9492bac048aa",
+        "--repo",
+        "tomer-mayara/Thermus",
+        "--impact",
+        "ast-report/impact.json",
+        "--base-snapshot",
+        "ast-report/snapshot-base.json",
+        "--head-snapshot",
+        "ast-report/snapshot.json",
+        "--crap",
+        "ast-report/crap.json",
+        "--process",
+        "ast-report/process.json",
+        "--review",
+        "ast-report/review.json",
+        "--json"
+      ],
+      "started": "2026-10-27T05:06:51.863Z",
+      "ended": "2026-10-27T05:06:54.884Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui03/aa8c56bb-checker.log"
+    },
+    "aa8c56bb-typecheck": {
+      "command": "npm",
+      "args": [
+        "run",
+        "typecheck"
+      ],
+      "started": "2026-10-27T05:01:37.658Z",
+      "ended": "2026-10-27T05:01:43.839Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui03/aa8c56bb-typecheck.log"
+    },
+    "aa8c56bb-integration-coverage": {
+      "command": "pnpm",
+      "args": [
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-coverage.ts",
+        "--suite",
+        "integration"
+      ],
+      "started": "2026-10-27T05:01:44.190Z",
+      "ended": "2026-10-27T05:03:27.943Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui03/aa8c56bb-integration-coverage.log"
+    },
+    "aa8c56bb-habit-hooks": {
+      "command": "habit-hooks",
+      "args": [
+        "--branch",
+        "614090a1632b27ce40a3d2e38cac9492bac048aa"
+      ],
+      "started": "2026-10-27T05:04:07.287Z",
+      "ended": "2026-10-27T05:04:09.595Z",
+      "exitCode": 1,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui03/aa8c56bb-habit-hooks.log"
+    },
+    "aa8c56bb-snapshot-head": {
+      "command": "pnpm",
+      "args": [
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-snapshot.ts"
+      ],
+      "started": "2026-10-27T05:03:32.009Z",
+      "ended": "2026-10-27T05:03:34.620Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui03/aa8c56bb-snapshot-head.log"
+    },
+    "aa8c56bb-crap": {
+      "command": "pnpm",
+      "args": [
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-crap.ts",
+        "--base",
+        "614090a1632b27ce40a3d2e38cac9492bac048aa",
+        "--json",
+        "ast-report/crap.json"
+      ],
+      "started": "2026-10-27T05:03:59.801Z",
+      "ended": "2026-10-27T05:04:05.292Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui03/aa8c56bb-crap.log"
+    },
+    "aa8c56bb-snapshot-base": {
+      "command": "pnpm",
+      "args": [
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-snapshot.ts",
+        "--base",
+        "614090a1632b27ce40a3d2e38cac9492bac048aa"
+      ],
+      "started": "2026-10-27T05:03:28.094Z",
+      "ended": "2026-10-27T05:03:31.824Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui03/aa8c56bb-snapshot-base.log"
+    }
+  },
+  "holds": [
+    "Hosted-live remains selected but held by known staging invitation quota exhaustion; no new live retry ran.",
+    "Passing current-context Linux AMD64 image evidence remains pending separate local image authorization.",
+    "Current source publication and PR report steps remain manager work.",
+    "T1 Team review requires independent authorized approval of the current head."
+  ],
+  "sourcePublication": "Prior publication evidence stays at its historical pins. This worker made no push, PR edit or publication claim for current source.",
+  "archivesPreserved": [
+    "../archive-ui03-6ced8db3",
+    "../archive-ui01-37046bbd",
+    "../archive-ui01-4a761fec"
+  ],
+  "bundleExclusion": "Preserved dependency directories are local recovery material. Use dependency JSON manifests/provenance as review evidence, without bundling node_modules contents."
+}

@@ -1,0 +1,12 @@
+{
+  "command": "npm",
+  "args": [
+    "run",
+    "test:logging:collector"
+  ],
+  "started": "2026-10-27T04:17:02.467Z",
+  "ended": "2026-10-27T04:17:57.126Z",
+  "exitCode": 1,
+  "signal": null,
+  "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui03/6ced8db3-collector-2.log"
+}

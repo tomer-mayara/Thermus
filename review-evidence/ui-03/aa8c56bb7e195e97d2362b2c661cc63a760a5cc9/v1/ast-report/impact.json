@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "classification": {
+    "container": false,
+    "external": false,
+    "contract": false,
+    "deployment": false,
+    "crossCutting": false,
+    "component": false,
+    "internalInterface": false,
+    "sensitiveBehavior": false,
+    "dependencyRisk": false,
+    "policy": false,
+    "uncertain": false
+  },
+  "architecture": {
+    "modelUpdated": false,
+    "summary": "UI-03 changes invitation presentation inside the existing Web owner. The increment preserves the parent UI-02 member rows, distinct counts and compact quiet removal controls. A native closed Invite member disclosure contains the current protected form, Send invitation and a Members GET Cancel link. Last-Admin refusal adds instructions beside the existing recovery link. Allowed roles, recipient policy, POST fields, session/access checks, provider operations, server notices, removal authority and approved help remain unchanged. There is no new script, state, query, production component, dependency, public declaration, store or deployment change. All 15 registry views and current responsibility descriptions remain accurate. The browser gate inventory documents the added cases without changing gate selection or decision authority.",
+    "views": [
+      "Context",
+      "C4 containers: hosted edition",
+      "Containers and source owners",
+      "Selected C4 components: hosted authentication in the Node server",
+      "Selected C4 components: hosted membership removal in the Node server",
+      "Selected C4 components: hosted Audit logs settings and delivery in the Node server",
+      "Scenario: hosted member read",
+      "Behavior and resource ownership",
+      "Deployment view"
+    ],
+    "evidence": [
+      "src/interfaces/web/account/administration-pages.ts",
+      "src/interfaces/web/account/account-pages.ts",
+      "src/interfaces/web/account/members-style.ts",
+      "test/acceptance/auth/hosted-member-removal-browser.runtime.ts",
+      "test/integration/hosted-admin/account-routes-administration-pages.test.ts",
+      "test/acceptance/auth/hosted-invitations.test.ts",
+      "docs/implementation/admin-ui-03.md",
+      "docs/implementation/test-gate-policy.md",
+      "architecture/components.md"
+    ]
+  },
+  "base": "614090a1632b27ce40a3d2e38cac9492bac048aa",
+  "head": "aa8c56bb7e195e97d2362b2c661cc63a760a5cc9"
+}

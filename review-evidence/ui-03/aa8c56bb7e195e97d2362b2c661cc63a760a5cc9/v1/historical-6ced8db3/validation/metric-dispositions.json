@@ -1,0 +1,53 @@
+{
+  "head": "6ced8db3965190d1d859b60d7053f1830cf5a23c",
+  "parent": "8278873552601ed156a9aaeeb31c41cdb84ad77a",
+  "production": [
+    {
+      "file": "src/interfaces/web/account/account-pages.ts",
+      "before": 72.76076629466495,
+      "after": 72.76076629466495,
+      "beforeFunctions": 8,
+      "afterFunctions": 8,
+      "reason": "Existing cohesive fixed response templates keep trusted values and escaping at the Web owner. The invitation disclosure and last-Admin recovery wording add no production boundary or provider operation. Avoid an extra helper layer for one literal/form layout."
+    },
+    {
+      "file": "src/interfaces/web/account/administration-pages.ts",
+      "before": 59.468834274547625,
+      "after": 59.20233572948304,
+      "beforeFunctions": 15,
+      "afterFunctions": 15,
+      "reason": "Existing cohesive fixed response templates keep trusted values and escaping at the Web owner. The invitation disclosure and last-Admin recovery wording add no production boundary or provider operation. Avoid an extra helper layer for one literal/form layout."
+    },
+    {
+      "file": "src/interfaces/web/account/members-style.ts",
+      "before": null,
+      "after": null,
+      "beforeFunctions": 0,
+      "afterFunctions": 0,
+      "reason": "Static style string; complete snapshots have zero functions, so raw MI and CRAP are not applicable."
+    }
+  ],
+  "findings": [
+    {
+      "file": "test/acceptance/auth/hosted-member-removal-browser.runtime.ts",
+      "rule": "maintainability-regression",
+      "severity": "high",
+      "reason": "The browser acceptance matrix keeps all 51 JS/width/invitation/removal scenarios explicit, with protocol operations extracted into drivers. Tests have no production MI goal."
+    },
+    {
+      "file": "test/integration/hosted-admin/account-routes-administration-pages.test.ts",
+      "rule": "bugs-regression",
+      "severity": "low",
+      "reason": "Added public route assertions specify native disclosure, hidden/visible controls and protected outcomes. The Halstead estimate grows with test volume; it is not an observed bug."
+    }
+  ],
+  "nativeThresholdNote": {
+    "file": "test/support/drivers/browser/invitation-browser.ts",
+    "subject": "InvitationBrowser::inspectOpenForm",
+    "paths": 10,
+    "nativeSeverity": "medium",
+    "nativeThreshold": ">=10",
+    "trustedWrapperThreshold": ">10",
+    "disposition": "Not a warning under the approved wrapper rule. Native evidence is retained in review.json.nativeReview; the method checks one open-form browser contract."
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "command": "npm",
+  "args": [
+    "test"
+  ],
+  "started": "2026-10-27T04:00:03.317Z",
+  "ended": "2026-10-27T04:07:10.108Z",
+  "exitCode": 0,
+  "signal": null,
+  "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui03/6ced8db3-ordinary.log"
+}

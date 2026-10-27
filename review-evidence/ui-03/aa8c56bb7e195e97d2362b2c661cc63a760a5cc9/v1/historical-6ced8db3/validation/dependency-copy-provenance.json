@@ -1,0 +1,55 @@
+{
+  "started": "2026-10-27T04:20:13.198885+00:00",
+  "source": "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/node_modules",
+  "destination": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/node_modules",
+  "preservedLinks": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui03/node_modules-immediate-links-before-repair",
+  "identicalPackageInputs": {
+    "package.json": "2395851037b0b86664f4cbccd96895315881fdc967c2603a41029d04c4cddbaa",
+    "pnpm-lock.yaml": "6b576bd242c86c47c2072423b610918bd35b8226ca5fd8a7b26e0a5e47c066d3"
+  },
+  "cause": "Three container-mounted probes could not resolve packages through immediate absolute dependency links outside /workspace/node_modules.",
+  "copyCommand": [
+    "cp",
+    "-cRpP",
+    "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/node_modules",
+    "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/node_modules"
+  ],
+  "sharedTargetModified": false,
+  "copied": "2026-10-27T04:20:30.124024+00:00",
+  "privateNodeAlias": {
+    "original": "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus/node_modules/node/bin/node",
+    "replacement": "../node/bin/node",
+    "binarySha256": "9d050fd455b56426e25d4d603c7c501cbb2630348e836cf221dcce748e90588a",
+    "verifiedVersions": {
+      "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/node_modules/node/bin/node": "v24.20.0",
+      "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus/node_modules/node/bin/node": "v24.20.0"
+    },
+    "reason": "Remove the private CLI launcher dependency on another validation worktree. Collector uses image Node; runtime package bytes do not change.",
+    "normalizedAt": "2026-10-27T04:24:05.081063+00:00"
+  },
+  "verificationTiming": "Collector retry began after package/lock and local runtime resolution checks, before the slow full inventory completed. Inventory confirmed equal files/link text, then flagged only the source .bin/node external CLI alias. The alias was normalized after Collector passed, with manager authorization.",
+  "sourceNodeAliasAtFinalVerification": "../node/bin/node",
+  "verified": "2026-10-27T04:26:26.482629+00:00",
+  "entries": 20587,
+  "fileCount": 19676,
+  "symlinkCount": 911,
+  "absoluteLinkCount": 0,
+  "identicalDependencyFilesAndModes": true,
+  "identicalLinksExceptApprovedNodeAlias": true,
+  "workspaceLinks": [
+    {
+      "path": ".pnpm/node_modules/@thermus/habit-tools",
+      "target": "../../../../.habit-hooks",
+      "resolved": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.habit-hooks"
+    }
+  ],
+  "workspaceLinkReason": "Existing relative development-tool link resolves to this checkout .habit-hooks. It is outside the mounted node_modules closure and is not a Collector runtime consumer.",
+  "treeSha256": "cb62e6a3c27872de6d69b1620910f39bc7fcda66621041eea4ceb2795c000cc4",
+  "gitClean": true,
+  "primaryAliasCleanup": {
+    "performedBy": "manager",
+    "time": "2026-10-27T04:23:32Z",
+    "record": "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/.cache/ui-stack-finish/primary-node-alias-repair.json",
+    "effect": "The primary ignored Node CLI alias was changed to ../node/bin/node after binary/version equality checks. This worker did not mutate it."
+  }
+}

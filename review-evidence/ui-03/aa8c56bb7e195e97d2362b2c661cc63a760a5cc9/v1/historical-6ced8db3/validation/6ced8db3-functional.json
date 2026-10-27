@@ -1,0 +1,81 @@
+[
+  {
+    "name": "ordinary",
+    "command": [
+      "npm",
+      "test"
+    ],
+    "exitCode": 0,
+    "log": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui03/6ced8db3-ordinary.log"
+  },
+  {
+    "name": "typecheck",
+    "command": [
+      "npm",
+      "run",
+      "typecheck"
+    ],
+    "exitCode": 0,
+    "log": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui03/6ced8db3-typecheck.log"
+  },
+  {
+    "name": "portal-build",
+    "command": [
+      "npm",
+      "run",
+      "build:user-portal"
+    ],
+    "exitCode": 0,
+    "log": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui03/6ced8db3-portal-build.log"
+  },
+  {
+    "name": "browser-51",
+    "command": [
+      "node",
+      "--test",
+      "dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js"
+    ],
+    "exitCode": 0,
+    "log": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui03/6ced8db3-browser-51.log"
+  },
+  {
+    "name": "self-hosted-container",
+    "command": [
+      "npm",
+      "run",
+      "test:container"
+    ],
+    "exitCode": 0,
+    "log": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui03/6ced8db3-self-hosted-container.log"
+  },
+  {
+    "name": "hosted-offline",
+    "command": [
+      "npm",
+      "run",
+      "build:hosted"
+    ],
+    "exitCode": 0,
+    "log": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui03/6ced8db3-hosted-offline.log"
+  },
+  {
+    "name": "postgres-7",
+    "command": [
+      "npm",
+      "run",
+      "test:logging:postgres"
+    ],
+    "exitCode": 0,
+    "log": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui03/6ced8db3-postgres-7.log"
+  },
+  {
+    "name": "collector-2",
+    "command": [
+      "npm",
+      "run",
+      "test:logging:collector"
+    ],
+    "exitCode": 1,
+    "log": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui03/6ced8db3-collector-2.log"
+  }
+]

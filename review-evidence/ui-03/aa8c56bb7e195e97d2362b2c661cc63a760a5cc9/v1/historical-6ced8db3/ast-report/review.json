@@ -1,0 +1,117 @@
+{
+  "methodologyVersion": "1.1",
+  "baseRef": "8278873552601ed156a9aaeeb31c41cdb84ad77a",
+  "baseSha": "8278873552601ed156a9aaeeb31c41cdb84ad77a",
+  "headSha": "6ced8db3965190d1d859b60d7053f1830cf5a23c",
+  "summary": {
+    "filesChanged": 23,
+    "filesAdded": 6,
+    "filesDeleted": 0,
+    "high": 1,
+    "medium": 0,
+    "low": 1,
+    "improvements": 1
+  },
+  "regressions": [
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "maintainability-regression",
+      "file": "test/acceptance/auth/hosted-member-removal-browser.runtime.ts",
+      "message": "Maintainability index: 11 -> 6 (below 85 is hard to maintain)",
+      "suggestion": "Refactor long or deeply nested functions and reduce responsibilities in this file",
+      "before": 11.426883393121521,
+      "after": 6.393413953137617
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "bugs-regression",
+      "file": "test/integration/hosted-admin/account-routes-administration-pages.test.ts",
+      "message": "Estimated bugs (Halstead): 3.35 -> 4.09",
+      "suggestion": "This estimate grows with code volume and complexity; consider simplifying or splitting this file",
+      "before": 3.354351025356592,
+      "after": 4.0862169576301435
+    }
+  ],
+  "improvements": [
+    {
+      "kind": "improvement",
+      "severity": "low",
+      "rule": "bugs-improvement",
+      "file": "test/acceptance/auth/hosted-member-removal-browser.runtime.ts",
+      "message": "Estimated bugs (Halstead): 0.48 -> 0.32",
+      "before": 0.48492326780320705,
+      "after": 0.3191733194918875
+    }
+  ],
+  "gate": "failed",
+  "nativeReview": {
+    "methodologyVersion": "1.1",
+    "baseRef": "8278873552601ed156a9aaeeb31c41cdb84ad77a",
+    "baseSha": "8278873552601ed156a9aaeeb31c41cdb84ad77a",
+    "headSha": "6ced8db3965190d1d859b60d7053f1830cf5a23c",
+    "summary": {
+      "filesChanged": 23,
+      "filesAdded": 6,
+      "filesDeleted": 0,
+      "high": 1,
+      "medium": 1,
+      "low": 1,
+      "improvements": 1
+    },
+    "regressions": [
+      {
+        "kind": "regression",
+        "severity": "high",
+        "rule": "maintainability-regression",
+        "file": "test/acceptance/auth/hosted-member-removal-browser.runtime.ts",
+        "message": "Maintainability index: 11 -> 6 (below 85 is hard to maintain)",
+        "suggestion": "Refactor long or deeply nested functions and reduce responsibilities in this file",
+        "before": 11.426883393121521,
+        "after": 6.393413953137617
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "new-complex-function",
+        "file": "test/support/drivers/browser/invitation-browser.ts",
+        "line": 43,
+        "subject": "InvitationBrowser::inspectOpenForm",
+        "message": "New function with cyclomatic complexity 10 (threshold: 10)",
+        "suggestion": "Extract smaller, well-named functions to reduce decision points",
+        "before": 0,
+        "after": 10
+      },
+      {
+        "kind": "regression",
+        "severity": "low",
+        "rule": "bugs-regression",
+        "file": "test/integration/hosted-admin/account-routes-administration-pages.test.ts",
+        "message": "Estimated bugs (Halstead): 3.35 -> 4.09",
+        "suggestion": "This estimate grows with code volume and complexity; consider simplifying or splitting this file",
+        "before": 3.354351025356592,
+        "after": 4.0862169576301435
+      }
+    ],
+    "improvements": [
+      {
+        "kind": "improvement",
+        "severity": "low",
+        "rule": "bugs-improvement",
+        "file": "test/acceptance/auth/hosted-member-removal-browser.runtime.ts",
+        "message": "Estimated bugs (Halstead): 0.48 -> 0.32",
+        "before": 0.48492326780320705,
+        "after": 0.3191733194918875
+      }
+    ],
+    "gate": "failed"
+  },
+  "reviewPolicy": {
+    "version": 1,
+    "source": "Thermus review wrapper",
+    "newFunctionPaths": ">10",
+    "highFunctionPaths": ">=25",
+    "layerSource": "CR-13 resolved imports"
+  }
+}

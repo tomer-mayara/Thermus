@@ -1,0 +1,14 @@
+{
+  "candidate": "6ced8db3965190d1d859b60d7053f1830cf5a23c",
+  "parent": "8278873552601ed156a9aaeeb31c41cdb84ad77a",
+  "main": "2b3ad13b9e2e61e206479b82e91359192cae1d00",
+  "branch": "codex/validate-ui-03-6ced8db3",
+  "clean": true,
+  "ports": {
+    "46443": "free",
+    "46480": "free"
+  },
+  "dockerContext": "colima",
+  "browserBuild": "Reuse npm test backend build after source/build-input equivalence check; typecheck and portal build do not change backend inputs.",
+  "authorization": "Root message granted exclusive host lane for functional, quality and checker; no live or AMD64."
+}

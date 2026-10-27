@@ -1,0 +1,31 @@
+[
+  {
+    "name": "checker",
+    "command": [
+      "pnpm",
+      "--config.verifyDepsBeforeRun=false",
+      "exec",
+      "node",
+      "script/pr-review/check.ts",
+      "--base",
+      "8278873552601ed156a9aaeeb31c41cdb84ad77a",
+      "--repo",
+      "tomer-mayara/Thermus",
+      "--impact",
+      "ast-report/impact.json",
+      "--base-snapshot",
+      "ast-report/snapshot-base.json",
+      "--head-snapshot",
+      "ast-report/snapshot.json",
+      "--crap",
+      "ast-report/crap.json",
+      "--process",
+      "ast-report/process.json",
+      "--review",
+      "ast-report/review.json",
+      "--json"
+    ],
+    "exitCode": 0,
+    "log": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui03/6ced8db3-checker.log"
+  }
+]
