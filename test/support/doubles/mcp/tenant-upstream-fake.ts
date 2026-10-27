@@ -45,6 +45,8 @@ export interface SlowCall {
   finishedAt?: number;
 }
 
+type McpHandler = (request: Request, options: { authInfo: AuthInfo }) => Promise<Response>;
+
 interface CallScope {
   readonly organizationId: string;
   readonly context: string;
@@ -78,6 +80,7 @@ export class TenantUpstreamFake {
   #searchGate?: Promise<void>;
   #runningSearches = 0;
   #relay?: AuditRelaySink;
+  #mcp: McpHandler = async () => new Response(null, { status: 503 });
 
   private constructor(publicKey: KeyObject, organizationId: string) {
     this.#verifier = new AccessContextVerifier({ publicKeys: [publicKey], organizationId });
@@ -87,7 +90,8 @@ export class TenantUpstreamFake {
   static async start(t: TestContext, options: { readonly publicKey: KeyObject; readonly organizationId: string }): Promise<TenantUpstreamFake> {
     const fake = new TenantUpstreamFake(options.publicKey, options.organizationId);
     const handler = createMcpHandler(({ authInfo }) => fake.#serverFor(scopeOf(authInfo)));
-    const bridge: Bridge = { handler: (request) => fake.#answer(request, handler.fetch), publicOrigin: 'https://thermus.example', logger: undefined };
+    fake.#mcp = (request, options) => handler.fetch(request, options);
+    const bridge: Bridge = { handler: (request) => fake.#answer(request), publicOrigin: 'https://thermus.example', logger: undefined };
     const server = createServer((incoming, outgoing) => { void fake.#route(bridge, incoming, outgoing); });
     server.listen(0, '127.0.0.1');
     await once(server, 'listening');
@@ -181,7 +185,7 @@ export class TenantUpstreamFake {
     }
   }
 
-  async #answer(request: Request, mcp: (request: Request, options: { authInfo: AuthInfo }) => Promise<Response>): Promise<Response> {
+  async #answer(request: Request): Promise<Response> {
     const body = request.method === 'POST' ? await request.text() : '';
     const header = request.headers.get(ACCESS_CONTEXT_HEADER) ?? '';
     const bearerToken = /^Bearer (\S+)$/i.exec(request.headers.get('Authorization') ?? '')?.[1];
@@ -194,14 +198,14 @@ export class TenantUpstreamFake {
     this.requests.push(record);
     request.signal.addEventListener('abort', () => { record.signalAt = performance.now(); this.#changed(); }, { once: true });
     const answer = verification.status === 'verified'
-      ? await this.#mcpAnswer(request, body, record, mcp)
+      ? await this.#mcpAnswer(request, body, record)
       : Response.json({ error: 'access_denied', error_description: 'Access denied' }, { status: 403 });
     record.answerStatus = answer.status;
     this.#changed();
     return answer;
   }
 
-  async #mcpAnswer(request: Request, body: string, record: UpstreamRequest, mcp: (request: Request, options: { authInfo: AuthInfo }) => Promise<Response>): Promise<Response> {
+  async #mcpAnswer(request: Request, body: string, record: UpstreamRequest): Promise<Response> {
     const held = this.#heldAnswer;
     this.#heldAnswer = undefined;
     if (held !== undefined) {
@@ -214,7 +218,7 @@ export class TenantUpstreamFake {
       extra: { organizationId: context.organizationId, context: request.headers.get(ACCESS_CONTEXT_HEADER), authority: context.authority, subject: context.subject },
     };
     const init: RequestInit = { method: request.method, headers: request.headers, signal: request.signal, ...(request.method === 'POST' ? { body } : {}) };
-    return mcp(new Request(request.url, init), { authInfo });
+    return this.#mcp(new Request(request.url, init), { authInfo });
   }
 
   #serverFor(scope: CallScope): Server {

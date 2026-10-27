@@ -49,7 +49,8 @@ async function relaySite(t: TestContext) {
   };
 }
 
-function relay(event: unknown, context: string | undefined, host = internalHost, path = '/internal/audit'): Request {
+function relay(event: unknown, context: string | undefined, target: { readonly host?: string; readonly path?: string } = {}): Request {
+  const { host = internalHost, path = '/internal/audit' } = target;
   return new Request(`http://${host}${path}`, {
     method: 'POST',
     headers: { Host: host, 'Content-Type': 'application/json', ...(context === undefined ? {} : { 'Thermus-Access': context }) },
@@ -112,8 +113,8 @@ test('Given a request to /internal/* with another host, or another path or metho
   const context = await site.contextFor();
 
   const answers = [
-    await site.route.handle(relay(event, context, 'app.thermus.ai')),
-    await site.route.handle(relay(event, context, internalHost, '/internal/other')),
+    await site.route.handle(relay(event, context, { host: 'app.thermus.ai' })),
+    await site.route.handle(relay(event, context, { path: '/internal/other' })),
     await site.route.handle(new Request(`http://${internalHost}/internal/audit`, { headers: { Host: internalHost } })),
   ];
   await delay(20);

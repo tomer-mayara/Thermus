@@ -38,11 +38,12 @@ request records the runs.
   invalid `FREE_TENANT_LIMIT` with the switch on; an invalid switch and each
   missing or invalid gateway setting; the switch without the hosted storage;
   and the switch off, which reads none of the settings.
-- `test/unit/mcp/mcp-gateway.test.ts` (30 cases) checks the gateway with
-  doubles of the registry port, the signer, and the fetch of the tenant: the
-  answer and the `Retry-After` of each state and tenant request; the resume
-  and its failure report; one report for a failed tenant; the header rules,
-  the target, and the signed claims; the `GET` stream and a notification; the
+- `test/unit/mcp/mcp-gateway.test.ts` (16 cases) and `mcp-gateway-forward.test.ts`
+  (14 cases) check the gateway with doubles of the registry port, the signer,
+  and the fetch of the tenant (`fixtures/gateway-harness.ts`): the answer and
+  the `Retry-After` of each state and tenant request; the resume and its
+  failure report; one report for a failed tenant; then the header rules, the
+  target, and the signed claims; the `GET` stream and a notification; the
   streamed answer and its headers; both abort paths and a cancel of the
   client; the restart answers for tool calls, other requests, batches, and
   bodies without a request; the end of a started stream; the search limit;
@@ -77,7 +78,7 @@ request records the runs.
 ```sh
 npm run build && node --test dist/test/acceptance/mcp/hosted-gateway.test.js dist/test/acceptance/logging/audit/audit-relay.test.js
 npm run build && node --test --test-name-pattern="MCP_TENANTS_ENABLED" dist/test/acceptance/auth/hosted-startup.test.js
-npm run build && node --test dist/test/unit/mcp/mcp-gateway.test.js dist/test/unit/mcp/forward-step.test.js
+npm run build && node --test dist/test/unit/mcp/mcp-gateway.test.js dist/test/unit/mcp/mcp-gateway-forward.test.js dist/test/unit/mcp/forward-step.test.js
 npm run build && node --test dist/test/unit/tenants/tenant-resumes.test.js dist/test/unit/tenants/tenant-activity.test.js dist/test/unit/tenants/pg-tenant-registry-store.test.js
 npm run build && node --test dist/test/unit/auth/signed-access-context.test.js dist/test/unit/logging/audit/audit-relay-capture.test.js
 npm run build && node --test dist/test/unit/config/mcp-tenants-config.test.js dist/test/unit/config/gateway-settings.test.js dist/test/unit/web/accepted-relays.test.js

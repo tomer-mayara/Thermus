@@ -35,7 +35,7 @@ test('Given the control plane and the tenant of organization A as two processes,
   const internalUrl = `http://127.0.0.1:${controlPlanePort}`;
   const routeToFake = { THERMUS_TEST_WORKOS_ORIGIN: world.fake.origin };
   const tenantSettings: ServerSettings = { ...hostedFetchSettings, ...tenantSettingsOf(keys.publicKeyPem, internalUrl), ...routeToFake, LISTEN_HOST: '127.0.0.1', LISTEN_PORT: '0' };
-  const tenant = await ServerProcess.start(t, withPreload(tenantSettings, workosFakeRoute), 'loopback');
+  const tenant = await ServerProcess.start(t, withPreload(tenantSettings, workosFakeRoute), { network: 'loopback' });
   const controlPlaneSettings: ServerSettings = {
     ...hostedFetchSettings, ...workOSSettings, ...routeToFake,
     DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: publicBaseUrl, LISTEN_HOST: '127.0.0.1', LISTEN_PORT: String(controlPlanePort),
@@ -43,7 +43,7 @@ test('Given the control plane and the tenant of organization A as two processes,
     DATABASE_URL: 'postgresql://thermus_logging:placeholder-password@127.0.0.1:9/postgres', LOGGING_DESTINATION_ENCRYPTION_KEY: Buffer.alloc(32, 9).toString('base64'),
     THERMUS_TEST_TENANT_ORGANIZATION: tenantOrganizationId, THERMUS_TEST_TENANT_URL: (await tenant.started()).origin,
   };
-  const controlPlane = await ServerProcess.start(t, withPreload(withPreload(controlPlaneSettings, workosFakeRoute), oneLiveTenant), 'loopback');
+  const controlPlane = await ServerProcess.start(t, withPreload(withPreload(controlPlaneSettings, workosFakeRoute), oneLiveTenant), { network: 'loopback' });
   const token = await world.authkitKey.sign(
     { sub: user.id, client_id: 'client_01PROCESSES', sid: 'app_consent_processes', scope: 'openid', org_id: tenantOrganizationId },
     { issuer: workOSSettings.WORKOS_AUTHKIT_ISSUER, audience: `${publicBaseUrl}/mcp` },

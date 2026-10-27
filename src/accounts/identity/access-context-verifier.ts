@@ -1,6 +1,6 @@
 import type { KeyObject } from 'node:crypto';
 import { namesBearerToken, typedAccessClaimsOf } from './access-context-claims.ts';
-import { signedPayloadOf } from './access-context-signature.ts';
+import { signedPayloadOf, type ContextTrust } from './access-context-signature.ts';
 import { requireEd25519Key, type AccessContextVerification } from './signed-access-context.ts';
 
 // A tenant relays an event up to 30 seconds after its tool call ends (the age bound of the audit collector), so the
@@ -12,13 +12,11 @@ const RELAY_GRACE_SECONDS = 30;
  * control plane uses the public key of its own signing key for the audit relays of an organization.
  */
 export class AccessContextVerifier {
-  readonly #keys: readonly KeyObject[];
-  readonly #organizationId: string;
+  readonly #trust: ContextTrust;
 
   constructor(options: { readonly publicKeys: readonly KeyObject[]; readonly organizationId: string }) {
     if (options.publicKeys.length === 0) throw new TypeError('An access context verifier needs at least one public key.');
-    this.#keys = Object.freeze(options.publicKeys.map((key) => requireEd25519Key(key, 'public')));
-    this.#organizationId = options.organizationId;
+    this.#trust = Object.freeze({ keys: Object.freeze(options.publicKeys.map((key) => requireEd25519Key(key, 'public'))), organizationId: options.organizationId });
   }
 
   /**
@@ -26,7 +24,7 @@ export class AccessContextVerifier {
    * request, and time left. Each refusal gives its reason; the context itself never reaches a message.
    */
   async verify(context: string | null | undefined, bearerToken: string | undefined): Promise<AccessContextVerification> {
-    const payload = await signedPayloadOf(context ?? '', this.#keys, this.#organizationId);
+    const payload = await signedPayloadOf(context ?? '', this.#trust);
     if (typeof payload === 'string') return { status: 'refused', reason: payload };
     const claims = typedAccessClaimsOf(payload);
     if (claims === undefined) return { status: 'refused', reason: 'malformed' };
@@ -39,7 +37,7 @@ export class AccessContextVerifier {
    * carry, and with 30 seconds of grace after the expiry.
    */
   async verifyRelay(context: string | null | undefined): Promise<AccessContextVerification> {
-    const payload = await signedPayloadOf(context ?? '', this.#keys, this.#organizationId, RELAY_GRACE_SECONDS);
+    const payload = await signedPayloadOf(context ?? '', this.#trust, RELAY_GRACE_SECONDS);
     if (typeof payload === 'string') return { status: 'refused', reason: payload };
     const claims = typedAccessClaimsOf(payload);
     return claims === undefined ? { status: 'refused', reason: 'malformed' } : { status: 'verified', context: claims.context };

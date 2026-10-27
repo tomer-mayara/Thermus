@@ -5,7 +5,6 @@ import type { ToolOperations } from './fetch-tool.ts';
 import type { HostedLoggingStorage } from './logging-storage.ts';
 import type { TenantProvisioningSettings } from '../runtime/config/mcp-tenants-config.ts';
 import type { GatewayParts } from './mcp-gateway-composition.ts';
-import type { GatewaySettings } from '../runtime/config/gateway-settings.ts';
 import type { WorkOS } from '@workos-inc/node';
 import type { JWTVerifyGetKey } from 'jose';
 import {
@@ -60,12 +59,6 @@ export interface WorkOSApplicationParts {
   readonly gateway?: GatewayParts;
 }
 
-// The settings that the control plane reads only with MCP_TENANTS_ENABLED on (plan section 4.1).
-interface TenantsSettings {
-  readonly freeTenantLimit: number;
-  readonly gateway: GatewaySettings;
-}
-
 // No retry and a short timeout: each WorkOS call runs during a browser or MCP request.
 const WORKOS_REQUEST_TIMEOUT_MS = 5_000;
 
@@ -76,7 +69,8 @@ export async function openWorkOSApplication(config: RouteConfig, logger: SystemL
   const connection = await openWorkOSConnection(config, logger, environment);
   const { createHostedToolOperations } = await import('./fetch-tool.ts');
   const operations = createHostedToolOperations(environment, logger);
-  const tenants = await tenantsSettingsOf(environment);
+  const gateways = await import('./mcp-gateway-composition.ts');
+  const tenants = await gateways.tenantsSettingsOf(environment);
   const provisioningSettings = await tenantProvisioningSettingsOf(environment);
   if (new URL(config.publicBaseUrl).pathname !== '/') throw new Error('The hosted portal requires PUBLIC_BASE_URL with the base path /.');
   const { assertHostedRenderer } = await import('./hosted-renderer-startup.ts');
@@ -90,8 +84,8 @@ export async function openWorkOSApplication(config: RouteConfig, logger: SystemL
     settings: provisioningSettings, publicBaseUrl: config.publicBaseUrl, authkitIssuer: connection.settings.authkitIssuer, logger,
   });
   if (loggingStorage !== undefined) resources.defer(() => loggingStorage.close());
-  const gateway = tenants === undefined ? undefined : (await import('./mcp-gateway-composition.ts')).gatewayPartsOf(tenants.gateway, loggingStorage);
-  const application = await composeWorkOSApplication(config, connection, { logger, toolOperations: operations, signup, loggingStorage, ...(gateway === undefined ? {} : { gateway }) });
+  const gateway = tenants === undefined ? undefined : gateways.gatewayPartsOf(tenants.gateway, loggingStorage);
+  const application = await composeWorkOSApplication(config, connection, { logger, toolOperations: operations, signup, loggingStorage, gateway });
   resources.move();
   return portal.withApplication(application);
 }
@@ -100,16 +94,6 @@ export async function openWorkOSApplication(config: RouteConfig, logger: SystemL
 async function tenantProvisioningSettingsOf(environment: Environment): Promise<TenantProvisioningSettings | undefined> {
   const { loadMcpTenantsEnabled, loadTenantProvisioningSettings } = await import('../runtime/config/mcp-tenants-config.ts');
   return loadMcpTenantsEnabled(environment) ? loadTenantProvisioningSettings(environment) : undefined;
-}
-
-// With MCP_TENANTS_ENABLED off, the control plane reads none of the settings of the tenants, and the registry keeps
-// its default cap. An invalid setting stops the start before the server listens.
-async function tenantsSettingsOf(environment: Environment): Promise<TenantsSettings | undefined> {
-  const { loadMcpTenantsEnabled } = await import('../runtime/config/mcp-tenants-config.ts');
-  if (!loadMcpTenantsEnabled(environment)) return undefined;
-  const { loadFreeTenantLimit } = await import('../runtime/config/free-tenant-limit-config.ts');
-  const { loadGatewaySettings } = await import('../runtime/config/gateway-settings.ts');
-  return { freeTenantLimit: loadFreeTenantLimit(environment), gateway: loadGatewaySettings(environment) };
 }
 
 // Invalid or missing WorkOS settings stop the start before the server listens. There is no fallback to local or
@@ -196,7 +180,7 @@ async function workosProviderParts(config: RouteConfig, connection: WorkOSConnec
     ...parts.onboarding, authority, workos, settings, records: accountChangeRecorder(logger), billing: parts.billing, directory: organizations,
   });
   const session = new WorkOSBrowserSession({ workos, settings, authority, ...(onboarding === undefined ? {} : { onboarding }) });
-  const gateway = parts.gateway === undefined ? undefined : await import('./mcp-gateway-composition.ts');
+  const gateway = parts.gateway === undefined ? undefined : (await import('./mcp-gateway-composition.ts')).gatewayRoutesOf(parts.gateway, { authority, audit: parts.audit, logger });
   const server = new MCPServer({
     auth: {
       verifier: provider,
@@ -207,10 +191,9 @@ async function workosProviderParts(config: RouteConfig, connection: WorkOSConnec
       accessDeniedDescription: accessDeniedDescription(config.publicBaseUrl),
     },
     buildServer,
-    ...(gateway === undefined || parts.gateway === undefined ? {} : { forward: gateway.gatewayForwardOf(parts.gateway, logger) }),
+    forward: gateway?.forward,
     reportFailure: operatorFailureReporter(logger),
   });
-  const internalRoutes = gateway === undefined || parts.gateway === undefined ? undefined : gateway.auditRelayRouteOf(parts.gateway.settings, { authority, audit: parts.audit, logger });
   const mcp = new ProtectedResourceEndpoint({ server, mcpResourceUrl: config.mcpResourceUrl, resourceMetadataUrl: config.resourceMetadataUrl, authorizationServer: settings.authkitIssuer });
   const sessionRoutes = new WorkOSSessionRoutes({ session, accessResolver: provider, publicBaseUrl: config.publicBaseUrl, redirectUri: settings.redirectUri, reportFailure: accountFailureReporter(logger) });
   const signupRoutes = new WorkOSSignupRoutes({
@@ -225,5 +208,5 @@ async function workosProviderParts(config: RouteConfig, connection: WorkOSConnec
     handles: (path: string) => signupRoutes.handles(path) || sessionRoutes.handles(path),
     handle: (request: Request) => signupRoutes.handles(new URL(request.url).pathname) ? signupRoutes.handle(request) : sessionRoutes.handle(request),
   };
-  return { session, accessResolver: provider, organizations, mcp, browserRoutes, ...(internalRoutes === undefined ? {} : { internalRoutes }) };
+  return { session, accessResolver: provider, organizations, mcp, browserRoutes, internalRoutes: gateway?.internalRoutes };
 }

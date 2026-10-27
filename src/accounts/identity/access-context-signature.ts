@@ -13,17 +13,23 @@ const CHECKS = {
   maxTokenAge: ACCESS_CONTEXT_LIFETIME_SECONDS,
 };
 
+/** The keys that a reader of a context trusts, and the organization that it pins. */
+export interface ContextTrust {
+  readonly keys: readonly KeyObject[];
+  readonly organizationId: string;
+}
+
 /**
- * The payload of a context that one of the keys signed for the organization and that has not expired, or the reason
- * of the refusal. A key rotation lists several keys, so a signature that one key refuses goes to the next key. The
- * grace adds seconds after the expiry, for a context that can wait in a relay after its request.
+ * The payload of a context that one of the trusted keys signed for the organization and that has not expired, or the
+ * reason of the refusal. A key rotation lists several keys, so a signature that one key refuses goes to the next key.
+ * The grace adds seconds after the expiry, for a context that can wait in a relay after its request.
  */
-export async function signedPayloadOf(context: string, keys: readonly KeyObject[], organizationId: string, graceSeconds = 0): Promise<JWTPayload | AccessContextRefusal> {
+export async function signedPayloadOf(context: string, trust: ContextTrust, graceSeconds = 0): Promise<JWTPayload | AccessContextRefusal> {
   if (context === '') return 'missing';
   if (context.length > MAX_CONTEXT_CHARACTERS) return 'malformed';
-  for (const key of keys) {
+  for (const key of trust.keys) {
     try {
-      return (await jwtVerify(context, key, { ...CHECKS, clockTolerance: CLOCK_TOLERANCE_SECONDS + graceSeconds, audience: organizationId })).payload;
+      return (await jwtVerify(context, key, { ...CHECKS, clockTolerance: CLOCK_TOLERANCE_SECONDS + graceSeconds, audience: trust.organizationId })).payload;
     } catch (error) {
       if (!(error instanceof errors.JWSSignatureVerificationFailed)) return refusalOf(error);
     }

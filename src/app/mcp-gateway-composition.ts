@@ -2,11 +2,14 @@ import { AccessContextSigner } from '../accounts/identity/access-context-signer.
 import { AccessContextVerifier } from '../accounts/identity/access-context-verifier.ts';
 import type { SystemLog } from '../logs/system/system-logger.ts';
 import type { AuditLog } from '../logs/audit/audit-log.ts';
-import { McpGateway, type GatewayTenants } from '../interfaces/mcp/mcp-gateway.ts';
+import { McpGateway } from '../interfaces/mcp/mcp-gateway.ts';
+import type { GatewayTenants } from '../interfaces/mcp/mcp-gateway-tenants.ts';
 import type { McpForwardStep } from '../interfaces/mcp/mcp-server.ts';
 import { AuditRelayRoute, type RelayContextCheck } from '../interfaces/web/internal/audit-relay-route.ts';
 import { DeploymentConfigError } from '../runtime/config/deployment-config.ts';
-import type { GatewaySettings } from '../runtime/config/gateway-settings.ts';
+import { loadFreeTenantLimit } from '../runtime/config/free-tenant-limit-config.ts';
+import { loadGatewaySettings, type GatewaySettings } from '../runtime/config/gateway-settings.ts';
+import { loadMcpTenantsEnabled } from '../runtime/config/mcp-tenants-config.ts';
 import { TenantActivity } from '../tenancy/tenants/tenant-activity.ts';
 import type { TenantLookup } from '../tenancy/tenants/tenant-lookup.ts';
 import type { TenantRequests } from '../tenancy/tenants/tenant-requests.ts';
@@ -20,6 +23,18 @@ export interface GatewayParts {
   readonly tenants: GatewayTenants;
 }
 
+/** The settings that the control plane reads only with MCP_TENANTS_ENABLED on (plan section 4.1). */
+export interface TenantsSettings {
+  readonly freeTenantLimit: number;
+  readonly gateway: GatewaySettings;
+}
+
+/** The parts that the gateway gives the hosted composition: the forward step of MCPServer and the internal routes. */
+export interface GatewayRoutes {
+  readonly forward: McpForwardStep;
+  readonly internalRoutes: AuditRelayRoute;
+}
+
 /** The registry rules of the tenants owner that the gateway uses. */
 export interface GatewayRegistry {
   readonly lookup: Pick<TenantLookup, 'find'>;
@@ -29,10 +44,24 @@ export interface GatewayRegistry {
 }
 
 /**
+ * With MCP_TENANTS_ENABLED off, the control plane reads none of the settings of the tenants, and the registry keeps
+ * its default cap. An invalid setting stops the start before the server listens; FREE_TENANT_LIMIT comes first.
+ */
+export function tenantsSettingsOf(environment: Readonly<Record<string, string | undefined>>): TenantsSettings | undefined {
+  if (!loadMcpTenantsEnabled(environment)) return undefined;
+  return { freeTenantLimit: loadFreeTenantLimit(environment), gateway: loadGatewaySettings(environment) };
+}
+
+/** The forward step and the relay route of the gateway parts, for the hosted composition. */
+export function gatewayRoutesOf(parts: GatewayParts, composition: { readonly authority: string; readonly audit: Pick<AuditLog, 'relayedToolCompletion' | 'toolRelayed'>; readonly logger: SystemLog }): GatewayRoutes {
+  return { forward: gatewayForwardOf(parts, composition.logger), internalRoutes: auditRelayRouteOf(parts.settings, composition) };
+}
+
+/**
  * The resume operation until SO-10 connects it to the Render API: each call fails with one log line, and the row goes
  * back to suspended. No tenant is suspended before the idle sweep of SO-10 runs.
  */
-export const unconnectedResume: TenantResume = {
+const unconnectedResume: TenantResume = {
   resume: async () => ({ status: 'failed', reason: 'The resume operation is not connected yet (SO-10).' }),
 };
 
@@ -56,7 +85,7 @@ export function gatewayTenantsOf(registry: GatewayRegistry): GatewayTenants {
 }
 
 /** The forward step of MCPServer: the gateway with the signer of the private key of the settings. */
-export function gatewayForwardOf(parts: GatewayParts, logger: SystemLog): McpForwardStep {
+function gatewayForwardOf(parts: GatewayParts, logger: SystemLog): McpForwardStep {
   const gateway = new McpGateway({ signer: new AccessContextSigner(parts.settings.signingKey), tenants: parts.tenants, logger });
   return (request, forwarded) => gateway.forward(request, forwarded);
 }
@@ -70,7 +99,7 @@ export function relayContextCheckOf(verifyingKey: GatewaySettings['verifyingKey'
  * The route POST /internal/audit on the internal service host. The capture of today exports each relayed event. Each
  * refusal is one error line for the operator, because only a faulty or a compromised tenant sends one.
  */
-export function auditRelayRouteOf(settings: GatewaySettings, parts: { readonly authority: string; readonly audit: Pick<AuditLog, 'relayedToolCompletion' | 'toolRelayed'>; readonly logger: SystemLog }): AuditRelayRoute {
+function auditRelayRouteOf(settings: GatewaySettings, parts: { readonly authority: string; readonly audit: Pick<AuditLog, 'relayedToolCompletion' | 'toolRelayed'>; readonly logger: SystemLog }): AuditRelayRoute {
   return new AuditRelayRoute({
     internalHost: new URL(settings.controlPlaneInternalUrl).host,
     authority: parts.authority,

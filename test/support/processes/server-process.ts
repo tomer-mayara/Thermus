@@ -10,9 +10,12 @@ const outboundAttempt = /Outbound network access attempted/;
 
 export type ServerSettings = Readonly<Record<string, string>>;
 
-// none: each outbound connection fails. loopback: only connections to 127.0.0.1 and ::1 go, for processes of one test
-// that talk to each other.
-export type ServerNetwork = 'none' | 'loopback';
+// How a server process runs: its program arguments, and its network. none: each outbound connection fails. loopback:
+// only connections to 127.0.0.1 and ::1 go, for processes of one test that talk to each other.
+export interface ServerRun {
+  readonly args?: readonly string[];
+  readonly network?: 'none' | 'loopback';
+}
 
 export interface ServerExit {
   readonly code: number | null;
@@ -25,24 +28,24 @@ export class ServerProcess {
   private readonly listening = Promise.withResolvers<URL>();
   private text = '';
 
-  private constructor(settings: ServerSettings, args: readonly string[], network: ServerNetwork) {
+  private constructor(settings: ServerSettings, run: ServerRun) {
     // The server runs with outbound access denied: each attempt fails and writes a line that a test can find.
-    const blocker = network === 'loopback' ? loopbackNetworkBlocker : networkBlocker;
-    this.child = spawn(process.execPath, [...(programEntry.endsWith('.ts') ? ['--import', 'tsx'] : []), '--import', blocker, programEntry, ...args], { env: { ...settings }, stdio: ['ignore', 'pipe', 'pipe'] });
+    const blocker = run.network === 'loopback' ? loopbackNetworkBlocker : networkBlocker;
+    this.child = spawn(process.execPath, [...(programEntry.endsWith('.ts') ? ['--import', 'tsx'] : []), '--import', blocker, programEntry, ...(run.args ?? [])], { env: { ...settings }, stdio: ['ignore', 'pipe', 'pipe'] });
     this.exit = once(this.child, 'exit').then(([code, signal]) => ({ code, signal }));
     for (const stream of [this.child.stdout, this.child.stderr]) {
       stream.setEncoding('utf8').on('data', (chunk: string) => this.record(chunk));
     }
   }
 
-  static launch(t: TestContext, settings: ServerSettings, args: readonly string[] = [], network: ServerNetwork = 'none'): ServerProcess {
-    const server = new ServerProcess(settings, args, network);
+  static launch(t: TestContext, settings: ServerSettings, run: ServerRun = {}): ServerProcess {
+    const server = new ServerProcess(settings, run);
     t.after(() => server.kill());
     return server;
   }
 
-  static async start(t: TestContext, settings: ServerSettings, network: ServerNetwork = 'none'): Promise<ServerProcess> {
-    const server = ServerProcess.launch(t, settings, [], network);
+  static async start(t: TestContext, settings: ServerSettings, run: ServerRun = {}): Promise<ServerProcess> {
+    const server = ServerProcess.launch(t, settings, run);
     await server.started();
     return server;
   }

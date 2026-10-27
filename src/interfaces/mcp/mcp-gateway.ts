@@ -5,36 +5,11 @@ import { waitForRequest } from '../../runtime/http/request-cancellation.ts';
 import { GATEWAY_WORDS, messageAnswers, unavailableAnswer } from './mcp-gateway-answers.ts';
 import { readForwardedBody, tenantHeaders, tooLargeAnswer, type ForwardedBody } from './mcp-gateway-request.ts';
 import { callTenant, type RestartCause, type TenantAnswer } from './mcp-gateway-stream.ts';
+import type { GatewayResume, GatewayTenants, GatewayTenantState } from './mcp-gateway-tenants.ts';
 import type { McpForwardedRequest } from './mcp-server.ts';
 
-/** The states of a tenant row, as the registry copy gives them. */
-export type GatewayTenantState = 'requested' | 'creating' | 'deploying' | 'live' | 'suspended' | 'failed' | 'deleted';
-
-/** The row of an organization in the registry copy: its state and its internal address, no row, or no usable copy. */
-export type GatewayRoute =
-  | { readonly status: 'found'; readonly state: GatewayTenantState; readonly internalUrl: string | null }
-  | { readonly status: 'absent' }
-  | { readonly status: 'unavailable' };
-
-/** The tenant request for an organization without a row: requested, the cap is full, no registry, or a row exists. */
-export type GatewayTenantRequest =
-  | { readonly status: 'requested' | 'full' | 'unavailable' }
-  | { readonly status: 'present'; readonly state: GatewayTenantState };
-
-/** The resume of a suspended tenant: sent by this call, pending in another call, failed, or no registry write. */
-export type GatewayResume = { readonly status: 'sent' | 'pending' | 'unavailable' } | { readonly status: 'failed'; readonly reason: string };
-
-/** The tenant registry as the gateway needs it. App composes it from the tenants owner. */
-export interface GatewayTenants {
-  find(organizationId: string): Promise<GatewayRoute>;
-  request(organizationId: string): Promise<GatewayTenantRequest>;
-  resume(organizationId: string): Promise<GatewayResume>;
-  /** Called after each successful forward; the registry writes last_active_at at most one time a minute. */
-  recordActive(organizationId: string): void;
-}
-
-/** Signs the access context of one request. Only the control plane holds the private key. */
-export interface ContextSigner {
+// Signs the access context of one request. Only the control plane holds the private key.
+interface ContextSigner {
   sign(claims: AccessContextClaims, bearerToken: string): Promise<string>;
 }
 
@@ -46,10 +21,13 @@ export interface McpGatewayOptions {
 
 type RefusalReason = 'starting' | 'resuming' | 'failed' | 'deleted' | 'capacity' | 'registry-unavailable';
 
-interface RefusalFacts {
+// A 503 of the gateway: its reason, the facts of its log line, and whether the line reports to the operator.
+interface Refusal {
+  readonly reason: RefusalReason;
   readonly state?: GatewayTenantState;
   readonly resume?: GatewayResume['status'];
   readonly resumeFailure?: string;
+  readonly report?: boolean;
 }
 
 // The answers of 27 October 2026: Retry-After 15 while a tenant starts or the registry is unreadable, and 60 after a
@@ -90,7 +68,7 @@ export class McpGateway {
     if (organizationId === undefined) throw new Error('A forwarded request has no organization.');
     const signal = forwarded.lifetime.signal;
     const route = await waitForRequest(signal, () => this.options.tenants.find(organizationId));
-    if (route.status === 'unavailable') return this.refuse(organizationId, 'registry-unavailable', {});
+    if (route.status === 'unavailable') return this.refuse(organizationId, { reason: 'registry-unavailable' });
     if (route.status === 'absent') return this.requestTenant(organizationId, signal);
     if (route.state !== 'failed') this.reportedFailures.delete(organizationId);
     if (route.state === 'live' && route.internalUrl !== null) return this.forwardLive(request, forwarded, route.internalUrl);
@@ -100,26 +78,26 @@ export class McpGateway {
   // A live row without an address, here or in a tenant request, waits for the next copy of the registry.
   private answerState(organizationId: string, state: GatewayTenantState, signal: AbortSignal): Promise<Response> | Response {
     if (state === 'suspended') return this.resume(organizationId, signal);
-    if (state === 'failed') return this.refuse(organizationId, 'failed', { state }, this.firstReport(organizationId));
-    if (state === 'deleted') return this.refuse(organizationId, 'deleted', { state });
-    if (state === 'live') return this.refuse(organizationId, 'registry-unavailable', { state });
-    return this.refuse(organizationId, 'starting', { state });
+    if (state === 'failed') return this.refuse(organizationId, { reason: 'failed', state, report: this.firstReport(organizationId) });
+    if (state === 'deleted') return this.refuse(organizationId, { reason: 'deleted', state });
+    if (state === 'live') return this.refuse(organizationId, { reason: 'registry-unavailable', state });
+    return this.refuse(organizationId, { reason: 'starting', state });
   }
 
   // The access check ran before, so a token without product access requests no tenant.
   private async requestTenant(organizationId: string, signal: AbortSignal): Promise<Response> {
     const result = await waitForRequest(signal, () => this.options.tenants.request(organizationId));
     if (result.status === 'present') return this.answerState(organizationId, result.state, signal);
-    if (result.status === 'requested') return this.refuse(organizationId, 'starting', { state: 'requested' });
-    if (result.status === 'full') return this.refuse(organizationId, 'capacity', {});
-    return this.refuse(organizationId, 'registry-unavailable', {});
+    if (result.status === 'requested') return this.refuse(organizationId, { reason: 'starting', state: 'requested' });
+    if (result.status === 'full') return this.refuse(organizationId, { reason: 'capacity' });
+    return this.refuse(organizationId, { reason: 'registry-unavailable' });
   }
 
   private async resume(organizationId: string, signal: AbortSignal): Promise<Response> {
     const result = await waitForRequest(signal, () => this.options.tenants.resume(organizationId));
-    if (result.status === 'unavailable') return this.refuse(organizationId, 'registry-unavailable', { state: 'suspended' });
-    if (result.status !== 'failed') return this.refuse(organizationId, 'resuming', { state: 'suspended', resume: result.status });
-    return this.refuse(organizationId, 'resuming', { state: 'suspended', resume: 'failed', resumeFailure: result.reason }, true);
+    if (result.status === 'unavailable') return this.refuse(organizationId, { reason: 'registry-unavailable', state: 'suspended' });
+    if (result.status !== 'failed') return this.refuse(organizationId, { reason: 'resuming', state: 'suspended', resume: result.status });
+    return this.refuse(organizationId, { reason: 'resuming', state: 'suspended', resume: 'failed', resumeFailure: result.reason, report: true });
   }
 
   private async forwardLive(request: Request, forwarded: McpForwardedRequest, internalUrl: string): Promise<Response> {
@@ -130,7 +108,9 @@ export class McpGateway {
     if (release === undefined) return this.searchBusy(organizationId, read.body);
     let answer: TenantAnswer;
     try {
-      answer = await this.callLive(request, forwarded, read.body, internalUrl);
+      const context = await this.options.signer.sign(claimsOf(forwarded.context), forwarded.bearerToken);
+      const call = { target: targetOf(request, internalUrl), method: request.method, headers: tenantHeaders(request.headers, context) };
+      answer = await callTenant(read.body.bytes === undefined ? call : { ...call, body: read.body.bytes }, forwarded.lifetime.signal);
     } catch (error) {
       release();
       throw error;
@@ -145,13 +125,6 @@ export class McpGateway {
     return answer.response;
   }
 
-  private async callLive(request: Request, forwarded: McpForwardedRequest, body: ForwardedBody, internalUrl: string): Promise<TenantAnswer> {
-    const context = await this.options.signer.sign(claimsOf(forwarded.context), forwarded.bearerToken);
-    const { pathname, search } = new URL(request.url);
-    const target = new URL(`${pathname}${search}`, internalUrl);
-    return callTenant({ target, method: request.method, headers: tenantHeaders(request.headers, context), ...(body.bytes === undefined ? {} : { body: body.bytes }) }, forwarded.lifetime.signal);
-  }
-
   // Before the first answer byte, the client gets the restart words for each request (answer 1 of 27 October 2026).
   private restarted(organizationId: string, body: ForwardedBody, cause: RestartCause): Response {
     this.reportRestart(organizationId, 'before-answer', cause);
@@ -164,21 +137,18 @@ export class McpGateway {
   }
 
   private searchBusy(organizationId: string, body: ForwardedBody): Response {
-    this.logRefusal({ organizationId, reason: 'search-busy' }, false);
+    this.options.logger.info(`MCP gateway refusal: ${JSON.stringify({ organizationId, reason: 'search-busy' })}`);
     return messageAnswers(body, GATEWAY_WORDS.busy) ?? unavailableAnswer(GATEWAY_WORDS.busy);
   }
 
-  private refuse(organizationId: string, reason: RefusalReason, facts: RefusalFacts, report = false): Response {
-    this.logRefusal({ organizationId, reason, ...facts }, report);
-    const { words, retryAfter } = REFUSALS[reason];
-    return unavailableAnswer(words, retryAfter);
-  }
-
   // One line for each refusal. A line that reports to the operator is an error line.
-  private logRefusal(facts: Readonly<Record<string, string>>, report: boolean): void {
-    const line = `MCP gateway refusal: ${JSON.stringify(facts)}`;
+  private refuse(organizationId: string, refusal: Refusal): Response {
+    const { report = false, ...facts } = refusal;
+    const line = `MCP gateway refusal: ${JSON.stringify({ organizationId, ...facts })}`;
     if (report) this.options.logger.error(line);
     else this.options.logger.info(line);
+    const { words, retryAfter } = REFUSALS[refusal.reason];
+    return unavailableAnswer(words, retryAfter);
   }
 
   // The restart line is the one line and the operator report of a tenant that failed during a forward.
@@ -214,6 +184,12 @@ class SearchSlots {
 
 function searchesIn(body: ForwardedBody): number {
   return body.messages.filter((message) => message.method === 'tools/call' && message.toolName === 'search').length;
+}
+
+// The tenant serves the same MCP path as the public origin, because it has the same PUBLIC_BASE_URL.
+function targetOf(request: Request, internalUrl: string): URL {
+  const { pathname, search } = new URL(request.url);
+  return new URL(`${pathname}${search}`, internalUrl);
 }
 
 function claimsOf(context: RequestContext): AccessContextClaims {

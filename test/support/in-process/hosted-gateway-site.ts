@@ -76,8 +76,9 @@ export async function openHostedGatewaySite(t: TestContext, options: HostedGatew
   t.after(() => sender.attempts.forEach((attempt) => attempt.complete()));
   const storage = composeLoggingStorage({ store: settings, close: async () => { settings.close(); } }, Buffer.alloc(32, 7), sender);
   const log = new OperatorLogSpy();
-  let application: Application | undefined;
-  const server = await startHttpServer((request) => (application as Application).handle(request), { listen: { host: '127.0.0.1', port: 0 }, publicBaseUrl: config.publicBaseUrl, logger: log });
+  // The listener starts first, because its origin is the internal URL of the composition.
+  const composed = Promise.withResolvers<Application>();
+  const server = await startHttpServer(async (request) => (await composed.promise).handle(request), { listen: { host: '127.0.0.1', port: 0 }, publicBaseUrl: config.publicBaseUrl, logger: log });
   const internalUrl = server.url.origin;
   const gateway = options.tenantsEnabled === false ? undefined : {
     settings: { signingKey: keys.privateKey, verifyingKey: publicKey, controlPlaneInternalUrl: internalUrl },
@@ -92,8 +93,9 @@ export async function openHostedGatewaySite(t: TestContext, options: HostedGatew
     fetch: async (url: string) => `Markdown of ${url} from the control plane`,
     search: async (query: string) => ({ status: 'released' as const, markdown: `Results for ${query} from the control plane` }),
   };
-  application = await composeApplicationWithWorkOSFake(config, world, { logger: log, toolOperations, loggingStorage: storage, ...(gateway === undefined ? {} : { gateway }) });
-  t.after(async () => { const draining = server.close(); await (application as Application).close(draining); });
+  const application = await composeApplicationWithWorkOSFake(config, world, { logger: log, toolOperations, loggingStorage: storage, gateway });
+  composed.resolve(application);
+  t.after(async () => { const draining = server.close(); await application.close(draining); });
   tenant.relayTo(internalUrl);
   const authority = `workos:${world.settings.clientId}`;
   const mcpUrl = new URL('mcp', server.url).href;
@@ -135,7 +137,7 @@ export async function openHostedGatewaySite(t: TestContext, options: HostedGatew
     post,
     toolResult: async (request: PostOptions) => rpcResult(await post(request)),
     // The request in the process, without a client: the client may send headers that the fetch of Node refuses.
-    handle: (request: PostOptions): Promise<Response> => (application as Application).handle(mcpRequest({ url: config.mcpResourceUrl, ...request })),
+    handle: (request: PostOptions): Promise<Response> => application.handle(mcpRequest({ url: config.mcpResourceUrl, ...request })),
     request: (path: string, init: RequestInit = {}): Promise<Response> => fetch(new URL(path, server.url), init),
     // A tenant relay to POST /internal/audit. The host is the internal service host unless the test gives another.
     relay: (event: unknown, context: string | undefined, target: { readonly host?: string; readonly path?: string } = {}): Promise<Response> => {

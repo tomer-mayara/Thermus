@@ -1378,7 +1378,8 @@ The tests: the acceptance specifications of the
 [relay](../../test/acceptance/logging/audit/audit-relay.test.ts), with a fake
 tenant upstream, the real registry rules over an in-memory registry, and a spy
 of the resume operation; the unit tests of the
-[gateway](../../test/unit/mcp/mcp-gateway.test.ts), the
+[gateway states](../../test/unit/mcp/mcp-gateway.test.ts) and its
+[forward](../../test/unit/mcp/mcp-gateway-forward.test.ts), the
 [forward step](../../test/unit/mcp/forward-step.test.ts), the registry writes
 in [tenants](../../test/unit/tenants/), the
 [relay check](../../test/unit/auth/signed-access-context.test.ts), and the
