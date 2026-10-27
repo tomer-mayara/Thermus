@@ -706,6 +706,17 @@ A preflight at 05:12:47 UTC, with reads only, listed no service named
 jobs, and 4 deletes. A preflight of the SO-01c probe, with reads only, also
 passed after the change of its modules.
 
+Manager verification run, 27 October 2026 at 05:29 UTC, with the script of
+commit `23a7c772` (the same real-mode code): exit code 0, 5 writes; private
+service `srv-dbg3dl9srm7s73cctd4g` `live` 91.7 s after its create call; web
+service `srv-dbg3ecec6qcc73e7cjr0` `live` 77.0 s after its create call, and
+its public `/healthz` answered `200` at the third request after two `502`
+answers; the job succeeded 16.1 s after its create call; port 8080 answered
+`200` with `ok` after 15 ms, and port 10000 and `serviceDetails.url` got
+`ECONNREFUSED`; `ENOTFOUND` from this machine; both deletes `204`; no
+service named `thermus-spike-*` left. The full tables are in the Validation
+comment of pull request #271.
+
 The measured times of the three jobs and the four new services:
 
 | Measure | Final run | Development runs |
