@@ -1,7 +1,7 @@
 import { LoggingRoutes, type LoggingRoutesOptions } from './logging-routes.ts';
 import type { AuditLog } from '../../../logs/audit/audit-log.ts';
 import { waitForRequest } from '../../../runtime/http/request-cancellation.ts';
-import type { AccessResolver, RequestContext } from '../../../accounts/identity/access-context.ts';
+import type { AccessResolver, AuthenticatedUser, RequestContext } from '../../../accounts/identity/access-context.ts';
 import type { OrganizationAdministration } from '../../../accounts/organizations/organization-administration.ts';
 import { readForm, ReturnDestinations, selectionIn, single } from './account-form.ts';
 import { accessDeniedPage, noOrganizationPage, noticePage, organizationSelectionPage, seeOther } from './account-pages.ts';
@@ -59,7 +59,7 @@ export class HostedAccountRoutes {
       organizations: new URL('organizations', publicBaseUrl).pathname,
       selection: new URL('organizations/select', publicBaseUrl).pathname,
     };
-    this.destinations = new ReturnDestinations(publicBaseUrl, this.paths.organizations);
+    this.destinations = new ReturnDestinations(publicBaseUrl, new URL(publicBaseUrl).pathname);
     this.logging = new LoggingRoutes({ publicBaseUrl, organizationsPage: this.paths.organizations, service: options.logging, audit: options.audit });
     this.administration = new AdministrationRoutes({ publicBaseUrl, organizations: this.organizations, organizationsPage: this.paths.organizations, audit: options.audit });
   }
@@ -104,8 +104,7 @@ export class HostedAccountRoutes {
     return this.operation(request, context);
   }
 
-  // The page needs the identity only, not access to an organization, so that a user without one gets the onboarding
-  // guidance.
+  // Identity admits the picker. Its optional access read controls menu links only.
   private async organizationPage(request: Request, session: SignedInBrowserSession): Promise<Response> {
     if (request.method !== 'GET' && request.method !== 'HEAD') return noticePage('methodNotAllowed', { Allow: 'GET, HEAD' });
     const destinations = new URL(request.url).searchParams.getAll('return_to');
@@ -113,7 +112,21 @@ export class HostedAccountRoutes {
     if (returnTo === undefined) return noticePage('invalidRequest');
     const organizations = await waitForRequest(request.signal, () => this.organizations.listOrganizations(session.user));
     if (organizations.length === 0) return noOrganizationPage(this.signupUrl);
-    return organizationSelectionPage({ action: this.paths.selection, csrfToken: session.csrfToken, returnTo, organizations });
+    const selected = organizations.some(organization => organization.organizationId === session.user.selectedOrganizationId);
+    const admin = selected && await this.showAdminNavigation(request, session.user);
+    return organizationSelectionPage({ action: this.paths.selection, csrfToken: session.csrfToken, returnTo, organizations, product: this.destinations.fallback, admin });
+  }
+
+  private async showAdminNavigation(request: Request, user: AuthenticatedUser): Promise<boolean> {
+    try {
+      const decision = await waitForRequest(request.signal, () => this.accessResolver.resolve(user));
+      request.signal.throwIfAborted();
+      return decision.allowed && currentAdminAccess(user, decision.context);
+    } catch (cause) {
+      request.signal.throwIfAborted();
+      this.reportFailure({ path: new URL(request.url).pathname, cause: new Error('Workspace navigation access lookup failed.', { cause }) });
+      return false;
+    }
   }
 
   // The origin check comes before the body is read, so that a post from another site causes no work. Only the current
@@ -136,6 +149,14 @@ export class HostedAccountRoutes {
     if (change.status === 'switched') return seeOther(this.destinations.urlOf(returnTo));
     return noticePage(change.status === 'signed-out' ? 'signedOut' : 'organizationDenied');
   }
+}
+
+function currentAdminAccess(user: AuthenticatedUser, context: RequestContext): boolean {
+  return context.organizationId === user.selectedOrganizationId
+    && context.user.selectedOrganizationId === user.selectedOrganizationId
+    && context.user.authority === user.authority && context.user.subject === user.subject
+    && context.tenantId !== '' && context.permissions.includes('product:access')
+    && context.grants.some(grant => grant.role === 'admin' && grant.permissions.length > 0);
 }
 
 // The cookie effects come before the cookies that the answer has already, so that a later cookie, such as the cookie

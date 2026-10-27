@@ -17,6 +17,8 @@ import { signInThroughServer } from '../../support/dsl/workos-sign-in.ts';
 import { otherOrganization, removalAdmin, removalOrganization, removalUser, serveMemberRemovalSite } from '../../support/in-process/hosted-member-removal-site.ts';
 import { portalBuild } from '../../support/processes/module-paths.ts';
 import { hostedRootConfig } from '../../support/fixtures/hosted-config.ts';
+import { serveWorkspaceSelectionSite, workspaceSelectionUser } from '../../support/in-process/hosted-workspace-selection-site.ts';
+import { WorkspaceSelectionBrowser } from '../../support/drivers/browser/workspace-selection-browser.ts';
 
 test('Given three short member rows at 1280px and normal text, when Members loads its production fonts with removal closed, then labelled rows stay within 72px and quiet actions keep 48px targets', async (t) => {
   const { page } = await adminBrowser(t, { javaScriptEnabled: false });
@@ -509,6 +511,25 @@ for (const role of ['admin', 'user']) {
       await page.setViewportSize({ width, height: 844 });
       await new AdminShellBrowser(page, { javaScriptEnabled: true, width }).inspectConnect(role === 'admin');
     });
+  }
+}
+
+for (const javaScriptEnabled of [false, true]) {
+  for (const width of [320, 1280]) {
+    for (const label of ['Acme (selected)', 'Globex']) {
+      test(`Given Switch Workspace at ${width}px with JavaScript ${javaScriptEnabled ? 'on' : 'off'}, when the user chooses ${label} by keyboard, then compact navigation and the protected selection lead to Connect with the selected workspace`, async (t) => {
+        const portal = await HostedPortal.load([], pathToFileURL(portalBuild));
+        const site = await serveWorkspaceSelectionSite(t, hostedRootConfig, portal);
+        const { browser: session } = await signInThroughServer(site, workspaceSelectionUser, 'org_ACME');
+        const page = await memberRemovalBrowser(t, site.transport, { cookieHeader: session.cookieHeader ?? '', javaScriptEnabled });
+        await page.setViewportSize({ width, height: 844 });
+        const browser = new WorkspaceSelectionBrowser(page, { javaScriptEnabled, width });
+        await browser.openPicker();
+        await browser.inspectPicker(false);
+        await browser.chooseOrganization(label);
+        await browser.inspectPicker(label === 'Globex');
+      });
+    }
   }
 }
 

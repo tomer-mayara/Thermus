@@ -1192,6 +1192,12 @@ changes add no provider, process, datastore, or component boundary.
 The portal uses the current access response to show Connect and Switch Workspace,
 plus Members and Audit Log for the exact `admin` role. Connect and the admin pages
 use one compact header menu in that order. Link visibility gives no authority.
+The organization picker uses the same menu with Switch Workspace active. Identity
+still admits it. An optional current-access read controls Admin links for the
+selected workspace only; a denial, mismatch, or lookup outage keeps the picker
+usable. Its selection POST still checks current membership and session authority.
+Without an explicit safe return path, a successful choice opens Connect at the
+public base path.
 Invitation POST routes retain origin, CSRF, selected-organization, current-role,
 and pending-target checks. A failure after a directory write starts raises the
 neutral `UnconfirmedChangeError` and keeps an unknown change record. The route

@@ -143,8 +143,17 @@ Keep long names readable, mark the selected workspace, and show keyboard focus.
 The page must fit narrow screens without horizontal scrolling.
 
 Keep organization selection as an HTML form that works without JavaScript.
-Preserve the existing POST route, CSRF protection, return destination, access
+After a normal choice, open Connect at the public base path, including when the
+user chooses the selected workspace again. Preserve an explicit safe return
+destination exactly. Keep the existing POST route, CSRF protection, access
 checks, escaped organization names, and non-cacheable responses.
+
+Keep the compact header menu on the picker, with Switch Workspace marked as
+the current page. Show Members and Audit Log only for the exact current `admin`
+role with product access in the selected workspace. An Admin membership in
+another workspace gives no menu links here. Without a selected workspace, or
+when its access is denied, stale, or unavailable, keep the picker usable with
+Connect and Switch Workspace. The display lookup gives no selection authority.
 
 The implemented [desktop](portal-screenshots/organizations-desktop.png) and
 [mobile](portal-screenshots/organizations-mobile.png) previews use the built

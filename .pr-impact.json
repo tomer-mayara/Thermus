@@ -3,45 +3,40 @@
   "classification": {
     "container": false,
     "external": false,
-    "contract": false,
-    "deployment": true,
-    "crossCutting": true,
+    "contract": true,
+    "deployment": false,
+    "crossCutting": false,
     "component": false,
-    "internalInterface": false,
+    "internalInterface": true,
     "sensitiveBehavior": false,
     "dependencyRisk": false,
-    "policy": true,
+    "policy": false,
     "uncertain": false
   },
   "architecture": {
-    "modelUpdated": true,
-    "summary": "The SO-01b hosted image workflow becomes the release path (SO-02). Each push to main builds Dockerfile.hosted for linux/amd64, runs the hosted image gate on that image, and pushes it to GHCR by digest; a failed check or gate pushes nothing. Only a manual dispatch on main with a digest and a service ID deploys: the deploy job uses the repository secret RENDER_API_KEY (a dedicated Render user; no GitHub environment) for the Render API deploy with imageUrl, waits for live, and checks the image and /healthz. It refuses another branch, a service that is not an image-backed web service of Thermus AI, and production without confirm_production. deployment: a new delivery relationship from GitHub Actions to Render. crossCutting: the workflows of this repository get deploy authority over the Thermus AI workspace, production included. policy: each merge runs the hosted image gate. Production still builds from Git until step 5 of SO-12, so no C4 container, runtime relationship, contract, component, or Mermaid view changes; registry prose names the release path.",
+    "modelUpdated": false,
+    "summary": "The organization picker defaults to Connect at the normalized public base path after selection, while explicit safe return destinations retain their value. This changes the documented browser navigation default. The web owner adds an optional current-access lookup through the existing AccessResolver for picker menu visibility. Only a context bound to the session user and selected workspace, with product access and an exact nonempty admin grant, shows Members and Audit Log. Denial, mismatch, or lookup failure leaves the picker usable with Connect and Switch Workspace; cancellation propagates. Identity admission, selection POST authorization, CSRF and origin checks, session cookie order, and MCP isolation retain their rules. Public declarations, component owners, import edges, external integrations, containers, and deployment are unchanged. Registry prose records the new runtime use; all 17 diagrams remain accurate.",
     "views": [
       "Context",
       "C4 containers: hosted edition",
+      "Selected C4 components: hosted authentication in the Node server",
+      "Collaboration overview",
+      "Scenario: hosted default sign-in landing",
+      "Scenario: hosted member read",
       "Deployment view",
-      "Recorded hosted Render target",
-      "Design choices and current soft spots"
+      "Ownership",
+      "Behavior and resource ownership"
     ],
     "evidence": [
-      ".github/workflows/hosted-image.yml",
-      "script/release/deploy-hosted-image.ts",
-      "script/release/deploy-request.ts",
-      "script/release/render-api.ts",
-      "script/release/render-answers.ts",
-      "script/release/public-health.ts",
-      "README.md",
-      "docs/implementation/test-gate-policy.md",
-      "docs/implementation/self-onboarding-s1.md",
+      "src/interfaces/web/account/account-routes.ts",
+      "src/interfaces/web/account/organization-selection-page.ts",
+      "src/interfaces/web/account/organization-selection-style.ts",
+      "test/acceptance/auth/hosted-workspace-selection.test.ts",
+      "test/integration/hosted-admin/account-routes-workspace-navigation.test.ts",
+      "test/integration/auth/workos-provider-organizations.test.ts",
+      "test/acceptance/auth/hosted-member-removal-browser.runtime.ts",
       "architecture/components.md",
-      "script/README.md",
-      "https://github.com/tomer-mayara/Thermus/actions/runs/40582338941",
-      "https://github.com/tomer-mayara/Thermus/actions/runs/40582429843",
-      "https://github.com/tomer-mayara/Thermus/actions/runs/40582571919",
-      "https://github.com/tomer-mayara/Thermus/actions/runs/40582508603",
-      "https://github.com/tomer-mayara/Thermus/actions/runs/40583680586",
-      "https://github.com/tomer-mayara/Thermus/actions/runs/40583851233",
-      "https://github.com/tomer-mayara/Thermus/actions/runs/40586231957"
+      "docs/design/authentication-design.md"
     ]
   }
 }

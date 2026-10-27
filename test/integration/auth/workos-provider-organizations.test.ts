@@ -154,7 +154,7 @@ describe('WorkOS organization reads with the real session, organization service,
     assert.equal((await browser.open('billing')).status, 403);
   });
 
-  test('Given the organization page and a selection, when they run, then WorkOS gets one read of the memberships of the session user with the explicit status active and the largest page, one role read for each active organization, and, for the selection, the same current reads before the refresh into the selected organization', async (t) => {
+  test('Given the organization page and a selection, when they run, then the page reads authorized memberships and current selected-workspace menu access while selection retains its current reads before the session switch', async (t) => {
     const site = await openSite(t);
     const browser = await signIn(site, mia, acme);
     const roleRead = (organizationId: string) => `GET /authorization/organizations/${organizationId}/roles`;
@@ -166,7 +166,7 @@ describe('WorkOS organization reads with the real session, organization service,
     await browser.submit(formLabelled(forms, 'Globex'));
     const selectionRequests = workosRequests(site);
 
-    assert.deepEqual(pageRequests, reads);
+    assert.deepEqual(pageRequests, [...reads, `${membershipsRoute}?user_id=${mia.id}&organization_id=${acme}&statuses=active&limit=10&order=desc`, roleRead(acme)]);
     assert.deepEqual(selectionRequests, [...reads, 'POST /user_management/authenticate']);
   });
 
