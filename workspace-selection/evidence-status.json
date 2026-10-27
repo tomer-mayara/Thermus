@@ -2,7 +2,7 @@
   "candidate": "2907d105f85c9596401312d7082af86a5711df06",
   "sourceCandidate": "16c8e174f503f79c5011fe9ac7e157578ff49d74",
   "base": "77477864d8238b9141e9619b6bcbb6b0aa7fb11b",
-  "phase": "Release gates in progress; not approved for merge or deployed",
+  "phase": "Superseded by 7b46dca4 on base f6b52396; historical checks only",
   "checks": {
     "ordinary": {
       "exit": 0,
@@ -52,9 +52,35 @@
       "failed": 0,
       "skipped": 0
     },
-    "hostedImage": "running",
-    "selfHostedContainer": "running",
-    "hostedLive": "Waiting for another local gate to release fixed staging ports; failed attempt retained"
+    "hostedImage": {
+      "exit": 0,
+      "tests": 7,
+      "passed": 7,
+      "failed": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "durationMs": 1304760.963209
+    },
+    "selfHostedContainer": {
+      "exit": 0,
+      "tests": 11,
+      "passed": 11,
+      "failed": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0
+    },
+    "hostedLive": {
+      "exit": 0,
+      "tests": 29,
+      "passed": 29,
+      "failed": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "durationMs": 662689.411791
+    }
   },
   "quality": {
     "checker": "T2 Need architect; preliminary local eligibility eligible, no checker blockers",
@@ -65,5 +91,6 @@
   "deployment": {
     "currentProduction": "6e2c6739fab812c330d4b5295bfc2c934b021762",
     "fixDeployed": false
-  }
+  },
+  "supersededBy": "7b46dca42c17ead64263339fd638f39ccb693a0d"
 }

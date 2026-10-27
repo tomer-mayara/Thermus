@@ -1,0 +1,11 @@
+{
+  "head": "feaddbdec5f9e2cc7bf8e07050a4d5e7aa5e5769",
+  "tree": "4e858167037a4c461f28269fabe681ea2148d795",
+  "runDir": "/Users/tomermayara/.codex/worktrees/026d/Thermus",
+  "purpose": "Complete Linux AMD64 image gate retry from Docker-shared canonical checkout",
+  "gitStatus": "",
+  "command": "npm run test:container:hosted",
+  "buildRef": "e1wwyhsuctuksxg2knirxkqb0",
+  "exit": 0,
+  "passed": 7
+}

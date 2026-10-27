@@ -1,0 +1,307 @@
+{
+  "version": "v3 refresh",
+  "base": "f6b523967223da5ebddafdef1a508d3936cee01c",
+  "measuredSource": "7b46dca42c17ead64263339fd638f39ccb693a0d",
+  "finalCandidate": "feaddbdec5f9e2cc7bf8e07050a4d5e7aa5e5769",
+  "reviewedAt": "2026-10-27T21:50:08.985277+00:00",
+  "reportsObserved": {
+    "process.json": {
+      "path": "ast-report/workspace-selection-refresh/metrics-source/process.json",
+      "sha256": "210a74fbbeea0cd2631acc5875e59b2c446927105ededb89480947a5811a05a1",
+      "base": "f6b523967223da5ebddafdef1a508d3936cee01c",
+      "head": "7b46dca42c17ead64263339fd638f39ccb693a0d"
+    },
+    "review.json": {
+      "path": "ast-report/workspace-selection-refresh/metrics-source/review.json",
+      "sha256": "2ffa3eea81efa3039df16fc1ed44741ebccd228194945dabf7b5e8cb35b10ebd",
+      "base": "f6b523967223da5ebddafdef1a508d3936cee01c",
+      "head": "7b46dca42c17ead64263339fd638f39ccb693a0d"
+    },
+    "snapshot-base.json": {
+      "path": "ast-report/workspace-selection-refresh/metrics-source/snapshot-base.json",
+      "sha256": "34e07623dcfce06f31455e2d1d0743478df5d044286b9f3de72a1f976173b24b",
+      "base": null,
+      "head": "f6b523967223da5ebddafdef1a508d3936cee01c"
+    },
+    "snapshot.json": {
+      "path": "ast-report/workspace-selection-refresh/metrics-source/snapshot.json",
+      "sha256": "d96b61c7e82cf2049f790fd514f9e595ffe405e596abeaa24329bbc3c49baff1",
+      "base": null,
+      "head": "7b46dca42c17ead64263339fd638f39ccb693a0d"
+    },
+    "coverage.json": {
+      "path": "ast-report/workspace-selection-refresh/metrics-source/coverage.json",
+      "sha256": "12b575d98a2dd8966881e0546fe2fe591bf32b7fcbb9a2743b70cf743afe5d06",
+      "base": null,
+      "head": "7b46dca42c17ead64263339fd638f39ccb693a0d"
+    },
+    "crap.json": {
+      "path": "ast-report/workspace-selection/review/crap-observed-feaddbde.json",
+      "originalPath": "ast-report/crap.json",
+      "sha256": "1448abdfdf07677397a35df77f48ce6e074421dedeeed59e573bc3f4986cf726",
+      "base": "f6b523967223da5ebddafdef1a508d3936cee01c",
+      "head": "feaddbdec5f9e2cc7bf8e07050a4d5e7aa5e5769"
+    }
+  },
+  "outcomes": [
+    {
+      "name": "Delta",
+      "status": "goal miss"
+    },
+    {
+      "name": "Review",
+      "status": "goal miss"
+    },
+    {
+      "name": "CRAP",
+      "status": "passed"
+    },
+    {
+      "name": "Architecture",
+      "status": "passed"
+    }
+  ],
+  "canonicalReviewSummary": {
+    "filesChanged": 8,
+    "filesAdded": 4,
+    "filesDeleted": 0,
+    "high": 1,
+    "medium": 0,
+    "low": 0,
+    "improvements": 0
+  },
+  "nativeFilteredFinding": {
+    "path": "test/support/drivers/browser/workspace-selection-browser.ts",
+    "line": 22,
+    "function": "WorkspaceSelectionBrowser.inspectPicker",
+    "paths": 10,
+    "repositoryThreshold": ">10",
+    "disposition": "Native-only informational warning; canonical wrapper correctly excludes exact10. One bounded picker inspection remains cohesive."
+  },
+  "changedAndToolNewFunctions": [
+    {
+      "file": "src/interfaces/web/account/account-routes.ts",
+      "function": "account-routes\\HostedAccountRoutes.organizationPage",
+      "change": "changed",
+      "paths": 7,
+      "share": 1,
+      "crap": 7
+    },
+    {
+      "file": "src/interfaces/web/account/account-routes.ts",
+      "function": "currentAdminAccess",
+      "change": "new",
+      "paths": 7,
+      "share": 1,
+      "crap": 7
+    },
+    {
+      "file": "src/interfaces/web/account/account-routes.ts",
+      "function": "account-routes\\HostedAccountRoutes.showAdminNavigation",
+      "change": "new",
+      "paths": 3,
+      "share": 1,
+      "crap": 3
+    },
+    {
+      "file": "src/interfaces/web/account/account-routes.ts",
+      "function": "(anonymous)",
+      "change": "new",
+      "paths": 2,
+      "share": 1,
+      "crap": 2
+    },
+    {
+      "file": "src/interfaces/web/account/organization-selection-page.ts",
+      "function": "organizationSelectionPage",
+      "change": "changed",
+      "paths": 2,
+      "share": 1,
+      "crap": 2
+    },
+    {
+      "file": "src/interfaces/web/account/account-routes.ts",
+      "function": "(anonymous)",
+      "change": "new",
+      "paths": 1,
+      "share": 1,
+      "crap": 1
+    },
+    {
+      "file": "src/interfaces/web/account/account-routes.ts",
+      "function": "account-routes\\HostedAccountRoutes.",
+      "change": "new",
+      "paths": 1,
+      "share": 1,
+      "crap": 1
+    },
+    {
+      "file": "src/interfaces/web/account/account-routes.ts",
+      "function": "account-routes\\HostedAccountRoutes.",
+      "change": "new",
+      "paths": 1,
+      "share": 1,
+      "crap": 1
+    },
+    {
+      "file": "src/interfaces/web/account/account-routes.ts",
+      "function": "account-routes\\HostedAccountRoutes.constructor",
+      "change": "changed",
+      "paths": 1,
+      "share": 1,
+      "crap": 1
+    }
+  ],
+  "productionFileFindings": [
+    {
+      "path": "src/interfaces/web/account/account-routes.ts",
+      "beforeMI": 59.440789019914476,
+      "afterMI": 54.03041569685968,
+      "drop": 5.410373323054796,
+      "basePaths": 47,
+      "headPaths": 62,
+      "headFunctions": 23,
+      "retainedHigh": "Required current-user/workspace/product/admin guard and optional failure/abort policy already have focused owners; no mechanical extraction recommended."
+    },
+    {
+      "path": "src/interfaces/web/account/organization-selection-page.ts",
+      "beforeMI": 66.85775897085377,
+      "afterMI": 65.67616499424597,
+      "basePaths": 4,
+      "headPaths": 5,
+      "headFunctions": 2,
+      "reason": "One conditional native Admin menu stays with escaped form/page and CSS-derived CSP."
+    },
+    {
+      "path": "src/interfaces/web/account/organization-selection-style.ts",
+      "MI": "not measured",
+      "CRAP": "N/A: CSS string has no functions"
+    }
+  ],
+  "coverage": {
+    "commit": "7b46dca42c17ead64263339fd638f39ccb693a0d",
+    "status": "verified",
+    "suite": [
+      "unit",
+      "integration"
+    ],
+    "files": 196,
+    "scripts": 196,
+    "processes": 767,
+    "provenance": {
+      "sourceFingerprint": "f9316c4198e1cbd7a05edbd9d7914a2f251dfae6fba65547ac85fb32b24ae14c",
+      "inputsFingerprint": "ef2e4e368703cacb40f81d02cb86666652a282ac787eb845505e9ed7833c2eaf",
+      "runtime": "node-24.20.0",
+      "compiler": "typescript-7.0.2",
+      "measurementVersion": "own-characters-1",
+      "suite": [
+        "unit",
+        "integration"
+      ],
+      "comparisonIdentity": {
+        "sourceFingerprint": "f9316c4198e1cbd7a05edbd9d7914a2f251dfae6fba65547ac85fb32b24ae14c",
+        "inputsFingerprint": "ef2e4e368703cacb40f81d02cb86666652a282ac787eb845505e9ed7833c2eaf",
+        "runtime": "node-24.20.0",
+        "compiler": "typescript-7.0.2",
+        "measurementVersion": "own-characters-1",
+        "suite": "unit"
+      },
+      "status": "verified",
+      "capturedCommit": "7b46dca42c17ead64263339fd638f39ccb693a0d",
+      "buildFingerprint": "90496e00147eca5fda43204177efb18698f5243ac68a4feffc37027b63fe7aab",
+      "captureManifestFingerprint": "c569eb6963f8903c228fecbfea50e5e2879f657aeff4dfcaece58f8ceb8ab1c0",
+      "captures": [
+        {
+          "sourceFingerprint": "f9316c4198e1cbd7a05edbd9d7914a2f251dfae6fba65547ac85fb32b24ae14c",
+          "inputsFingerprint": "ef2e4e368703cacb40f81d02cb86666652a282ac787eb845505e9ed7833c2eaf",
+          "runtime": "node-24.20.0",
+          "compiler": "typescript-7.0.2",
+          "measurementVersion": "own-characters-1",
+          "suite": "unit",
+          "completionProtocol": "normal-exit-or-sealed-or-loader-1",
+          "captureId": "8e01ac8a1bbe6f613aa9e7f84cd351d2fe67ebde75bd2d050a577ed5ce267d8a",
+          "comparisonIdentity": {
+            "sourceFingerprint": "f9316c4198e1cbd7a05edbd9d7914a2f251dfae6fba65547ac85fb32b24ae14c",
+            "inputsFingerprint": "ef2e4e368703cacb40f81d02cb86666652a282ac787eb845505e9ed7833c2eaf",
+            "runtime": "node-24.20.0",
+            "compiler": "typescript-7.0.2",
+            "measurementVersion": "own-characters-1",
+            "suite": "unit"
+          },
+          "status": "verified",
+          "capturedCommit": "7b46dca42c17ead64263339fd638f39ccb693a0d",
+          "buildFingerprint": "90496e00147eca5fda43204177efb18698f5243ac68a4feffc37027b63fe7aab",
+          "captureManifestFingerprint": "2dcb248311a3c4fb911ee5ccd71119c47be2e92ee17baed69d5cbcf0366d54d0"
+        },
+        {
+          "sourceFingerprint": "f9316c4198e1cbd7a05edbd9d7914a2f251dfae6fba65547ac85fb32b24ae14c",
+          "inputsFingerprint": "9bdd993c776fbff562c6d8699f3d730e58413e770db5bb08b013394b401489bf",
+          "runtime": "node-24.20.0",
+          "compiler": "typescript-7.0.2",
+          "measurementVersion": "own-characters-1",
+          "suite": "integration",
+          "completionProtocol": "normal-exit-or-sealed-or-loader-1",
+          "captureId": "99f6e0936c2559efc257ae9fef0c2390d2a3aecb4a079ee4925fa5652434f415",
+          "comparisonIdentity": {
+            "sourceFingerprint": "f9316c4198e1cbd7a05edbd9d7914a2f251dfae6fba65547ac85fb32b24ae14c",
+            "inputsFingerprint": "ef2e4e368703cacb40f81d02cb86666652a282ac787eb845505e9ed7833c2eaf",
+            "runtime": "node-24.20.0",
+            "compiler": "typescript-7.0.2",
+            "measurementVersion": "own-characters-1",
+            "suite": "unit"
+          },
+          "status": "verified",
+          "capturedCommit": "7b46dca42c17ead64263339fd638f39ccb693a0d",
+          "buildFingerprint": "90496e00147eca5fda43204177efb18698f5243ac68a4feffc37027b63fe7aab",
+          "captureManifestFingerprint": "d380d91f9bca2d7b4ae3075722a4ae99e7111ec8ee11df4454b85f74451c09d0"
+        }
+      ]
+    }
+  },
+  "baseGlobal": {
+    "modularity": 0.34,
+    "crossShare": 0.21,
+    "cycles": [
+      [
+        "accounts",
+        "app (application)",
+        "app (tenants)",
+        "pipelines"
+      ]
+    ],
+    "maintainability": 57.3,
+    "paths": 4452,
+    "files": 212,
+    "functions": 1630
+  },
+  "headGlobal": {
+    "modularity": 0.34,
+    "crossShare": 0.21,
+    "cycles": [
+      [
+        "accounts",
+        "app (application)",
+        "app (tenants)",
+        "pipelines"
+      ]
+    ],
+    "maintainability": 57.3,
+    "paths": 4468,
+    "files": 212,
+    "functions": 1635
+  },
+  "baseUnestimatedFunctionCount": 81,
+  "unchangedAppComponentUnknownFunctions": 3,
+  "requiredChangedFunctionUnknowns": 0,
+  "newMetricException": false,
+  "sourceRetentionSignoff": "No required source fix; retain one high MI regression and two low existing file scores with concrete reasons.",
+  "finalHeadBridge": "final-head-input-bridge-v3.json",
+  "finalProcessCheckerStatus": "In progress at review; source process is not relabelled final.",
+  "gateLimits": [
+    "No new image/live/build-hosted/self-container pass inferred",
+    "Unchanged unresolved user-portal CSS import means dependency comparison incomplete",
+    "Community cycle is native community grouping, not proof of a new declared component cycle",
+    "Head-derived base CRAP is an estimate with81unknown shares; changed required functions fully assessed",
+    "No test/build/MCP or metric collection started by reviewer"
+  ]
+}

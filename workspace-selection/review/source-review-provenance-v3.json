@@ -1,0 +1,120 @@
+{
+  "base": "f6b523967223da5ebddafdef1a508d3936cee01c",
+  "head": "7b46dca42c17ead64263339fd638f39ccb693a0d",
+  "reviewedAt": "2026-10-27T21:34:04.716690+00:00",
+  "scope": "committed combined source/test/docs/impact candidate againstactual new base",
+  "incrementalFiles": [
+    {
+      "path": ".pr-impact.json",
+      "gitObject": "d0480e351607f63b704d3446ee759ad2089220fc",
+      "sha256": "7f3be7f2404a00d2b2715e2232536615b124b43afa38b5ca34e561bdd5a453fb"
+    },
+    {
+      "path": "architecture/components.md",
+      "gitObject": "8f68442f1133d078fe310340afd3291a1ab074e9",
+      "sha256": "726f4fff860894ff9f800b8eb2f48e8b052167b185c577148e427a7badacfb9c"
+    },
+    {
+      "path": "docs/design/authentication-design.md",
+      "gitObject": "0af663c6f1bbc61dd39a81f3030d97c498d7587e",
+      "sha256": "293fc6bd8608580f0201e5c4f125e084b90001c3ccb7e15a5c1b967ae3b8d12b"
+    },
+    {
+      "path": "docs/design/portal-design.md",
+      "gitObject": "b5e0741a9484da214d33f8749a1ce2e41c3e9976",
+      "sha256": "dced7ed538d82930c969e23153601b29e586df5f4d7ea4376b9cc69d07bd6a9f"
+    },
+    {
+      "path": "docs/user-portal.md",
+      "gitObject": "2d6a9876914156db5b24d8106c7f9a5222e3dfdd",
+      "sha256": "7cc4d3f08fcbb2c157123f68e0f5cc330beee3c390af90623404aef47828fcc6"
+    },
+    {
+      "path": "src/interfaces/web/account/account-routes.ts",
+      "gitObject": "ef1a417749056778036fce4a26fb337203d9d8d2",
+      "sha256": "a93c9962cc5250486c9b4fca3856a05f3d7d20b85826d76ffe92e832fc270b4e"
+    },
+    {
+      "path": "src/interfaces/web/account/organization-selection-page.ts",
+      "gitObject": "c056ccaa18b447554d248ed6f3ac3868b700e130",
+      "sha256": "161a971b692eb5985ba163ef2fc23a5c85969f564b28db69be6a857368e0fda2"
+    },
+    {
+      "path": "src/interfaces/web/account/organization-selection-style.ts",
+      "gitObject": "8071176f3d3364b70a786f4238aa5cb550f404e3",
+      "sha256": "13f5eaaaa501a3d0ed11908e31cda17fa984d89080ea9e809db18db8bc6ae5b1"
+    },
+    {
+      "path": "test/acceptance/auth/hosted-member-removal-browser.runtime.ts",
+      "gitObject": "75b2e6770ab0b27a7e320c631e98277a3abcbad2",
+      "sha256": "48ecfef3266c4e9ee1fb33dc91d2c6717876fb87cbf208bb813e34087e81de65"
+    },
+    {
+      "path": "test/acceptance/auth/hosted-organization-requests.test.ts",
+      "gitObject": "a8d03fa0245ac35136ca463f5ee2437eb40a6500",
+      "sha256": "7cab012cd80e93984b6f85dfd68316a5418341d6ff6dfbcdf8448c9b3d050720"
+    },
+    {
+      "path": "test/acceptance/auth/hosted-workspace-selection.test.ts",
+      "gitObject": "c839b72cf8ce9a1a5c7be8e2be3d4f40f17d80e5",
+      "sha256": "071ae45c002e2daf8b9fe8e4d7fd79aaf69d304594db522dafbec681a46d9bea"
+    },
+    {
+      "path": "test/integration/auth/workos-provider-organizations.test.ts",
+      "gitObject": "bc886a4bb77b73b100d689f79daf3afe9772dbe0",
+      "sha256": "57c68155587aa443c5ba8e8a524fa3d55fdfab44f0a48ec4c0ca0b11b0cdcd03"
+    },
+    {
+      "path": "test/integration/hosted-admin/account-routes-organization-page.test.ts",
+      "gitObject": "820560575f3fb1c5ea6cc62e033ffdcd9a61c376",
+      "sha256": "239d2235c78d49a08fe0ddef78ddeaefc54b6d4084dfc457b8726d1da013203c"
+    },
+    {
+      "path": "test/integration/hosted-admin/account-routes-workspace-navigation.test.ts",
+      "gitObject": "b4bda961ab5a8e629a232fd7b2e550e37a6fc76f",
+      "sha256": "28c9df5ec7d02df3f95da51285f268e21d95f78e223183c700b97d1e6fb6c8bc"
+    },
+    {
+      "path": "test/integration/hosted-admin/organization-selection-page.test.ts",
+      "gitObject": "181267cc2f977feb33a87a8b3c5cb1b1217cf098",
+      "sha256": "f54d262f6abe403c429dad074649c4f5355cb2c568ab0805b0a1f378cf3149a3"
+    },
+    {
+      "path": "test/support/drivers/browser/workspace-selection-browser.ts",
+      "gitObject": "1399f62914e5e7593e67a3230d19f7d06a672ed4",
+      "sha256": "07c77f8b7f0ae1dcde01a55100c8422b94d175a3b838a19e584c0132f3456beb"
+    },
+    {
+      "path": "test/support/in-process/hosted-workspace-selection-site.ts",
+      "gitObject": "5bc4a97664a1b74e5c4056b6fbcfe6bd975dcc36",
+      "sha256": "7e69a764f0c10bd0885c8c56974a19ecbfd4b8e75e2b42b217afc409d3d6a151"
+    }
+  ],
+  "pickerProductionSourceIdenticalToOldReviewedSource": true,
+  "selectionPostAndSwitchAnswerBodiesIdenticalToNewBase": true,
+  "selectionBodiesSha256": "408e69140a3615788ff14a0074d60f367ea9e9b8c284fbc27ecbd9c56580a713",
+  "publicSnapshotCount": 51,
+  "publicSnapshotTreesIdentical": true,
+  "publicSnapshotTree": "86e9b0699777fd9b84a10ba410f62d00df02ac1e",
+  "registryDiagramCount": 17,
+  "registryDiagramBodiesIdentical": true,
+  "impactFlags": {
+    "container": false,
+    "external": false,
+    "contract": true,
+    "deployment": false,
+    "crossCutting": false,
+    "component": false,
+    "internalInterface": true,
+    "sensitiveBehavior": false,
+    "dependencyRisk": false,
+    "policy": false,
+    "uncertain": false
+  },
+  "findings": [],
+  "sourceSignoff": "No actionable integration/source finding; manager agrees",
+  "requiredHumanReview": "T2 Need architect for contract/internalInterface; pending actual current candidate independent authorized human approval",
+  "metricStatus": "Fresh new-base process in progress; old-base metric dispositions not relabelled",
+  "diagramManagerReview": "Approved atnative 798px: control-plane title clears arrow, owners/new GET arrow readable; no change requested",
+  "toolExecutionLimit": "Independent reviewer ran only read-only commands and wrote review artifacts; no source/test/build/MCP/production process changes"
+}

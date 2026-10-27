@@ -1,0 +1,146 @@
+{
+  "tier": "T2",
+  "tierName": "T2 Need architect",
+  "eligibility": "eligible",
+  "blockers": [],
+  "candidate": "feaddbdec5f9e2cc7bf8e07050a4d5e7aa5e5769",
+  "mergeBase": "f6b523967223da5ebddafdef1a508d3936cee01c",
+  "architecture": {
+    "policy": "facts",
+    "facts": [],
+    "summary": "T0: no architecture fact"
+  },
+  "reasons": [
+    {
+      "tier": "T2",
+      "key": "impact.contract",
+      "fact": "The organization picker defaults to Connect at the normalized public base path after selection, while explicit safe return destinations retain their value. This changes the documented browser navigation default. The web owner adds an optional current-access lookup through the existing AccessResolver for picker menu visibility. Only a context bound to the session user and selected workspace, with product access and an exact nonempty admin grant, shows Members and Audit Log. Denial, mismatch, or lookup failure leaves the picker usable with Connect and Switch Workspace; cancellation propagates. Identity admission, selection POST authorization, CSRF and origin checks, session cookie order, and MCP isolation retain their rules. Public declarations, component owners, import edges, external integrations, containers, and deployment are unchanged. Registry prose records the new runtime use; all 17 diagrams remain accurate."
+    },
+    {
+      "tier": "T2",
+      "key": "impact.internalInterface",
+      "fact": "The organization picker defaults to Connect at the normalized public base path after selection, while explicit safe return destinations retain their value. This changes the documented browser navigation default. The web owner adds an optional current-access lookup through the existing AccessResolver for picker menu visibility. Only a context bound to the session user and selected workspace, with product access and an exact nonempty admin grant, shows Members and Audit Log. Denial, mismatch, or lookup failure leaves the picker usable with Connect and Switch Workspace; cancellation propagates. Identity admission, selection POST authorization, CSRF and origin checks, session cookie order, and MCP isolation retain their rules. Public declarations, component owners, import edges, external integrations, containers, and deployment are unchanged. Registry prose records the new runtime use; all 17 diagrams remain accurate."
+    }
+  ],
+  "questions": [],
+  "changedPaths": [
+    {
+      "status": "M",
+      "path": ".pr-impact.json"
+    },
+    {
+      "status": "M",
+      "path": "architecture/components.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/design/authentication-design.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/design/portal-design.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/metrics/2026-10-27-f6b52396.json"
+    },
+    {
+      "status": "M",
+      "path": "docs/user-portal.md"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/web/account/account-routes.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/web/account/organization-selection-page.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/web/account/organization-selection-style.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/auth/hosted-member-removal-browser.runtime.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/auth/hosted-organization-requests.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/acceptance/auth/hosted-workspace-selection.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/integration/auth/workos-provider-organizations.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/integration/hosted-admin/account-routes-organization-page.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/integration/hosted-admin/account-routes-workspace-navigation.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/integration/hosted-admin/organization-selection-page.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/support/drivers/browser/workspace-selection-browser.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/support/in-process/hosted-workspace-selection-site.ts"
+    }
+  ],
+  "lineCounts": {
+    "production": 52,
+    "productionLimit": 400,
+    "total": 457,
+    "totalLimit": 1500
+  },
+  "tests": {
+    "added": 10,
+    "removed": 2,
+    "skippedOrTodo": []
+  },
+  "mi": [
+    "changed: src/interfaces/web/account/account-routes.ts: 59.440789019914476 to 54.03041569685968",
+    "changed: src/interfaces/web/account/organization-selection-page.ts: 66.85775897085377 to 65.67616499424597",
+    "not applicable: src/interfaces/web/account/organization-selection-style.ts: no raw MI in the base snapshot"
+  ],
+  "crap": [
+    "src/interfaces/web/account/account-routes.ts: account-routes\\HostedAccountRoutes.organizationPage: 7.0",
+    "src/interfaces/web/account/account-routes.ts: currentAdminAccess: 7.0",
+    "src/interfaces/web/account/account-routes.ts: account-routes\\HostedAccountRoutes.showAdminNavigation: 3.0",
+    "src/interfaces/web/account/account-routes.ts: (anonymous): 2.0",
+    "src/interfaces/web/account/organization-selection-page.ts: organizationSelectionPage: 2.0",
+    "src/interfaces/web/account/account-routes.ts: (anonymous): 1.0",
+    "src/interfaces/web/account/account-routes.ts: account-routes\\HostedAccountRoutes.: 1.0",
+    "src/interfaces/web/account/account-routes.ts: account-routes\\HostedAccountRoutes.: 1.0",
+    "src/interfaces/web/account/account-routes.ts: account-routes\\HostedAccountRoutes.constructor: 1.0"
+  ],
+  "metrics": [
+    "Delta: goal miss",
+    "Review: goal miss",
+    "CRAP: passed",
+    "Architecture: passed",
+    "0 findings on unchanged files, reason unchanged by this PR"
+  ],
+  "factsToDeclare": [],
+  "declaredFacts": [],
+  "surfaceDifferences": [],
+  "informational": [
+    "51 public modules, 0 snapshots changed",
+    "ratchet.maintainability_index.existing_file_drop_note_at: src/interfaces/web/account/account-routes.ts: 59.440789019914476 to 54.03041569685968",
+    "ratchet.review_findings_high: src/interfaces/web/account/account-routes.ts: Maintainability index: 59 -> 54 (below 85 is hard to maintain)"
+  ],
+  "notes": [
+    "Local eligibility is preliminary. The manager or Delamain session must verify current local checks, holds, and required independent human approval."
+  ],
+  "label": "gh pr edit <n> --repo tomer-mayara/Thermus --add-label 'T2 Need architect' --remove-label 'T1 Team review' --remove-label 'T0 Auto merge'"
+}

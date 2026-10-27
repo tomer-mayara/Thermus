@@ -1,0 +1,117 @@
+#1 [internal] load build definition from Dockerfile.hosted
+#1 transferring dockerfile: 5.39kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/node:24.20.0-trixie-slim@sha256:50c3b2f6988dfc307b86e5301d69611af31f4789bdf232863b07d3b02fe55ae0
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/rust:1.97-slim-trixie@sha256:8e8cf8f7fd54a2d23d5a743b3a03f56e26b6c774276c33fa0595111704ebb15c
+#3 DONE 0.0s
+
+#4 [lightpanda-asset-amd64 1/1] ADD --checksum=sha256:aa5a4b8ed53d1e38b3c73f5b2647d0a84a82e6744557f45f9a9c85858aa031c3     https://github.com/lightpanda-io/browser/releases/download/1.0.0/lightpanda-x86_64-linux /lightpanda
+#4 DONE 0.0s
+
+#5 [ca-certificates 1/1] FROM docker.io/library/rust:1.97-slim-trixie@sha256:8e8cf8f7fd54a2d23d5a743b3a03f56e26b6c774276c33fa0595111704ebb15c
+#5 resolve docker.io/library/rust:1.97-slim-trixie@sha256:8e8cf8f7fd54a2d23d5a743b3a03f56e26b6c774276c33fa0595111704ebb15c 0.1s done
+#5 DONE 0.1s
+
+#6 [lightpanda 1/4] FROM docker.io/library/node:24.20.0-trixie-slim@sha256:50c3b2f6988dfc307b86e5301d69611af31f4789bdf232863b07d3b02fe55ae0
+#6 resolve docker.io/library/node:24.20.0-trixie-slim@sha256:50c3b2f6988dfc307b86e5301d69611af31f4789bdf232863b07d3b02fe55ae0 0.1s done
+#6 DONE 0.1s
+
+#7 [internal] load build context
+#7 transferring context: 9.01MB 0.2s done
+#7 DONE 0.2s
+
+#8 [runtime  9/12] COPY docker/hosted-ad-rules.SOURCE.md docker/hosted-ad-rules.LICENSE.txt /etc/thermus/
+#8 CACHED
+
+#9 [checked-build 4/5] COPY . .
+#9 CACHED
+
+#10 [runtime  2/12] WORKDIR /app
+#10 CACHED
+
+#11 [runtime  4/12] COPY --from=production-dependencies /app/node_modules node_modules
+#11 CACHED
+
+#12 [lightpanda 3/4] COPY --from=lightpanda-asset /lightpanda /tmp/lightpanda
+#12 CACHED
+
+#13 [runtime  8/12] COPY docker/hosted-ad-rules.txt /etc/thermus/ad-rules.txt
+#13 CACHED
+
+#14 [runtime 11/12] COPY --from=ca-certificates /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+#14 CACHED
+
+#15 [lightpanda-asset-amd64 1/1] ADD --checksum=sha256:aa5a4b8ed53d1e38b3c73f5b2647d0a84a82e6744557f45f9a9c85858aa031c3     https://github.com/lightpanda-io/browser/releases/download/1.0.0/lightpanda-x86_64-linux /lightpanda
+#15 CACHED
+
+#16 [runtime 10/12] COPY --from=lightpanda /opt/lightpanda /opt/lightpanda
+#16 CACHED
+
+#17 [checked-build 2/5] RUN test -n "1.97.1" && pnpm install --frozen-lockfile
+#17 CACHED
+
+#18 [checked-build 3/5] COPY --from=lightpanda /opt/lightpanda /opt/lightpanda
+#18 CACHED
+
+#19 [production-dependencies 1/1] RUN test -n "1.97.1"  && pnpm install --frozen-lockfile --prod  && rm -rf node_modules/.pnpm/adblock-rs@*/node_modules/adblock-rs/target
+#19 CACHED
+
+#20 [toolchain 2/8] COPY --from=node /usr/local/bin/node /usr/local/bin/node
+#20 CACHED
+
+#21 [toolchain 7/8] COPY .habit-hooks/package.json .habit-hooks/
+#21 CACHED
+
+#22 [runtime  5/12] COPY --from=checked-build /app/dist/src dist/src
+#22 CACHED
+
+#23 [runtime  7/12] COPY migrations migrations
+#23 CACHED
+
+#24 [lightpanda 2/4] COPY docker/check-lightpanda-digest.sh /tmp/
+#24 CACHED
+
+#25 [runtime  3/12] COPY --from=production-dependencies /app/package.json ./
+#25 CACHED
+
+#26 [checked-build 5/5] RUN --network=none npm run build:hosted
+#26 CACHED
+
+#27 [toolchain 5/8] WORKDIR /app
+#27 CACHED
+
+#28 [toolchain 4/8] RUN ln -s ../lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm  && npm install --global pnpm@12.10.1
+#28 CACHED
+
+#29 [toolchain 8/8] COPY patches patches
+#29 CACHED
+
+#30 [runtime  6/12] COPY --from=checked-build /app/src/interfaces/user-portal/dist src/interfaces/user-portal/dist
+#30 CACHED
+
+#31 [toolchain 3/8] COPY --from=node /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/npm
+#31 CACHED
+
+#32 [toolchain 6/8] COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+#32 CACHED
+
+#33 [checked-build 1/5] RUN apt-get update  && apt-get install -y --no-install-recommends git  && rm -rf /var/lib/apt/lists/*
+#33 CACHED
+
+#34 [lightpanda 4/4] RUN sh /tmp/check-lightpanda-digest.sh "amd64" /tmp/lightpanda  && install -D -m 0755 /tmp/lightpanda /opt/lightpanda/1.0.0/lightpanda
+#34 CACHED
+
+#35 [runtime 12/12] RUN --network=none --mount=type=bind,source=docker/verify-hosted-runtime.mjs,target=/tmp/verify-hosted-runtime.mjs     node /tmp/verify-hosted-runtime.mjs
+#35 CACHED
+
+#36 exporting to image
+#36 exporting layers done
+#36 exporting manifest sha256:0a59048ac784d19787c6884906e3498188e9218a66903f3f964626778dbce97c 0.0s done
+#36 exporting config sha256:277a57a74b55a072d6b44586c03b7b9a2584c4c92c0c5fc0b7c4985f2db4eabb done
+#36 exporting attestation manifest sha256:3c886d5af6badc97de70d4ef42433b55d09d50166b18a161fb6b72136f9af11d done
+#36 exporting manifest list sha256:d476e5f98000c2e74b912b7235300c2f71e974d38c3f54c7d44035e49ba8a70e done
+#36 naming to docker.io/library/thermus-hosted-gate:56da14d70a3f done
+#36 DONE 0.1s

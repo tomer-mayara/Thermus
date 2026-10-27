@@ -1,0 +1,11 @@
+{
+  "head": "7b46dca42c17ead64263339fd638f39ccb693a0d",
+  "tree": "0f08c9276a5bae96c5facaeb47a23fe1bd0c5d45",
+  "runDir": "/var/folders/66/37f836wx4fd_wgnbb4b824f40000gn/T/thermus-workspace-live-281-9TED2m",
+  "purpose": "Fresh WorkOS hosted-live gate; isolated trusted Git worktree and same pinned dependency inputs",
+  "gitStatus": "",
+  "node": "/Users/tomermayara/.nvm/versions/node/v24.20.0/bin/node",
+  "launcher": "/Users/tomermayara/.config/thermus/with-workos-staging.cjs",
+  "gate": "npm run test:hosted-live",
+  "result": "exit0;29/29 passed; no failed/cancelled/skipped/todo"
+}

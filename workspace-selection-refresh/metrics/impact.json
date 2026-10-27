@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "classification": {
+    "container": false,
+    "external": false,
+    "contract": true,
+    "deployment": false,
+    "crossCutting": false,
+    "component": false,
+    "internalInterface": true,
+    "sensitiveBehavior": false,
+    "dependencyRisk": false,
+    "policy": false,
+    "uncertain": false
+  },
+  "architecture": {
+    "modelUpdated": false,
+    "summary": "The organization picker defaults to Connect at the normalized public base path after selection, while explicit safe return destinations retain their value. This changes the documented browser navigation default. The web owner adds an optional current-access lookup through the existing AccessResolver for picker menu visibility. Only a context bound to the session user and selected workspace, with product access and an exact nonempty admin grant, shows Members and Audit Log. Denial, mismatch, or lookup failure leaves the picker usable with Connect and Switch Workspace; cancellation propagates. Identity admission, selection POST authorization, CSRF and origin checks, session cookie order, and MCP isolation retain their rules. Public declarations, component owners, import edges, external integrations, containers, and deployment are unchanged. Registry prose records the new runtime use; all 17 diagrams remain accurate.",
+    "views": [
+      "Context",
+      "C4 containers: hosted edition",
+      "Selected C4 components: hosted authentication in the Node server",
+      "Collaboration overview",
+      "Scenario: hosted default sign-in landing",
+      "Scenario: hosted member read",
+      "Deployment view",
+      "Ownership",
+      "Behavior and resource ownership"
+    ],
+    "evidence": [
+      "src/interfaces/web/account/account-routes.ts",
+      "src/interfaces/web/account/organization-selection-page.ts",
+      "src/interfaces/web/account/organization-selection-style.ts",
+      "test/acceptance/auth/hosted-workspace-selection.test.ts",
+      "test/integration/hosted-admin/account-routes-workspace-navigation.test.ts",
+      "test/integration/auth/workos-provider-organizations.test.ts",
+      "test/acceptance/auth/hosted-member-removal-browser.runtime.ts",
+      "architecture/components.md",
+      "docs/design/authentication-design.md"
+    ]
+  },
+  "base": "f6b523967223da5ebddafdef1a508d3936cee01c",
+  "head": "feaddbdec5f9e2cc7bf8e07050a4d5e7aa5e5769"
+}

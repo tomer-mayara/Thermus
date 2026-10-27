@@ -1,0 +1,102 @@
+{
+  "head": "feaddbdec5f9e2cc7bf8e07050a4d5e7aa5e5769",
+  "base": "f6b523967223da5ebddafdef1a508d3936cee01c",
+  "sourceTree": "0f08c9276a5bae96c5facaeb47a23fe1bd0c5d45",
+  "phase": "All selected release gates complete; independent current-candidate human architect approval pending",
+  "checks": {
+    "ordinary": {
+      "exit": 0,
+      "tests": 5372,
+      "pass": 5372,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0
+    },
+    "portal": {
+      "exit": 0,
+      "tests": 51,
+      "pass": 51,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0
+    },
+    "focused": 57,
+    "related": 28,
+    "browser": 83,
+    "typecheck": "passed",
+    "portalBuild": "passed",
+    "backendBuild": "passed",
+    "hostedImage": {
+      "exit": 0,
+      "tests": 7,
+      "passed": 7,
+      "failed": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "durationMs": 27459.985042,
+      "executionHead": "feaddbdec5f9e2cc7bf8e07050a4d5e7aa5e5769",
+      "buildCache": "28/36 build steps cached after same-source build in isolated checkout"
+    },
+    "hostedLive": {
+      "exit": 0,
+      "tests": 29,
+      "passed": 29,
+      "failed": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "durationMs": 677294.967,
+      "executionHead": "7b46dca42c17ead64263339fd638f39ccb693a0d"
+    },
+    "coverage": {
+      "exit": 0,
+      "files": 196,
+      "processes": 767,
+      "suites": [
+        "unit",
+        "integration"
+      ]
+    },
+    "hostedOffline": {
+      "exit": 0,
+      "groups": [
+        3468,
+        31,
+        20,
+        1194,
+        139,
+        13
+      ],
+      "failed": 0,
+      "skipped": 0
+    },
+    "selfHostedContainer": {
+      "exit": 0,
+      "tests": 11,
+      "passed": 11,
+      "failed": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "durationMs": 136778.465167,
+      "executionHead": "feaddbdec5f9e2cc7bf8e07050a4d5e7aa5e5769"
+    },
+    "metrics": "CRAP and architecture passed; existing-file MI misses retained with reviewed reasons",
+    "checker": "exit0; T2 Need architect; preliminary eligibility eligible; no checker blockers",
+    "habitHooks": "exit1; 21 comments and 2 test-length findings retained; snooze empty"
+  },
+  "humanApproval": "pending current-candidate owner/architect approval",
+  "deployed": false,
+  "sourceCandidate": "7b46dca42c17ead64263339fd638f39ccb693a0d",
+  "imageRetryHistory": {
+    "firstExit": 1,
+    "tests": 7,
+    "passed": 4,
+    "failed": 3,
+    "cause": "Docker VM cannot bind-mount the macOS temporary checkout path; image build and checks without that bind passed. No product code changed.",
+    "correction": "Run the complete gate from the canonical Docker-shared checkout; cached same-source build; all 7 passed."
+  }
+}

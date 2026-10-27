@@ -1,0 +1,55 @@
+
+> thermus@0.0.0 test:container:hosted
+> npm run build && node --test dist/test/acceptance/auth/hosted-image.test.js
+
+
+> thermus@0.0.0 build
+> test ! -L dist && { test ! -e dist || test -d dist; } && rm -rf dist && tsc --project tsconfig.build.json --outDir dist
+
+▶ Given a clean hosted build without live secrets, when checks pass, then the final Linux AMD64 image serves and renders within its safety and shutdown contracts
+  ✔ Given the unmodified image and placeholder runtime settings, when the real CLI starts, then portal, assets and health work, MCP remains protected, and foreign origins are refused (5917.524875ms)
+  ✔ Given the approved organization removal bundle in the image, when signup is enabled, then startup succeeds and the exact notice is readable before sign-in (3112.639583ms)
+  ✖ Given a Connect User at the external-provider seam, when the image fetches public HTTPS and a controlled JavaScript page, then the real renderer verifies TLS and returns script output cleaned with the shipped native policy (62.44975ms)
+  ✖ Given the final hosted runtime, when calls target private addresses, exceed capacity, disconnect or receive SIGTERM during rendering, then the guards refuse unsafe work, cancellation releases capacity after settlement, and the CLI exits within its shutdown bound (38.023333ms)
+  ✔ Given invalid local startup inputs, when the image starts, then the real CLI fails before listening (11048.692416ms)
+  ✔ Given a final image with its portal hidden by an empty mount, when startup runs, then it fails before listening (2401.8595ms)
+✖ Given a clean hosted build without live secrets, when checks pass, then the final Linux AMD64 image serves and renders within its safety and shutdown contracts (1233684.160542ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 4
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1233967.002041
+
+✖ failing tests:
+
+test at dist/test/acceptance/auth/hosted-image.test.js:67:13
+✖ Given a Connect User at the external-provider seam, when the image fetches public HTTPS and a controlled JavaScript page, then the real renderer verifies TLS and returns script output cleaned with the shipped native policy (62.44975ms)
+  Error: docker container create exited with 1:
+  Error response from daemon: invalid mount config for type "bind": bind source path does not exist: /private/var/folders/66/37f836wx4fd_wgnbb4b824f40000gn/T/thermus-workspace-image-281-kkgdR8/dist/test/support/container/hosted-image-identity.js
+  
+      at dockerOutput (file:///private/var/folders/66/37f836wx4fd_wgnbb4b824f40000gn/T/thermus-workspace-image-281-kkgdR8/dist/test/support/container/docker-cli.js:19:15)
+      at async HostedImageGate.createAndStart (file:///private/var/folders/66/37f836wx4fd_wgnbb4b824f40000gn/T/thermus-workspace-image-281-kkgdR8/dist/test/support/container/hosted-image-gate.js:63:9)
+      at async HostedImageGate.server (file:///private/var/folders/66/37f836wx4fd_wgnbb4b824f40000gn/T/thermus-workspace-image-281-kkgdR8/dist/test/support/container/hosted-image-gate.js:49:22)
+      at async TestContext.<anonymous> (file:///private/var/folders/66/37f836wx4fd_wgnbb4b824f40000gn/T/thermus-workspace-image-281-kkgdR8/dist/test/acceptance/auth/hosted-image.test.js:68:24)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async TestContext.<anonymous> (file:///private/var/folders/66/37f836wx4fd_wgnbb4b824f40000gn/T/thermus-workspace-image-281-kkgdR8/dist/test/acceptance/auth/hosted-image.test.js:67:5)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+
+test at dist/test/acceptance/auth/hosted-image.test.js:80:13
+✖ Given the final hosted runtime, when calls target private addresses, exceed capacity, disconnect or receive SIGTERM during rendering, then the guards refuse unsafe work, cancellation releases capacity after settlement, and the CLI exits within its shutdown bound (38.023333ms)
+  Error: docker container create exited with 1:
+  Error response from daemon: invalid mount config for type "bind": bind source path does not exist: /private/var/folders/66/37f836wx4fd_wgnbb4b824f40000gn/T/thermus-workspace-image-281-kkgdR8/dist/test/support/container/hosted-image-identity.js
+  
+      at dockerOutput (file:///private/var/folders/66/37f836wx4fd_wgnbb4b824f40000gn/T/thermus-workspace-image-281-kkgdR8/dist/test/support/container/docker-cli.js:19:15)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async HostedImageGate.createAndStart (file:///private/var/folders/66/37f836wx4fd_wgnbb4b824f40000gn/T/thermus-workspace-image-281-kkgdR8/dist/test/support/container/hosted-image-gate.js:63:9)
+      at async HostedImageGate.server (file:///private/var/folders/66/37f836wx4fd_wgnbb4b824f40000gn/T/thermus-workspace-image-281-kkgdR8/dist/test/support/container/hosted-image-gate.js:49:22)
+      at async TestContext.<anonymous> (file:///private/var/folders/66/37f836wx4fd_wgnbb4b824f40000gn/T/thermus-workspace-image-281-kkgdR8/dist/test/acceptance/auth/hosted-image.test.js:82:24)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async TestContext.<anonymous> (file:///private/var/folders/66/37f836wx4fd_wgnbb4b824f40000gn/T/thermus-workspace-image-281-kkgdR8/dist/test/acceptance/auth/hosted-image.test.js:80:5)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)

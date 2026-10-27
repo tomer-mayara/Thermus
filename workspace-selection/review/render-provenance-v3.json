@@ -1,0 +1,27 @@
+{
+  "base": "f6b523967223da5ebddafdef1a508d3936cee01c",
+  "head": "7b46dca42c17ead64263339fd638f39ccb693a0d",
+  "version": "v3",
+  "priorVersionsPreserved": [
+    "v1",
+    "v2"
+  ],
+  "changeFromV2": "Only the L2 boundary title now explicitly names the inherited control-plane role; owner responsibilities and arrows unchanged.",
+  "tool": "cached mermaid-cli 12.0.0",
+  "renderer": "cached Chromium 136.0.7103.94",
+  "command": "node /Users/tomermayara/.npm/_npx/fa58c8ce4c502b5d/node_modules/@mermaid-js/mermaid-cli/src/cli.js -i ast-report/workspace-selection/review/architecture-comparison-v3.mmd -o ast-report/workspace-selection/review/architecture-comparison-v3.png -p ast-report/workspace-selection/review/puppeteer-config.json --size 1615 -s 1 -b white",
+  "width": 798,
+  "height": 1615,
+  "sourceSha256": "2a68a084122b65861f40cee83b04f94d9ea940c10387779d71f6fb3fea6410a1",
+  "pngSha256": "babbf1f31e5876cd81efb1f54473cb9f70c30db61320f6d4c416b005602c21fa",
+  "embeddedSourceMatchesRenderedSource": true,
+  "independentlyInspected": true,
+  "inspection": [
+    "Native 798px width, readable labels",
+    "Incoming browser arrow clears the control-plane boundary title",
+    "Existing calls stay neutral; new GET caller use is green; changed web behavior is amber",
+    "All component owners remain inside the control-plane Node boundary; inherited tenant omitted",
+    "No crossing through an unrelated box or label"
+  ],
+  "managerReview": "Manager inspected v3 at native 798px and approved it for current 7b46/f6B comparison: control-plane title clears incoming arrow; owners and new GET arrow readable; no changes requested."
+}

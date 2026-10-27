@@ -1,0 +1,77 @@
+{
+  "methodologyVersion": "1.1",
+  "baseRef": "origin/main",
+  "baseSha": "f6b523967223da5ebddafdef1a508d3936cee01c",
+  "headSha": "7b46dca42c17ead64263339fd638f39ccb693a0d",
+  "summary": {
+    "filesChanged": 8,
+    "filesAdded": 4,
+    "filesDeleted": 0,
+    "high": 1,
+    "medium": 0,
+    "low": 0,
+    "improvements": 0
+  },
+  "regressions": [
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "maintainability-regression",
+      "file": "src/interfaces/web/account/account-routes.ts",
+      "message": "Maintainability index: 59 -> 54 (below 85 is hard to maintain)",
+      "suggestion": "Refactor long or deeply nested functions and reduce responsibilities in this file",
+      "before": 59.440789019914476,
+      "after": 54.03041569685968
+    }
+  ],
+  "improvements": [],
+  "gate": "failed",
+  "nativeReview": {
+    "methodologyVersion": "1.1",
+    "baseRef": "origin/main",
+    "baseSha": "f6b523967223da5ebddafdef1a508d3936cee01c",
+    "headSha": "7b46dca42c17ead64263339fd638f39ccb693a0d",
+    "summary": {
+      "filesChanged": 8,
+      "filesAdded": 4,
+      "filesDeleted": 0,
+      "high": 1,
+      "medium": 1,
+      "low": 0,
+      "improvements": 0
+    },
+    "regressions": [
+      {
+        "kind": "regression",
+        "severity": "high",
+        "rule": "maintainability-regression",
+        "file": "src/interfaces/web/account/account-routes.ts",
+        "message": "Maintainability index: 59 -> 54 (below 85 is hard to maintain)",
+        "suggestion": "Refactor long or deeply nested functions and reduce responsibilities in this file",
+        "before": 59.440789019914476,
+        "after": 54.03041569685968
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "new-complex-function",
+        "file": "test/support/drivers/browser/workspace-selection-browser.ts",
+        "line": 22,
+        "subject": "WorkspaceSelectionBrowser::inspectPicker",
+        "message": "New function with cyclomatic complexity 10 (threshold: 10)",
+        "suggestion": "Extract smaller, well-named functions to reduce decision points",
+        "before": 0,
+        "after": 10
+      }
+    ],
+    "improvements": [],
+    "gate": "failed"
+  },
+  "reviewPolicy": {
+    "version": 1,
+    "source": "Thermus review wrapper",
+    "newFunctionPaths": ">10",
+    "highFunctionPaths": ">=25",
+    "layerSource": "CR-13 resolved imports"
+  }
+}

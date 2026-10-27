@@ -1,0 +1,65 @@
+{
+  "base": "f6b523967223da5ebddafdef1a508d3936cee01c",
+  "oldBase": "77477864d8238b9141e9619b6bcbb6b0aa7fb11b",
+  "oldReviewedSource": "16c8e174f503f79c5011fe9ac7e157578ff49d74",
+  "scope": "committed combined source candidate",
+  "reviewedAt": "2026-10-27T21:28:56.534359+00:00",
+  "pickerProductionFilesIdenticalToReviewedSource": [
+    "src/interfaces/web/account/account-routes.ts",
+    "src/interfaces/web/account/organization-selection-page.ts",
+    "src/interfaces/web/account/organization-selection-style.ts"
+  ],
+  "publicSnapshotCount": 51,
+  "publicSnapshotBytesUnchangedAgainstNewBase": true,
+  "registryBlockCount": 17,
+  "registryBlockBodiesUnchangedAgainstNewBase": true,
+  "workOSResolveAndOptionalProfileBodyUnchanged": true,
+  "resolveAndProfileSha256": "4c7ec4b4e59f0451d25300eeb2d4783f9762dbf3edac2177315bb8ab7a169496",
+  "workOSTokenVerificationBodyPreservedInExtractedVerifier": true,
+  "tokenVerificationBodySha256": "0f9f1a969e1a29c8bd06de3b1e966400d4e0429354ebdb38429965695a47db5e",
+  "defaultRoleControlPlaneValues": [
+    "undefined",
+    "empty string",
+    "control-plane"
+  ],
+  "tenantSettingsReadOnlyForExplicitTenant": true,
+  "newProductionSettingsOrMigrationsRequiredForControlPlane": false,
+  "freshProductionReadbackRequired": "THERMUS_ROLE absent/empty/control-plane; preserve current provider/storage configuration",
+  "proofLimit": "Source inspection and existing source test definitions only. No test/build/MCP/production operation by reviewer; complete new-base candidate gates are pending.",
+  "inheritedSO03": "Tenant container, signed context public module, config declarations, token verifier split and relay code belong to newbase, not pickerincrement.",
+  "browserHelperReadinessFix": {
+    "path": "test/support/drivers/browser/workspace-selection-browser.ts",
+    "beforeSha256": "02a650b2ded798576e61f4e4a4de0ee77583a8989a9a22255811457a39a136d7",
+    "afterSha256": "07c77f8b7f0ae1dcde01a55100c8422b94d175a3b838a19e584c0132f3456beb",
+    "change": "Await exact selected Workspace label visible through existing locator timeout instead of an immediate isVisible snapshot.",
+    "sameRequiredVisibleCondition": true,
+    "noTimeoutIncreaseOrFixedSleep": true,
+    "redirectSelectedWorkspaceAndOnePostChecksRetained": true,
+    "readinessRaceEvidence": "Two mobile JavaScript cases initially failed before async portal access completed, while redirect succeeded; manager retains failures and reruns complete 83-case browser gate.",
+    "review": "Signed off; no production source change."
+  },
+  "head": "7b46dca42c17ead64263339fd638f39ccb693a0d",
+  "publicSnapshotTreeBase": "86e9b0699777fd9b84a10ba410f62d00df02ac1e",
+  "publicSnapshotTreeHead": "86e9b0699777fd9b84a10ba410f62d00df02ac1e",
+  "publicSnapshotTreesIdentical": true,
+  "productionRoleEvidence": {
+    "source": "Direct manager report after fresh Render dashboard readback; independent reviewer did not read production settings.",
+    "facts": [
+      "THERMUS_ROLE absent from all 14 masked environment variables",
+      "No linked environment groups"
+    ],
+    "consequence": "New image selects the existing default control-plane role; no role/configuration change or migration is required for current browser flow."
+  },
+  "freshFocusedEvidence": {
+    "source": "Direct manager report; original logs retain exact execution pins",
+    "results": [
+      "57 focused cases passed",
+      "28 focused cases passed",
+      "83 browser runtime cases passed",
+      "typecheck passed",
+      "backend build passed",
+      "portal build passed"
+    ],
+    "fullSuiteMetricsAndOtherGates": "manager running; not inferred passed"
+  }
+}

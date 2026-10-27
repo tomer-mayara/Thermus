@@ -1,0 +1,56 @@
+TAP version 13
+# Subtest: Given Switch Workspace at 320px with JavaScript on, when the user chooses Acme (selected) by keyboard, then compact navigation and the protected selection lead to Connect with the selected workspace
+not ok 1 - Given Switch Workspace at 320px with JavaScript on, when the user chooses Acme (selected) by keyboard, then compact navigation and the protected selection lead to Connect with the selected workspace
+  ---
+  duration_ms: 981.835875
+  type: 'test'
+  location: '/Users/tomermayara/.codex/worktrees/026d/Thermus/dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js:503:13'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    false !== true
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: 'strictEqual'
+  stack: |-
+    WorkspaceSelectionBrowser.chooseOrganization (file:///Users/tomermayara/.codex/worktrees/026d/Thermus/dist/test/support/drivers/browser/workspace-selection-browser.js:66:20)
+    async TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/026d/Thermus/dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js:512:17)
+    async Test.run (node:internal/test_runner/test:1404:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+  ...
+# Subtest: Given Switch Workspace at 320px with JavaScript on, when the user chooses Globex by keyboard, then compact navigation and the protected selection lead to Connect with the selected workspace
+not ok 2 - Given Switch Workspace at 320px with JavaScript on, when the user chooses Globex by keyboard, then compact navigation and the protected selection lead to Connect with the selected workspace
+  ---
+  duration_ms: 884.849375
+  type: 'test'
+  location: '/Users/tomermayara/.codex/worktrees/026d/Thermus/dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js:503:13'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    false !== true
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: 'strictEqual'
+  stack: |-
+    WorkspaceSelectionBrowser.chooseOrganization (file:///Users/tomermayara/.codex/worktrees/026d/Thermus/dist/test/support/drivers/browser/workspace-selection-browser.js:66:20)
+    async TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/026d/Thermus/dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js:512:17)
+    async Test.run (node:internal/test_runner/test:1404:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:969:7)
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 0
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2495.366166

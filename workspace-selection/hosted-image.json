@@ -1,0 +1,10 @@
+{
+  "candidate": "2907d105f85c9596401312d7082af86a5711df06",
+  "requestedPlatform": "linux/amd64",
+  "buildRef": "colima/colima/okfb6xejbppjurr9ecpp4uoeq",
+  "tag": "thermus-hosted-gate:7eca1918fdb0",
+  "configDigest": "sha256:f0237ab9700b1f6ca2e280d8b6b61a59e0d0c7645d8241cc4cb6d34f58a60a35",
+  "manifestDigest": "sha256:18fb605ddb4157e9f46cd38552ec10e2e255772a3636c661cd7e8d0e96f3c68c",
+  "indexDigest": "sha256:5370e3d1bc2eb8c73a74c2d4ab0a0331c081cce61de6a1bdc2978f1846c20ffb",
+  "evidence": "Successful Docker build log and 7/7 hosted image runtime tests. The gate removed its image during cleanup before separate image inspection."
+}

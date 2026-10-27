@@ -1,0 +1,116 @@
+{"phase":"waiting-for-existing-staging-gate","time":"2026-10-27T21:19:25.302Z","node":"v24.20.0","knownParent":"58285"}
+{"phase":"starting-hosted-live-gate","time":"2026-10-27T21:20:41.428Z","waitedMs":76127}
+
+> thermus@0.0.0 test:hosted-live
+> npm run build && npm run build:user-portal && node --test --test-concurrency=1 dist/test/acceptance/auth/hosted.live.js dist/test/acceptance/auth/hosted-removal.live.js
+
+
+> thermus@0.0.0 build
+> test ! -L dist && { test ! -e dist || test -d dist; } && rm -rf dist && tsc --project tsconfig.build.json --outDir dist
+
+
+> thermus@0.0.0 build:user-portal
+> npm run typecheck:user-portal && vite build --config src/interfaces/user-portal/vite.config.ts
+
+
+> thermus@0.0.0 typecheck:user-portal
+> tsc --project tsconfig.user-portal.json
+
+vite v6.4.4 building for production...
+transforming...
+✓ 9 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                  0.64 kB │ gzip: 0.38 kB
+dist/assets/index-7glWBjbz.css   9.67 kB │ gzip: 2.71 kB
+dist/assets/index-cfluoOXL.js   16.63 kB │ gzip: 5.89 kB
+✓ built in 128ms
+✔ Given fresh password-only WorkOS fixtures and disposable Slice 2 SQL with two Admins and a User, when Members refuses unsafe requests, removes the User and the acting Admin, then exact memberships disappear, portal and MCP access stop, other access and both accounts remain, selection works, the last Admin is protected, and a fresh invitation restores only its new role (115588.007792ms)
+ℹ Scoped WorkOS removal proof s25-02-mvr6wlgi-5903cb; candidate 2907d105f85c9596401312d7082af86a5711df06; evidence .cache/s25-02/live/s25-02-mvr6wlgi-5903cb.jsonl. No live factor observation or MFA API dependency.
+▶ Hosted live proofs (AUTH-07W): external operator setup and recovery with the pinned SDK
+  ✔ Given a verified identity without a membership, when the operator grants Admin, then WorkOS has exactly the role admin with product and administration permissions, and a second grant changes nothing (2583.757167ms)
+  ℹ record: grant-admin applied; roles [] > ["admin"]
+  ℹ record: grant-admin unchanged; roles ["admin"] > ["admin"]
+  ✔ Given an identity with User in two organizations, when the operator grants and then revokes Admin in one organization, then User stays at each step, and the identity and the other membership do not change (2149.5685ms)
+  ℹ record: grant-admin applied; roles ["user"] > ["admin","user"]
+  ℹ record: revoke-admin applied; roles ["admin","user"] > ["user"]
+  ✔ Given a membership whose only grant is Admin, when the operator revokes it, then the membership stays active with only the default role, which gives no application permission: the organization service lists no organization for the identity, and the identity stays (1721.013042ms)
+  ℹ record: revoke-admin applied; roles ["admin"] > ["member"]
+  ✔ Given an Admin that also has User, when the operator replaces it with another verified identity, then the new identity gets Admin first, so that the organization keeps an Admin at each step, and the old identity loses only Admin and keeps User (2165.072875ms)
+  ℹ record: grant-admin applied; roles [] > ["admin"]
+  ℹ record: revoke-admin applied; roles ["admin","user"] > ["user"]
+  ✔ Given an Admin whose membership is inactive, when the operator recovers access, then the grant for the inactive membership stops without a create or a reactivation, and another verified identity gets Admin (1527.765667ms)
+  ℹ record: grant-admin stopped; roles ["admin"] > null; the membership is inactive: no create and no reactivation without a decision
+  ℹ record: grant-admin applied; roles [] > ["admin"]
+✔ Hosted live proofs (AUTH-07W): external operator setup and recovery with the pinned SDK (26911.62675ms)
+▶ Hosted live proofs (AUTH-08W): member reads, product member count, and invitations of the directory against WorkOS
+  ✔ Given memberships of D in the statuses active, inactive, and pending, when the directory reads them in pages of two, then each status filter gives exactly the memberships of a direct WorkOS read with that filter, and the product member count counts each active User or Admin once; the default role, pending, and inactive count zero (7493.94025ms)
+  ℹ active: 5 memberships on pages of [2,2,1]
+  ℹ inactive: 1 memberships on pages of [1]
+  ℹ pending: 1 memberships on pages of [1]
+  ℹ active, inactive, pending: 7 memberships on pages of [2,2,2,1]
+  ℹ Product members: 4 from 4 pages; direct WorkOS read: 4; fixture memberships: ["active admin,user","active admin","active user","active member","inactive user","pending user"]
+  ✔ Given an identity without a membership in D, when the directory invites it as Admin, sends again to its address and to an active member, resends, revokes, and then resends and revokes again, then the send gives a pending Admin invitation and a pending membership with only admin; both other sends are address-in-use without a second invitation; the resend and the revoke are applied; the revoked invitation is listed only as revoked and its membership stays pending without access; the last two changes are not-pending; and no result holds the token or the link of the invitation (3149.206166ms)
+  ℹ send applied; other sends ["address-in-use","address-in-use"]; invitations to the address: 1; resend applied; revoke applied; again ["not-pending","not-pending"]
+  ℹ invitation: admin pending > pending > revoked, listed as ["revoked"]; membership pending ["admin"] > pending ["admin"]
+✔ Hosted live proofs (AUTH-08W): member reads, product member count, and invitations of the directory against WorkOS (10644.524417ms)
+▶ Hosted live gate (AUTH-07W): organization onboarding and selection at https://localhost:24443/ with WorkOS
+  ✔ Given users without an authorized active organization in WorkOS — only an inactive membership, or only the default role —, when each signs in and opens the organization page, then each gets the invitation and operator guidance without a form, and the billing page and the protected portal request refuse each of them (10487.759875ms)
+  ✔ Given a member with User and Admin in A, User in B, and an inactive membership in the operator organization, when it opens the organization page and selects B for the portal, then only A and B are offered with their WorkOS names, the 303 sets a new session cookie, and the session and the portal are in B (8281.365167ms)
+  ℹ offered: ["Thermus live mvr6zco8d1e6ec B","Thermus live mvr6zco8d1e6ec A (selected)"]; switch: 303 to https://localhost:24443/portal/access
+  ✔ Given the same member in B, when it posts a selection of an organization without its membership, of its inactive membership, from another origin, or with another form token, then each gets 403 and no switch: the session stays in B (1478.244334ms)
+  ✔ Given an operator-created Admin, when it signs in with a password, then its organization is offered and billing and product access work while the retired grant route is unavailable; after operator revocation the same session loses its organization access (10311.637875ms)
+  ℹ billing 200, portal 200, customer Admin grant 404, billing after the revocation 403
+✔ Hosted live gate (AUTH-07W): organization onboarding and selection at https://localhost:24443/ with WorkOS (30559.505584ms)
+▶ Hosted live gate (AUTH-08W): retired grant route
+  ✔ Given a password-signed-in Admin and a valid current grant form, when it opens administration and product access and posts to the retired grant route, then the reads succeed and the post gets 404 with no grant controls, provider change, or grant record (8668.650542ms)
+✔ Hosted live gate (AUTH-08W): retired grant route (8668.891833ms)
+▶ Hosted live gate (AUTH-08W): invitations of organization C at https://localhost:24443/ with WorkOS and AuthKit
+  ✔ Given the administrator of C, when it invites an identity without a membership as User and an identity whose inactive membership had User and Admin as Admin, repeats the User invitation, invites the pending address as Admin and an active member, resends the User invitation, and sends and revokes a third invitation, then the sends, the repeat, the resend, and the revoke get 303, the other two sends get 409 address in use, WorkOS has one invitation to each address and the pending membership of the Admin invitation has only admin, Members shows only pending invitations with current actions, each change has its record, and no page or log line holds an invitation token or link (21228.070625ms)
+  ℹ sends [303,303,303]; refused sends [409,409]; resend 303; third send 303; revoke 303
+  ℹ WorkOS invitations: ["user revoked","admin pending","user pending"]; membership of the Admin invitee: pending ["admin"]
+  ✔ Given a User in C and a pending invitation, when the User opens administration and submits valid send, resend, and revoke forms, then each request is refused without a form and WorkOS memberships and invitations stay unchanged (9989.186ms)
+  ✔ Given the pending User invitation and the pending Admin invitation of C, when each invitee opens its invitation link and completes password sign-in without MFA, then WorkOS gives only the invited role and both can open the product; only Admin opens administration, the earlier User grant does not return, both invitations are accepted, the product member count matches WorkOS, and no page or log holds an invitation token or link (19581.262042ms)
+  ℹ AuthKit pages of the acceptances: /invite > /password > /success; /invite > /password > /success
+  ℹ User invitee: active ["user"], portal 200; Admin invitee: active ["admin"], portal 200, members page 200; product members 5, in WorkOS 5
+✔ Hosted live gate (AUTH-08W): invitations of organization C at https://localhost:24443/ with WorkOS and AuthKit (50800.114042ms)
+▶ Hosted live gate (AUTH-06): the hosted server at https://localhost:24443/ with WorkOS
+  ✔ Given a member with User and Admin in organization A, when the member signs in with a password and chooses A, then no MFA is demanded, the sealed cookie is HttpOnly, Secure, and SameSite=Lax, the session has no MFA evidence, and the portal shows current product access in A (5903.851125ms)
+  ℹ AuthKit pages: / > /password > /organization-selection > /success
+  ℹ cookies: __Host-thermus-session (3322 characters, HttpOnly true, Secure true, SameSite Lax, Path /)
+  ✔ Given a signed-in user without an active membership, when the portal and the organization page open, then the portal shows no product access, the protected portal request gives 403, and the organization page gives the onboarding guidance (4150.856708ms)
+  ✔ Given an Admin-only member and a default-role member of organization A, when each signs in, then Admin has product access and the default role is refused (11914.149959ms)
+  ✔ Given the Connect grant of a User in organization A, when its MCP client calls the MCP endpoint, then the call succeeds; without a token the answer is 401 with a Bearer challenge that names the protected-resource metadata, which names the AuthKit issuer (5833.55025ms)
+  ℹ MCP with the Connect token: 200; without a token: 401 Bearer error="invalid_token", error_description="Missing Authorization header", resource_metadata="https://localhost:24443/.well-known/oauth-protected-resource/mcp"
+  ℹ protected-resource metadata: {"resource":"https://localhost:24443/mcp","authorization_servers":["https://reasonable-field-33-staging.authkit.app"]}
+  ✔ Given a browser access token and an M2M token, when each is sent to the MCP endpoint, then each gets 401 and no MCP work (4272.600333ms)
+  ✔ Given a member with Admin only in organization A and User in organization B, when the browser session is in A and the MCP grant is in B, then each opens in its own organization; deactivating the A membership closes portal access while MCP in B still works (11874.67175ms)
+  ℹ Connect grant pages: / > /password > /application-authorization > /application-authorization/success; token org_id is B: true
+  ✔ Given an Admin-only member of organization A with a Connect grant, when its MCP client calls the MCP endpoint, then it succeeds because Admin includes product access (5331.408958ms)
+  ✔ Given an external sign-in, when a browser opens the AuthKit domain directly, then AuthKit sends it to the Initiate login URI /login of the server, which starts the sign-in, and the user ends signed in on the portal (4551.969375ms)
+  ℹ navigations: https://reasonable-field-33-staging.authkit.app/ > https://api.workos.com/user_management/initiate_login > https://localhost:24443/login > https://api.workos.com/user_management/authorize > https://reasonable-field-33-staging.authkit.app/bootstrap > https://reasonable-field-33-staging.authkit.app/
+  ✔ Given the signed-in portal, when the member clicks Sign Out, then the server clears the session cookie and sends the browser to the WorkOS logout URL, WorkOS ends the session, and the browser lands on the Sign-out URI, which shows the signed-out portal (6536.100792ms)
+  ℹ navigations: https://localhost:24443/logout > https://api.workos.com/user_management/sessions/logout > https://reasonable-field-33-staging.authkit.app/api/logout > https://localhost:24443/
+  ℹ landing after the sign-out: https://localhost:24443/; active WorkOS sessions of the user: 2 before, 1 after
+  ✔ Given a signed-in session, an ended session, and an MCP grant whose consent was revoked, when their 300-second access tokens expire, then the session refreshes with a new cookie and the same form token, the ended session gives 401 with a cleared cookie, and the revoked grant works until its token expires and then gives 401 (310525.354041ms)
+  ℹ revoked browser sessions: 2; consent revocation HTTP 204; MCP 200 with 299 s left; ended session 200
+  ℹ after expiry: session 200 with 1 Set-Cookie; ended session 401; revoked MCP grant 401
+✔ Hosted live gate (AUTH-06): the hosted server at https://localhost:24443/ with WorkOS (370897.476167ms)
+▶ Hosted live gate (AUTH-07W): a selection after the access token of the session expired
+  ✔ Given the selection session in B after its access token expired, when it posts a refused selection, then the 403 carries the refreshed session cookie, the form token stays the same, and the session stays in B (776.354167ms)
+  ℹ refused selection after the expiry: 403 with 1 session cookie(s)
+✔ Hosted live gate (AUTH-07W): a selection after the access token of the session expired (776.576042ms)
+▶ Hosted live gate: organization creation and native MCP handoff
+  ✔ Given a verified new Staging user without memberships, when the user names Acme Labs and accepts the unchecked test authority agreement, then the saved record has ten exact fields, access is Admin, and a real MCP client fetches a public page with a token for that organization (15501.440333ms)
+  ✔ Given an activated user with a second User workspace, when the browser selects B while an MCP token stays in A, then revoking A denies that same token and repeat activation cannot restore A, while browser B and a fresh B token still work (16870.999834ms)
+✔ Hosted live gate: organization creation and native MCP handoff (33450.17575ms)
+ℹ Hosted live password profile: provider MFA must be disabled.
+ℹ tests 29
+ℹ suites 8
+ℹ pass 29
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 662689.411791
+{"phase":"hosted-live-finished","time":"2026-10-27T21:31:47.707Z","code":0,"signal":null}

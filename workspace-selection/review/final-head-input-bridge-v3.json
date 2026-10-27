@@ -1,0 +1,30 @@
+{
+  "version": "final v3",
+  "base": "f6b523967223da5ebddafdef1a508d3936cee01c",
+  "reviewedAndTestedSourceCandidate": "7b46dca42c17ead64263339fd638f39ccb693a0d",
+  "finalCandidate": "feaddbdec5f9e2cc7bf8e07050a4d5e7aa5e5769",
+  "verifiedAt": "2026-10-27T21:49:20.267532+00:00",
+  "comparison": "Every recursive tracked Git entry: mode, type and object ID",
+  "sourceTrackedEntries": 1675,
+  "finalTrackedEntries": 1676,
+  "changedEntries": [
+    "docs/metrics/2026-10-27-f6b52396.json"
+  ],
+  "allOtherEntriesIdentical": true,
+  "srcTestConfigDependencyPolicyLegalDesignRegistryImpactPublicSurfaceInputsIdentical": true,
+  "record": {
+    "path": "docs/metrics/2026-10-27-f6b52396.json",
+    "gitObject": "3f29615a15cdaf06604ea08f72b63f06defb671e",
+    "sha256": "1b1bfbe60458430892d08855a76c4bb8194d254c165f170a20a5534f5fc31f87",
+    "bytes": 105871,
+    "recordsBase": "f6b523967223da5ebddafdef1a508d3936cee01c",
+    "coverageCommit": "7b46dca42c17ead64263339fd638f39ccb693a0d",
+    "kind": "head-derived-estimate",
+    "baseUnknownCoverageFunctions": 81
+  },
+  "v3SourceReviewPreserved": true,
+  "diagramSourceSha256": "2a68a084122b65861f40cee83b04f94d9ea940c10387779d71f6fb3fea6410a1",
+  "diagramRenderSha256": "babbf1f31e5876cd81efb1f54473cb9f70c30db61320f6d4c416b005602c21fa",
+  "diagramManagerApprovalCarriesByIdenticalInputs": true,
+  "requiredRemainingEvidence": "Final-head refreshed metrics/checker plus manager gate verification and independent human architect approval; none inferred from equivalence alone."
+}
