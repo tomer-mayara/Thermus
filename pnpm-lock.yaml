@@ -259,6 +259,9 @@ importers:
       playwright:
         specifier: 1.64.0
         version: 1.64.0
+      stripe:
+        specifier: 23.0.1
+        version: 23.0.1(@types/node@24.19.1)
       ts-morph:
         specifier: 28.0.0
         version: 28.0.0
@@ -2385,6 +2388,15 @@ packages:
     resolution: {integrity: sha512-1tB5mhVo7U+ETBKNf92xT4hrQa3pm0MZ0PQvuDnWgAAGHDsfp4lPSpiS6psrSiet87wyGPh9ft6wmhOMQ0hDiw==}
     engines: {node: '>=14.16'}
 
+  stripe@23.0.1:
+    resolution: {integrity: sha512-VFLs9IAzSZ8GIm6/vqhjqOL0fbYrSNYCpgZ3LS3YkSi/i5RnyMpu/Hf9YxPTOCYwc3mZKU3IJvuvKffQH2NLMg==}
+    engines: {node: '>=20'}
+    peerDependencies:
+      '@types/node': '>=20'
+    peerDependenciesMeta:
+      '@types/node':
+        optional: true
+
   style-to-object@1.0.14:
     resolution: {integrity: sha512-LIN7rULI0jBscWQYaSswptyderlarFkjQ+t79nzty8tcIAceVomEVlLzH5VP4Cmsv6MtKhs7qaAiwlcp+Mgaxw==}
 
@@ -4425,6 +4437,10 @@ snapshots:
   split2@4.2.0: {}
 
   strip-json-comments@5.0.3: {}
+
+  stripe@23.0.1(@types/node@24.19.1):
+    optionalDependencies:
+      '@types/node': 24.19.1
 
   style-to-object@1.0.14:
     dependencies:
