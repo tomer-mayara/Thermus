@@ -694,6 +694,10 @@ SO-01c for its second part.
     address of the private service with `/healthz`, then the answer is `200`
     with `ok`; and from the public internet, the internal address does not
     resolve.
+  - Part two ran as a one-off job on the web service, started through the
+    Render API, instead of the shell of the operator, so that the check
+    repeats without a person at a keyboard
+    ([SO-01d](self-onboarding-s1.md#part-two-render-private-network)).
 - Steps: 1. the upstream and the client without a proxy; 2. the proxy with
   streaming; 3. the abort; 4. the signed header; 5. the Render shell check.
 
@@ -826,9 +830,13 @@ service; given a restart after `creating`, then it finds the service by name
 and continues; given a row marked for deletion, then the service is deleted
 and the row becomes `deleted`. The API gives the internal address in
 `serviceDetails.url` as `<slug>:10000`, while `serviceDetails.openPorts`
-holds 8080, so the provisioner stores the address that SO-01d part two
-confirms. A deploy with `imageUrl` also changes the image setting
-`imagePath` of the service
+holds 8080. SO-01d part two confirmed `http://<slug>:8080`: port 8080
+answered `/healthz` from inside the private network, and port 10000 refused
+the connection. So the provisioner stores `http://<slug>:8080` in
+`internal_url`, the host of `serviceDetails.url` with the port of
+`serviceDetails.openPorts`, and not the field as it is
+([SO-01d](self-onboarding-s1.md#part-two-findings-for-slice-2)). A deploy with
+`imageUrl` also changes the image setting `imagePath` of the service
 ([SO-01c](self-onboarding-s1.md#so-01c-render-private-service-lifecycle)).
 A live interface test in the Thermus AI workspace, never on the production
 service, creates and deletes one disposable tenant. Size L. Depends on
