@@ -1,0 +1,17 @@
+{
+  "version": 3,
+  "pr": 263,
+  "head": "37046bbd1426566d90bf1a32f8578584d7173060",
+  "owner": "Tomer Mayara",
+  "role": "owner",
+  "observedAt": "2026-10-27T12:32:00Z",
+  "timePrecision": "minute; manager-observed task conversation",
+  "humanReply": "Approve these four commits",
+  "source": "Explicit human reply in current Codex task, attested by root manager delegation. No GitHub review submission is claimed.",
+  "scope": "Approval of these exact four source candidates; selected gates remain required.",
+  "headAndBaseRecheck": "Root manager confirmed exact heads and bases unchanged before delegation.",
+  "status": "eligible; Ready; pending root final check/merge",
+  "priorEvidenceRoot": "https://github.com/tomer-mayara/Thermus/blob/584ae586cdaecafcd973717114539559e09a0535/review-evidence/ui-01/37046bbd1426566d90bf1a32f8578584d7173060/v2",
+  "questionSummary": "Do you approve these exact Refined tabs candidates as owner: #263—37046bbd, #264—614090a1, #266—aa8c56bb, #268—057434b9? All local test gates passed. Merges will still require outstanding WorkOS live tests to pass.",
+  "questionProvenance": "Summary supplied by root manager; not a literal copy of the full linked question. The exact human reply is retained."
+}

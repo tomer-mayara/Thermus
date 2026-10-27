@@ -1,0 +1,23 @@
+{
+  "at": "2026-10-27T05:39:09.843Z",
+  "pr": 263,
+  "head": "37046bbd1426566d90bf1a32f8578584d7173060",
+  "base": "9507e751215fec32748bf4e944f2393928e61cf5",
+  "ready": true,
+  "mergeable": true,
+  "exactBodyAndTwoComments": true,
+  "maintainedComments": 2,
+  "evidence": {
+    "at": "2026-10-27T05:38:17.473495+00:00",
+    "ui": "ui01",
+    "head": "37046bbd1426566d90bf1a32f8578584d7173060",
+    "commit": "584ae586cdaecafcd973717114539559e09a0535",
+    "branch": "codex/ui-01-review-37046bbd-v2",
+    "prefix": "review-evidence/ui-01/37046bbd1426566d90bf1a32f8578584d7173060/v2/",
+    "files": 19,
+    "bundleManifestSha256": "8d235f6023f79013552f2842d23aaffa86521b74991f37d326eac6941f41af42",
+    "status": "published-and-ref-verified",
+    "url": "https://github.com/tomer-mayara/Thermus/blob/584ae586cdaecafcd973717114539559e09a0535/review-evidence/ui-01/37046bbd1426566d90bf1a32f8578584d7173060/v2"
+  },
+  "hold": "Independent authorized exact-head T1 human approval; no merge or deployment."
+}
