@@ -1,0 +1,85 @@
+{
+  "commit": "89e79754482704534530936c1cef7850394abb6f",
+  "deploy": {
+    "commit": {
+      "createdAt": "2026-10-27T23:06:59Z",
+      "id": "89e79754482704534530936c1cef7850394abb6f",
+      "message": "Fix workspace selection return and retain the compact menu (#281)"
+    },
+    "createdAt": "2026-10-27T23:09:51.456226Z",
+    "finishedAt": "2026-10-27T23:12:56.338689Z",
+    "id": "dep-dbgiufou01pc73c7irl0",
+    "startedAt": "2026-10-27T23:09:51.425773Z",
+    "status": "live",
+    "trigger": "api",
+    "updatedAt": "2026-10-27T23:13:30.480421Z"
+  },
+  "publicUrl": "https://app.thermus.ai/",
+  "runtimeInstance": "srv-db8mnqg473hc739d529g-xt2q4",
+  "observations": {
+    "user": {
+      "actualRoleObservedInDetails": "user",
+      "pickerLinks": [
+        "Connect",
+        "Switch Workspace"
+      ],
+      "clickedOrganization": "Thermus AI (selected)",
+      "afterClickUrl": "https://app.thermus.ai/",
+      "afterClickHeading": "Connect your MCP client",
+      "afterClickWorkspace": "Thermus AI",
+      "connectLinks": [
+        "Connect",
+        "Switch Workspace"
+      ],
+      "reopenedPickerSelectedOrganization": "Thermus AI (selected)",
+      "pickerConnectLinkOpenedRoot": true
+    },
+    "admin": {
+      "actualRoleObservedInDetails": "admin",
+      "pickerLinks": [
+        "Connect",
+        "Switch Workspace",
+        "Members",
+        "Audit Log"
+      ],
+      "clickedOrganization": "Thermus AI (selected)",
+      "afterClickUrl": "https://app.thermus.ai/",
+      "afterClickHeading": "Connect your MCP client",
+      "afterClickWorkspace": "Thermus AI",
+      "connectLinks": [
+        "Connect",
+        "Switch Workspace",
+        "Members",
+        "Audit Log"
+      ],
+      "membersLink": {
+        "url": "https://app.thermus.ai/members",
+        "heading": "Members · 2",
+        "sameFourMenuLinks": true
+      },
+      "auditLink": {
+        "url": "https://app.thermus.ai/logging",
+        "heading": "Audit logs",
+        "sameFourMenuLinks": true
+      }
+    }
+  },
+  "healthAndAssets": "public-assets.json",
+  "runtimeWarningErrorQuery": {
+    "hasMore": false,
+    "logs": [],
+    "nextEndTime": "2026-10-27T23:15:47.878947584Z",
+    "nextStartTime": "2026-10-27T23:12:50.000000001Z"
+  },
+  "screenshots": [
+    "user-picker.jpg",
+    "admin-picker.jpg"
+  ],
+  "bothSessionsLeftAtConnect": true,
+  "limits": [
+    "Verification uses the two existing accounts and their one current workspace. Alternate workspaces and the full viewport/JavaScript matrix retain their separate local/staging evidence.",
+    "No production membership, role, invitation, audit destination, credential or environment setting was changed.",
+    "One stale browser accessibility target was refreshed before opening Audit Log; the successful current-page observation is recorded.",
+    "The historical WorkOS sandbox email-quota failure is retained in the release-refresh report; this successful deployment does not turn that staging run into a pass."
+  ]
+}

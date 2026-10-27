@@ -1,0 +1,41 @@
+{
+  "mergeCommit": "89e79754482704534530936c1cef7850394abb6f",
+  "priorArtifactCommit": "e42486a80170e184bcee89e7b685c565890c3685",
+  "files": [
+    {
+      "path": "workspace-selection-merged-production/README.md",
+      "bytes": 2866,
+      "sha256": "9776242c47b1b017e06577bd030da9b574efda076aed2e59b678b66fda3ce4b5"
+    },
+    {
+      "path": "workspace-selection-merged-production/admin-picker.jpg",
+      "bytes": 51741,
+      "sha256": "d47e70cbfe2e7fc1d43c2641a95937c599bc7947281bc6ac68dbd1f2f1ce354d"
+    },
+    {
+      "path": "workspace-selection-merged-production/authorization-and-start.json",
+      "bytes": 1456,
+      "sha256": "ef1104674e8077a76fd021db14c5d17d3f34a7225728690a9c5934656483f028"
+    },
+    {
+      "path": "workspace-selection-merged-production/public-assets.json",
+      "bytes": 665,
+      "sha256": "96472598c00cd149f5b6126f9eed0761455d0bd7c2cdfffafeec2cb7013ca19b"
+    },
+    {
+      "path": "workspace-selection-merged-production/source-equivalence.json",
+      "bytes": 1010,
+      "sha256": "59ab49fa1ec415eff899e9681bcce012f12f122701fe1f74b6f9ce1ef27c3b4d"
+    },
+    {
+      "path": "workspace-selection-merged-production/user-picker.jpg",
+      "bytes": 33727,
+      "sha256": "691f5390ac4baad83d4d3f5eded0eb0f5fc5780500c19bc89d8d1e8fc87b98ae"
+    },
+    {
+      "path": "workspace-selection-merged-production/verification.json",
+      "bytes": 2984,
+      "sha256": "d7413bfefae011855458d6c8a65a1141aac0b2ef0f10cc18db1222bd3341b342"
+    }
+  ]
+}

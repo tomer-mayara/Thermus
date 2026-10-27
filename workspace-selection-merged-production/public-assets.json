@@ -1,0 +1,32 @@
+{
+  "checkedAt": "2026-10-27T23:13:37.699Z",
+  "commit": "89e79754482704534530936c1cef7850394abb6f",
+  "health": {
+    "status": 200,
+    "body": "ok"
+  },
+  "portal": {
+    "status": 200,
+    "bytes": 637
+  },
+  "assets": [
+    {
+      "path": "/assets/thermus-favicon.svg",
+      "status": 200,
+      "contentType": "image/svg+xml",
+      "bytes": 582
+    },
+    {
+      "path": "/assets/index-cfluoOXL.js",
+      "status": 200,
+      "contentType": "text/javascript; charset=utf-8",
+      "bytes": 16632
+    },
+    {
+      "path": "/assets/index-7glWBjbz.css",
+      "status": 200,
+      "contentType": "text/css; charset=utf-8",
+      "bytes": 9671
+    }
+  ]
+}

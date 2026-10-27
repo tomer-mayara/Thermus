@@ -1,0 +1,25 @@
+{
+  "reviewedHead": "44753a72a7c1cecbf076e1448c26a4ae4b93a9f2",
+  "mergeCommit": "89e79754482704534530936c1cef7850394abb6f",
+  "reviewedTree": "bfcef3ab2ed3f8d2eb88310df09669e77e61764d",
+  "mergedTree": "bfcef3ab2ed3f8d2eb88310df09669e77e61764d",
+  "entireTrackedTreeIdentical": true,
+  "previouslyLiveApprovedCommit": "feaddbdec5f9e2cc7bf8e07050a4d5e7aa5e5769",
+  "appTestDependencyDockerTypeConfigDiffFromPreviousLive": [],
+  "upstreamReleaseTooling": [
+    ".github/workflows/hosted-image.yml",
+    "README.md",
+    "architecture/components.md",
+    "docs/implementation/self-onboarding-s1.md",
+    "docs/implementation/test-gate-policy.md",
+    "docs/metrics/2026-10-27-a421afc0.json",
+    "script/README.md",
+    "script/release/deploy-hosted-image.ts",
+    "script/release/deploy-request.ts",
+    "script/release/public-health.ts",
+    "script/release/render-answers.ts",
+    "script/release/render-api.ts"
+  ],
+  "localWorkingTree": "",
+  "mainAtPreflight": "89e79754482704534530936c1cef7850394abb6f"
+}

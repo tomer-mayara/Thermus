@@ -1,0 +1,37 @@
+{
+  "userAuthorization": {
+    "message": "Merged\nPlease deploy",
+    "scope": "Deploy the merged PR281 revision to production and verify the menu and workspace flow."
+  },
+  "pr": {
+    "number": 281,
+    "merged": true,
+    "mergedAt": "2026-10-27T23:06:59Z",
+    "reviewedHead": "44753a72a7c1cecbf076e1448c26a4ae4b93a9f2",
+    "mergeCommit": "89e79754482704534530936c1cef7850394abb6f"
+  },
+  "requestedCommit": "89e79754482704534530936c1cef7850394abb6f",
+  "triggeredDeployment": {
+    "commit": {
+      "createdAt": "2026-10-27T23:06:59Z",
+      "id": "89e79754482704534530936c1cef7850394abb6f",
+      "message": "Fix workspace selection return and retain the compact menu (#281)"
+    },
+    "createdAt": "2026-10-27T23:09:51.456226Z",
+    "id": "dep-dbgiufou01pc73c7irl0",
+    "startedAt": "2026-10-27T23:09:51.425773Z",
+    "status": "build_in_progress",
+    "trigger": "api",
+    "updatedAt": "2026-10-27T23:09:51.456226Z"
+  },
+  "service": {
+    "id": "srv-db8mnqg473hc739d529g",
+    "ownerId": "tea-db8i6ceq1p3s73dev9og",
+    "repo": "https://github.com/tomer-mayara/Thermus",
+    "branch": "main",
+    "autoDeploy": "no",
+    "mode": "docker",
+    "healthPath": "/healthz"
+  },
+  "historicalGate": "The prior refreshed staging run reached WorkOS sandbox invitation-email quota. That failed result remains historical and is not relabelled as green. The user subsequently reported the merge and explicitly requested this production deployment."
+}
