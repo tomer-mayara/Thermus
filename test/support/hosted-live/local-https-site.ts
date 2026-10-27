@@ -1,9 +1,7 @@
 import type { SystemLog } from '../../../src/logs/system/system-logger.ts';
 import { execFile } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
-import { once } from 'node:events';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
-import { createServer, type Server } from 'node:https';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
@@ -14,16 +12,11 @@ import { startHttpServer, type HttpServer } from '../../../src/runtime/http/serv
 import { OperatorLogSpy } from '../doubles/application/operator-log-spy.ts';
 import { portalBuild } from '../processes/module-paths.ts';
 import { trustedAdRulesFile } from '../fixtures/ad-rules.ts';
+import { listenFronts, type TlsCertificate } from './https-fronts.ts';
 import { answer, portalFiles, portalHeaders, type PortalSite } from './portal-front.ts';
-import { browserRedirectUri, localOrigin, type HostedLiveSettings } from './settings.ts';
-
-interface TlsCertificate {
-  readonly key: Buffer | string;
-  readonly cert: Buffer | string;
-}
+import { browserRedirectUri, localOrigin, localSitePort, type HostedLiveSettings } from './settings.ts';
 
 const publicBaseUrl = `${localOrigin}/`;
-const listenAddresses = ['127.0.0.1', '::1'];
 // Writes key.pem and cert.pem into the directory and gives their PEM contents.
 export async function selfSignedCertificate(directory: string): Promise<{ key: Buffer; cert: Buffer }> {
   const key = join(directory, 'key.pem');
@@ -35,11 +28,6 @@ export async function selfSignedCertificate(directory: string): Promise<{ key: B
   return { key: await readFile(key), cert: await readFile(cert) };
 }
 
-function closeFront(front: Server): Promise<void> {
-  front.closeAllConnections();
-  return new Promise<void>((resolve) => front.close(() => resolve()));
-}
-
 interface LocalHttpsSiteOptions {
   readonly signupDocuments?: SignupDocuments;
   // A scoped live proof can use its disposable SQL environment with the default production composition.
@@ -48,6 +36,10 @@ interface LocalHttpsSiteOptions {
   readonly portalBuild?: string;
   // The default application checks this executable. The live gate uses LIGHTPANDA_BIN from its environment.
   readonly rendererExecutable?: string;
+  // The port of both fronts. The default is localSitePort, the port of the registered WorkOS URIs. A case that needs no
+  // registered URI gives 0 and sends its requests to frontUrl. Its application keeps the public base URL of localOrigin,
+  // as an application behind a proxy keeps its public origin.
+  readonly port?: number;
   // The TLS key and certificate in PEM. The default is a new self-signed certificate for this run.
   readonly certificate?: TlsCertificate;
   // The logger of the Thermus listener and of the default application. With this option, the log of the site stays
@@ -63,11 +55,13 @@ interface LocalHttpsSiteOptions {
 export class LocalHttpsSite {
   readonly log: OperatorLogSpy;
   readonly #thermus: HttpServer;
+  readonly #frontPort: number;
   // The fronts close first. Then listener drain starts, application work stops, and the drain completes.
   readonly #resources: AsyncDisposableStack;
 
-  private constructor(parts: { thermus: HttpServer; resources: AsyncDisposableStack; log: OperatorLogSpy }) {
+  private constructor(parts: { thermus: HttpServer; frontPort: number; resources: AsyncDisposableStack; log: OperatorLogSpy }) {
     this.#thermus = parts.thermus;
+    this.#frontPort = parts.frontPort;
     this.#resources = parts.resources;
     this.log = parts.log;
   }
@@ -77,10 +71,24 @@ export class LocalHttpsSite {
     return this.#thermus.url;
   }
 
+  // The address of the HTTPS front. With the default port, it is the public base URL of the application.
+  get frontUrl(): URL {
+    return new URL(`https://localhost:${this.#frontPort}/`);
+  }
+
   static async start(settings: HostedLiveSettings, options: LocalHttpsSiteOptions = {}): Promise<LocalHttpsSite> {
     const files = await frontFiles(options);
     await using owned = new AsyncDisposableStack();
     const certificateDirectory = owned.adopt(await mkdtemp(join(tmpdir(), 'thermus-hosted-live-')), (path) => rm(path, { recursive: true, force: true }));
+    const tls = options.certificate ?? await selfSignedCertificate(certificateDirectory);
+    // The fronts listen before the application opens, so a busy fixed port stops the start before other work. A front
+    // answers 503 until the application is ready.
+    await using fronts = new AsyncDisposableStack();
+    const ready: { site?: PortalSite } = {};
+    const frontPort = await listenFronts(fronts, { tls, port: options.port ?? localSitePort, listener: (request, response) => {
+      if (ready.site === undefined) response.writeHead(503).end();
+      else void answer(request, response, ready.site);
+    } });
     const log = new OperatorLogSpy();
     const logger = options.logger ?? log;
     const openApplication = options.application ?? ((applicationLogger: SystemLog) => stagingApplication(settings, applicationLogger, options));
@@ -101,16 +109,10 @@ export class LocalHttpsSite {
         (reason: unknown) => ({ status: 'rejected', reason }),
       );
     });
-    const site: PortalSite = { files, headers: options.application === undefined ? {} : portalHeaders(settings.authkitIssuer), thermus: thermus.url };
-    const tls = options.certificate ?? await selfSignedCertificate(certificateDirectory);
-    // One front after the other: when a listen fails, the stack already owns each front that listens.
-    for (const host of listenAddresses) {
-      const front = createServer(tls, (request, response) => void answer(request, response, site));
-      front.listen({ host, port: Number(new URL(localOrigin).port) });
-      await once(front, 'listening');
-      owned.adopt(front, closeFront);
-    }
-    return new LocalHttpsSite({ thermus, resources: owned.move(), log });
+    ready.site = { files, headers: options.application === undefined ? {} : portalHeaders(settings.authkitIssuer), thermus: thermus.url };
+    // The last resource of the stack closes first.
+    owned.use(fronts.move());
+    return new LocalHttpsSite({ thermus, frontPort, resources: owned.move(), log });
   }
 
   async close(): Promise<void> {

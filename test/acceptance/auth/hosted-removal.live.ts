@@ -79,6 +79,9 @@ test('Given fresh password-only WorkOS fixtures and disposable Slice 2 SQL with 
   } }) });
   const fixtures = new RemovalFixtures(run, resolve('.cache/s25-02/live'));
   t.after(() => fixtures.end());
+  // The site takes the fixed port of the registered URIs before the first WorkOS call. Another run that holds the port
+  // stops this proof before it makes any staging data.
+  await run.site();
   const candidate = (await promisify(execFile)('git', ['rev-parse', 'HEAD'])).stdout.trim();
   const workingTreeClean = (await promisify(execFile)('git', ['status', '--porcelain'])).stdout.trim() === '';
   await fixtures.note('proof-started', { candidate, workingTreeClean, clientId: settings.clientId, proof: 'hosted-removal.live', profile: 'existing password-only staging', factorEvidence: 'No live factor observation. No factor was already available on these fresh identities. No MFA API was called; controlled sentinel coverage is separate.' });

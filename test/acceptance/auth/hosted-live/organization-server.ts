@@ -58,7 +58,7 @@ export function describeOrganizationServerCases(run: LiveRun): () => void {
     return { ...visit, csrfToken, offered, switched, switchedAt: Date.now() };
   });
 
-  describe('Hosted live gate (AUTH-07W): organization onboarding and selection at https://localhost:46443/ with WorkOS', () => {
+  describe(`Hosted live gate (AUTH-07W): organization onboarding and selection at ${localOrigin}/ with WorkOS`, () => {
     test('Given users without an authorized active organization in WorkOS — only an inactive membership, or only the default role —, when each signs in and opens the organization page, then each gets the invitation and operator guidance without a form, and the billing page and the protected portal request refuse each of them', signInOptions, async () => {
       const { defaultRoleUser } = await run.fixtures();
       const { users } = await run.organizationFixtures();

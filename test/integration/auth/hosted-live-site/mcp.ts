@@ -14,6 +14,8 @@ import { beforeDeadline, temporaryDirectory, writePortalBuild } from '../fixture
 
 const organizationId = 'org_01HTTPS';
 const ada = { id: 'user_01ADA', email: 'ada@thermus.ai', firstName: 'Ada' };
+// The application keeps the public base URL of the registered origin. Each site listens on a free port, so the requests
+// go to its front address.
 const config = loadDeploymentConfig({ DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: localOrigin }, 'http');
 const requestedUrl = 'https://example.com/story';
 const params = { name: 'getURLAsMarkdown', arguments: { url: requestedUrl, reason: 'Read the HTTPS story' } };
@@ -27,7 +29,7 @@ export function describeHttpsMcp(): void {
       const calls: unknown[] = [];
       const certificate = await selfSignedCertificate(await temporaryDirectory(t));
       const site = await LocalHttpsSite.start(fake.settings, {
-        portalBuild: await writePortalBuild(t), certificate,
+        portalBuild: await writePortalBuild(t), certificate, port: 0,
         application: (logger) => composeApplicationWithWorkOSFake(config, fake, {
           logger, buildServer: fetchToolServers({ fetch: async (url, context) => {
             calls.push({ url, subject: context.user.subject, tenantId: context.tenantId });
@@ -36,20 +38,21 @@ export function describeHttpsMcp(): void {
         }),
       });
       t.after(() => site.close());
-      const valid = await sendHttpsRequest(mcpRequest({ url: config.mcpResourceUrl, method: 'tools/call', token, params }), certificate.cert);
+      const endpoint = new URL('mcp', site.frontUrl).href;
+      const valid = await sendHttpsRequest(mcpRequest({ url: endpoint, method: 'tools/call', token, params }), certificate.cert);
       const answer = await valid.response;
       assert.equal(answer.statusCode, 200);
       const message = JSON.parse(await text(answer)) as { result: { content: unknown[] } };
       assert.deepEqual(message.result.content, [{ type: 'text', text: '# HTTPS story' }]);
       assert.deepEqual(calls, [{ url: requestedUrl, subject: ada.id, tenantId: `workos:${fake.settings.clientId}:${organizationId}` }]);
 
-      const invalid = await sendHttpsRequest(mcpRequest({ url: config.mcpResourceUrl, method: 'tools/call', token: 'wrong-token', params }), certificate.cert);
+      const invalid = await sendHttpsRequest(mcpRequest({ url: endpoint, method: 'tools/call', token: 'wrong-token', params }), certificate.cert);
       const refused = await invalid.response;
       assert.equal(refused.statusCode, 401);
       assert.match(String(refused.headers['www-authenticate']), /resource_metadata=/);
       await text(refused);
       fake.setRoles(ada, organizationId, []);
-      const revoked = await sendHttpsRequest(mcpRequest({ url: config.mcpResourceUrl, method: 'tools/call', token, params }), certificate.cert);
+      const revoked = await sendHttpsRequest(mcpRequest({ url: endpoint, method: 'tools/call', token, params }), certificate.cert);
       const denied = await revoked.response;
       assert.equal(denied.statusCode, 403);
       await text(denied);
@@ -66,7 +69,7 @@ export function describeHttpsMcp(): void {
       const records: string[] = [];
       const certificate = await selfSignedCertificate(await temporaryDirectory(t));
       const site = await LocalHttpsSite.start(fake.settings, {
-        portalBuild: await writePortalBuild(t), certificate,
+        portalBuild: await writePortalBuild(t), certificate, port: 0,
         application: (logger) => composeApplicationWithWorkOSFake(config, fake, {
           logger, buildServer: fetchToolServers({ fetch: async (_url, _context, { signal }) => {
             signal.addEventListener('abort', () => aborted.resolve(), { once: true });
@@ -77,7 +80,7 @@ export function describeHttpsMcp(): void {
         }),
       });
       t.after(() => site.close());
-      const call = await sendHttpsRequest(mcpRequest({ url: config.mcpResourceUrl, method: 'tools/call', token, params }), certificate.cert);
+      const call = await sendHttpsRequest(mcpRequest({ url: new URL('mcp', site.frontUrl).href, method: 'tools/call', token, params }), certificate.cert);
       const disconnected = assert.rejects(call.response);
       try {
         await started.promise;

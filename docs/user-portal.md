@@ -145,7 +145,7 @@ administration changes stay refused without MFA evidence. No step-up UI is
 added. Required can infer evidence from Password only under its explicit,
 live-verified provider requirement. The work slice always keeps evidence false.
 
-The hosted live gate uses this layout at `https://localhost:46443/`. Its local
+The hosted live gate uses this layout at `https://localhost:24443/`. Its local
 HTTPS test server, `test/support/hosted-live/local-https-site.ts`, makes a
 self-signed certificate for each run and forwards every request to the
 production hosted application. Thus the live browser checks use the production
@@ -165,13 +165,13 @@ authorization. The portal cookie is not an MCP credential. The gate and the
 slice cannot run at the same time. The WorkOS
 staging environment has these settings for both:
 
-- Redirect URI (the default): `https://localhost:46443/callback`.
-- Default Sign-out URI: `https://localhost:46443/`.
-- Initiate login URI: `https://localhost:46443/login`. A visit to the AuthKit
+- Redirect URI (the default): `https://localhost:24443/callback`.
+- Default Sign-out URI: `https://localhost:24443/`.
+- Initiate login URI: `https://localhost:24443/login`. A visit to the AuthKit
   domain without a sign-in request goes through
   `https://api.workos.com/user_management/initiate_login` to this route, which
   starts the sign-in.
-- MCP resource indicator: `https://localhost:46443/mcp`.
+- MCP resource indicator: `https://localhost:24443/mcp`.
 - CORS origins: none. The portal makes no request to WorkOS.
 
 The production application sends the Content Security Policy above with the
