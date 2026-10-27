@@ -15,7 +15,7 @@
   },
   "architecture": {
     "modelUpdated": false,
-    "summary": "Probe tooling only: script/spike/capacity-probe.ts and its helper modules under script/spike/capacity-probe/ probe the capacity and memory of a hosted tenant web service on Render (0.5c-512mb, then 1c-2g) with 1, 5, and 10 parallel MCP fetch and search calls, the Render metrics and events of each window, a disposable pages origin, WorkOS Staging fixtures, and a Staging OAuth resource; they reuse the SO-01c and SO-01d part two Render modules and the hosted-live test fixtures, with a dry-run mode, a reads-only preflight, and a client guard that touches only the thermus-spike-* services of the run and never the production service; knip lists the script as an entry point. The Slice 1 evidence record docs/implementation/self-onboarding-s1.md gains the section SO-01e: capacity and memory, and the SO-01e ticket of docs/implementation/self-onboarding-plan.md names it. No source, runtime, registry view, declaration, or deployment change.",
+    "summary": "Probe tooling only: script/spike/gateway-proxy-probe.ts gains a --protocol 2025-11-25 run that pins the client of the SO-01d local gateway model to protocol 2025-11-25 and checks a cancellation by notifications/cancelled through the proxy, with a 2026-07-28 client as the contrast; the new modules script/spike/gateway-proxy/cancel-notification.ts, cancel-measure.ts, and wire-tap.ts hold the steps, the measure of one aborted call, and a recording fetch for the client; the proxy also records when it ends an answer, and the default 2026-07-28 run and its output stay the same apart from the times. The Slice 1 evidence record docs/implementation/self-onboarding-s1.md gains the subsection Cancellation by notifications/cancelled (2025-era clients) in the SO-01d section, with the measured times, a mutation check, the findings, and a design note for Slice 2, and the SO-05 gateway ticket of docs/implementation/self-onboarding-plan.md refers to it. No source, runtime, registry view, declaration, or deployment change.",
     "views": [
       "Context",
       "C4 containers: hosted edition",
@@ -27,7 +27,10 @@
       "Behavior and resource ownership"
     ],
     "evidence": [
-      "script/spike/capacity-probe.ts",
+      "script/spike/gateway-proxy-probe.ts",
+      "script/spike/gateway-proxy/cancel-notification.ts",
+      "script/spike/gateway-proxy/cancel-measure.ts",
+      "script/spike/gateway-proxy/wire-tap.ts",
       "docs/implementation/self-onboarding-s1.md",
       "docs/implementation/self-onboarding-plan.md"
     ]
