@@ -1,0 +1,127 @@
+{
+  "tier": "T0",
+  "tierName": "T0 Auto merge",
+  "eligibility": "eligible",
+  "blockers": [],
+  "candidate": "d3e9ba9ea3767b964676d79171f35a95211a0d21",
+  "mergeBase": "57d9ce054592c5e8956494b68f10dbedfe739ef0",
+  "architecture": {
+    "policy": "facts",
+    "facts": [],
+    "summary": "T0: no architecture fact"
+  },
+  "reasons": [],
+  "questions": [],
+  "changedPaths": [
+    {
+      "status": "M",
+      "path": ".pr-impact.json"
+    },
+    {
+      "status": "M",
+      "path": "architecture/components.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/design/portal-design.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/metrics/2026-10-27-57d9ce05.json"
+    },
+    {
+      "status": "M",
+      "path": "docs/user-portal.md"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/user-portal/portal.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/user-portal/style.css"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/web/account/members-page-layout.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/web/account/members-style.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/auth/hosted-member-removal-browser.runtime.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/auth/hosted-members.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/logging/hosted-destination-settings.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/user-portal/portal.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/integration/hosted-admin/account-routes-administration-pages.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/support/drivers/browser/admin-shell-browser.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/support/in-process/hosted-member-removal-site.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/unit/html/logging-page.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/unit/user-portal/portal.test.ts"
+    }
+  ],
+  "lineCounts": {
+    "production": 29,
+    "productionLimit": 400,
+    "total": 202,
+    "totalLimit": 1500
+  },
+  "tests": {
+    "added": 5,
+    "removed": 3,
+    "skippedOrTodo": []
+  },
+  "mi": [
+    "changed: src/interfaces/user-portal/portal.ts: 47.012305725672505 to 46.72684480563154",
+    "not applicable: src/interfaces/user-portal/style.css: no raw MI in the base snapshot",
+    "changed: src/interfaces/web/account/members-page-layout.ts: 80.3695659257948 to 80.3695659257948",
+    "not applicable: src/interfaces/web/account/members-style.ts: no raw MI in the base snapshot"
+  ],
+  "crap": [
+    "src/interfaces/web/account/members-page-layout.ts: membersPageLayout: 8.0",
+    "src/interfaces/user-portal/portal.ts: showWorkspaceNavigation: 2.0"
+  ],
+  "metrics": [
+    "Delta: goal miss",
+    "Review: passed",
+    "CRAP: passed",
+    "Architecture: passed",
+    "0 findings on unchanged files, reason unchanged by this PR"
+  ],
+  "factsToDeclare": [],
+  "declaredFacts": [],
+  "surfaceDifferences": [],
+  "informational": [
+    "49 public modules, 0 snapshots changed"
+  ],
+  "notes": [
+    "Local eligibility is preliminary. The manager or Delamain session must verify current local checks, holds, and required independent human approval."
+  ],
+  "label": "gh pr edit <n> --repo tomer-mayara/Thermus --add-label 'T0 Auto merge' --remove-label 'T2 Need architect' --remove-label 'T1 Team review'"
+}

@@ -1,0 +1,22 @@
+▶ Self-hosted server startup with one persistent installation
+  ✔ Given a fresh data directory, when the server starts, stops, and starts again, then one installation identity persists and both runs report the same local tenant (1903.141ms)
+  ✔ Given several servers that start at the same time, when each gets SIGTERM in the same tick in which its "Listening on" line arrives, then each run writes "Stopping after SIGTERM" and exits with status 0, not by the signal (1725.4245ms)
+  ✔ Given several servers that start at the same time, when each gets SIGINT in the same tick in which its "Listening on" line arrives, then each run writes "Stopping after SIGINT" and exits with status 0, not by the signal (1369.779875ms)
+  ✔ Given a fresh installation with zero accounts, when the server starts, then startup succeeds, MCP requests get a Bearer challenge, and no public route creates an account (759.20675ms)
+  ✔ Given an installation whose only account is disabled, when the server starts, then startup succeeds, MCP requests stay denied, and the account keeps its ID (763.670417ms)
+  ✔ Given a fresh data directory, when two servers start at the same time, then one serves, the other stops with a lock error before it listens, and one installation identity exists (645.578833ms)
+  ✔ Given a running server, when another server starts with the same data directory, then it stops with a lock error before it listens, within five seconds, and changes no data (1208.373416ms)
+  ✔ Given retained authentication data without its installation identity, when the server starts, then it stops before it listens, asks for operator recovery, and creates no new identity (1203.964833ms)
+  ✔ Given a stopped installation, when its complete data directory is restored to a new location, then the server starts there with the same tenant; a restore without the secret stops before it listens (1799.054583ms)
+  ✔ Given a Better Auth variable that the self-hosted runtime refuses, when the server starts, then it stops before it listens with an error that names the variable but not its value (2026.262416ms)
+  ✔ Given an unknown command, when the process starts, then it stops with status 2 before it listens and creates no local data (170.599208ms)
+  ✔ Given the hosted edition with a data directory setting, when the server starts, then it serves the public portal, keeps the account protected, reports no local tenant, and creates no local data (452.262083ms)
+✔ Self-hosted server startup with one persistent installation (14029.050042ms)
+ℹ tests 12
+ℹ suites 1
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 14500.85825

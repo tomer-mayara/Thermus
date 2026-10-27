@@ -1,0 +1,109 @@
+{
+  "tested": "d3e9ba9ea3767b964676d79171f35a95211a0d21",
+  "head": "21228a7667b4e2d0eed264744687e3636649b17f",
+  "base": "a16a40c02ab5c697a757a9448d454147152de458",
+  "allTestedInputsEqual": true,
+  "changedPaths": [
+    "architecture/decisions/2026-10-26-per-tenant-containers.md",
+    "architecture/decisions/2026-10-26-tiers-and-billing.md",
+    "docs/implementation/self-onboarding-plan.md",
+    "docs/metrics/2026-10-27-a16a40c0.json"
+  ],
+  "inputs": [
+    {
+      "path": "src",
+      "tested": "2b217a203911f3ee1203c744e285b9102bc00cd4",
+      "candidate": "2b217a203911f3ee1203c744e285b9102bc00cd4"
+    },
+    {
+      "path": "test",
+      "tested": "e0262190d2272c9e47b80da5edb9c36bc4df4a13",
+      "candidate": "e0262190d2272c9e47b80da5edb9c36bc4df4a13"
+    },
+    {
+      "path": "script",
+      "tested": "50c8ab9e31f4e9f65c7aeb0f5ef5640a3aceca39",
+      "candidate": "50c8ab9e31f4e9f65c7aeb0f5ef5640a3aceca39"
+    },
+    {
+      "path": "docs/legal",
+      "tested": "8430246923c5e8b329344ced0d96f71f290ae987",
+      "candidate": "8430246923c5e8b329344ced0d96f71f290ae987"
+    },
+    {
+      "path": "package.json",
+      "tested": "0712084e6774b8cf96c83ce872ab61c6b9235cdc",
+      "candidate": "0712084e6774b8cf96c83ce872ab61c6b9235cdc"
+    },
+    {
+      "path": "pnpm-lock.yaml",
+      "tested": "357d84de577b29175c0f00e8a5512d8d77d4ab41",
+      "candidate": "357d84de577b29175c0f00e8a5512d8d77d4ab41"
+    },
+    {
+      "path": "pnpm-workspace.yaml",
+      "tested": "ab028f20fecd543c42b48a8c05e1718194e92c00",
+      "candidate": "ab028f20fecd543c42b48a8c05e1718194e92c00"
+    },
+    {
+      "path": "Dockerfile",
+      "tested": "1f5fa2b6ca510aaa159e9e66da9264ba9c677942",
+      "candidate": "1f5fa2b6ca510aaa159e9e66da9264ba9c677942"
+    },
+    {
+      "path": "Dockerfile.hosted",
+      "tested": "fa65a52dfce7e694a6a8c00c221964d5b1168e01",
+      "candidate": "fa65a52dfce7e694a6a8c00c221964d5b1168e01"
+    },
+    {
+      "path": "Dockerfile.hosted.dockerignore",
+      "tested": "773cfc0dd2d5c6e43e6d9dfe2daa728cfb481adc",
+      "candidate": "773cfc0dd2d5c6e43e6d9dfe2daa728cfb481adc"
+    },
+    {
+      "path": ".dockerignore",
+      "tested": "7894d12849b20c6ef1a7384cc76d3f94330c5b78",
+      "candidate": "7894d12849b20c6ef1a7384cc76d3f94330c5b78"
+    },
+    {
+      "path": "compose.yaml",
+      "tested": "e037d3f93d0b47dbb5a52399be58acffaa11c131",
+      "candidate": "e037d3f93d0b47dbb5a52399be58acffaa11c131"
+    },
+    {
+      "path": "tsconfig.json",
+      "tested": "229ff3b3551b7bbc1bacd835255cf52969cec05e",
+      "candidate": "229ff3b3551b7bbc1bacd835255cf52969cec05e"
+    },
+    {
+      "path": "tsconfig.build.json",
+      "tested": "1bba4a3987dbf3fd02308d74c0da5154faed21b0",
+      "candidate": "1bba4a3987dbf3fd02308d74c0da5154faed21b0"
+    },
+    {
+      "path": "tsconfig.user-portal.json",
+      "tested": "9d3be27ea030b3165505f23a48020ef8082eca85",
+      "candidate": "9d3be27ea030b3165505f23a48020ef8082eca85"
+    },
+    {
+      "path": "migrations",
+      "tested": "34b2a889ab74240199a16fc0d9fe486f07f2bc7f",
+      "candidate": "34b2a889ab74240199a16fc0d9fe486f07f2bc7f"
+    },
+    {
+      "path": ".habit-hooks",
+      "tested": "7346e58f1add99054cf079be34a068df8b3ed608",
+      "candidate": "7346e58f1add99054cf079be34a068df8b3ed608"
+    },
+    {
+      "path": "AGENTS.md",
+      "tested": "061087d50c1bf0ecfaf29ce0ab67dbda314a6331",
+      "candidate": "061087d50c1bf0ecfaf29ce0ab67dbda314a6331"
+    },
+    {
+      "path": "docs/implementation/pr-review-rules.yaml",
+      "tested": "0296d2a0eaac4f1f5a8869e6ace97365d09dcc0f",
+      "candidate": "0296d2a0eaac4f1f5a8869e6ace97365d09dcc0f"
+    }
+  ]
+}

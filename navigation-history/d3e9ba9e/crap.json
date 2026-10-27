@@ -1,0 +1,115 @@
+{
+  "version": 1,
+  "base": "57d9ce054592c5e8956494b68f10dbedfe739ef0",
+  "head": "d3e9ba9ea3767b964676d79171f35a95211a0d21",
+  "rows": [
+    {
+      "file": "src/interfaces/user-portal/portal.ts",
+      "function": "productAccess",
+      "change": "unchanged",
+      "paths": 10,
+      "share": 0.993,
+      "crap": 10.0000343,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"productAccess\",\"start\":3763,\"end\":4474,\"body\":\"7b4991428e7fee0aea59529d9bf8fbbb35158455b1b86cb9881f74284df4a790\",\"signature\":\"21f49da2ec66a3022c90fc0aa861045a759e0015c184180019b33d87e8623984\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/members-page-layout.ts",
+      "function": "membersPageLayout",
+      "change": "changed",
+      "paths": 8,
+      "share": 0.998,
+      "crap": 8.000000512,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"membersPageLayout\",\"start\":687,\"end\":2748,\"body\":\"a8e2e399b626bc9eb338bdd54670d64f26ccad0492d2fa29c3667682f9459363\",\"signature\":\"334ff702ff5e66478135471905d8f95c478f966024a94dfc505f5bcf776ed8ed\"}"
+    },
+    {
+      "file": "src/interfaces/user-portal/portal.ts",
+      "function": "sessionView",
+      "change": "unchanged",
+      "paths": 5,
+      "share": 0.975,
+      "crap": 5.000390625,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"sessionView\",\"start\":1781,\"end\":2142,\"body\":\"49fd4b53d7bccfcaf125424b99c9f47531178bc9ffa485841953d3921d367c54\",\"signature\":\"6314f4932355e80db12ad4365f4e062d8c08bda790a30f99073ac5460e445b67\"}"
+    },
+    {
+      "file": "src/interfaces/user-portal/portal.ts",
+      "function": "renderSignedIn",
+      "change": "unchanged",
+      "paths": 5,
+      "share": 0.985,
+      "crap": 5.000084375,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"renderSignedIn\",\"start\":5820,\"end\":6866,\"body\":\"73af991a8ce284caefcbdc8e6d1bd35aead03d6e44b4f3b0a332d5cea95e491c\",\"signature\":\"7a5988c2fe1c1723bd36789873afd0f3e1963b76341e6b17c3fc7c6e57ea0692\"}"
+    },
+    {
+      "file": "src/interfaces/user-portal/portal.ts",
+      "function": "showProductAccess",
+      "change": "unchanged",
+      "paths": 5,
+      "share": 0.996,
+      "crap": 5.0000016,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"showProductAccess\",\"start\":2144,\"end\":3761,\"body\":\"bbe5a9336d238fe42bac048ad7ffbaa2772d8e517e0612816cff23f9bd0f5cd0\",\"signature\":\"282c1bde414e260de67291fe73b5dabe8c6dbe6a941a11e374b2521cb8f2a2da\"}"
+    },
+    {
+      "file": "src/interfaces/user-portal/portal.ts",
+      "function": "initializePortal",
+      "change": "unchanged",
+      "paths": 5,
+      "share": 1,
+      "crap": 5,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"initializePortal\",\"start\":1205,\"end\":1779,\"body\":\"0f4b39196c96bc70bcc2f6dcf7873e9673ce5314b11f90c15d630e46b58346b4\",\"signature\":\"5109a18ebac4373cf12e33c088226b0295171e1d6f9b12877f03aad573ca5104\"}"
+    },
+    {
+      "file": "src/interfaces/user-portal/portal.ts",
+      "function": "renderError",
+      "change": "unchanged",
+      "paths": 3,
+      "share": 1,
+      "crap": 3,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"renderError\",\"start\":8343,\"end\":8792,\"body\":\"35ea26b39745b42e01e75a50a61d6edd07a341492e35c902e6bc514e8d6aca86\",\"signature\":\"2383832ebf57be0117cd3831fc657ba5d1710d95771e68a8a8aa24e3d9310ee7\"}"
+    },
+    {
+      "file": "src/interfaces/user-portal/portal.ts",
+      "function": "showWorkspaceNavigation",
+      "change": "changed",
+      "paths": 2,
+      "share": 1,
+      "crap": 2,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"showWorkspaceNavigation\",\"start\":4476,\"end\":5092,\"body\":\"7ca7b4e16d4c3e005c2900a04d9325087419abee9ce86d6f7665a5b3b0b1e1ed\",\"signature\":\"5a502b254b92274e4948f521496a4b0754823fbe9ff08b665a3b8d8c0612894f\"}"
+    },
+    {
+      "file": "src/interfaces/user-portal/portal.ts",
+      "function": "appendProfileField",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"appendProfileField\",\"start\":6868,\"end\":7229,\"body\":\"9aefc222c2badb0c1829434285e6ac1cef712e7634836e8e1d5b02f586011bee\",\"signature\":\"7a81b6a2087c2f9da8265e2b637a944d45f5047a6676df62bac17c3ceda526b1\"}"
+    },
+    {
+      "file": "src/interfaces/user-portal/portal.ts",
+      "function": "renderPage",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"renderPage\",\"start\":8794,\"end\":9650,\"body\":\"b5b90b37fc6fb4a7e607cfc1d0ab6b04eaff00827389c23d61102948743b543c\",\"signature\":\"5e0d7170ec12225536771d1742fb6c3d8e8ea187c54293f3f439b9563c06ed00\"}"
+    },
+    {
+      "file": "src/interfaces/user-portal/portal.ts",
+      "function": "renderSignedOut",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"renderSignedOut\",\"start\":7231,\"end\":8341,\"body\":\"90aa9134a74873fe8ae4da7c198dc418a029151ae5191345777951ca120de1ca\",\"signature\":\"6d042d12d9ed0c9a3bafaeba6481b95984f527e5c5f271ab5eee8161a2b2527f\"}"
+    },
+    {
+      "file": "src/interfaces/user-portal/portal.ts",
+      "function": "showConnection",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"showConnection\",\"start\":5094,\"end\":5818,\"body\":\"81de937419a2fb082e665ee3c5730b5de60a2b7ec5273e499eb680c9b5e26aff\",\"signature\":\"caeae0830f0cad2caca391aff596cbc8d2a313b7e714d0e61efc186c61232d32\"}"
+    }
+  ]
+}
