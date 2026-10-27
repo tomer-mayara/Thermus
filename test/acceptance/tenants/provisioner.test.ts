@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { loadDeploymentConfig } from '../../../src/runtime/config/deployment-config.ts';
+import { loadOperationCapacity } from '../../../src/runtime/config/operation-capacity-config.ts';
 import { controlPlaneSecrets, tenantImage, tenantImageDigest, tenantProvisioningSettings } from '../../support/fixtures/control-plane-tenants.ts';
 import { organizationA, organizationB, productionServiceId, ProvisioningHarness, serviceNameOf } from './fixtures/provisioning-harness.ts';
 
@@ -74,6 +76,24 @@ test('Given the create call, when the fake API records it, then it holds each te
   const sent = JSON.stringify(harness.render.requests.map((request) => request.body));
   for (const [name, secret] of Object.entries(controlPlaneSecrets)) assert.ok(!sent.includes(secret), `No request body holds ${name}`);
   assert.ok(harness.render.requests.every((request) => request.authorized), 'Each call carries the Render API key in its header only');
+});
+
+test('Given the variables of the create call, when the hosted image reads them, then it starts in the tenant role of the organization with the gateway key, the control plane address, and a capacity of 5', async () => {
+  const harness = new ProvisioningHarness();
+  harness.store.request(organizationA);
+
+  await harness.runUntil(isLive(harness, organizationA), 'a live row');
+
+  // Dockerfile.hosted sets DEPLOYMENT, AD_RULES_FILE, LIGHTPANDA_BIN, and the listen settings; the create call gives the rest.
+  const environment = { DEPLOYMENT: 'hosted', ...Object.fromEntries(variablesOf(harness.createBodies()[0])) };
+  const config = loadDeploymentConfig(environment, 'http');
+  assert.ok(config.deployment === 'hosted' && config.role === 'tenant', 'The image starts in the tenant role');
+  assert.equal(config.tenant.organizationId, organizationA);
+  assert.equal(config.tenant.gatewayPublicKeys.length, 1);
+  assert.equal(config.tenant.controlPlaneInternalUrl, 'http://thermus-control-plane:8080/');
+  assert.equal(config.tenant.authkitIssuer, 'https://thermus-test.authkit.app');
+  assert.equal(config.publicBaseUrl, 'https://thermus.example/');
+  assert.equal(loadOperationCapacity(environment), 5);
 });
 
 test('Given a Render 429 with Retry-After, when the loop runs, then it waits for Retry-After and creates no second service', async () => {

@@ -1,5 +1,6 @@
-import { createPublicKey } from 'node:crypto';
 import { DeploymentConfigError } from './deployment-config.ts';
+import { ed25519PublicKeysOf } from './gateway-public-keys.ts';
+import { originWithSlashOf } from './setting-origins.ts';
 
 type Environment = Readonly<Record<string, string | undefined>>;
 
@@ -16,7 +17,8 @@ export interface TenantProvisioningSettings {
   readonly freePlan: string;
   // The name of a tenant service is this prefix and the organization ID in lower case.
   readonly namePrefix: string;
-  // The public values that each new tenant gets: the gateway public keys and the private address of the control plane.
+  // The public values that each new tenant gets, with the rules of the tenant role: the gateway public keys and the
+  // private address of the control plane.
   readonly gatewayPublicKey: string;
   readonly controlPlaneInternalUrl: string;
 }
@@ -26,7 +28,6 @@ const SWITCH_RULE = 'MCP_TENANTS_ENABLED must be exactly true or false.';
 const PREFIX_RULE = 'TENANT_NAME_PREFIX must start with a lowercase letter and hold at most 40 lowercase letters, digits, or hyphens.';
 const KEY_RULE = 'GATEWAY_PUBLIC_KEY must hold one or more PEM public keys of type Ed25519, separated by commas.';
 const INTERNAL_URL_RULE = 'CONTROL_PLANE_INTERNAL_URL must be the http or https origin of the control plane on the private network, such as http://thermus-control-plane:8080, without a path, a username, a password, a query, or a fragment.';
-const PEM_PUBLIC_KEY = /^-----BEGIN PUBLIC KEY-----[A-Za-z0-9+/=\s]+-----END PUBLIC KEY-----$/;
 
 // Each rule names the setting, never its value.
 const RULES = {
@@ -79,25 +80,16 @@ function namePrefixOf(value: string | undefined): string {
   return value;
 }
 
-// A private key never passes, also when Node can derive its public key from it: a tenant must not hold it.
+// The rule of the tenant role (tenant-settings.ts), so a value that passes here also starts a tenant. A private key
+// never passes, also when Node can derive its public key from it: a tenant must not hold it.
 function gatewayPublicKeyOf(list: string): string {
-  if (!list.split(',').every((part) => isEd25519PublicKey(part.trim()))) throw new DeploymentConfigError(KEY_RULE);
+  if (ed25519PublicKeysOf(list) === undefined) throw new DeploymentConfigError(KEY_RULE);
   return list;
 }
 
-function isEd25519PublicKey(pem: string): boolean {
-  if (!PEM_PUBLIC_KEY.test(pem)) return false;
-  try {
-    return createPublicKey({ key: pem, format: 'pem' }).asymmetricKeyType === 'ed25519';
-  } catch {
-    return false;
-  }
-}
-
-// The origin exactly as the URL parser writes it, so no username, password, path, query, or fragment stays in it.
+// The origin without its final slash, as the tenant role reads it.
 function internalOriginOf(value: string): string {
-  const origin = value.endsWith('/') ? value.slice(0, -1) : value;
-  const url = URL.parse(origin);
-  if (url === null || !['http:', 'https:'].includes(url.protocol) || url.origin !== origin) throw new DeploymentConfigError(INTERNAL_URL_RULE);
-  return origin;
+  const origin = originWithSlashOf(value, ['http:', 'https:']);
+  if (origin === undefined) throw new DeploymentConfigError(INTERNAL_URL_RULE);
+  return origin.slice(0, -1);
 }

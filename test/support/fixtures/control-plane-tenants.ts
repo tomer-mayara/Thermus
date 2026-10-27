@@ -1,11 +1,11 @@
-import { generateKeyPairSync } from 'node:crypto';
 import { workOSSettings } from './hosted-placeholder.ts';
+import { gatewayKeyPairOf } from './hosted-tenant.ts';
 
 // The settings of a control plane with MCP_TENANTS_ENABLED=true (plan section 4.1), with placeholder values that pass
 // the startup checks: a fake Render key, workspace, and registry credential, a tenant image by digest, the free plan,
 // and the public values that each new tenant gets. No value reaches Render or another service.
 
-const gatewayKeys = generateKeyPairSync('ed25519');
+const gatewayKeys = gatewayKeyPairOf();
 
 export const tenantImage = `ghcr.io/tomer-mayara/thermus-hosted@sha256:${'0123456789abcdef'.repeat(4)}`;
 export const tenantImageDigest = `sha256:${'0123456789abcdef'.repeat(4)}`;
@@ -19,7 +19,7 @@ export const tenantProvisioningSettings: Readonly<Record<string, string>> = {
   RENDER_REGISTRY_CREDENTIAL_ID: 'rgc-placeholdercredential',
   TENANT_IMAGE: tenantImage,
   TENANT_PLAN_FREE: '0.5c-512mb',
-  GATEWAY_PUBLIC_KEY: gatewayKeys.publicKey.export({ type: 'spki', format: 'pem' }).toString(),
+  GATEWAY_PUBLIC_KEY: gatewayKeys.publicKeyPem,
   CONTROL_PLANE_INTERNAL_URL: 'http://thermus-control-plane:8080',
 };
 
