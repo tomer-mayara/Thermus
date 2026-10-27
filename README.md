@@ -612,6 +612,8 @@ egress to `https://example.com/`. The file
 `test/acceptance/auth/hosted-image.test.ts` uses the standard acceptance-test
 name. The ordinary `test` and `test:acceptance` command globs explicitly exclude
 `hosted-image.test.js`. Only this command runs the [hosted image gate](docs/implementation/test-gate-policy.md#hosted-image-gate).
+To run the gate on a native AMD64 runner, dispatch the manual workflow
+[`.github/workflows/hosted-image.yml`](.github/workflows/hosted-image.yml); it runs this command there and pushes the tested image to GHCR.
 The [RHD-03 record](docs/implementation/rhd-03.md) gives the current proof
 status and the completed Linux AMD64 image proof. The image ships the
 owner-selected pinned EasyList snapshot for the hosted rules. The [hosted image policy](docs/reference/ad-rules.md#hosted-image-policy)
