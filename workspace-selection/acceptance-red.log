@@ -1,0 +1,196 @@
+✖ Given Acme is selected at /, when the user chooses Acme (selected) without a return destination, then the response opens Connect at the public base and the session uses that workspace (194.985542ms)
+✖ Given Acme is selected at /, when the user chooses Globex without a return destination, then the response opens Connect at the public base and the session uses that workspace (64.883625ms)
+✖ Given org_ACME is selected at /, when the user opens Switch Workspace, then its header menu marks the picker and uses only that workspace's current role (105.012834ms)
+✖ Given org_GLOBEX is selected at /, when the user opens Switch Workspace, then its header menu marks the picker and uses only that workspace's current role (49.538792ms)
+✖ Given no workspace is selected at /, when the user opens Switch Workspace, then its header menu marks the picker and uses only that workspace's current role (123.244875ms)
+✔ Given an explicit safe return destination at /, when the user selects an authorized workspace, then that destination is preserved instead of the default Connect page (176.789208ms)
+✖ Given Acme is selected at /team/, when the user chooses Acme (selected) without a return destination, then the response opens Connect at the public base and the session uses that workspace (103.495625ms)
+✖ Given Acme is selected at /team/, when the user chooses Globex without a return destination, then the response opens Connect at the public base and the session uses that workspace (51.352667ms)
+✖ Given org_ACME is selected at /team/, when the user opens Switch Workspace, then its header menu marks the picker and uses only that workspace's current role (67.277292ms)
+✖ Given org_GLOBEX is selected at /team/, when the user opens Switch Workspace, then its header menu marks the picker and uses only that workspace's current role (51.090166ms)
+✖ Given no workspace is selected at /team/, when the user opens Switch Workspace, then its header menu marks the picker and uses only that workspace's current role (42.208875ms)
+✔ Given an explicit safe return destination at /team/, when the user selects an authorized workspace, then that destination is preserved instead of the default Connect page (138.3695ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 2
+ℹ fail 10
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1512.557958
+
+✖ failing tests:
+
+test at dist/test/acceptance/auth/hosted-workspace-selection.test.js:11:9
+✖ Given Acme is selected at /, when the user chooses Acme (selected) without a return destination, then the response opens Connect at the public base and the session uses that workspace (194.985542ms)
+  AssertionError [ERR_ASSERTION]: A normal workspace choice must leave the picker for Connect
+  + actual - expected
+  
+  + 'https://thermus.example/organizations'
+  - 'https://thermus.example/'
+                             ^
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/026d/Thermus/dist/test/acceptance/auth/hosted-workspace-selection.test.js:23:20)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'https://thermus.example/organizations',
+    expected: 'https://thermus.example/',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/acceptance/auth/hosted-workspace-selection.test.js:11:9
+✖ Given Acme is selected at /, when the user chooses Globex without a return destination, then the response opens Connect at the public base and the session uses that workspace (64.883625ms)
+  AssertionError [ERR_ASSERTION]: A normal workspace choice must leave the picker for Connect
+  + actual - expected
+  
+  + 'https://thermus.example/organizations'
+  - 'https://thermus.example/'
+                             ^
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/026d/Thermus/dist/test/acceptance/auth/hosted-workspace-selection.test.js:23:20)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'https://thermus.example/organizations',
+    expected: 'https://thermus.example/',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/acceptance/auth/hosted-workspace-selection.test.js:28:9
+✖ Given org_ACME is selected at /, when the user opens Switch Workspace, then its header menu marks the picker and uses only that workspace's current role (105.012834ms)
+  AssertionError [ERR_ASSERTION]: The workspace picker must retain the compact header menu
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/026d/Thermus/dist/test/acceptance/auth/hosted-workspace-selection.test.js:35:20)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: null,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at dist/test/acceptance/auth/hosted-workspace-selection.test.js:28:9
+✖ Given org_GLOBEX is selected at /, when the user opens Switch Workspace, then its header menu marks the picker and uses only that workspace's current role (49.538792ms)
+  AssertionError [ERR_ASSERTION]: The workspace picker must retain the compact header menu
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/026d/Thermus/dist/test/acceptance/auth/hosted-workspace-selection.test.js:35:20)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: null,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at dist/test/acceptance/auth/hosted-workspace-selection.test.js:28:9
+✖ Given no workspace is selected at /, when the user opens Switch Workspace, then its header menu marks the picker and uses only that workspace's current role (123.244875ms)
+  AssertionError [ERR_ASSERTION]: The workspace picker must retain the compact header menu
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/026d/Thermus/dist/test/acceptance/auth/hosted-workspace-selection.test.js:35:20)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: null,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at dist/test/acceptance/auth/hosted-workspace-selection.test.js:11:9
+✖ Given Acme is selected at /team/, when the user chooses Acme (selected) without a return destination, then the response opens Connect at the public base and the session uses that workspace (103.495625ms)
+  AssertionError [ERR_ASSERTION]: A normal workspace choice must leave the picker for Connect
+  + actual - expected
+  
+  + 'https://thermus.example/team/organizations'
+  - 'https://thermus.example/team/'
+                                  ^
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/026d/Thermus/dist/test/acceptance/auth/hosted-workspace-selection.test.js:23:20)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'https://thermus.example/team/organizations',
+    expected: 'https://thermus.example/team/',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/acceptance/auth/hosted-workspace-selection.test.js:11:9
+✖ Given Acme is selected at /team/, when the user chooses Globex without a return destination, then the response opens Connect at the public base and the session uses that workspace (51.352667ms)
+  AssertionError [ERR_ASSERTION]: A normal workspace choice must leave the picker for Connect
+  + actual - expected
+  
+  + 'https://thermus.example/team/organizations'
+  - 'https://thermus.example/team/'
+                                  ^
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/026d/Thermus/dist/test/acceptance/auth/hosted-workspace-selection.test.js:23:20)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'https://thermus.example/team/organizations',
+    expected: 'https://thermus.example/team/',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/acceptance/auth/hosted-workspace-selection.test.js:28:9
+✖ Given org_ACME is selected at /team/, when the user opens Switch Workspace, then its header menu marks the picker and uses only that workspace's current role (67.277292ms)
+  AssertionError [ERR_ASSERTION]: The workspace picker must retain the compact header menu
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/026d/Thermus/dist/test/acceptance/auth/hosted-workspace-selection.test.js:35:20)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: null,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at dist/test/acceptance/auth/hosted-workspace-selection.test.js:28:9
+✖ Given org_GLOBEX is selected at /team/, when the user opens Switch Workspace, then its header menu marks the picker and uses only that workspace's current role (51.090166ms)
+  AssertionError [ERR_ASSERTION]: The workspace picker must retain the compact header menu
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/026d/Thermus/dist/test/acceptance/auth/hosted-workspace-selection.test.js:35:20)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: null,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at dist/test/acceptance/auth/hosted-workspace-selection.test.js:28:9
+✖ Given no workspace is selected at /team/, when the user opens Switch Workspace, then its header menu marks the picker and uses only that workspace's current role (42.208875ms)
+  AssertionError [ERR_ASSERTION]: The workspace picker must retain the compact header menu
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/026d/Thermus/dist/test/acceptance/auth/hosted-workspace-selection.test.js:35:20)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: null,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

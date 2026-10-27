@@ -1,0 +1,155 @@
+{
+  "base": "77477864d8238b9141e9619b6bcbb6b0aa7fb11b",
+  "reviewedSourceCandidate": "16c8e174f503f79c5011fe9ac7e157578ff49d74",
+  "finalCandidate": "2907d105f85c9596401312d7082af86a5711df06",
+  "status": "retain existing low file MI and one canonical high MI regression; no source fix or exception needed",
+  "reportsObserved": {
+    "process.json": {
+      "sha256": "88d6b7c9df0559f9676a7b38ca0776375bc00ccfb170e433aaca644b342b4e2b",
+      "base": "77477864d8238b9141e9619b6bcbb6b0aa7fb11b",
+      "head": "2907d105f85c9596401312d7082af86a5711df06"
+    },
+    "review.json": {
+      "sha256": "d4bc364b1e67531073a88120528d7964b3673e7239558fed30b86b9a2d670c92",
+      "base": "77477864d8238b9141e9619b6bcbb6b0aa7fb11b",
+      "head": "2907d105f85c9596401312d7082af86a5711df06"
+    },
+    "snapshot-base.json": {
+      "sha256": "cae1dbb0f56ad89a083bdc2c577e8ebfc6537bf4d0c30002691c19a9847f3e65",
+      "base": null,
+      "head": "77477864d8238b9141e9619b6bcbb6b0aa7fb11b"
+    },
+    "snapshot.json": {
+      "sha256": "3697e5fe19dd818bfcc09c67e1553cecf58c43410fbbf200155d457fb823345e",
+      "base": null,
+      "head": "2907d105f85c9596401312d7082af86a5711df06"
+    },
+    "crap.json": {
+      "sha256": "e88e44a7135633a62aa1496dbf61fe74d4772b9cb1d70f0bb7fdb44b3211fae8",
+      "base": "77477864d8238b9141e9619b6bcbb6b0aa7fb11b",
+      "head": "16c8e174f503f79c5011fe9ac7e157578ff49d74"
+    },
+    "coverage.json": {
+      "sha256": "d28e92986e6d1387eea4c620f57f3a3e6c4abcb1107ef106a1ccf105cb50a25e",
+      "base": null,
+      "head": "16c8e174f503f79c5011fe9ac7e157578ff49d74"
+    }
+  },
+  "sourceFileMetrics": [
+    {
+      "path": "src/interfaces/web/account/account-routes.ts",
+      "baseMI": 59.440789019914476,
+      "headMI": 54.03041569685968,
+      "drop": 5.410373323054799,
+      "baseLOC": 176,
+      "headLOC": 197,
+      "basePaths": 47,
+      "headPaths": 62,
+      "headFunctions": 23,
+      "retainedHighRule": "maintainability-regression"
+    },
+    {
+      "path": "src/interfaces/web/account/organization-selection-page.ts",
+      "baseMI": 66.85775897085377,
+      "headMI": 65.67616499424597,
+      "basePaths": 4,
+      "headPaths": 5,
+      "headFunctions": 2
+    },
+    {
+      "path": "src/interfaces/web/account/organization-selection-style.ts",
+      "MI": "not measured: CSS string, no functions",
+      "CRAP": "N/A"
+    }
+  ],
+  "changedAndToolClassifiedNewFunctions": [
+    {
+      "file": "src/interfaces/web/account/account-routes.ts",
+      "function": "account-routes\\HostedAccountRoutes.organizationPage",
+      "change": "changed",
+      "paths": 7,
+      "coverage": 1,
+      "crap": 7
+    },
+    {
+      "file": "src/interfaces/web/account/account-routes.ts",
+      "function": "currentAdminAccess",
+      "change": "new",
+      "paths": 7,
+      "coverage": 1,
+      "crap": 7
+    },
+    {
+      "file": "src/interfaces/web/account/account-routes.ts",
+      "function": "account-routes\\HostedAccountRoutes.showAdminNavigation",
+      "change": "new",
+      "paths": 3,
+      "coverage": 1,
+      "crap": 3
+    },
+    {
+      "file": "src/interfaces/web/account/account-routes.ts",
+      "function": "(anonymous)",
+      "change": "new",
+      "paths": 2,
+      "coverage": 1,
+      "crap": 2
+    },
+    {
+      "file": "src/interfaces/web/account/organization-selection-page.ts",
+      "function": "organizationSelectionPage",
+      "change": "changed",
+      "paths": 2,
+      "coverage": 1,
+      "crap": 2
+    },
+    {
+      "file": "src/interfaces/web/account/account-routes.ts",
+      "function": "(anonymous)",
+      "change": "new",
+      "paths": 1,
+      "coverage": 1,
+      "crap": 1
+    },
+    {
+      "file": "src/interfaces/web/account/account-routes.ts",
+      "function": "account-routes\\HostedAccountRoutes.",
+      "change": "new",
+      "paths": 1,
+      "coverage": 1,
+      "crap": 1
+    },
+    {
+      "file": "src/interfaces/web/account/account-routes.ts",
+      "function": "account-routes\\HostedAccountRoutes.",
+      "change": "new",
+      "paths": 1,
+      "coverage": 1,
+      "crap": 1
+    },
+    {
+      "file": "src/interfaces/web/account/account-routes.ts",
+      "function": "account-routes\\HostedAccountRoutes.constructor",
+      "change": "changed",
+      "paths": 1,
+      "coverage": 1,
+      "crap": 1
+    }
+  ],
+  "coverageCommit": "16c8e174f503f79c5011fe9ac7e157578ff49d74",
+  "coverageSuites": [
+    "unit",
+    "integration"
+  ],
+  "coverageVerified": true,
+  "newMetricException": false,
+  "canonicalHighFindingsRetained": 1,
+  "nativeOnlyFilteredNote": "WorkspaceSelectionBrowser.inspectPicker has10paths; native >=10 warning is excluded by the repository >10 threshold.",
+  "evidenceLimits": [
+    "Only selected verified unit+integration coverage is claimed; no acceptance/live measurement inferred.",
+    "Base CRAP from head coverage is an estimate;78base functions lack estimated coverage.",
+    "Existing unresolved user-portal CSS import makes dependency comparison incomplete; manual source/registry review supplements it.",
+    "Raw process Delta/Review goal miss is retained, not relabelled a clean pass.",
+    "Final refreshed report heads may differ from original source evidence by the proved metric-record-only bridge."
+  ]
+}

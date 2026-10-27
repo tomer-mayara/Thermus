@@ -1,0 +1,92 @@
+✔ Given Acme is selected at /, when the user chooses Acme (selected) without a return destination, then the response opens Connect at the public base and the session uses that workspace (213.476458ms)
+✔ Given Acme is selected at /, when the user chooses Globex without a return destination, then the response opens Connect at the public base and the session uses that workspace (91.910208ms)
+✔ Given org_ACME is selected at /, when the user opens Switch Workspace, then its header menu marks the picker and uses only that workspace's current role (138.609666ms)
+✔ Given org_GLOBEX is selected at /, when the user opens Switch Workspace, then its header menu marks the picker and uses only that workspace's current role (91.872958ms)
+✔ Given no workspace is selected at /, when the user opens Switch Workspace, then its header menu marks the picker and uses only that workspace's current role (102.962417ms)
+✔ Given an explicit safe return destination at /, when the user selects an authorized workspace, then that destination is preserved instead of the default Connect page (210.945ms)
+✔ Given Acme is selected at /team/, when the user chooses Acme (selected) without a return destination, then the response opens Connect at the public base and the session uses that workspace (140.944833ms)
+✔ Given Acme is selected at /team/, when the user chooses Globex without a return destination, then the response opens Connect at the public base and the session uses that workspace (164.67425ms)
+✔ Given org_ACME is selected at /team/, when the user opens Switch Workspace, then its header menu marks the picker and uses only that workspace's current role (68.833084ms)
+✔ Given org_GLOBEX is selected at /team/, when the user opens Switch Workspace, then its header menu marks the picker and uses only that workspace's current role (71.201209ms)
+✔ Given no workspace is selected at /team/, when the user opens Switch Workspace, then its header menu marks the picker and uses only that workspace's current role (70.08575ms)
+✔ Given an explicit safe return destination at /team/, when the user selects an authorized workspace, then that destination is preserved instead of the default Connect page (230.652792ms)
+▶ HostedAccountRoutes organization page
+  ✔ Given a signed-in user with authorized organizations, when a GET request opens the organization page, then each organization has a selection form with the form token of the session, its ID, and the return destination, the selected one is marked, and the session cookies reach the page (8.4735ms)
+  ✔ Given a signed-in user with authorized organizations, when a HEAD request opens the organization page, then each organization has a selection form with the form token of the session, its ID, and the return destination, the selected one is marked, and the session cookies reach the page (2.015584ms)
+  ✔ Given organization names and IDs with HTML characters, when the organization page opens, then the page shows them as text (0.789209ms)
+  ✔ Given the public URL https://thermus.example/team/ and no return destination, when the organization page opens, then each form posts under the public path and returns to Connect there (0.531334ms)
+  ✔ Given the public URL https://thermus.example/team and no return destination, when the organization page opens, then each form posts under the public path and returns to Connect there (0.927542ms)
+  ✔ Given a signed-in user without an authorized organization, when the organization page opens, then it tells the user to accept an invitation or to contact the operator, has no form, and resolves no tenant access (1.247166ms)
+  ✔ Given a return destination with an absolute URL, when the organization page opens, then it gets 400 with the session cookies and lists no organization (0.494291ms)
+  ✔ Given a return destination with a URL without a scheme, when the organization page opens, then it gets 400 with the session cookies and lists no organization (0.356042ms)
+  ✔ Given a return destination with a path with a backslash, when the organization page opens, then it gets 400 with the session cookies and lists no organization (0.409792ms)
+  ✔ Given a return destination with a relative path, when the organization page opens, then it gets 400 with the session cookies and lists no organization (0.448834ms)
+  ✔ Given a return destination with a path outside the public path, when the organization page opens, then it gets 400 with the session cookies and lists no organization (0.292708ms)
+  ✔ Given a return destination with a path that only starts like the public path, when the organization page opens, then it gets 400 with the session cookies and lists no organization (0.8155ms)
+  ✔ Given a return destination with dot segments, when the organization page opens, then it gets 400 with the session cookies and lists no organization (0.342833ms)
+  ✔ Given a return destination with encoded dot segments, when the organization page opens, then it gets 400 with the session cookies and lists no organization (0.27875ms)
+  ✔ Given a return destination with a query, when the organization page opens, then it gets 400 with the session cookies and lists no organization (0.600666ms)
+  ✔ Given a return destination with a fragment, when the organization page opens, then it gets 400 with the session cookies and lists no organization (1.243334ms)
+  ✔ Given a return destination with a control character, when the organization page opens, then it gets 400 with the session cookies and lists no organization (0.777667ms)
+  ✔ Given a return destination with a space, when the organization page opens, then it gets 400 with the session cookies and lists no organization (0.690208ms)
+  ✔ Given a return destination with an empty value, when the organization page opens, then it gets 400 with the session cookies and lists no organization (1.3425ms)
+  ✔ Given a return destination with a very long path, when the organization page opens, then it gets 400 with the session cookies and lists no organization (0.336292ms)
+  ✔ Given a return destination with two values, when the organization page opens, then it gets 400 with the session cookies and lists no organization (0.172875ms)
+  ✔ Given a POST request, when it reaches the organization page, then it gets 405 with Allow: GET, HEAD and the session cookies, and no organization is listed (0.260209ms)
+  ✔ Given a PUT request, when it reaches the organization page, then it gets 405 with Allow: GET, HEAD and the session cookies, and no organization is listed (0.160667ms)
+  ✔ Given a DELETE request, when it reaches the organization page, then it gets 405 with Allow: GET, HEAD and the session cookies, and no organization is listed (0.158417ms)
+  ✔ Given a failed organization list, when the organization page opens, then it gets the failure page with the session cookies, and the operator gets the path and the cause (0.2665ms)
+✔ HostedAccountRoutes organization page (28.14175ms)
+✔ Given current Admin, when the workspace picker reads current access for its menu, then the picker remains usable and Admin links match only the current workspace (8.596292ms)
+✔ Given current User, when the workspace picker reads current access for its menu, then the picker remains usable and Admin links match only the current workspace (1.646625ms)
+✔ Given a differently cased role, when the workspace picker reads current access for its menu, then the picker remains usable and Admin links match only the current workspace (9.232042ms)
+✔ Given a role name containing admin, when the workspace picker reads current access for its menu, then the picker remains usable and Admin links match only the current workspace (3.464875ms)
+✔ Given empty current permissions, when the workspace picker reads current access for its menu, then the picker remains usable and Admin links match only the current workspace (0.927084ms)
+✖ Given current permissions without product access, when the workspace picker reads current access for its menu, then the picker remains usable and Admin links match only the current workspace (1.43075ms)
+✔ Given an Admin grant without permissions, when the workspace picker reads current access for its menu, then the picker remains usable and Admin links match only the current workspace (0.729417ms)
+✔ Given another workspace context, when the workspace picker reads current access for its menu, then the picker remains usable and Admin links match only the current workspace (0.589917ms)
+✔ Given no workspace in context, when the workspace picker reads current access for its menu, then the picker remains usable and Admin links match only the current workspace (0.726834ms)
+✔ Given another subject, when the workspace picker reads current access for its menu, then the picker remains usable and Admin links match only the current workspace (0.93825ms)
+✔ Given another authority, when the workspace picker reads current access for its menu, then the picker remains usable and Admin links match only the current workspace (0.578917ms)
+✔ Given another selected workspace in the context user, when the workspace picker reads current access for its menu, then the picker remains usable and Admin links match only the current workspace (0.721958ms)
+✔ Given an empty tenant, when the workspace picker reads current access for its menu, then the picker remains usable and Admin links match only the current workspace (1.123833ms)
+✔ Given revoked access, when the workspace picker reads current access for its menu, then the picker remains usable and Admin links match only the current workspace (0.613792ms)
+✔ Given no workspace is selected outside the authorized list, when the picker opens, then other memberships cannot provide Admin links and no presentation lookup starts (0.56825ms)
+✔ Given org-removed is selected outside the authorized list, when the picker opens, then other memberships cannot provide Admin links and no presentation lookup starts (0.463625ms)
+✔ Given an access lookup outage for the picker menu, when authorized workspaces can still be listed, then the picker keeps its forms and basic menu and reports only a fixed safe failure (0.705959ms)
+✔ Given a picker menu access lookup that is still pending, when the request is aborted, then cancellation reaches the caller without a page or failure report (0.522ms)
+✔ Given a selected organization and a long organization name, when the selector renders, then the current choice is named in text and semantics and each complete name stays on a submit button (9.116958ms)
+✔ Given provider and form values with markup, when the selector renders, then they stay text and exact hidden field values without executable markup (1.372958ms)
+ℹ tests 57
+ℹ suites 1
+ℹ pass 56
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1970.598458
+
+✖ failing tests:
+
+test at dist/test/integration/hosted-admin/account-routes-workspace-navigation.test.js:25:5
+✖ Given current permissions without product access, when the workspace picker reads current access for its menu, then the picker remains usable and Admin links match only the current workspace (1.43075ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    [
+      'Connect',
+      'Switch Workspace',
+  +   'Members',
+  +   'Audit Log'
+    ]
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/026d/Thermus/dist/test/integration/hosted-admin/account-routes-workspace-navigation.test.js:34:16)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ 'Connect', 'Switch Workspace', 'Members', 'Audit Log' ],
+    expected: [ 'Connect', 'Switch Workspace' ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

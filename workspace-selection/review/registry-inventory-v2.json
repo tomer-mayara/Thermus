@@ -1,0 +1,205 @@
+{
+  "base": "77477864d8238b9141e9619b6bcbb6b0aa7fb11b",
+  "headCommitBeforeImplementation": "16c8e174f503f79c5011fe9ac7e157578ff49d74",
+  "scope": "committed implementation candidate; block bodies compared with base",
+  "baseBlockCount": 16,
+  "workingTreeBlockCount": 16,
+  "blockBodiesUnchanged": true,
+  "baseBlocks": [
+    {
+      "heading": "Context",
+      "openingFenceLine": 30,
+      "closingFenceLine": 47,
+      "sha256": "6b957185d0455dda221479961a7f89efd1cd84b59a451f15838fb5ba61d3b0e3"
+    },
+    {
+      "heading": "C4 containers: hosted edition",
+      "openingFenceLine": 62,
+      "closingFenceLine": 87,
+      "sha256": "f54c0c3d6a95cfe836d96a5ddfcbc4903f9f508a24d7870ff6753f03e3c09212"
+    },
+    {
+      "heading": "C4 containers: local edition",
+      "openingFenceLine": 96,
+      "closingFenceLine": 117,
+      "sha256": "016a9ebf8a9b9cbae058568e24fe1f970998c02aad814367f3406cfbcbfb8909"
+    },
+    {
+      "heading": "Selected C4 components: tool processing in the Node server",
+      "openingFenceLine": 147,
+      "closingFenceLine": 176,
+      "sha256": "19b027b1bcd4ea4bc5de8f116152319f372e30cabcf5423dcd73194f0a6ceb57"
+    },
+    {
+      "heading": "Selected C4 components: hosted authentication in the Node server",
+      "openingFenceLine": 200,
+      "closingFenceLine": 224,
+      "sha256": "0eb999ee23b54a61a8e3703c4e63f833856af3727e972e511bed703e7c5eccf3"
+    },
+    {
+      "heading": "Selected C4 components: hosted membership removal in the Node server",
+      "openingFenceLine": 267,
+      "closingFenceLine": 292,
+      "sha256": "b98893398710c3fb43fa35176393ff163a46c58826184ee6b63ab43c3e8564da"
+    },
+    {
+      "heading": "Selected C4 components: hosted Audit logs settings and delivery in the Node server",
+      "openingFenceLine": 371,
+      "closingFenceLine": 391,
+      "sha256": "8d805ec1742f2535e049b32d5c0fe8c740c31d2d25d957ba3f1457212b12a9a8"
+    },
+    {
+      "heading": "Selected C4 components: hosted tenant registry in the Node server",
+      "openingFenceLine": 457,
+      "closingFenceLine": 476,
+      "sha256": "95c6d29868696f8fe49bda4bf694cfcc65d307ba0471050c8b36a89e0106b054"
+    },
+    {
+      "heading": "Selected C4 components: system and audit logs in the Node server",
+      "openingFenceLine": 515,
+      "closingFenceLine": 531,
+      "sha256": "c1aba85673215c02464413a94a65f0479861c6e0b288780c5d36b23bb32b9a30"
+    },
+    {
+      "heading": "Selected C4 components: local authentication in the Node server",
+      "openingFenceLine": 755,
+      "closingFenceLine": 774,
+      "sha256": "bfe964801e9f797260e2e5a24c809f614b193eda1f7f0494f52c1f2a160f4ae0"
+    },
+    {
+      "heading": "Collaboration overview",
+      "openingFenceLine": 802,
+      "closingFenceLine": 835,
+      "sha256": "12a77b8c99b38184a9f587412e10f2a0ae811456d90ba1ff77c411e0d4952d1e"
+    },
+    {
+      "heading": "Scenario: MCP page fetch and renderer cancellation",
+      "openingFenceLine": 880,
+      "closingFenceLine": 932,
+      "sha256": "e623dd52350deb18c7e34b04f8c43328443b619f7d2aef2a29da9eec8eeeab8d"
+    },
+    {
+      "heading": "Scenario: hosted default sign-in landing",
+      "openingFenceLine": 951,
+      "closingFenceLine": 997,
+      "sha256": "7494ec9c7acd1b7145bced0848e68f840886c3d05b5b5653cdda375f89607686"
+    },
+    {
+      "heading": "Scenario: hosted member read",
+      "openingFenceLine": 1018,
+      "closingFenceLine": 1078,
+      "sha256": "27b9f3fa478ce7c7d4de7c700be2330338f4d740fb39fcfd139d505491e81a84"
+    },
+    {
+      "heading": "Self-hosted Compose",
+      "openingFenceLine": 1157,
+      "closingFenceLine": 1171,
+      "sha256": "4b03d531fb5b0495291131a2baf0bc65b44e8f925886dfd1961c1ed53a86331b"
+    },
+    {
+      "heading": "Recorded hosted Render target",
+      "openingFenceLine": 1182,
+      "closingFenceLine": 1203,
+      "sha256": "9c9ca200efb6e9de97ce026c8ee2ca8da0034d8ef83f9545114b91919078f149"
+    }
+  ],
+  "workingTreeBlocks": [
+    {
+      "heading": "Context",
+      "openingFenceLine": 30,
+      "closingFenceLine": 47,
+      "sha256": "6b957185d0455dda221479961a7f89efd1cd84b59a451f15838fb5ba61d3b0e3"
+    },
+    {
+      "heading": "C4 containers: hosted edition",
+      "openingFenceLine": 62,
+      "closingFenceLine": 87,
+      "sha256": "f54c0c3d6a95cfe836d96a5ddfcbc4903f9f508a24d7870ff6753f03e3c09212"
+    },
+    {
+      "heading": "C4 containers: local edition",
+      "openingFenceLine": 96,
+      "closingFenceLine": 117,
+      "sha256": "016a9ebf8a9b9cbae058568e24fe1f970998c02aad814367f3406cfbcbfb8909"
+    },
+    {
+      "heading": "Selected C4 components: tool processing in the Node server",
+      "openingFenceLine": 147,
+      "closingFenceLine": 176,
+      "sha256": "19b027b1bcd4ea4bc5de8f116152319f372e30cabcf5423dcd73194f0a6ceb57"
+    },
+    {
+      "heading": "Selected C4 components: hosted authentication in the Node server",
+      "openingFenceLine": 200,
+      "closingFenceLine": 224,
+      "sha256": "0eb999ee23b54a61a8e3703c4e63f833856af3727e972e511bed703e7c5eccf3"
+    },
+    {
+      "heading": "Selected C4 components: hosted membership removal in the Node server",
+      "openingFenceLine": 267,
+      "closingFenceLine": 292,
+      "sha256": "b98893398710c3fb43fa35176393ff163a46c58826184ee6b63ab43c3e8564da"
+    },
+    {
+      "heading": "Selected C4 components: hosted Audit logs settings and delivery in the Node server",
+      "openingFenceLine": 371,
+      "closingFenceLine": 391,
+      "sha256": "8d805ec1742f2535e049b32d5c0fe8c740c31d2d25d957ba3f1457212b12a9a8"
+    },
+    {
+      "heading": "Selected C4 components: hosted tenant registry in the Node server",
+      "openingFenceLine": 457,
+      "closingFenceLine": 476,
+      "sha256": "95c6d29868696f8fe49bda4bf694cfcc65d307ba0471050c8b36a89e0106b054"
+    },
+    {
+      "heading": "Selected C4 components: system and audit logs in the Node server",
+      "openingFenceLine": 515,
+      "closingFenceLine": 531,
+      "sha256": "c1aba85673215c02464413a94a65f0479861c6e0b288780c5d36b23bb32b9a30"
+    },
+    {
+      "heading": "Selected C4 components: local authentication in the Node server",
+      "openingFenceLine": 755,
+      "closingFenceLine": 774,
+      "sha256": "bfe964801e9f797260e2e5a24c809f614b193eda1f7f0494f52c1f2a160f4ae0"
+    },
+    {
+      "heading": "Collaboration overview",
+      "openingFenceLine": 802,
+      "closingFenceLine": 835,
+      "sha256": "12a77b8c99b38184a9f587412e10f2a0ae811456d90ba1ff77c411e0d4952d1e"
+    },
+    {
+      "heading": "Scenario: MCP page fetch and renderer cancellation",
+      "openingFenceLine": 880,
+      "closingFenceLine": 932,
+      "sha256": "e623dd52350deb18c7e34b04f8c43328443b619f7d2aef2a29da9eec8eeeab8d"
+    },
+    {
+      "heading": "Scenario: hosted default sign-in landing",
+      "openingFenceLine": 951,
+      "closingFenceLine": 997,
+      "sha256": "7494ec9c7acd1b7145bced0848e68f840886c3d05b5b5653cdda375f89607686"
+    },
+    {
+      "heading": "Scenario: hosted member read",
+      "openingFenceLine": 1018,
+      "closingFenceLine": 1078,
+      "sha256": "27b9f3fa478ce7c7d4de7c700be2330338f4d740fb39fcfd139d505491e81a84"
+    },
+    {
+      "heading": "Self-hosted Compose",
+      "openingFenceLine": 1163,
+      "closingFenceLine": 1177,
+      "sha256": "4b03d531fb5b0495291131a2baf0bc65b44e8f925886dfd1961c1ed53a86331b"
+    },
+    {
+      "heading": "Recorded hosted Render target",
+      "openingFenceLine": 1188,
+      "closingFenceLine": 1209,
+      "sha256": "9c9ca200efb6e9de97ce026c8ee2ca8da0034d8ef83f9545114b91919078f149"
+    }
+  ],
+  "head": "16c8e174f503f79c5011fe9ac7e157578ff49d74"
+}

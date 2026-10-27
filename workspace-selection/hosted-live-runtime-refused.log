@@ -1,0 +1,9 @@
+npm error code EBADDEVENGINES
+npm error EBADDEVENGINES The developer of this package has specified the following through devEngines
+npm error EBADDEVENGINES Invalid devEngines.runtime
+npm error EBADDEVENGINES Invalid semver version "24.20.0" does not match "v22.14.0" for "runtime"
+npm error EBADDEVENGINES {
+npm error EBADDEVENGINES   current: { name: 'node', version: 'v22.14.0' },
+npm error EBADDEVENGINES   required: { name: 'node', version: '24.20.0', onFail: 'download' }
+npm error EBADDEVENGINES }
+npm error A complete log of this run can be found in: /Users/tomermayara/.npm/_logs/2026-10-27T21_00_59_162Z-debug-0.log

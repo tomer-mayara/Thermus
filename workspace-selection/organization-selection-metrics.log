@@ -1,0 +1,4 @@
+src/interfaces/web/account/organization-selection-page.ts: score 65.7, 5 decision paths, 2 functions
+  score  paths  lines  name
+   70.9      2     25  organizationSelectionPage
+   83.6      3      9  (anonymous)

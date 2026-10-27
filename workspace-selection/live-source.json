@@ -1,0 +1,10 @@
+{
+  "head": "2907d105f85c9596401312d7082af86a5711df06",
+  "tree": "186d91414ef8862b7d823066c99b5c20df8cf375",
+  "runDir": "/var/folders/66/37f836wx4fd_wgnbb4b824f40000gn/T/thermus-workspace-live-281-9TED2m",
+  "source": "Temporary detached Git worktree of the committed candidate",
+  "dependencies": "same pinned node_modules as validated worktree",
+  "purpose": "Isolate hosted-live build outputs from the running production-image gate",
+  "firstAttempt": "The staging launcher refused a source archive before loading credentials or running tests; replaced it with a real checkout from the trusted repository.",
+  "gitStatus": ""
+}

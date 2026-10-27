@@ -1,0 +1,25 @@
+src/interfaces/web/account/account-routes.ts: score 54.0, 62 decision paths, 23 functions
+  score  paths  lines  name
+    0.0      2      1  (anonymous)
+   57.0      1     17  account-routes\HostedAccountRoutes.constructor
+   57.2      6     13  account-routes\HostedAccountRoutes.selectOrganization
+   58.5      7     11  account-routes\HostedAccountRoutes.organizationPage
+   58.8      5     12  account-routes\HostedAccountRoutes.tenantOperation
+   64.3      3     11  account-routes\HostedAccountRoutes.showAdminNavigation
+   66.4      3     10  account-routes\HostedAccountRoutes.answerSignedIn
+   69.3      3      6  withCookies
+   70.8      2      6  account-routes\HostedAccountRoutes.handle
+   72.4      4      7  deepFreeze
+   74.4      3      5  account-routes\HostedAccountRoutes.route
+   76.0      2      5  directoryUrl
+   76.8      3      6  requireTrustedTenant
+   79.4      3      4  account-routes\HostedAccountRoutes.switchAnswer
+   82.2      7      7  currentAdminAccess
+   87.2      1      1  account-routes\HostedAccountRoutes.
+   87.5      1      1  account-routes\HostedAccountRoutes.
+   87.7      1      1  (anonymous)
+   87.9      1      1  account-routes\HostedAccountRoutes.
+   87.9      1      1  account-routes\HostedAccountRoutes.
+   88.1      1      1  account-routes\HostedAccountRoutes.
+   88.4      1      1  account-routes\HostedAccountRoutes.
+   90.7      1      3  frozenCopy

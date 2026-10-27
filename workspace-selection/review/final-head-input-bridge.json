@@ -1,0 +1,27 @@
+{
+  "base": "77477864d8238b9141e9619b6bcbb6b0aa7fb11b",
+  "testedReviewedSourceCandidate": "16c8e174f503f79c5011fe9ac7e157578ff49d74",
+  "finalCandidate": "2907d105f85c9596401312d7082af86a5711df06",
+  "checkedAt": "2026-10-27T20:54:40.268831+00:00",
+  "comparison": "all recursive tracked Git entries: mode, object type and object ID",
+  "sourceCandidateEntryCount": 1638,
+  "finalEntryCount": 1639,
+  "changedEntries": [
+    "docs/metrics/2026-10-27-77477864.json"
+  ],
+  "allOtherEntriesIdentical": true,
+  "sourceTestsDesignRegistryContractsBuildDependencyPolicyInputsIdentical": true,
+  "addedImmutableBaseRecord": {
+    "path": "docs/metrics/2026-10-27-77477864.json",
+    "gitObject": "5b53c1051b519edb105a1a74d0ec613079f0821b",
+    "sha256": "be3d37c7e8e2feccd918a4403fab5b4c89c978c6853c6c73f9d9517a8bb7be04",
+    "bytes": 105849,
+    "recordsCommit": "77477864d8238b9141e9619b6bcbb6b0aa7fb11b",
+    "coverageCommit": "16c8e174f503f79c5011fe9ac7e157578ff49d74",
+    "coverageKind": "head-derived-estimate"
+  },
+  "retainedReview": "architecture-assessment-v2.md and source-review-provenance-v2.json remain pinned to16c8e174, not relabelled",
+  "diagramSourceUnchanged": "2e0c395fc1e37fef42d95e01e322fa9c59905885009a1e80ba60d4b895f12c7d",
+  "diagramRenderUnchanged": "7dd2adf33c2a7cbb91faf2238e03bb4af7854d29ff75a82ce2db87bba01e384d",
+  "requiredRemainingEvidence": "Root final metrics/process/checker provenance must pin2907d105 and explicitly verify compatible coverage; review/gate approval status is recorded separately."
+}

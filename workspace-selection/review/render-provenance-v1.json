@@ -1,0 +1,24 @@
+{
+  "status": "anticipated implementation; manager review pending",
+  "mermaidCli": "12.0.0",
+  "renderer": "cached Chromium headless shell 136.0.7103.94",
+  "command": "node /Users/tomermayara/.npm/_npx/fa58c8ce4c502b5d/node_modules/@mermaid-js/mermaid-cli/src/cli.js -i ast-report/workspace-selection/review/architecture-comparison-v1.mmd -o ast-report/workspace-selection/review/architecture-comparison-v1.png -p ast-report/workspace-selection/review/puppeteer-config.json --size 1615 -s 1 -b white",
+  "sourceSha256": "2e0c395fc1e37fef42d95e01e322fa9c59905885009a1e80ba60d4b895f12c7d",
+  "pngSha256": "7dd2adf33c2a7cbb91faf2238e03bb4af7854d29ff75a82ce2db87bba01e384d",
+  "width": 798,
+  "height": 1615,
+  "embeddedSourceMatchesRenderedSource": true,
+  "visuallyInspected": true,
+  "reviewNotes": [
+    "Neutral label backgrounds",
+    "Existing calls neutral; added picker context green",
+    "Short container title clears incoming arrow",
+    "No arrow crosses unrelated component or label",
+    "16 base/head registry blocks unchanged at red-spec head"
+  ],
+  "priorAttempts": [
+    "CLI rejected obsolete -w flag; corrected using documented --size",
+    "Initial outer label crossed container edge; shortened existing-call label and centered added call",
+    "Shortened container title to clear incoming arrow"
+  ]
+}

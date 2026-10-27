@@ -1,0 +1,33 @@
+## CRAP goals
+
+Goals: CRAP < 30; new functions also CRAP ≤ 15.
+
+| File | Function | Change | Paths | Coverage | CRAP | To do |
+| --- | --- | --- | --- | --- | --- | --- |
+| src/interfaces/web/account/account-routes.ts | account-routes\HostedAccountRoutes.organizationPage | changed | 7 | 100% | 7.0 | ok |
+| src/interfaces/web/account/account-routes.ts | currentAdminAccess | new | 7 | 100% | 7.0 | ok |
+| src/interfaces/web/account/account-routes.ts | account-routes\HostedAccountRoutes.selectOrganization | unchanged | 6 | 100% | 6.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/account-routes.ts | account-routes\HostedAccountRoutes.tenantOperation | unchanged | 5 | 100% | 5.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/account-routes.ts | deepFreeze | unchanged | 4 | 100% | 4.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/account-routes.ts | account-routes\HostedAccountRoutes.answerSignedIn | unchanged | 3 | 100% | 3.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/account-routes.ts | account-routes\HostedAccountRoutes.route | unchanged | 3 | 100% | 3.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/account-routes.ts | account-routes\HostedAccountRoutes.showAdminNavigation | new | 3 | 100% | 3.0 | ok |
+| src/interfaces/web/account/account-routes.ts | account-routes\HostedAccountRoutes.switchAnswer | unchanged | 3 | 100% | 3.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/account-routes.ts | requireTrustedTenant | unchanged | 3 | 100% | 3.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/account-routes.ts | withCookies | unchanged | 3 | 100% | 3.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/organization-selection-page.ts | (anonymous) | unchanged | 3 | 100% | 3.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/account-routes.ts | (anonymous) | new | 2 | 100% | 2.0 | ok |
+| src/interfaces/web/account/account-routes.ts | account-routes\HostedAccountRoutes.handle | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/account-routes.ts | directoryUrl | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/organization-selection-page.ts | organizationSelectionPage | changed | 2 | 100% | 2.0 | ok |
+| src/interfaces/web/account/account-routes.ts | (anonymous) | new | 1 | 100% | 1.0 | ok |
+| src/interfaces/web/account/account-routes.ts | account-routes\HostedAccountRoutes. | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/account-routes.ts | account-routes\HostedAccountRoutes. | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/account-routes.ts | account-routes\HostedAccountRoutes. | new | 1 | 100% | 1.0 | ok |
+| src/interfaces/web/account/account-routes.ts | account-routes\HostedAccountRoutes. | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/account-routes.ts | account-routes\HostedAccountRoutes. | new | 1 | 100% | 1.0 | ok |
+| src/interfaces/web/account/account-routes.ts | account-routes\HostedAccountRoutes. | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/account-routes.ts | account-routes\HostedAccountRoutes.constructor | changed | 1 | 100% | 1.0 | ok |
+| src/interfaces/web/account/account-routes.ts | frozenCopy | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+
+Known limit violations: 0. Measured target misses: 0. Unmeasured functions: 0. Required functions with unknown assessment or identity: 0.

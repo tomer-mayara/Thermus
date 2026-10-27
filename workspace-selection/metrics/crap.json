@@ -1,0 +1,232 @@
+{
+  "version": 1,
+  "base": "77477864d8238b9141e9619b6bcbb6b0aa7fb11b",
+  "head": "2907d105f85c9596401312d7082af86a5711df06",
+  "rows": [
+    {
+      "file": "src/interfaces/web/account/account-routes.ts",
+      "function": "account-routes\\HostedAccountRoutes.organizationPage",
+      "change": "changed",
+      "paths": 7,
+      "share": 1,
+      "crap": 7,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:HostedAccountRoutes\",\"name\":\"organizationPage\",\"start\":5941,\"end\":7030,\"body\":\"ca52fe84dbcdc6b86dd86c931174ca09b6a1de2b12c5a167c48bd3648adb1d6e\",\"signature\":\"32405a2e7f45a58a419d08bd9b7cf49f02505022ed4a4fe0a86e53a0c11506f5\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/account-routes.ts",
+      "function": "currentAdminAccess",
+      "change": "new",
+      "paths": 7,
+      "share": 1,
+      "crap": 7,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"currentAdminAccess\",\"start\":9086,\"end\":9579,\"body\":\"b18a05894908a784226094b86d175ba4a8e9879574d75d8c3153dc5457814d55\",\"signature\":\"14e4fddaee157c6980d18ea4897f75b80dd46ca96fb049de0d14063015ce6a89\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/account-routes.ts",
+      "function": "account-routes\\HostedAccountRoutes.selectOrganization",
+      "change": "unchanged",
+      "paths": 6,
+      "share": 1,
+      "crap": 6,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:HostedAccountRoutes\",\"name\":\"selectOrganization\",\"start\":7824,\"end\":8814,\"body\":\"f81c57781f83693f9db4dda33d06cb568664bd0022e0dc82af1b4716ff74ba3a\",\"signature\":\"32405a2e7f45a58a419d08bd9b7cf49f02505022ed4a4fe0a86e53a0c11506f5\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/account-routes.ts",
+      "function": "account-routes\\HostedAccountRoutes.tenantOperation",
+      "change": "unchanged",
+      "paths": 5,
+      "share": 1,
+      "crap": 5,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:HostedAccountRoutes\",\"name\":\"tenantOperation\",\"start\":5039,\"end\":5853,\"body\":\"850b19817aa1393aae2be3b43b6750dbc7a9f7e636bd6a4a5622b52ff91b613b\",\"signature\":\"7ad8a4a21a2f4536a650c35a6f4394bf6d52f2b75b0189711e5700a7a1b2d895\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/account-routes.ts",
+      "function": "deepFreeze",
+      "change": "unchanged",
+      "paths": 4,
+      "share": 1,
+      "crap": 4,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"deepFreeze\",\"start\":10964,\"end\":11169,\"body\":\"36c0d875cc52abb28e6a0337c2d57a9396e92c08c7b1748a2989f1ef96b3b78b\",\"signature\":\"c6bdc9ce875cd861bf564339a35151de548fa9d85a923ae27374ed6120e84d4e\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/account-routes.ts",
+      "function": "account-routes\\HostedAccountRoutes.answerSignedIn",
+      "change": "unchanged",
+      "paths": 3,
+      "share": 1,
+      "crap": 3,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:HostedAccountRoutes\",\"name\":\"answerSignedIn\",\"start\":4156,\"end\":4593,\"body\":\"efc50efa72e56aa5cec1df4a9ad0c67d565fca6486bceb6b9347d3cae4833eb2\",\"signature\":\"32405a2e7f45a58a419d08bd9b7cf49f02505022ed4a4fe0a86e53a0c11506f5\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/account-routes.ts",
+      "function": "account-routes\\HostedAccountRoutes.route",
+      "change": "unchanged",
+      "paths": 3,
+      "share": 1,
+      "crap": 3,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:HostedAccountRoutes\",\"name\":\"route\",\"start\":4597,\"end\":4937,\"body\":\"b7417d1f062965a0fe8f7225080114b54f3851925fa6e8379cb10edfa183e7bd\",\"signature\":\"2dbb728652ce6891cec4d768dd58b7279db9b71d7ec21da235f19427aa9a525a\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/account-routes.ts",
+      "function": "account-routes\\HostedAccountRoutes.showAdminNavigation",
+      "change": "new",
+      "paths": 3,
+      "share": 1,
+      "crap": 3,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:HostedAccountRoutes\",\"name\":\"showAdminNavigation\",\"start\":7034,\"end\":7591,\"body\":\"b33185e35ec7f97af6b18f3fb074f48f2f14f72c4755256598b209af3080bbcc\",\"signature\":\"73ba82b72655b5d4b5de67ca5cda3da4410850665d5e8668f752fc4d036e5e1c\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/account-routes.ts",
+      "function": "account-routes\\HostedAccountRoutes.switchAnswer",
+      "change": "unchanged",
+      "paths": 3,
+      "share": 1,
+      "crap": 3,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:HostedAccountRoutes\",\"name\":\"switchAnswer\",\"start\":8818,\"end\":9082,\"body\":\"18020596e5988edaabd8f6a78199c412da97df375130e01e20b0e5ae0b0eb5f5\",\"signature\":\"77f46694f8300682e26419fa0d69e1059f724294766f9e380f599c2a532bdfb3\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/account-routes.ts",
+      "function": "requireTrustedTenant",
+      "change": "unchanged",
+      "paths": 3,
+      "share": 1,
+      "crap": 3,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"requireTrustedTenant\",\"start\":10555,\"end\":10790,\"body\":\"88455ff2c4f84a75b5c23733946beceec5d9277a36924ac2e270737da155c972\",\"signature\":\"cf36840dadcdab2ab8da904eb48d2ca32fc8a52fb3ee2dc68d8bd954da0578ab\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/account-routes.ts",
+      "function": "withCookies",
+      "change": "unchanged",
+      "paths": 3,
+      "share": 1,
+      "crap": 3,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"withCookies\",\"start\":9836,\"end\":10275,\"body\":\"136384a9f416e82a4549270b3565041455aa40ad9a8cbdf31f337372ace9aa18\",\"signature\":\"14cc0a115de58fc40659c2dae9b436d67607858634da499ca6055a1e32ae98f5\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/organization-selection-page.ts",
+      "function": "(anonymous)",
+      "change": "unchanged",
+      "paths": 3,
+      "share": 1,
+      "crap": 3,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:organizationSelectionPage\",\"name\":\"(anonymous)\",\"start\":1004,\"end\":1389,\"body\":\"204c05b89901c24f6b7337536a27920040ffb5a2d54d42a5fefd2c8eb75c7782\",\"signature\":\"535ae2fe5a16b480772c5160fb04d4ddf0e145fb8a7a71dad5f68b45db6a3048\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/account-routes.ts",
+      "function": "(anonymous)",
+      "change": "new",
+      "paths": 2,
+      "share": 1,
+      "crap": 2,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:currentAdminAccess\",\"name\":\"(anonymous)\",\"start\":9512,\"end\":9575,\"body\":\"955408385f6a8ba997724347fb3cd8f338487e5332cc9a6733bcd0175fd3d921\",\"signature\":\"71f64630c3a696c7b603300f5949799f467096165dbd5e012343a10bbf957fbf\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/account-routes.ts",
+      "function": "account-routes\\HostedAccountRoutes.handle",
+      "change": "unchanged",
+      "paths": 2,
+      "share": 1,
+      "crap": 2,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:HostedAccountRoutes\",\"name\":\"handle\",\"start\":3588,\"end\":3955,\"body\":\"5af485f3dbe3627c9d85ef678f32e48a4c63e85d165f64e10e418538c7e128bf\",\"signature\":\"d8316fc4acb87206f106283667fac45dd167502e955ce544d1674f7c343e1b38\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/account-routes.ts",
+      "function": "directoryUrl",
+      "change": "unchanged",
+      "paths": 2,
+      "share": 1,
+      "crap": 2,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"directoryUrl\",\"start\":10370,\"end\":10553,\"body\":\"067250cc56c7cfe14fa1a5cedabab8e7547ccc402fbe411d35ce23ce557cbbfb\",\"signature\":\"af18fe5e0f268c6dce8f06fa6804354ee67ac4a3d7512663654bcd6a31c36832\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/organization-selection-page.ts",
+      "function": "organizationSelectionPage",
+      "change": "changed",
+      "paths": 2,
+      "share": 1,
+      "crap": 2,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"organizationSelectionPage\",\"start\":874,\"end\":3151,\"body\":\"fcfb71e84e26516c5e67d56a3b65aa170af32f7e87be769dc9f9b58437604c1f\",\"signature\":\"e14c044c2f46b93745f6d2d303c7f0eeffda082a1679110b4a06bbbb575a2af4\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/account-routes.ts",
+      "function": "(anonymous)",
+      "change": "new",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:withCookies\",\"name\":\"(anonymous)\",\"start\":10017,\"end\":10050,\"body\":\"d6992e3fbce8147293ecb58f71427f29cb4696cc7d391f6947274a9f5cbf91ee\",\"signature\":\"e2bd30674fc4e82424879c901b3aae9b5343eae1a54bcd91afff6088d3301cfd\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/account-routes.ts",
+      "function": "account-routes\\HostedAccountRoutes.",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"ClassDeclaration:HostedAccountRoutes/MethodDeclaration:handle\",\"name\":\"(anonymous)\",\"start\":3697,\"end\":3759,\"body\":\"f9de90d4b40088860673851949dad1ad03487063ad8b20dc8ef58cd03d2b9c5f\",\"signature\":\"25651b318587428812bfb0a4e1af5e80d738935bc72a9dd99222281982a16957\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/account-routes.ts",
+      "function": "account-routes\\HostedAccountRoutes.",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"ClassDeclaration:HostedAccountRoutes/MethodDeclaration:organizationPage\",\"name\":\"(anonymous)\",\"start\":6507,\"end\":6563,\"body\":\"689223a95da572c0ece16964b7185db0ce9357e7b2b3dc57316b41607cf57e32\",\"signature\":\"25651b318587428812bfb0a4e1af5e80d738935bc72a9dd99222281982a16957\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/account-routes.ts",
+      "function": "account-routes\\HostedAccountRoutes.",
+      "change": "new",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"ClassDeclaration:HostedAccountRoutes/MethodDeclaration:organizationPage\",\"name\":\"(anonymous)\",\"start\":6685,\"end\":6768,\"body\":\"e683dde0e1e8d3ae70a30b1c51c5f9b9cdb65195883f8992cd0975782eb496a0\",\"signature\":\"17d77d877b1c9d9beb9278b4454ebd0b84994bbaad054682c4f9295e050a17c7\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/account-routes.ts",
+      "function": "account-routes\\HostedAccountRoutes.",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"ClassDeclaration:HostedAccountRoutes/MethodDeclaration:selectOrganization\",\"name\":\"(anonymous)\",\"start\":8442,\"end\":8525,\"body\":\"62a885d8354331e27f988182bcf548a6e7e4f2def792719578cf865d314b3617\",\"signature\":\"25651b318587428812bfb0a4e1af5e80d738935bc72a9dd99222281982a16957\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/account-routes.ts",
+      "function": "account-routes\\HostedAccountRoutes.",
+      "change": "new",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"ClassDeclaration:HostedAccountRoutes/MethodDeclaration:showAdminNavigation\",\"name\":\"(anonymous)\",\"start\":7201,\"end\":7240,\"body\":\"95d504520cfbe7e06bc12c4aea6c550b28e7d78e71ee88d69487ac24b04661fa\",\"signature\":\"25651b318587428812bfb0a4e1af5e80d738935bc72a9dd99222281982a16957\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/account-routes.ts",
+      "function": "account-routes\\HostedAccountRoutes.",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"ClassDeclaration:HostedAccountRoutes/MethodDeclaration:tenantOperation\",\"name\":\"(anonymous)\",\"start\":5213,\"end\":5260,\"body\":\"26f7c21e64e6470be632d89403b67a75213b6b81119f4567e92de09bfbe44721\",\"signature\":\"25651b318587428812bfb0a4e1af5e80d738935bc72a9dd99222281982a16957\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/account-routes.ts",
+      "function": "account-routes\\HostedAccountRoutes.constructor",
+      "change": "changed",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"Constructor\",\"owner\":\"ClassDeclaration:HostedAccountRoutes\",\"name\":\"constructor\",\"start\":2560,\"end\":3584,\"body\":\"af490e6ae80b31b3f06c56811c37e4e03b0c99cbe02a71326e0795315443da56\",\"signature\":\"13fb1fc6e1c6c284567a340171cadcfaa31912e15e9c2ac47b754e6ed8655979\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/account-routes.ts",
+      "function": "frozenCopy",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"frozenCopy\",\"start\":10878,\"end\":10962,\"body\":\"4fdb44b47dbc66953d204a09c877942dcb0e28f19b76ef73ad263bb329ab886d\",\"signature\":\"c6bdc9ce875cd861bf564339a35151de548fa9d85a923ae27374ed6120e84d4e\"}"
+    }
+  ]
+}

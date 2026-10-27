@@ -1,0 +1,110 @@
+{
+  "base": "77477864d8238b9141e9619b6bcbb6b0aa7fb11b",
+  "headCommitBeforeImplementation": "16c8e174f503f79c5011fe9ac7e157578ff49d74",
+  "scope": "committed source/test/docs candidate; final metrics and full gate evidence pending",
+  "reviewedAt": "2026-10-27T20:45:22.787692+00:00",
+  "files": [
+    {
+      "path": "architecture/components.md",
+      "sha256": "8df2543e39fef75b5ce6d8248bd4309917b45bfa7e59e6c36a879dd5a312482a"
+    },
+    {
+      "path": "docs/design/authentication-design.md",
+      "sha256": "70be0a41b14333316f59a88dd592ed4432bdc3951dc66b309f6b5fc6a60bde90"
+    },
+    {
+      "path": "docs/design/portal-design.md",
+      "sha256": "dced7ed538d82930c969e23153601b29e586df5f4d7ea4376b9cc69d07bd6a9f"
+    },
+    {
+      "path": "docs/user-portal.md",
+      "sha256": "7cc4d3f08fcbb2c157123f68e0f5cc330beee3c390af90623404aef47828fcc6"
+    },
+    {
+      "path": "src/interfaces/web/account/account-routes.ts",
+      "sha256": "a93c9962cc5250486c9b4fca3856a05f3d7d20b85826d76ffe92e832fc270b4e"
+    },
+    {
+      "path": "src/interfaces/web/account/organization-selection-page.ts",
+      "sha256": "161a971b692eb5985ba163ef2fc23a5c85969f564b28db69be6a857368e0fda2"
+    },
+    {
+      "path": "src/interfaces/web/account/organization-selection-style.ts",
+      "sha256": "13f5eaaaa501a3d0ed11908e31cda17fa984d89080ea9e809db18db8bc6ae5b1"
+    },
+    {
+      "path": "test/acceptance/auth/hosted-member-removal-browser.runtime.ts",
+      "sha256": "48ecfef3266c4e9ee1fb33dc91d2c6717876fb87cbf208bb813e34087e81de65"
+    },
+    {
+      "path": "test/acceptance/auth/hosted-organization-requests.test.ts",
+      "sha256": "7cab012cd80e93984b6f85dfd68316a5418341d6ff6dfbcdf8448c9b3d050720"
+    },
+    {
+      "path": "test/acceptance/auth/hosted-workspace-selection.test.ts",
+      "sha256": "071ae45c002e2daf8b9fe8e4d7fd79aaf69d304594db522dafbec681a46d9bea"
+    },
+    {
+      "path": "test/integration/auth/workos-provider-organizations.test.ts",
+      "sha256": "57c68155587aa443c5ba8e8a524fa3d55fdfab44f0a48ec4c0ca0b11b0cdcd03"
+    },
+    {
+      "path": "test/integration/hosted-admin/account-routes-organization-page.test.ts",
+      "sha256": "239d2235c78d49a08fe0ddef78ddeaefc54b6d4084dfc457b8726d1da013203c"
+    },
+    {
+      "path": "test/integration/hosted-admin/account-routes-workspace-navigation.test.ts",
+      "sha256": "28c9df5ec7d02df3f95da51285f268e21d95f78e223183c700b97d1e6fb6c8bc"
+    },
+    {
+      "path": "test/integration/hosted-admin/organization-selection-page.test.ts",
+      "sha256": "f54d262f6abe403c429dad074649c4f5355cb2c568ab0805b0a1f378cf3149a3"
+    },
+    {
+      "path": "test/support/drivers/browser/workspace-selection-browser.ts",
+      "sha256": "02a650b2ded798576e61f4e4a4de0ee77583a8989a9a22255811457a39a136d7"
+    },
+    {
+      "path": "test/support/in-process/hosted-workspace-selection-site.ts",
+      "sha256": "7e69a764f0c10bd0885c8c56974a19ecbfd4b8e75e2b42b217afc409d3d6a151"
+    }
+  ],
+  "publicSnapshotsTracked": 50,
+  "publicSnapshotDiff": "",
+  "findings": [],
+  "requiredHumanReview": "T2 Need architect for contract and internalInterface; pending current-candidate independent authorized human approval",
+  "metricsStatus": "pending manager fresh evidence",
+  "screenshotsInspected": [
+    "ast-report/workspace-selection/browser/picker-admin-off-320.png",
+    "ast-report/workspace-selection/browser/picker-admin-on-1280.png"
+  ],
+  "limitations": [
+    "Picker-specific200% text/long names not established by added browser cases",
+    "No-script picker flow does not establish rendering of JavaScript-dependent Connect",
+    "No tests/builds/metrics executed by independent reviewer"
+  ],
+  "head": "16c8e174f503f79c5011fe9ac7e157578ff49d74",
+  "reviewedWorkingTreeMatchesCommittedFiles": true,
+  "selectionPostAndSwitchAnswerBodiesIdentical": true,
+  "selectionBodiesSha256": "408e69140a3615788ff14a0074d60f367ea9e9b8c284fbc27ecbd9c56580a713",
+  "basePublicSnapshotTree": "2680db545238b602c3528d1f304d98f3f4584546",
+  "headPublicSnapshotTree": "2680db545238b602c3528d1f304d98f3f4584546",
+  "publicSnapshotTreesIdentical": true,
+  "impactDeclaration": {
+    "path": ".pr-impact.json",
+    "sha256": "f962d9500efeda8d28339b38544b8b43122a208ac09e1b1e987f6296da8b7408",
+    "flags": {
+      "container": false,
+      "external": false,
+      "contract": true,
+      "deployment": false,
+      "crossCutting": false,
+      "component": false,
+      "internalInterface": true,
+      "sensitiveBehavior": false,
+      "dependencyRisk": false,
+      "policy": false,
+      "uncertain": false
+    }
+  }
+}
