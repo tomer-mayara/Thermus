@@ -2135,8 +2135,10 @@ These integration cases serve the production portal and signup routes through
 `LocalHttpsSite` and the real HTTP server, with trusted rules and placeholder
 WorkOS settings. The sibling `hosted-live-site/mcp.ts` adds authenticated MCP
 and cancellation cases with the production hosted composition, a local WorkOS
-fake, and a fetch-operation double. The complete-site cases listen on port
-46443, so the hosted live gate and manual slice must be stopped first.
+fake, and a fetch-operation double. The cases need no registered URI, so each
+site listens on a free port (port 0) and the requests go to its front address.
+Thus the cases can run at the same time as the hosted live gate, the manual
+slice, or another run of the cases.
 
 [V] The default composition serves the portal and protects account and MCP requests without credentials
 [V] Signup with test documents serves the complete test notice and real portal without a WorkOS call
@@ -2957,7 +2959,7 @@ The current source inventory is:
 
 Each `hosted-live/` path above is under `test/acceptance/auth/`. The run reaches
 the real hosted application through the local TLS front at
-`https://localhost:46443/`. Historical results remain in the
+`https://localhost:24443/`. Historical results remain in the
 [validation record](../implementation/auth-workos-mcp-url-fetch-validation.md);
 current S2.5-02 results and limits are in its implementation record. Historical
 MFA, Super Admin, or User-only product expectations do not describe this current

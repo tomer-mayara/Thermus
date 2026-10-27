@@ -32,9 +32,9 @@ cached. `pnpm exec node --version` must report `v24.20.0`. For direct `npm` or
 | Portal | `npm run test:user-portal` | Portal unit and acceptance tests from TypeScript source | Offline. Local DOM and provider doubles. |
 | All | `npm test` | `dist/test/**/!(hosted-image).test.js` and portal source tests: the unit, integration, acceptance, and interface suites | Lightpanda 1.0.0, Axiom ingest credentials, and public network access. |
 | Container | `npm run test:container` | `dist/test/acceptance/auth/self-hosted-container.test.js` with `THERMUS_CONTAINER_GATE=1` | Docker Engine with Buildx and Compose. The image build needs network access, or a build cache with the pinned images, the packages, and the Lightpanda asset. The containers under test run without outbound access. The gate supplies its own trusted rules fixture; `ad-rules.txt` next to `compose.yaml` is the operator's file. |
-| Hosted offline build | `npm run build:hosted` | `check`, all emitted integration tests, the explicit acceptance/interface selection, and the renderer gate below | No live credentials or public network access. Pinned absolute `LIGHTPANDA_BIN`, Git and OpenSSL in `PATH`, free local port 46443, and local loopback access. The Docker build supplies Git and the renderer. |
+| Hosted offline build | `npm run build:hosted` | `check`, all emitted integration tests, the explicit acceptance/interface selection, and the renderer gate below | No live credentials or public network access. Pinned absolute `LIGHTPANDA_BIN`, Git and OpenSSL in `PATH`, and local loopback access. The Docker build supplies Git and the renderer. |
 | Hosted image | `npm run test:container:hosted` | `dist/test/acceptance/auth/hosted-image.test.js` only | Docker Engine with Buildx and a Linux AMD64 builder/runtime, native or emulated. Image build needs network access or cached pinned inputs; the renderer test needs HTTPS egress to `https://example.com/`. No live WorkOS or Axiom credential. |
-| Hosted live | `npm run test:hosted-live` | `hosted.live.js` and `hosted-removal.live.js`, in sequence after a build of the portal | A WorkOS staging environment with its settings and dashboard configuration, absolute pinned `LIGHTPANDA_BIN`, public network access, Playwright Chromium, OpenSSL, Docker Engine for the scoped removal proof’s disposable PostgreSQL, and free local ports 46443 and 46480. The [hosted live gate](#hosted-live-gate-auth-06) gives the details. |
+| Hosted live | `npm run test:hosted-live` | `hosted.live.js` and `hosted-removal.live.js`, in sequence after a build of the portal | A WorkOS staging environment with its settings and dashboard configuration, absolute pinned `LIGHTPANDA_BIN`, public network access, Playwright Chromium, OpenSSL, Docker Engine for the scoped removal proof’s disposable PostgreSQL, and free local ports 24443 and 24480. The [hosted live gate](#hosted-live-gate-auth-06) gives the details. |
 | Search live | `npm run test:mcp:search:live` | `dist/test/acceptance/mcp/search-pipeline.live.js` only | Absolute pinned `LIGHTPANDA_BIN` and public Brave access. No API key or Axiom credential. |
 | Private PostgreSQL | `npm run test:logging:postgres` | Settings and removal-store integration, settings and hosted storage-failure acceptance, and membership-removal overlap/restart and integrated hosted acceptance `.runtime.js` files | Docker Engine and OpenSSL. Uses disposable local PostgreSQL 17 with verified test TLS and the scoped runtime role; no Supabase or other live credentials. |
 | Members browser | `npm run build:user-portal && npm run build && node --test dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js` | Labelled member rows and distinct counts; short closed desktop rows at most 72px with 48px actions; quiet self/other actions, keyboard Cancel and one confirmation at 320px/1280px without JavaScript; expanded-row reflow at 481px/600px/860px/861px; shared Members/Audit navigation, focus, text resize and Save/Test with JavaScript on/off; Audit width at 800px/860px; closed/open invitation, typed Cancel, native validation, User/Admin send and last-Admin guidance; counted zero/nonzero pending disclosure, compact long rows, UTC expiry, section order and protected keyboard Resend/Revoke, with JavaScript on/off | Playwright Chromium, OpenSSL and the built portal assets. Uses a temporary loopback HTTPS bridge to the local HTTP site and provider doubles; no live credentials. |
@@ -476,8 +476,9 @@ The exact selection is in `package.json`. It includes the current emitted
 integration glob and explicit, nonempty acceptance and interface paths. It
 excludes the Axiom tests, public-site renderer smoke test, live WorkOS gate,
 live Brave search proof, and Docker gates. The command needs the pinned Node and
-dependencies, Git and OpenSSL in `PATH`, a free local port 46443, local loopback
-connections, and the absolute `LIGHTPANDA_BIN` of Lightpanda 1.0.0. It needs no
+dependencies, Git and OpenSSL in `PATH`, local loopback connections, and the
+absolute `LIGHTPANDA_BIN` of Lightpanda 1.0.0. It needs no fixed local port: the
+integration cases of the local HTTPS site listen on a free port. It needs no
 live credential or public network access. When that aggregate gate is selected,
 a local command is:
 
@@ -864,10 +865,24 @@ Configure the other staging settings as the hosted edition needs them:
   They are on since 2026-10-14, for the same work slice.
 - Multiple roles for each membership, and the roles and permissions of the
   [hosted role mapping](../design/authentication-design.md#hosted-role-mapping).
-- The redirect URI `https://localhost:46443/callback` as the default, the
-  default Sign-out URI `https://localhost:46443/`, the Initiate login URI
-  `https://localhost:46443/login`, and no CORS origin.
-- The MCP resource indicator `https://localhost:46443/mcp`.
+- The redirect URI `https://localhost:24443/callback` as the default, the
+  default Sign-out URI `https://localhost:24443/`, the Initiate login URI
+  `https://localhost:24443/login`, and no CORS origin.
+- The MCP resource indicator `https://localhost:24443/mcp`, an AuthKit OAuth
+  resource.
+- The Connect redirect URI `http://127.0.0.1:24480/callback`. A run also gives
+  it to each Connect application that it makes.
+
+Ticket 26fed5 moved the origin from `https://localhost:46443` and the Connect
+callback from port 46480 to these ports. The old ports are in the Linux
+ephemeral port range, 32768 to 60999: in a hosted image build, an outgoing
+socket of the same integration run took port 46443, and a case of the local
+HTTPS site failed with `EADDRINUSE`. The
+[retry history](self-onboarding-s1.md#retry-history-port-46443) of SO-01b
+gives the failure. The WorkOS Staging configuration is outside Git. The move
+replaces each URI with port 46443 or 46480 by the URI with port 24443 or 24480:
+the redirect URIs, the AuthKit OAuth resource, the Initiate login URI, and the
+Sign-out URI. Until WorkOS Staging has the new URIs, the gate cannot pass.
 
 The WorkOS API can save the redirect URI and the resource indicator. The
 Sign-out URI and the Initiate login URI are dashboard settings. The dashboard
@@ -880,7 +895,7 @@ AuthKit visit to the Initiate login URI. A redirect is not a page, so those
 cases watch the navigation requests of the browser.
 
 The auth WorkOS MCP URL fetch work slice uses the same staging environment,
-the same origin `https://localhost:46443/`, and the same registered URIs. Thus
+the same origin `https://localhost:24443/`, and the same registered URIs. Thus
 the slice and the gate cannot run at the same time. The gate does not delete
 the configured slice organization or its users: a run deletes
 only the data with its own name or email prefix. The normal hosted
@@ -918,12 +933,20 @@ The gate also needs:
 - Chromium for Playwright 1.64.0: `pnpm exec playwright install chromium`.
 - OpenSSL in `PATH`: the local HTTPS test server makes a new self-signed
   certificate for `localhost` for each run.
-- Free local ports: 46443 for the local HTTPS test server, and 46480 for the
-  callback of the test MCP client, which the browser catches. Nothing else
-  listens on port 46443: not the auth WorkOS MCP URL fetch work slice, and
-  not the integration case of the local HTTPS site in
-  `test/integration/auth/hosted-live-site.test.ts`, which
-  `npm run test:integration` runs.
+- Free local ports: 24443 for the local HTTPS test server, and 24480 for the
+  callback of the test MCP client, which the browser catches. Both ports are
+  below the ephemeral port ranges of Linux (32768 to 60999) and macOS (49152
+  to 65535), so an outgoing socket of another program cannot take them. The
+  gate, the auth WorkOS MCP URL fetch work slice, and the fetch script proof
+  listen on port 24443, so only one of them can run at a time. Each gate file
+  starts its local HTTPS site before its first WorkOS call. When another run
+  holds the port, the start fails at once with one error that names the port
+  and that likely cause, and the gate makes no WorkOS call. The integration
+  cases of the local HTTPS site, in
+  `test/integration/auth/hosted-live-site.test.ts`, need no registered URI:
+  each of their sites listens on a free port (port 0). Thus
+  `npm run test:integration` can run at the same time as the gate, and two
+  runs of the cases can run at the same time.
 - One run at a time: a run deletes the staging users, organizations, and
   Connect applications that an earlier run left, by their name prefix.
 
