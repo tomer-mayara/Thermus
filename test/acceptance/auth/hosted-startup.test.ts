@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { describe, test } from 'node:test';
 import { pathToFileURL } from 'node:url';
 import { hostedFetchSettings, workOSSettings } from '../../support/fixtures/hosted-placeholder.ts';
+import { gatewayKeyPairOf, tenantSettingsOf } from '../../support/fixtures/hosted-tenant.ts';
 import { dataDirectory } from '../../support/isolation/data-directory.ts';
 import { withPreload } from '../../support/processes/server-preloads.ts';
 import { ServerProcess, type ServerSettings } from '../../support/processes/server-process.ts';
@@ -278,5 +279,72 @@ registerHooks({ resolve(specifier, context, nextResolve) {
       await assertStopsBeforeListening(server, message);
       for (const value of Object.values(overrides).filter((setting) => setting.length > 1)) assert.ok(!server.output.includes(value), server.output);
     }
+  });
+});
+
+// The same image in the tenant role (SO-03): only the tenant settings of plan section 4.1, no WorkOS secret, no
+// database setting, and no Render or Stripe setting.
+describe('Hosted image in the tenant role', () => {
+  const tenantSettings: ServerSettings = {
+    ...hostedFetchSettings,
+    ...tenantSettingsOf(gatewayKeyPairOf().publicKeyPem, 'http://thermus-control-plane:8080'),
+    LISTEN_HOST: '127.0.0.1',
+    LISTEN_PORT: '0',
+  };
+  const { THERMUS_ROLE: _role, ...controlPlaneSettings } = tenantSettings;
+
+  test('Given THERMUS_ROLE=tenant with its settings and without a WorkOS secret or a database setting, when the hosted application starts, then it listens, /healthz answers 200 with ok, another path answers 404, an MCP call without a context gets 403, and it uses no network', { timeout: 60_000 }, async (t) => {
+    const server = await ServerProcess.start(t, tenantSettings);
+
+    const health = await answerOf(server, '/healthz');
+    const portal = await answerOf(server, '/');
+    const mcp = await answerOf(server, '/mcp', mcpCall(forgedToken));
+    await server.stop();
+
+    assert.deepEqual([health.status, health.body], [200, 'ok\n']);
+    assert.equal(portal.status, 404);
+    assert.equal(mcp.status, 403);
+    assert.equal(server.attemptedOutboundAccess, false, server.output);
+  });
+
+  test('Given THERMUS_ROLE=tenant without one of its four settings, when the application starts, then it stops before it listens with a FATAL line that names the setting', { timeout: 60_000 }, async (t) => {
+    for (const name of ['TENANT_ORGANIZATION_ID', 'GATEWAY_PUBLIC_KEY', 'CONTROL_PLANE_INTERNAL_URL', 'WORKOS_AUTHKIT_ISSUER']) {
+      const { [name]: _missing, ...settings } = tenantSettings;
+      const server = ServerProcess.launch(t, settings);
+
+      await assertStopsBeforeListening(server, new RegExp(`FATAL.*${name} is required\\.`));
+      assert.equal(server.attemptedOutboundAccess, false, server.output);
+    }
+  });
+
+  test('Given an unknown value of THERMUS_ROLE, when the application starts, then it stops before it listens with a FATAL line that names the setting', { timeout: 60_000 }, async (t) => {
+    for (const role of ['worker', 'Tenant', ' tenant']) {
+      const server = ServerProcess.launch(t, { ...tenantSettings, THERMUS_ROLE: role });
+
+      await assertStopsBeforeListening(server, /FATAL.*THERMUS_ROLE must be control-plane or tenant\./);
+    }
+  });
+
+  test('Given a secret of the control plane in the tenant environment, when the application starts, then it stops before it listens with a FATAL line that names the setting but not the value', { timeout: 60_000 }, async (t) => {
+    const secrets = ['WORKOS_API_KEY', 'WORKOS_CLIENT_SECRET', 'DATABASE_URL', 'RENDER_API_KEY', 'STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET'];
+    for (const name of secrets) {
+      const value = `private-value-of-${name.toLowerCase()}`;
+      const server = ServerProcess.launch(t, { ...tenantSettings, [name]: value });
+
+      await assertStopsBeforeListening(server, new RegExp(`FATAL.*The tenant role refuses ${name}`));
+      assert.ok(!server.output.includes(value), server.output);
+    }
+  });
+
+  test('Given THERMUS_ROLE=control-plane, when the hosted server starts with the WorkOS settings, then it serves the portal and the MCP challenge as without the setting', { timeout: 60_000 }, async (t) => {
+    const server = await ServerProcess.start(t, { ...controlPlaneSettings, ...workOSSettings, THERMUS_ROLE: 'control-plane' });
+
+    const portal = await answerOf(server, '/');
+    const mcp = await answerOf(server, '/mcp', mcpCall());
+    await server.stop();
+
+    assert.equal(portal.status, 200);
+    assert.equal(mcp.status, 401);
+    assert.equal(server.attemptedOutboundAccess, false, server.output);
   });
 });
