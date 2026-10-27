@@ -15,7 +15,7 @@
   },
   "architecture": {
     "modelUpdated": false,
-    "summary": "UI-02 refines member rows and native removal disclosures inside the existing Web owner. It uses the complete existing overview for the active-row heading and retains activeUserSeats as a separate product-access count. Trusted subject identity selects You and Leave; existing removable decisions and checked removal POSTs remain authoritative. Preserve hidden fields, current access, last-Admin/stale/busy/unknown outcomes, self-removal recovery, account and other-workspace access, and approved help bytes. No new production component, import edge, public declaration, provider read, store, dependency, deployment or security guarantee. Registry views remain accurate; the browser inventory changes only to describe the implemented cases.",
+    "summary": "UI-02 refines member rows and native removal disclosures inside the existing Web owner. It uses the complete existing overview for the active-row heading and retains activeUserSeats as a separate product-access count. Trusted subject identity selects You and Leave; existing removable decisions and checked removal POSTs remain authoritative. Preserve hidden fields, current access, last-Admin/stale/busy/unknown outcomes, self-removal recovery, account and other-workspace access, and approved help bytes. No new production component, import edge, public declaration, provider read, store, dependency, deployment or security guarantee. Desktop labels now sit beside values with less row padding; natural growth and 48px action targets remain. Registry views remain accurate; the browser inventory changes only to describe the implemented cases.",
     "views": [
       "Context",
       "C4 containers: hosted edition",

@@ -15,6 +15,39 @@ import { signInThroughServer } from '../../support/dsl/workos-sign-in.ts';
 import { otherOrganization, removalAdmin, removalOrganization, removalUser, serveMemberRemovalSite } from '../../support/in-process/hosted-member-removal-site.ts';
 import { portalBuild } from '../../support/processes/module-paths.ts';
 
+test('Given three short member rows at 1280px and normal text, when Members loads its production fonts with removal closed, then labelled rows stay within 72px and quiet actions keep 48px targets', async (t) => {
+  const { page } = await adminBrowser(t, { javaScriptEnabled: false });
+  await page.setViewportSize({ width: 1280, height: 844 });
+  await page.goto('https://thermus.example/team/members');
+  const fonts = await page.locator('html').evaluate(async element => {
+    await element.ownerDocument.fonts.ready;
+    return { sans: element.ownerDocument.fonts.check('17px "IBM Plex Sans"'), serif: element.ownerDocument.fonts.check('500 32px "IBM Plex Serif"') };
+  });
+  assert.deepEqual(fonts, { sans: true, serif: true });
+  const rows = page.locator('.member-list > li');
+  assert.equal(await rows.count(), 3);
+  const heights = await rows.evaluateAll(elements => elements.map(row => row.getBoundingClientRect().height));
+  t.diagnostic(`Short closed member row heights ${JSON.stringify(heights)}`);
+  const evidence = process.env.THERMUS_BROWSER_EVIDENCE_DIR;
+  if (evidence !== undefined) {
+    await mkdir(evidence, { recursive: true });
+    await page.screenshot({ path: join(evidence, 'member-rows-compact-1280.png'), fullPage: true });
+  }
+  for (const row of await rows.all()) {
+    assert.equal(await row.locator('details[open]').count(), 0);
+    assert.deepEqual(await row.locator('dt').allTextContents(), ['Member', 'Role', 'Action']);
+    const trigger = row.locator('summary');
+    const target = await trigger.boundingBox();
+    assert.ok(target && target.height >= 48 && target.width >= 48, 'Each quiet action must retain a 48px target');
+    assert.deepEqual(await memberActionStyle(trigger), { color: 'rgb(180, 186, 192)', background: 'rgba(0, 0, 0, 0)', border: 'rgba(0, 0, 0, 0)' });
+    for (const fact of await row.locator('dt, dd').all()) {
+      assert.equal(await fact.isVisible(), true, 'Each labelled fact must remain visible');
+      assert.equal(await fact.evaluate(element => element.clientHeight >= element.scrollHeight && element.clientWidth >= element.scrollWidth), true, 'Each labelled fact must fit without clipping');
+    }
+  }
+  assert.ok(heights.every(height => height <= 72), `Short closed desktop rows must be at most 72px: ${heights.join(', ')}`);
+});
+
 test('Given closed member actions, when an Admin reads the page, then each disclosure uses quiet text with no danger fill', async (t) => {
   const { page } = await adminBrowser(t, { javaScriptEnabled: false });
   await page.setViewportSize({ width: 1280, height: 844 });
@@ -75,6 +108,7 @@ for (const width of [320, 1280]) {
       }
     });
     assert.equal(await page.locator('html').evaluate(element => element.scrollWidth <= element.clientWidth), true, 'Expanded removal and member facts must reflow at 200% text');
+    if (evidence !== undefined) await page.screenshot({ path: join(evidence, `member-row-expanded-text-200-${width}.png`), fullPage: true });
   });
 }
 
@@ -85,11 +119,16 @@ test('Given an expanded removal at widths between phone and desktop, when the Ad
   assert.equal(await target.count(), 1);
   await tabTo(page, target.locator('summary'));
   await page.keyboard.press('Enter');
-  for (const width of [481, 600, 860]) {
+  for (const width of [481, 600, 860, 861]) {
     await page.setViewportSize({ width, height: 844 });
     const confirmation = await target.locator('.removal-confirmation').boundingBox();
     assert.ok(confirmation && confirmation.width >= 240, `Confirmation text must stay readable at ${width}px`);
     assert.equal(await page.locator('html').evaluate(element => element.scrollWidth <= element.clientWidth), true);
+    const evidence = process.env.THERMUS_BROWSER_EVIDENCE_DIR;
+    if (evidence !== undefined) {
+      await mkdir(evidence, { recursive: true });
+      await page.screenshot({ path: join(evidence, `member-row-expanded-${width}.png`), fullPage: true });
+    }
   }
 });
 
