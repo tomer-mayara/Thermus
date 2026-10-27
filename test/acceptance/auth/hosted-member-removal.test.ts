@@ -94,7 +94,7 @@ test('Given an uncertain removal that deleted its target, when the Admin repeats
   help.remove();
   const currentContent = currentPage.querySelector('main');
   assert.ok(currentContent);
-  assert.equal(currentContent.querySelector('h1')?.textContent, 'Members');
+  assert.equal(currentContent.querySelector('h1')?.textContent, 'Members · 2');
   assert.doesNotMatch(currentContent.textContent ?? '', /removal (is|was) confirmed|member removed/i);
   assert.deepEqual(site.removalStore.operations.get(removalOrganization), held);
   assert.equal(site.removalStore.admissions.length, 1);

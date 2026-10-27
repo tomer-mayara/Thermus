@@ -1,7 +1,8 @@
 # Organization administration plan
 
 UI design selected: 26 October 2026 — Refined tabs. UI-01 is implemented in
-[PR #263](https://github.com/tomer-mayara/Thermus/pull/263); UI-02/03/04 remain planned.
+[PR #263](https://github.com/tomer-mayara/Thermus/pull/263). UI-02 is implemented in
+[PR #264](https://github.com/tomer-mayara/Thermus/pull/264); UI-03/04 remain planned.
 See the [four UI tickets](#refined-tabs-ui--approved-design-26-october-2026).
 
 Plan reviewed: 25 October 2026. Slice 1 and Slice 2 are merged, and the internal
@@ -225,8 +226,8 @@ Organization unclear with multiple memberships: [Choose workspace]
 
 ### Members and invitations — Refined tabs
 
-**Approved design direction — 26 October 2026. UI-01 is implemented in PR #263; later
-UI tickets remain planned.**
+**Approved design direction — 26 October 2026. UI-01 is implemented in PR #263;
+UI-02 is implemented in PR #264. UI-03/04 remain planned.**
 The owner selected Refined tabs. The following wireframes replace the earlier
 conceptual Members layout; they do not claim that the application has changed.
 Follow [portal design](portal-design.md#members) and the
@@ -1218,7 +1219,7 @@ complete only when both of its child tickets are complete.
 
 ### Refined tabs UI — approved design, 26 October 2026
 
-**Status: UI-01 is implemented in PR #263; UI-02/03/04 remain planned.** These four small,
+**Status: UI-01 is implemented in PR #263. UI-02 is implemented in PR #264; UI-03/04 remain planned.** These four small,
 plan-local tickets implement the selected Members presentation against existing
 member, invitation, and removal behavior. They add no provider or MFA feature
 and have no Slice 3 dependency. They do not reopen completed Slice 2.5 release
@@ -1360,6 +1361,9 @@ Members workspace context is truthful, Audit behavior is unchanged, and the
 disclosures are not required to complete UI-01.
 
 #### UI-02 — Member rows and quiet removal
+
+Implemented in [PR #264](https://github.com/tomer-mayara/Thermus/pull/264),
+stacked on UI-01. See the [implementation record](../implementation/admin-ui-02.md).
 
 **BDD acceptance first.**
 

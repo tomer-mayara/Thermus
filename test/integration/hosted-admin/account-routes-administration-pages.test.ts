@@ -10,6 +10,22 @@ import { acmeInvitations, acmeMembers, annToken, serveAdministration, sessionCoo
 const current = { members: acmeMembers, invitations: acmeInvitations };
 
 describe('HostedAccountRoutes combined Members page', () => {
+  test('Given complete member facts with absent and unknown roles, when Members opens, then active rows have labelled facts, their own count, and only supported removal controls', async () => {
+    const [member] = acmeMembers.members;
+    assert.ok(member);
+    const { routes, organizations } = serveAdministration({ ...current, members: { ...acmeMembers, members: [...acmeMembers.members, { ...member, membershipId: 'custom', subject: 'custom', email: 'custom@example.com', roles: ['observer'], removable: false }] } });
+    const body = await (await routes.handle(accountRequest('/members', 'session=ann'))).text();
+    const document = parseHTML(body).document;
+    assert.equal(document.querySelector('h1')?.textContent, 'Members · 3');
+    assert.match(body, /Active product members: 1/);
+    const rows = [...document.querySelectorAll('.member-list > li')];
+    assert.deepEqual(rows.map(row => [...row.querySelectorAll('dt')].map(label => label.textContent)), Array.from({ length: 3 }, () => ['Member', 'Role', 'Action']));
+    assert.deepEqual(rows.map(row => row.querySelector('.member-role dd')?.textContent), ['User, Admin', 'none', 'observer']);
+    assert.deepEqual(rows.map(row => row.querySelectorAll('form').length), [1, 0, 0]);
+    assert.equal(document.querySelectorAll('.member-list select, .member-list input:not([type="hidden"])').length, 0);
+    assert.deepEqual(organizations.administrationCalls.map(({ operation }) => operation), ['memberOverview', 'invitationOverview']);
+  });
+
   test('Given a trusted workspace name with markup, when Members receives a forged name, then the header shows the escaped overview name beside Switch workspace', async () => {
     const organizationName = 'Acme <script>alert("name")</script> & Labs';
     const { routes, organizations } = serveAdministration({ ...current, members: { ...acmeMembers, organizationName } });
@@ -34,8 +50,8 @@ describe('HostedAccountRoutes combined Members page', () => {
       assert.equal(response.headers.get('Cache-Control'), 'no-store');
       assert.deepEqual(response.headers.getSetCookie(), sessionCookies);
       assert.match(body, /Active product members: 1/);
-      assert.match(body, /ann@example\.com: active\. Roles: User, Admin\./);
-      assert.match(body, /dora@example\.com: active\. Roles: none\./);
+      const rows = [...parseHTML(body).document.querySelectorAll('.member-list > li')];
+      assert.deepEqual(rows.map(row => [row.querySelector('.member-email')?.textContent, row.querySelector('.member-role dd')?.textContent]), [['ann@example.com', 'User, Admin'], ['dora@example.com', 'none']]);
       assert.doesNotMatch(body, /ivy@example\.com|old@example\.com|Change role|Security|<script/);
       assert.deepEqual(organizations.administrationCalls.map(({ operation, actor, request }) => [operation, actor, request]), [
         ['memberOverview', { user: ann }, 'org-a'], ['invitationOverview', { user: ann }, 'org-a'],
@@ -54,7 +70,7 @@ describe('HostedAccountRoutes combined Members page', () => {
 
       assert.deepEqual(formsIn(body), [
         { action: '/invitations/send', fields: { csrf_token: annToken, organization_id: 'org-a', role: 'user' }, label: 'Invite' },
-        { action: '/members/remove', fields: { csrf_token: annToken, organization_id: 'org-a', membership_id: 'membership-ann', revision: 'r7' }, label: 'Remove ann@example.com' },
+        { action: '/members/remove', fields: { csrf_token: annToken, organization_id: 'org-a', membership_id: 'membership-ann', revision: 'r7' }, label: 'Leave Acme' },
         { action: '/invitations/resend', fields: { csrf_token: annToken, organization_id: 'org-a', invitation_id: 'invitation-1' }, label: 'Resend the invitation to new@example.com' },
         { action: '/invitations/revoke', fields: { csrf_token: annToken, organization_id: 'org-a', invitation_id: 'invitation-1' }, label: 'Revoke the invitation to new@example.com' },
         { action: '/invitations/resend', fields: { csrf_token: annToken, organization_id: 'org-a', invitation_id: 'invitation-2' }, label: 'Resend the invitation to boss@example.com' },
@@ -84,7 +100,7 @@ describe('HostedAccountRoutes combined Members page', () => {
     const { routes } = serveAdministration({ ...current, invitations: { ...acmeInvitations, invitations: [] } });
     const body = await (await routes.handle(accountRequest('/members', 'session=ann'))).text();
     assert.match(body, /No pending invitations/);
-    assert.deepEqual(formsIn(body).map(({ label }) => label), ['Invite', 'Remove ann@example.com']);
+    assert.deepEqual(formsIn(body).map(({ label }) => label), ['Invite', 'Leave Acme']);
   });
 
   test('Given another member with the same email, when Members opens, then only the trusted subject gets the You label', async () => {
@@ -95,13 +111,16 @@ describe('HostedAccountRoutes combined Members page', () => {
       { ...member, email: 'different@example.com', subject: ann.subject },
     ] } });
     const body = await (await routes.handle(accountRequest('/members', 'session=ann'))).text();
-    const rows = [...body.matchAll(/<li class="member-row">([\s\S]*?)<\/li>/g)].map(([, row]) => row ?? '');
+    const rows = [...parseHTML(body).document.querySelectorAll('.member-list > li')];
     assert.equal(rows.length, 2);
     const [otherRow, ownRow] = rows;
     assert.ok(otherRow, 'Members shows the other member.');
     assert.ok(ownRow, 'Members shows the current member.');
-    assert.doesNotMatch(otherRow, /You/);
-    assert.match(ownRow, /You/);
+    assert.equal(otherRow.querySelector('.you-label'), null);
+    assert.equal(ownRow.querySelector('.you-label')?.textContent, 'You');
+    assert.equal(otherRow.querySelector('summary')?.getAttribute('aria-label'), 'Remove ann@example.com from Acme');
+    assert.equal(ownRow.querySelector('summary')?.getAttribute('aria-label'), 'Leave Acme as different@example.com');
+    assert.equal(ownRow.querySelector('button')?.textContent, 'Leave Acme');
   });
 
   test('Given hostile provider text and an unsupported member, when Members opens, then values are escaped and that member has no removal form', async () => {
@@ -116,7 +135,7 @@ describe('HostedAccountRoutes combined Members page', () => {
     });
     const body = await (await routes.handle(accountRequest('/members', 'session=ann'))).text();
     assert.doesNotMatch(body, /<script>|<b>|<i>/);
-    assert.match(body, /Roles: custom-&quot;&gt;&lt;script&gt;alert\(1\)&lt;\/script&gt;, toString\./);
+    assert.equal(parseHTML(body).document.querySelector('.member-role dd')?.textContent, `custom-${hostile}, toString`);
     assert.match(body, /Invite to Acme &quot;&gt;&lt;script&gt;alert\(1\)&lt;\/script&gt;<\/h2>/);
     assert.equal(formsIn(body)[0]?.fields.organization_id, 'org-a');
     assert.deepEqual(formsIn(body).at(-1)?.fields.invitation_id, hostile);
