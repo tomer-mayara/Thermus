@@ -71,6 +71,8 @@ export class RenderFake {
   deployOutcome = 'live';
   /** Ratelimit-Remaining of the next create answer. */
   createsRemaining = 19;
+  /** Runs before Render handles a create call, so a test can observe the system at that moment. */
+  beforeCreate: (request: RenderRequest) => void | Promise<void> = () => {};
   readonly fetch: typeof fetch = (input, init) => this.answer(input, init);
   readonly #account: Account;
   readonly #services = new Map<string, FakeService>();
@@ -124,9 +126,15 @@ export class RenderFake {
     const fault = request.route === 'unknown' ? undefined : this.takeFault(request.route);
     if (fault === 'network') throw new TypeError('fetch failed');
     if (fault !== undefined && fault !== 'lost') return responseOf(fault);
-    const answer = request.authorized ? this.handle(request) : { status: 401, body: { message: 'Unauthorized' } };
+    const answer = await this.handled(request);
     if (fault === 'lost') throw new TypeError('fetch failed');
     return responseOf(answer);
+  }
+
+  private async handled(request: RenderRequest): Promise<Answer> {
+    if (!request.authorized) return { status: 401, body: { message: 'Unauthorized' } };
+    if (request.route === 'create service') await this.beforeCreate(request);
+    return this.handle(request);
   }
 
   private recorded(url: URL, init: RequestInit): RenderRequest {

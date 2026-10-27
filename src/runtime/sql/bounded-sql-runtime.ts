@@ -152,6 +152,9 @@ export function createPgSettingsRuntime(options: SettingsSqlOptions): BoundedSql
     query_timeout: bounds.operationMs,
     application_name: 'thermus-settings',
   });
+  // The pool listens only to its idle clients. A client that work holds between two statements must not end the process
+  // when the database ends its connection: the next statement of the work fails instead, and the work is unavailable.
+  pool.on('connect', (client) => { client.on('error', () => {}); });
   return new BoundedSqlRuntime(pool, bounds);
 }
 

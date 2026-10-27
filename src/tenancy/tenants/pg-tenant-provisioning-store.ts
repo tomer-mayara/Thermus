@@ -1,8 +1,9 @@
 import type { BoundedSqlRuntime, SettingsSqlSession } from '../../runtime/sql/bounded-sql-runtime.ts';
 import type { ClaimRequest, ClaimResult, LiveRecord, RecordResult, TenantProvisioningStore } from './tenant-provisioning-store.ts';
 
-// A row of an earlier run or a resume comes before the oldest request. SKIP LOCKED keeps a second claim off a row
-// that another claim holds, so two loops never work on one row.
+// A row of an earlier run or a resume comes before the oldest request. The row lock holds the row until the claim
+// commits, and SKIP LOCKED takes the next row when another writer holds one, so a claim never waits for it. The
+// claim is not a lease: one control plane runs one loop (plan section 7).
 const NEXT_ROW = `SELECT organization_id, state, service_name, render_service_id FROM thermus_admin.tenants
   WHERE state IN ('requested', 'creating', 'deploying')
   ORDER BY state = 'requested', updated_at, organization_id
