@@ -47,19 +47,19 @@ const serviceJson = (id: string, name: string, details: Record<string, unknown> 
 const deployJson = (deploy: { readonly id: string; readonly status: string; readonly createdAt: string; readonly sha?: string }) => ({
   id: deploy.id, status: deploy.status, trigger: 'manual', createdAt: deploy.createdAt, image: { ref: image, ...(deploy.sha === undefined ? {} : { sha: deploy.sha }) },
 });
-const request = { name: 'thermus-tenant-org_01a', plan: '0.5c-512mb', environment: new Map([['THERMUS_ROLE', 'tenant'], ['OPERATION_CAPACITY', '5']]) };
+const request = { name: 'thermus-tenant-org-01a', plan: '0.5c-512mb', environment: new Map([['THERMUS_ROLE', 'tenant'], ['OPERATION_CAPACITY', '5']]) };
 
 test('Given a name, when the services are found, then one read lists the private services of the owner with that name and keeps only the exact name', async () => {
   const { platform, sent } = platformWith([json(200, [
-    { service: serviceJson('srv-a', 'thermus-tenant-org_01a'), cursor: 'c1' },
-    { service: serviceJson('srv-b', 'thermus-tenant-org_01a-old'), cursor: 'c2' },
+    { service: serviceJson('srv-a', 'thermus-tenant-org-01a'), cursor: 'c1' },
+    { service: serviceJson('srv-b', 'thermus-tenant-org-01a-old'), cursor: 'c2' },
   ])]);
 
-  assert.deepEqual(await platform.findServices('thermus-tenant-org_01a', signal), { status: 'found', services: [{ id: 'srv-a', name: 'thermus-tenant-org_01a' }] });
+  assert.deepEqual(await platform.findServices('thermus-tenant-org-01a', signal), { status: 'found', services: [{ id: 'srv-a', name: 'thermus-tenant-org-01a' }] });
 
   assert.equal(sent.length, 1);
   assert.equal(sent[0]?.method, 'GET');
-  assert.equal(sent[0]?.url, `https://api.render.com/v1/services?ownerId=${ownerId}&name=thermus-tenant-org_01a&type=private_service&limit=100`);
+  assert.equal(sent[0]?.url, `https://api.render.com/v1/services?ownerId=${ownerId}&name=thermus-tenant-org-01a&type=private_service&limit=100`);
   assert.equal(sent[0]?.headers.get('Authorization'), `Bearer ${apiKey}`);
   assert.equal(sent[0]?.headers.get('Accept'), 'application/json');
   assert.equal(sent[0]?.body, undefined);
@@ -168,7 +168,7 @@ test('Given no deploy, a deploy without a valid digest, a gone service, or a bad
 });
 
 test('Given a live private service, when its internal address is read, then it is http:// with the host of serviceDetails.url and the port of serviceDetails.openPorts', async () => {
-  const { platform, sent } = platformWith([json(200, { ...serviceJson('srv-a', 'thermus-tenant-org-01a-x7k2'), name: 'thermus-tenant-org_01a' })]);
+  const { platform, sent } = platformWith([json(200, { ...serviceJson('srv-a', 'thermus-tenant-org-01a-x7k2'), name: 'thermus-tenant-org-01a' })]);
 
   assert.deepEqual(await platform.internalAddress('srv-a', signal), { status: 'found', internalUrl: 'http://thermus-tenant-org-01a-x7k2:8080' });
 

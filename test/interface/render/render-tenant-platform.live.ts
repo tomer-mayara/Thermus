@@ -2,14 +2,15 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import type { TestContext } from 'node:test';
 import { PRODUCTION_SERVICE_ID, RenderTenantPlatform } from '../../../src/tenancy/providers/render/render-tenant-platform.ts';
+import { serviceNameOf } from '../../../src/tenancy/tenants/tenant-environment.ts';
 import type { PlatformDeploy } from '../../../src/tenancy/tenants/tenant-platform.ts';
 import { RenderReadDriver } from '../../support/drivers/render/render-read-driver.ts';
 import { workOSSettings } from '../../support/fixtures/hosted-placeholder.ts';
 
 // The live interface test of the Render adapter of the tenant platform (SO-06). In the workspace Thermus AI, with the
 // registry credential ghcr-thermus-hosted-read and a hosted image by digest, it creates one disposable private
-// service named thermus-spike-tenant-org_01live<UTC time>, watches its newest deploy until it is live, reads its
-// internal address, and deletes it, also after a failure. Before any call it refuses the workspace My Workspace and
+// service with the name rule of the provisioner, thermus-spike-tenant-org-01live<UTC time>, watches its newest deploy
+// until it is live, reads its internal address, and deletes it, also after a failure. Before any call it refuses the workspace My Workspace and
 // the production service, and a preflight with reads only finds no other thermus-spike-* service.
 // The published image has no tenant role yet (SO-03), so the service gets the placeholder environment of SO-01c
 // (record, "Placeholder environment"), with which the image starts as a control plane. Run it with the key of the
@@ -107,9 +108,9 @@ async function cleanup(test: { readonly platform: RenderTenantPlatform; readonly
   throw new Error(`${test.name} is still in the service list. Delete it in the Render Dashboard.`);
 }
 
-test('Given the Thermus AI workspace, the registry credential ghcr-thermus-hosted-read, and a hosted image digest, when the live interface test creates one disposable tenant, then its deploy reaches live, its internal address has the form http://<slug>:8080, and its delete leaves no service of the test', { timeout: 30 * 60_000 }, async (t) => {
+test('Given the Thermus AI workspace, the registry credential ghcr-thermus-hosted-read, and a hosted image digest, when the live interface test creates one disposable tenant with the name rule of the provisioner, then its deploy reaches live, its internal address is http://<the whole name>:8080, and its delete leaves no service of the test', { timeout: 30 * 60_000 }, async (t) => {
   const key = setupKey();
-  const name = `${NAME_PREFIX}tenant-org_01live${new Date().toISOString().replace(/[-:T]/g, '').slice(0, 14)}`;
+  const name = serviceNameOf(`${NAME_PREFIX}tenant-`, `org_01live${new Date().toISOString().replace(/[-:T]/g, '').slice(0, 14)}`);
   const driver = new RenderReadDriver(key, settings.ownerId);
   await preflight(t, driver);
   // The adapter may write only to the services of this test, and never to the production service.
@@ -133,6 +134,7 @@ test('Given the Thermus AI workspace, the registry credential ghcr-thermus-hoste
   const address = await internalAddress(platform, serviceId, signal);
   t.diagnostic(`Internal address: ${address}.`);
   assert.match(address, /^http:\/\/[a-z0-9](?:[a-z0-9-]*[a-z0-9])?:8080$/);
+  assert.equal(address, `http://${name}:8080`, 'Render keeps the whole name, which has no underscore, as the slug');
 
   const deleteStarted = performance.now();
   assert.deepEqual(await platform.deleteService(serviceId, signal), { status: 'deleted' });

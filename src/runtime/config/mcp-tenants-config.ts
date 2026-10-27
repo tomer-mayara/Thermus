@@ -15,7 +15,8 @@ export interface TenantProvisioningSettings {
     readonly tenantImage: string;
   };
   readonly freePlan: string;
-  // The name of a tenant service is this prefix and the organization ID in lower case.
+  // The name of a tenant service is this prefix and the organization ID in lower case, with each character outside
+  // a-z, 0-9, and hyphen as a hyphen.
   readonly namePrefix: string;
   // The public values that each new tenant gets, with the rules of the tenant role: the gateway public keys and the
   // private address of the control plane.

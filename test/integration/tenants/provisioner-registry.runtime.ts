@@ -27,8 +27,10 @@ const settings = loadTenantProvisioningSettings(controlPlaneEnvironment);
 const organizationA = 'org_01JRUNTIMEAAAAAAAAAAAAAAA';
 const organizationB = 'org_01JRUNTIMEBBBBBBBBBBBBBBB';
 
+// The name rule of 27 October 2026 (SO-06): the organization ID in lower case, each character outside a-z, 0-9, and
+// hyphen as a hyphen.
 function nameOf(organizationId: string): string {
-  return `thermus-tenant-${organizationId.toLowerCase()}`;
+  return `thermus-tenant-${organizationId.toLowerCase().replace(/[^a-z0-9-]/g, '-')}`;
 }
 
 function renderFake(): RenderFake {
@@ -89,7 +91,7 @@ test('Given two requested rows, when the provisioner runs on the real registry, 
   const row = await rowOf(site, organizationA);
   assert.deepEqual(
     [row.render_service_id, row.service_name, row.internal_url, row.image_digest, row.plan, row.applied_plan, row.failure_reason],
-    [service.id, nameOf(organizationA), `http://${service.slug}:8080`, tenantImageDigest, '0.5c-512mb', '0.5c-512mb', null],
+    [service.id, 'thermus-tenant-org-01jruntimeaaaaaaaaaaaaaaa', 'http://thermus-tenant-org-01jruntimeaaaaaaaaaaaaaaa:8080', tenantImageDigest, '0.5c-512mb', '0.5c-512mb', null],
   );
 });
 

@@ -13,7 +13,7 @@ const recordService = /^UPDATE thermus_admin\.tenants SET state = 'deploying', r
 const recordLive = /^UPDATE thermus_admin\.tenants SET state = 'live', internal_url = \$2, image_digest = COALESCE\(\$3::text, image_digest\), applied_plan = plan,\s+failure_reason = NULL, updated_at = now\(\) WHERE organization_id = \$1 AND state = 'deploying' RETURNING organization_id$/;
 const recordFailed = /^UPDATE thermus_admin\.tenants SET state = 'failed', failure_reason = \$2, updated_at = now\(\)\s+WHERE organization_id = \$1 AND state IN \('creating', 'deploying'\) RETURNING organization_id$/;
 const ownsService = 'SELECT 1 AS owned FROM thermus_admin.tenants WHERE render_service_id = $1';
-const claim = { serviceNameOf: (organizationId: string) => `thermus-tenant-${organizationId.toLowerCase()}`, plan: '0.5c-512mb' };
+const claim = { serviceNameOf: (organizationId: string) => `thermus-tenant-${organizationId.toLowerCase().replace(/[^a-z0-9-]/g, '-')}`, plan: '0.5c-512mb' };
 
 function provisioningStore(t: TestContext, answer: (text: string) => Rows | Error) {
   const queries: { readonly text: string; readonly values?: unknown[] }[] = [];
@@ -51,10 +51,10 @@ test('Given no row to work on, when the next row is claimed, then one transactio
 test('Given the oldest requested row, when it is claimed, then it moves to creating with its service name and the free plan in the same transaction', async (t) => {
   const { store, queries, texts } = provisioningStore(t, nextRowIs({ organization_id: 'org_01A', state: 'requested', service_name: 'a stale name', render_service_id: null }));
   assert.deepEqual(await store.claimNext(claim), {
-    status: 'claimed', resumed: false, row: { organizationId: 'org_01A', state: 'creating', serviceName: 'thermus-tenant-org_01a', serviceId: null },
+    status: 'claimed', resumed: false, row: { organizationId: 'org_01A', state: 'creating', serviceName: 'thermus-tenant-org-01a', serviceId: null },
   });
   assert.match(texts()[2] ?? '', claimRequested);
-  assert.deepEqual(queries[2]?.values, ['org_01A', 'thermus-tenant-org_01a', '0.5c-512mb']);
+  assert.deepEqual(queries[2]?.values, ['org_01A', 'thermus-tenant-org-01a', '0.5c-512mb']);
   assert.equal(texts()[3], 'COMMIT');
 });
 
@@ -66,10 +66,10 @@ test('Given a creating or deploying row of an earlier run, when the next row is 
   assert.deepEqual(deploying.texts().filter((text) => text.startsWith('UPDATE')), []);
   const unnamed = provisioningStore(t, nextRowIs({ organization_id: 'org_01C', state: 'creating', service_name: null, render_service_id: null }));
   assert.deepEqual(await unnamed.store.claimNext(claim), {
-    status: 'claimed', resumed: true, row: { organizationId: 'org_01C', state: 'creating', serviceName: 'thermus-tenant-org_01c', serviceId: null },
+    status: 'claimed', resumed: true, row: { organizationId: 'org_01C', state: 'creating', serviceName: 'thermus-tenant-org-01c', serviceId: null },
   });
   assert.match(unnamed.texts()[2] ?? '', nameResumed);
-  assert.deepEqual(unnamed.queries[2]?.values, ['org_01C', 'thermus-tenant-org_01c']);
+  assert.deepEqual(unnamed.queries[2]?.values, ['org_01C', 'thermus-tenant-org-01c']);
 });
 
 test('Given a failure in the claim, when the next row is claimed, then the result is unavailable and the client is destroyed', async (t) => {
