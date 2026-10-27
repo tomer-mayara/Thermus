@@ -53,6 +53,11 @@ export function seatsIn(body: string): number | undefined {
   return match === null ? undefined : Number(match[1]);
 }
 
+// The seat line of a free workspace on Members, such as "4 of 5 seats used", or undefined without one.
+export function seatUsageIn(body: string): string | undefined {
+  return /\b\d+ of \d+ seats used\b/.exec(body)?.[0];
+}
+
 export function rolesOf(site: Pick<OrganizationSite, 'directory'>, subject: string, organizationId: string): readonly string[] {
   return site.directory.membershipIn(subject, organizationId)?.grants.map(({ role }) => role) ?? [];
 }
