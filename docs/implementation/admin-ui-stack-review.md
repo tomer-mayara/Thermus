@@ -12,7 +12,7 @@ remain the approved behavior. This record changes no product requirement.
 
 The owner requested the fixes, rebase, updated PRs and merge after this review.
 The source candidates now form UI-01 → UI-02 → UI-03 → UI-04 on main
-`9a3ac1f9763b9d8927ec2d1d5cd4527982d33619`. The original review below remains
+`2b3ad13b9e2e61e206479b82e91359192cae1d00`. The original review below remains
 history, with its original pins and evidence limits. Current status is in the
 linked plan table and maintained PR comments.
 

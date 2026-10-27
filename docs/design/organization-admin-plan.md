@@ -1231,7 +1231,7 @@ Each ticket must leave a working page; later tickets are not its exit conditions
 #### Reviewed UI state
 
 Restacked on 26 October 2026 against main
-`9a3ac1f9763b9d8927ec2d1d5cd4527982d33619`. All four PRs are Draft while fresh
+`2b3ad13b9e2e61e206479b82e91359192cae1d00`. All four PRs are Draft while fresh
 complete-candidate validation and review evidence are prepared. The current
 source candidates form one chain; the maintained PR descriptions and comments
 pin the final heads and evidence after document and metric-record updates.
@@ -1239,10 +1239,10 @@ This state claims no merge or deployment.
 
 | Ticket / PR | Source candidate at restack | Actual parent | State and remaining holds |
 | --- | --- | --- | --- |
-| UI-01 / [#263](https://github.com/tomer-mayara/Thermus/pull/263) | `7acd90d44e90769e335c4b2f095d3791d82dc3d4` | main above | Fresh complete-candidate checks and review are in progress. |
-| UI-02 / [#264](https://github.com/tomer-mayara/Thermus/pull/264) | `2ec671ebb30741055f380f7f7a3866ecca549c21` | UI-01 | Density correction passes; full checks and review remain. Staging is blocked as described below. |
-| UI-03 / [#266](https://github.com/tomer-mayara/Thermus/pull/266) | `2189f24e74fe9aa5c381b7bb81eae7c0f2026e11` | UI-02 | Counted-heading migration and combined 51-case browser group pass; full checks and review remain. |
-| UI-04 / [#268](https://github.com/tomer-mayara/Thermus/pull/268) | `72523c1a` (source commit, before this review record) | UI-03 | All four increments are present; 130 focused cases and 71 browser cases pass. Full checks and review remain. |
+| UI-01 / [#263](https://github.com/tomer-mayara/Thermus/pull/263) | `639827bcf410d325d25bbf77582c4d0c32ff3c29` | main above | Fresh complete-candidate checks and review are in progress. |
+| UI-02 / [#264](https://github.com/tomer-mayara/Thermus/pull/264) | `317075ca0bec0034854a2c09c6a642a06d54e3dc` | UI-01 | Density correction passes; full checks and review remain. Staging is blocked as described below. |
+| UI-03 / [#266](https://github.com/tomer-mayara/Thermus/pull/266) | `05dda697b7c9ec99707bbfbeb5acd320923e0959` | UI-02 | Counted-heading migration and combined 51-case browser group pass; full checks and review remain. |
+| UI-04 / [#268](https://github.com/tomer-mayara/Thermus/pull/268) | `4dc9b10590748883f89addbc921af2746c742a5d` (source commit, before this review record) | UI-03 | All four increments are present; 130 focused cases and 71 browser cases pass. Full checks and review remain. |
 
 The fresh UI-02 staging run passed 22 of 29 cases. Six failures share a WorkOS
 sandbox invitation-email quota error during fixture setup. The scoped removal
