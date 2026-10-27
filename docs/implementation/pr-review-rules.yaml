@@ -113,7 +113,8 @@ protected_paths:
     # change. Public contracts are under public_surface; a changed declaration
     # is an architecture fact. On 2026-10-24 the list shrank from 28 entries
     # over 101 source files to 13 entries over 33 source files; the
-    # sensitiveBehavior flag covers the rest.
+    # sensitiveBehavior flag covers the rest. On 2026-10-27 SO-03 added the five
+    # files that admit a tenant request: 18 entries over 44 source files.
     paths:
       - src/pipelines/providers/website-fetcher/network-policy.ts # which destinations may be fetched
       - src/pipelines/html-processing/prompt-injection-remover/** # untrusted text that reaches the model
@@ -123,6 +124,11 @@ protected_paths:
       - src/interfaces/mcp/identity-verifier-sdk-adapter.ts # token verification
       - src/interfaces/mcp/protected-resource-endpoint.ts
       - src/accounts/identity/identity-verifier.ts
+      - src/accounts/identity/access-context-verifier.ts # the signed context that admits a tenant request
+      - src/accounts/identity/access-context-signature.ts # its keys, algorithm, type, organization, and age
+      - src/accounts/identity/access-context-claims.ts # its claims and the hash of the bearer token
+      - src/accounts/identity/context-access-resolver.ts # the access of a tenant request: the signed grants
+      - src/app/tenant-requests.ts # the 403 of a tenant before MCP handling
       - src/accounts/providers/workos/session-cookies.ts # cookie sealing
       - src/accounts/providers/workos/workos-signup.ts # one-time grant authority
       - src/runtime/http/client-address.ts # trusted proxy address

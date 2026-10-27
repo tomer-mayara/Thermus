@@ -164,9 +164,10 @@ owner accepts the regenerated files one time. This is rare and visible.
 ## The security list (D1)
 
 The list keeps as T1 the files whose behavior is a guarantee even when their
-declarations do not change. It has 13 entries, 11 files and 2 folders, that
-cover 33 source files. The earlier list had 28 entries that covered 101 source
-files.
+declarations do not change. It has 18 entries, 16 files and 2 folders, that
+cover 44 source files. On 2026-10-24 it had 13 entries that covered 33 source
+files; on 2026-10-27, SO-03 added the five files that admit a tenant request.
+The earlier list had 28 entries that covered 101 source files.
 
 | Path | Guarantee |
 | --- | --- |
@@ -178,6 +179,11 @@ files.
 | `src/interfaces/mcp/identity-verifier-sdk-adapter.ts` | Token verification |
 | `src/interfaces/mcp/protected-resource-endpoint.ts` | Token verification |
 | `src/accounts/identity/identity-verifier.ts` | Token verification |
+| `src/accounts/identity/access-context-verifier.ts` | Admission of a tenant request: the signed access context |
+| `src/accounts/identity/access-context-signature.ts` | Admission of a tenant request: the keys, algorithm, type, organization, and age of the context |
+| `src/accounts/identity/access-context-claims.ts` | Admission of a tenant request: the claims of the context and the hash of the bearer token |
+| `src/accounts/identity/context-access-resolver.ts` | Access of a tenant request: only the signed grants |
+| `src/app/tenant-requests.ts` | The `403` of a tenant before MCP handling |
 | `src/accounts/providers/workos/session-cookies.ts` | Cookie sealing |
 | `src/accounts/providers/workos/workos-signup.ts` | One-time grant authority |
 | `src/runtime/http/client-address.ts` | Trusted proxy address |
