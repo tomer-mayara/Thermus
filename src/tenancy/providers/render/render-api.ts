@@ -53,17 +53,20 @@ export class RenderApi {
         method: call.method,
         headers,
         body: call.body === undefined ? undefined : JSON.stringify(call.body),
+        // No redirect: a redirect could carry the key to another host. The timeout keeps a lost answer from the loop.
         redirect: 'error',
         signal: AbortSignal.any([signal, AbortSignal.timeout(REQUEST_TIMEOUT_MS)]),
       });
       return { answer: { status: response.status, json: jsonOf(await response.text()), limits: limitsOf(response.headers) } };
     } catch (error) {
+      // A stop of the caller is not a failure of Render: it rejects, and the loop ends.
       signal.throwIfAborted();
       return { failure: `no answer: ${error instanceof Error ? error.message : String(error)}` };
     }
   }
 }
 
+// An empty or invalid body is undefined: each reader checks the shape that it needs.
 function jsonOf(text: string): unknown {
   try {
     return text === '' ? undefined : JSON.parse(text);
@@ -72,6 +75,7 @@ function jsonOf(text: string): unknown {
   }
 }
 
+// A header that is not a whole number of seconds counts as absent, so the wait takes its default.
 function limitsOf(headers: Headers): RenderLimits {
   const seconds = (name: string): number | undefined => {
     const value = headers.get(name)?.trim();
