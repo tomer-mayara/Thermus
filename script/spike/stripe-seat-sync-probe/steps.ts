@@ -1,0 +1,63 @@
+import { action, type Plan } from './calls.ts';
+import { redacted, type ProbeContext, type ProbeStep } from './context.ts';
+import type { WorkStepId } from './inputs.ts';
+
+type WorkStep = ProbeStep & { readonly id: WorkStepId };
+
+// Each step asserts one Given-When-Then specification of the ticket. A step that is not built yet fails, so the probe
+// fails until each part exists.
+function notBuilt(name: string): (context: ProbeContext) => Promise<string> {
+  return redacted(() => Promise.reject(new Error(`${name} is not built yet.`)));
+}
+
+function notBuiltPlan(name: string): Plan {
+  return () => [action('(no call yet)', `${name} is not built yet.`)];
+}
+
+export const preflightStep: ProbeStep = {
+  name: 'Preflight',
+  spec: 'Given the inputs, when the probe reads the price, its meter, the settings that the steps need, and the objects of earlier runs, then the price is a metered monthly USD price on the meter workos_seat_count with the last aggregation, and no object of an earlier run exists.',
+  run: notBuilt('Preflight'),
+  plan: notBuiltPlan('Preflight'),
+};
+
+export const workSteps: readonly WorkStep[] = [
+  {
+    id: 'seat-sync', name: 'Seat sync',
+    spec: 'Given a new Stripe customer and a disposable WorkOS organization with that stripe_customer_id, when the probe adds one membership, then a second, and then removes one, then the meter shows the counts 1, 2, and 1, and the record has the delay of each event.',
+    run: notBuilt('Seat sync'), plan: notBuiltPlan('Seat sync'),
+  },
+  {
+    id: 'checkout', name: 'Checkout',
+    spec: 'Given the price, when the probe creates a Checkout Session in subscription mode with required terms acceptance and Stripe Tax, and the operator completes it with a Stripe test card, then the session shows the accepted terms and an active subscription without a quantity.',
+    run: notBuilt('Checkout'), plan: notBuiltPlan('Checkout'),
+  },
+  {
+    id: 'webhook', name: 'Webhook',
+    spec: "Given the Stripe CLI forwarding to the probe's local listener, when the CLI triggers a subscription event, then the listener accepts the signed event and refuses a changed payload.",
+    run: notBuilt('Webhook'), plan: notBuiltPlan('Webhook'),
+  },
+  {
+    id: 'test-clock', name: 'Test clock',
+    spec: 'Given a test clock customer with the metered price and three reported seats, when the clock passes the period end, then the invoice is three times the price; when the payment method fails and the clock passes the retries, then the subscription is past_due and then canceled.',
+    run: notBuilt('Test clock'), plan: notBuiltPlan('Test clock'),
+  },
+];
+
+export const workosOnlyStep: WorkStep = {
+  id: 'seat-sync', name: 'Seat sync (WorkOS only)',
+  spec: 'Given no Stripe key, when the probe creates a disposable WorkOS organization, sets a stripe_customer_id of a fake format, adds one membership, then a second, and then removes one, then the record says whether WorkOS accepts the field without the Stripe add-on, and WorkOS shows 1, 2, and 1 active memberships.',
+  run: notBuilt('Seat sync (WorkOS only)'), plan: notBuiltPlan('Seat sync (WorkOS only)'),
+};
+
+export const cleanupStep: ProbeStep = {
+  name: 'Cleanup',
+  spec: 'Given the end of the probe, when it cleans up, then the subscriptions, the customers, the test clock, and the WorkOS organization and users of this run are deleted, also after a failure or the first stop signal.',
+  run: notBuilt('Cleanup'), plan: notBuiltPlan('Cleanup'),
+};
+
+export const sweepStep: ProbeStep = {
+  name: 'Sweep',
+  spec: 'Given objects of earlier runs, when the probe runs with --steps cleanup, then it deletes each WorkOS organization and user with the probe prefix and each Stripe customer and test clock with the probe tag, and none remains.',
+  run: notBuilt('Sweep'), plan: notBuiltPlan('Sweep'),
+};
