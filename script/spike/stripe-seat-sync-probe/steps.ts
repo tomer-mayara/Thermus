@@ -1,23 +1,15 @@
-import { action, type Plan } from './calls.ts';
 import { checkout, checkoutPlan } from './checkout.ts';
 import { cleanup, cleanupPlan, sweep, sweepPlan } from './cleanup.ts';
-import { redacted, type ProbeContext, type ProbeStep } from './context.ts';
+import { redacted, type ProbeStep } from './context.ts';
 import type { WorkStepId } from './inputs.ts';
 import { preflight, preflightPlan } from './preflight.ts';
 import { seatSync, seatSyncPlan, seatSyncWorkOSOnly, workosOnlyPlan } from './seat-sync.ts';
+import { testClock, testClockPlan } from './test-clock.ts';
 import { webhook, webhookPlan } from './webhook.ts';
 
 type WorkStep = ProbeStep & { readonly id: WorkStepId };
 
-// Each step asserts one Given-When-Then specification of the ticket. A step that is not built yet fails, so the probe
-// fails until each part exists.
-function notBuilt(name: string): (context: ProbeContext) => Promise<string> {
-  return redacted(() => Promise.reject(new Error(`${name} is not built yet.`)));
-}
-
-function notBuiltPlan(name: string): Plan {
-  return () => [action('(no call yet)', `${name} is not built yet.`)];
-}
+// Each step asserts one Given-When-Then specification of the ticket, through the public APIs of Stripe and WorkOS.
 
 export const preflightStep: ProbeStep = {
   name: 'Preflight',
@@ -45,7 +37,7 @@ export const workSteps: readonly WorkStep[] = [
   {
     id: 'test-clock', name: 'Test clock',
     spec: 'Given a test clock customer with the metered price and three reported seats, when the clock passes the period end, then the invoice is three times the price; when the payment method fails and the clock passes the retries, then the subscription is past_due and then canceled.',
-    run: notBuilt('Test clock'), plan: notBuiltPlan('Test clock'),
+    run: redacted(testClock), plan: testClockPlan,
   },
 ];
 

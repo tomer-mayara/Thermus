@@ -91,9 +91,14 @@ export function cancelSubscriptionCall(id: string): StripeCall<Stripe.Subscripti
   return { method: 'DELETE', path: `/v1/subscriptions/${id}`, sdk: 'stripe.subscriptions.cancel', send: (stripe) => stripe.subscriptions.cancel(id) };
 }
 
+// A list of invoices omits the invoices of a test clock unless it names the subscription (test clock guide).
 export function invoicesCall(subscription: string): StripeCall<Stripe.ApiList<Stripe.Invoice>> {
   const params = { subscription, limit: 10 };
   return { method: 'GET', path: `/v1/invoices?${query(params)}`, sdk: 'stripe.invoices.list', params, send: (stripe) => stripe.invoices.list(params) };
+}
+
+export function invoiceCall(id: string): StripeCall<Stripe.Invoice> {
+  return { method: 'GET', path: `/v1/invoices/${id}`, sdk: 'stripe.invoices.retrieve', send: (stripe) => stripe.invoices.retrieve(id) };
 }
 
 export function createClockCall(params: Stripe.TestHelpers.TestClockCreateParams): StripeCall<Stripe.TestHelpers.TestClock> {
