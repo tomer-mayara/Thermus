@@ -225,6 +225,11 @@ token. The owner does these steps:
 To replace the token before it expires, make a new token with the same scope,
 update the credential in Render, and then delete the old token on GitHub.
 
+27 October 2026: the owner chose the Thermus AI workspace instead of My
+Workspace. The manager created the credential `ghcr-thermus-hosted-read` there
+through the API, with the ID `rgc-dbg1h0142hec73da9ra0` (see
+[SO-01c](#so-01c-render-private-service-lifecycle)).
+
 ## SO-01d: gateway proxy and private network
 
 Date: 26 October 2026. Part one is a local probe, in pull request
@@ -424,3 +429,474 @@ workspace and region. The operator opens a Render shell on the web service and
 requests `/healthz` at the internal address of the private service. The answer
 must be `200` with `ok`. From the public internet, the internal address must
 not resolve. The transcript of that check goes here.
+
+## SO-01c: Render private service lifecycle
+
+Date: 27 October 2026 (UTC). Branch `self-ob-s1-so-01c-render-lifecycle-570d06`,
+from main `2b3ad13b`. The final run used the script of commit `22cff848`. A
+later commit changed only the dry-run note of the address step.
+
+Owner decision of 27 October 2026: probes run in the Thermus AI workspace in a
+service named `thermus-spike-<time>`, never on the production service.
+
+Status: the probe is complete. The final complete run passed each step with 9
+writes, and its cleanup deleted its service. Before it, the development runs
+used 9 writes on one other service, and the last of them deleted that service.
+After the runs, no service named `thermus-spike-*` existed.
+
+### What the probe does
+
+[`render-tenant-lifecycle.ts`](../../script/spike/render-tenant-lifecycle.ts)
+runs a preflight that only reads, and then the six steps of the ticket in
+order. Each step is an assertion of the script. The helper modules are in
+[`render-tenant-lifecycle/`](../../script/spike/render-tenant-lifecycle/).
+[`calls.ts`](../../script/spike/render-tenant-lifecycle/calls.ts) builds each
+call and its body. The dry run prints these calls, and real mode sends them,
+so the printed bodies are the sent bodies. These calls become the Render
+adapter of SO-06.
+
+Run it from the repository root. The key comes from the git-ignored
+`.env.local` of the main checkout, and the script reads only
+`RENDER_API_KEY` from the environment:
+
+```sh
+node --env-file=/Users/tomermayara/git/Thermus/.env.local script/spike/render-tenant-lifecycle.ts \
+  --owner tea-db8i6ceq1p3s73dev9og --registry-credential ghcr-thermus-hosted-read \
+  --image ghcr.io/tomer-mayara/thermus-hosted@sha256:ca1ab23d3bd8ea2397076a370939173eb2548e275f322c7749d460a28ec71d26 \
+  --second-image ghcr.io/tomer-mayara/thermus-hosted@sha256:d6b8a8fd3174c02984267f6aef54a7ee4e4bc783776ae9b856685202972dbfbd
+```
+
+Options:
+
+- `--owner`: the workspace Thermus AI, `tea-db8i6ceq1p3s73dev9og`. The probe
+  refuses My Workspace, `tea-d3mlbrvdiees73ca4rdg`, before any call.
+- `--registry-credential`: the ID or the name of the credential. The
+  preflight finds it in the credential list of the workspace.
+- `--image` and `--second-image`: two digests of one repository. A deploy with
+  `imageUrl` must keep the host, the repository, and the image name.
+- `--region`: the default is `oregon`, the region of the production service.
+- `--dry-run`: print the calls that the same options send. This mode makes no
+  network call and needs no key.
+- `--preflight`: make only the reads of the preflight. The client refuses
+  each write before it sends it.
+- `--service-id`, `--steps`, and `--keep`: use a live `thermus-spike-*`
+  service instead of a create, run only some steps, and keep the service when
+  each step passed. After a failed step, the cleanup deletes the service, also
+  with `--keep`. These options save writes while a developer works on one
+  step.
+
+Rules of the script:
+
+- Each call to a path `/services/{id}` must name the service of this run: the
+  ID from the create answer, the `--service-id` that the preflight found in
+  the service list of the workspace, or a service with the exact name of this
+  run. The client refuses each other service before it sends the call, and it
+  always refuses `srv-db8mnqg473hc739d529g`, the production service. The
+  service lists always filter by the owner and by `type=private_service`.
+- The key stays in a private field of the client. No output holds the key or
+  a request header. The report holds no variable value and no event detail,
+  because an event detail can name a user. A Render API key reaches every
+  workspace of its user; the key of these runs sees two workspaces.
+- A read or the delete has up to 3 attempts after a `429`, a `5xx` answer, or
+  a network failure. Each other write goes one time only, because a repeated
+  create or deploy can double its effect.
+- Each wait reads every 5 s, with a fixed number of reads: 180 for a deploy
+  (about 15 minutes), 36 to find a deploy that an answer did not name, 6
+  after a plan update, 60 for a suspend or resume state, and 24 for the
+  cleanup.
+- The cleanup runs after each run, also after a failed step and after the
+  first `SIGINT` or `SIGTERM`. Then it reads the service list until no
+  service named `thermus-spike-*` exists. A second signal stops the probe at
+  once and can leave the service.
+- Exit code 0: each step and the cleanup passed. Exit code 1: a step or the
+  cleanup failed. Exit code 2: a usage error.
+
+The registry credential is `rgc-dbg1h0142hec73da9ra0`, name
+`ghcr-thermus-hosted-read`, registry `GITHUB`, user `tomer-mayara`, in Thermus
+AI. The manager made it on 27 October 2026 at about 03:10 UTC with
+`POST /v1/registrycredentials`. Its token has only the `read:packages` scope.
+Credential IDs start with `rgc-`.
+
+### Steps
+
+| Step | Given, when, then |
+| --- | --- |
+| Preflight (extra) | Given the inputs, when the probe reads the workspace, its registry credentials, and its private services, then one credential has the given ID or name and registry `GITHUB`, and no service named `thermus-spike-*` exists (with `--service-id`: only that one). |
+| Create | Given the inputs, when the probe creates an image-backed private service named `thermus-spike-<UTC start time>` on `0.5c-512mb` with every variable in the create call, then the answer is `201` with the service and its first deploy ID, the first deploy reaches `live`, and the service has the six variable keys. The record gives the time to `live`. |
+| Internal address | Given the live service, when the probe reads it, then a field of the answer holds `<slug>:<port>`, and `serviceDetails.openPorts` holds 8080. The record names the field. |
+| Image 2 | Given the second digest, when the probe deploys it with `imageUrl`, then the deploy reaches `live`, and the only live deploy of the service reports image 2. The record also gives the image setting `imagePath` of the service. |
+| Plan change | Given the live service, when the probe updates the plan to `1c-2g` and then back to `0.5c-512mb`, then each update answer shows the new plan, the deploy that applies it reaches `live`, and the service shows the new plan. The record says whether a new instance replaced the old one. |
+| Suspend and resume | Given the live service, when the probe suspends it, then `suspended` becomes `suspended`. When it resumes it, then `suspended` becomes `not_suspended`, and a new deploy reaches `live`. The record gives both times and the image of that deploy. |
+| Cleanup | Given any step, when the probe fails or ends, then it deletes the service, and the service list holds no service named `thermus-spike-*`. |
+
+### Planned calls
+
+All calls go to `https://api.render.com/v1` with the header
+`Authorization: Bearer <key>`
+([Authentication](https://api-docs.render.com/reference/authentication)). The
+pages were read on 27 October 2026 (UTC). The OpenAPI document is
+[render-public-api-1.json](https://api-docs.render.com/openapi/render-public-api-1.json),
+SHA-256 `627b43845a33f79f1d0e3dbf46807b5d34072c746b1123b1e19972674ee9c5ba` on
+that day. Each reference page shows the operation from that document.
+
+| Step | Method | Path | Documentation page |
+| --- | --- | --- | --- |
+| Preflight | `GET` | `/owners/{ownerId}` | [Retrieve workspace](https://api-docs.render.com/reference/retrieve-owner) |
+| Preflight | `GET` | `/registrycredentials?ownerId=…&limit=100` | [List registry credentials](https://api-docs.render.com/reference/list-registry-credentials) |
+| Preflight, Cleanup | `GET` | `/services?ownerId=…&type=private_service&limit=100`, then with `cursor` | [List services](https://api-docs.render.com/reference/list-services), [Pagination](https://api-docs.render.com/reference/pagination) |
+| Create | `POST` | `/services` | [Create service](https://api-docs.render.com/reference/create-service) |
+| Create, Image 2, Plan change, Resume | `GET` | `/services/{serviceId}/deploys/{deployId}` | [Retrieve deploy](https://api-docs.render.com/reference/retrieve-deploy) |
+| Create | `GET` | `/services/{serviceId}/env-vars?limit=100` | [List environment variables](https://api-docs.render.com/reference/get-env-vars-for-service) |
+| Internal address, Image 2, Plan change, Suspend and resume | `GET` | `/services/{serviceId}` | [Retrieve service](https://api-docs.render.com/reference/retrieve-service), [Private Network](https://render.com/docs/private-network) |
+| Image 2, Plan change, Resume | `GET` | `/services/{serviceId}/deploys?limit=20` | [List deploys](https://api-docs.render.com/reference/list-deploys) |
+| Image 2, Plan change | `POST` | `/services/{serviceId}/deploys` with `imageUrl` | [Trigger deploy](https://api-docs.render.com/reference/create-deploy), [Deploy a Prebuilt Docker Image](https://render.com/docs/deploying-an-image) |
+| Plan change | `PATCH` | `/services/{serviceId}` with `serviceDetails.plan` | [Update service](https://api-docs.render.com/reference/update-service), [Render Compute Plans](https://render.com/docs/compute-plans) |
+| Plan change, Suspend | `GET` | `/services/{serviceId}/instances` | [List instances](https://api-docs.render.com/reference/list-instances) |
+| Plan change, Resume | `GET` | `/services/{serviceId}/events?limit=100` | [List events](https://api-docs.render.com/reference/list-events) |
+| Suspend | `POST` | `/services/{serviceId}/suspend` | [Suspend service](https://api-docs.render.com/reference/suspend-service-1) |
+| Resume | `POST` | `/services/{serviceId}/resume` | [Resume service](https://api-docs.render.com/reference/resume-service-1) |
+| Cleanup, only without a service ID | `GET` | `/services?ownerId=…&name=…&limit=100` | [List services](https://api-docs.render.com/reference/list-services) |
+| Cleanup | `DELETE` | `/services/{serviceId}` | [Delete service](https://api-docs.render.com/reference/delete-service) |
+
+The create body, as the dry run prints it:
+
+```json
+{
+  "type": "private_service",
+  "name": "thermus-spike-YYYYMMDD-HHMMSS",
+  "ownerId": "tea-db8i6ceq1p3s73dev9og",
+  "image": {
+    "ownerId": "tea-db8i6ceq1p3s73dev9og",
+    "imagePath": "ghcr.io/tomer-mayara/thermus-hosted@sha256:ca1ab23d3bd8ea2397076a370939173eb2548e275f322c7749d460a28ec71d26",
+    "registryCredentialId": "{registryCredentialId}"
+  },
+  "envVars": [
+    { "key": "PUBLIC_BASE_URL", "value": "https://thermus.example/" },
+    { "key": "WORKOS_API_KEY", "value": "sk_test_placeholder" },
+    { "key": "WORKOS_CLIENT_ID", "value": "client_placeholder" },
+    { "key": "WORKOS_AUTHKIT_ISSUER", "value": "https://thermus-test.authkit.app" },
+    { "key": "WORKOS_REDIRECT_URI", "value": "https://thermus.example/callback" },
+    { "key": "WORKOS_COOKIE_PASSWORD", "value": "cookie-password-placeholder-0032" }
+  ],
+  "serviceDetails": { "runtime": "image", "plan": "0.5c-512mb", "region": "oregon", "numInstances": 1 }
+}
+```
+
+The other bodies are `{ "imageUrl": "<image 2>" }` for each deploy and
+`{ "serviceDetails": { "plan": "<plan>" } }` for each plan update. The
+suspend, resume, and delete calls have no body.
+
+### Placeholder environment
+
+The create call holds every variable that the hosted image does not set
+itself. The values are placeholders, not secrets. They are the values of
+[`hosted-placeholder.ts`](../../test/support/fixtures/hosted-placeholder.ts),
+with which the hosted image gate of the
+[final evidence run](#final-evidence-run) started image 1.
+
+| Variable | Value | Why startup accepts it |
+| --- | --- | --- |
+| `PUBLIC_BASE_URL` | `https://thermus.example/` | https, the root base path, no query |
+| `WORKOS_API_KEY` | `sk_test_placeholder` | starts with `sk_` |
+| `WORKOS_CLIENT_ID` | `client_placeholder` | starts with `client_` |
+| `WORKOS_AUTHKIT_ISSUER` | `https://thermus-test.authkit.app` | an https origin with no path |
+| `WORKOS_REDIRECT_URI` | `https://thermus.example/callback` | inside `PUBLIC_BASE_URL` |
+| `WORKOS_COOKIE_PASSWORD` | `cookie-password-placeholder-0032` | 32 characters |
+
+`Dockerfile.hosted` sets `NODE_ENV`, `DEPLOYMENT=hosted`, `AD_RULES_FILE`,
+`LIGHTPANDA_BIN`, `LIGHTPANDA_DISABLE_TELEMETRY`, `LISTEN_HOST=0.0.0.0`, and
+`LISTEN_PORT=8080`. Startup makes no WorkOS call: the key set of AuthKit loads
+at the first check of a Connect token. Without `DATABASE_URL` and
+`LOGGING_DESTINATION_ENCRYPTION_KEY`, startup writes one `ERROR` line,
+"Logging storage is unavailable", and MCP stays available. The create call
+sets no `SELF_SERVE_SIGNUP_ENABLED` and no `OPERATION_CAPACITY`, so signup
+stays closed and the capacity is 10.
+
+Local check, 27 October 2026 (UTC), on the owner's Mac with Node 24.20.0 and the
+pinned Lightpanda 1.0.0 (its SHA-256 matches the `aarch64-macos` digest of
+[the runtime guide](../lightpanda-runtime.md)). The check started the server
+with the six variables above, the settings of `Dockerfile.hosted` (except
+`LISTEN_HOST=127.0.0.1` and `LISTEN_PORT=0`), the built portal, and the network
+blocker preload of the tests, which reports each outbound connection:
+
+| Start command | Listening after | `GET /healthz` | After `SIGTERM` | Outbound attempts | Key or cookie password in the log |
+| --- | --- | --- | --- | --- | --- |
+| `node dist/src/index.js`, the start command of the image, after `npm run build` | 0.7 s | `200`, `ok` | exit code 0 | 0 | no |
+| `node --import tsx src/index.ts`, from source | 1.8 s | `200`, `ok` | exit code 0 | 2, from `tsx` itself | no |
+
+Node cannot strip the types of the source (an `enum` in
+`src/logs/system/system-logger.ts`), so the run from source needs `tsx`. `tsx`
+alone also opens two local sockets when it loads, so the blocker counts two
+attempts in that run. The server log had four lines: the WorkOS line with
+`client_placeholder` and the issuer, the logging storage line,
+`Listening on`, and `Stopping after SIGTERM`. On Render, each deploy of this
+probe reached `live` with these variables.
+
+### Checks before the writes
+
+- `--dry-run` prints the calls of each step and exits with 0. With the network
+  blocker preload, it makes no outbound attempt.
+- A missing `--owner` stops the script with a usage message and exit code 2.
+  Real mode without `RENDER_API_KEY` stops in the same way, with no outbound
+  attempt. `--owner tea-d3mlbrvdiees73ca4rdg` and
+  `--service-id srv-db8mnqg473hc739d529g` also stop with exit code 2 before
+  any call.
+- Real mode ran against a stand-in for the Render API: a module, not in the
+  branch, that replaced `fetch` in the process. Its workspace also held a web
+  service with the production ID and a private service with another name.
+  These runs measure nothing about Render. They show that each assertion can
+  fail, that the cleanup runs, and that the probe sent no call to the two
+  other services in any case:
+
+| Change in the stand-in | Result |
+| --- | --- |
+| None | Exit code 0. Each step passed. 9 writes, and no probe service remained. |
+| The update answer shows the old plan. | `FAIL Plan change`. The cleanup deleted the service. Exit code 1. |
+| The first deploy ends as `update_failed`. | `FAIL Create`. The cleanup deleted the service, also with `--keep`. |
+| No field holds the internal address. | `FAIL Internal address`, with the slug, `url`, ports, and keys of `serviceDetails`. |
+| Each deploy answers `202` with no body. | Pass: the probe found each deploy in the deploy list. |
+| Render starts a deploy after the update. | Pass: the probe used that deploy and sent no deploy itself, 7 writes. |
+| The workspace has no matching credential. | `FAIL Preflight` with "no registry credential with the ID or name", and no write. |
+| `--service-id` names the private service with another name. | `FAIL Preflight`: "not a thermus-spike-* private service", and no write. |
+| A service of an earlier run exists. | `FAIL Preflight` and `FAIL Cleanup`, with no write. |
+| The create answers `429` with `Retry-After`. | `FAIL Create`; the write row shows `Retry-After`. The cleanup found no service. |
+| The create gets no answer, but the service exists. | `FAIL Create`. The cleanup found the service by its name and deleted it. |
+| The key is wrong. | `FAIL Preflight` with `401`, and no write. |
+| `SIGINT` during the first deploy. | `FAIL Create: Stopped by SIGINT`. The cleanup deleted the service. Exit code 1. |
+
+No output of these runs held the key or the word `Bearer`. The stand-in runs
+and the local check used scripts in the session scratchpad, not in the branch.
+
+### Development runs
+
+The manager allowed reads after the key was in `.env.local`, and writes after
+the credential existed. The development runs used one service,
+`srv-dbg1imgn74is73bjamjg` (`thermus-spike-20261027-032408`), with
+`--service-id` and `--keep`:
+
+| Start (UTC) | Options | Writes | Result |
+| --- | --- | --- | --- |
+| 03:22:33 | `--preflight` | 0 | Pass. The credential resolved by name, and no probe service existed. |
+| 03:24:08 | `--steps create,internal-address --keep` | 1 | Pass. The service was `live` 80.6 s after the create call. No field held `<host>:8080`, so the first version of the address check gave the address from `slug` and `openPorts`. |
+| 03:26:25 | `--service-id … --steps internal-address --keep` | 0 | Pass. This run recorded `serviceDetails.url`: `thermus-spike-20261027-032408:10000`. The address check then changed to the rule of the Steps table. |
+| 03:27:43 | `--service-id … --steps internal-address --keep` | 0 | Pass with the changed check. |
+| 03:27:58 | `--service-id … --steps image-2 --keep` | 1 | Pass. The deploy was `live` 35.5 s after the call. |
+| 03:29:06 | `--service-id … --steps plan-change --keep` | 4 | Pass. |
+| 03:31:42 | `--service-id … --steps suspend-resume --keep` | 2 | Pass. |
+| 03:32:40 | `--service-id … --steps internal-address` | 1 | Pass. The cleanup deleted the service, and the list held no probe service. |
+
+After these runs, the plan step also gives the time from the deploy call,
+because the time from the update includes the 30 s wait.
+
+### Measured
+
+Final complete run, on the owner's Mac (Darwin 27.0.0), with the script of
+commit `22cff848`. The exit code was 0. The tables and the conclusions are as
+the script printed them. The script printed these lines first:
+"Node v24.20.0. Start 2026-10-27T03:33:30.712Z. Service thermus-spike-20261027-033330 (srv-dbg1n359fdbs73cgpgbg) in oregon, owner tea-db8i6ceq1p3s73dev9og." and "Times are seconds on the clock of this machine, from the start of the write that began each wait."
+
+| Step | Check | Expected | Measured |
+| --- | --- | --- | --- |
+| Preflight | Workspace | the given owner | Thermus AI (team) |
+| Preflight | Registry credential "ghcr-thermus-hosted-read" | one credential with this ID or name; registry GITHUB | ghcr-thermus-hosted-read (rgc-dbg1h0142hec73da9ra0), GITHUB |
+| Preflight | Services named thermus-spike-* | none | none |
+| Create | Create answer | 201 with the service and deployId | 201 after 2.8 s: srv-dbg1n359fdbs73cgpgbg, plan `0.5c-512mb`, runtime `image` |
+| Create | First deploy | live; time recorded | live 75.8 s after the create call (update_in_progress > live); Render: createdAt 2026-10-27T03:33:33.995789Z, finishedAt 2026-10-27T03:34:42.618907Z, 68.6 s |
+| Create | Image of the first deploy | image 1 | image 1 |
+| Create | Variables (keys only) | PUBLIC_BASE_URL, WORKOS_API_KEY, WORKOS_AUTHKIT_ISSUER, WORKOS_CLIENT_ID, WORKOS_COOKIE_PASSWORD, WORKOS_REDIRECT_URI | PUBLIC_BASE_URL, WORKOS_API_KEY, WORKOS_AUTHKIT_ISSUER, WORKOS_CLIENT_ID, WORKOS_COOKIE_PASSWORD, WORKOS_REDIRECT_URI |
+| Internal address | Field with <slug>:<port>, and the open port | one field; openPorts holds 8080 | thermus-spike-20261027-033330:10000 in service.serviceDetails.url; openPorts 8080 |
+| Image 2 | Deploy with imageUrl | live | answer 201; live 36.1 s after the call (update_in_progress > live); Render: createdAt 2026-10-27T03:34:51.142811Z, finishedAt 2026-10-27T03:35:23.366531Z, 32.2 s |
+| Image 2 | Image of the live deploy | image 2 | image 2 |
+| Image 2 | Image setting of the service (imagePath) | not documented; recorded | image 2 |
+| Plan 1c-2g | Update answer | plan 1c-2g | 200, plan `1c-2g`, after 0.1 s |
+| Plan 1c-2g | Deploy that applies the plan | live | started by the probe, with image 2 (answer 201); live 58.5 s after the update and 30.4 s after the deploy call (update_in_progress > live); image 2 |
+| Plan 1c-2g | Service after the deploy | plan 1c-2g | plan `1c-2g` |
+| Plan 1c-2g | Container restarted | recorded; docs: the deploy starts a new instance | yes: new instance srv-dbg1n359fdbs73cgpgbg-7sfnj; the old instance is no longer listed |
+| Plan 1c-2g | Event types since the update | recorded | deploy_ended (-0.3 s), plan_changed (+0.1 s), deploy_started (+32.0 s), deploy_ended (+53.8 s) |
+| Plan 0.5c-512mb | Update answer | plan 0.5c-512mb | 200, plan `0.5c-512mb`, after 0.2 s |
+| Plan 0.5c-512mb | Deploy that applies the plan | live | started by the probe, with image 2 (answer 201); live 56.2 s after the update and 29.9 s after the deploy call (update_in_progress > live); image 2 |
+| Plan 0.5c-512mb | Service after the deploy | plan 0.5c-512mb | plan `0.5c-512mb` |
+| Plan 0.5c-512mb | Container restarted | recorded; docs: the deploy starts a new instance | yes: new instance srv-dbg1n359fdbs73cgpgbg-hkzjk; the old instance is no longer listed |
+| Plan 0.5c-512mb | Event types since the update | recorded | plan_changed (+0.1 s), deploy_started (+30.3 s), deploy_ended (+52.2 s) |
+| Suspend | State after the suspend call | suspended | suspended 0.8 s after the call; suspenders user; instances listed: 0 |
+| Resume | State after the resume call | not_suspended | not_suspended 0.9 s after the call |
+| Resume | Deploy after the resume | live; time recorded | trigger `service_resumed`; live 16.6 s after the resume call (update_in_progress > live); image 2 |
+| Resume | Event types since the suspend | recorded | service_suspended (+0.1 s), suspender_added (+0.1 s), service_resumed (+1.1 s), suspender_removed (+1.1 s), deploy_started (+2.0 s), deploy_ended (+13.9 s) |
+| Cleanup | Delete srv-dbg1n359fdbs73cgpgbg | 204, or 404 when already gone | 204 after 0.4 s |
+| Cleanup | Services named thermus-spike-* | 0 | 0, 0.1 s after the delete |
+
+Writes in this run: 9. Reads: 75; the last read had Ratelimit-Limit 400, Ratelimit-Remaining 382, and Ratelimit-Reset 22.
+
+| Step | Call | Status | Duration | Ratelimit-Limit | Ratelimit-Remaining | Ratelimit-Reset | Retry-After |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Create | `POST /services` | 201 | 2.78 s | 20 | 18 | 1588 | absent |
+| Image 2 | `POST /services/srv-dbg1n359fdbs73cgpgbg/deploys` | 201 | 3.82 s | 10 | 9 | 12 | absent |
+| Plan 1c-2g | `PATCH /services/srv-dbg1n359fdbs73cgpgbg` | 200 | 0.14 s | 10 | 9 | 36 | absent |
+| Plan 1c-2g | `POST /services/srv-dbg1n359fdbs73cgpgbg/deploys` | 201 | 3.80 s | 10 | 8 | 8 | absent |
+| Plan 0.5c-512mb | `PATCH /services/srv-dbg1n359fdbs73cgpgbg` | 200 | 0.18 s | 10 | 9 | 37 | absent |
+| Plan 0.5c-512mb | `POST /services/srv-dbg1n359fdbs73cgpgbg/deploys` | 201 | 3.83 s | 10 | 8 | 10 | absent |
+| Suspend | `POST /services/srv-dbg1n359fdbs73cgpgbg/suspend` | 202 | 0.64 s | 10 | 9 | 40 | absent |
+| Resume | `POST /services/srv-dbg1n359fdbs73cgpgbg/resume` | 202 | 0.83 s | 10 | 8 | 39 | absent |
+| Cleanup | `DELETE /services/srv-dbg1n359fdbs73cgpgbg` | 204 | 0.36 s | 100 | 99 | 22 | absent |
+
+| Field | Answer | Value |
+| --- | --- | --- |
+| `service.id` | POST /services (201) | `srv-dbg1n359fdbs73cgpgbg` |
+| `deployId` | POST /services (201) | `dep-dbg1n3d9fdbs73cgpglg` |
+| `service.slug` | POST /services (201) | `thermus-spike-20261027-033330` |
+| `service.serviceDetails.plan` | POST /services (201) | `0.5c-512mb` |
+| `service.serviceDetails.region` | POST /services (201) | `oregon` |
+| `service.serviceDetails.runtime` | POST /services (201) | `image` |
+| `service.imagePath` | POST /services (201) | `ghcr.io/tomer-mayara/thermus-hosted@sha256:ca1ab23d3bd8ea2397076a370939173eb2548e275f322c7749d460a28ec71d26` |
+| `service.registryCredential.name` | POST /services (201) | `ghcr-thermus-hosted-read` |
+| `service.suspended` | POST /services (201) | `not_suspended` |
+| `deploy.trigger` | GET /services/{id}/deploys/{deployId} | `manual` |
+| `deploy.image.ref` | GET /services/{id}/deploys/{deployId} | `ghcr.io/tomer-mayara/thermus-hosted@sha256:ca1ab23d3bd8ea2397076a370939173eb2548e275f322c7749d460a28ec71d26` |
+| `deploy.image.sha` | GET /services/{id}/deploys/{deployId} | `sha256:ca1ab23d3bd8ea2397076a370939173eb2548e275f322c7749d460a28ec71d26` |
+| `service.serviceDetails.openPorts[].port` | GET /services/{id} | 8080 |
+| `service.serviceDetails.url` | GET /services/{id} | `thermus-spike-20261027-033330:10000` |
+| `service.slug` | GET /services/{id} | `thermus-spike-20261027-033330` |
+| `POST /services/{id}/deploys status` | create-deploy | 201, deploy in the body |
+| `service.serviceDetails.plan` | PATCH /services/{id} (200) | 1c-2g, then 0.5c-512mb |
+| `service.suspended, service.suspenders` | GET /services/{id} after the suspend | suspended; user |
+| `deploy.trigger after a resume` | GET /services/{id}/deploys | `service_resumed` |
+
+- PASS Preflight: the workspace Thermus AI (team) and the credential ghcr-thermus-hosted-read (rgc-dbg1h0142hec73da9ra0) exist, and no service of an earlier run exists.
+- PASS Create: srv-dbg1n359fdbs73cgpgbg was created on 0.5c-512mb in oregon with 6 variables; its first deploy was live 75.8 s after the create call.
+- PASS Internal address: the field service.serviceDetails.url holds the internal address thermus-spike-20261027-033330:10000; serviceDetails.openPorts holds port 8080, but the field names port 10000.
+- PASS Image 2: the deploy of image 2 was live 36.1 s after the call, and the live deploy reports image 2; the image setting of the service shows image 2.
+- PASS Plan change: to 1c-2g: the update answer showed 1c-2g; the deploy that applied it was started by the probe, with image 2 (answer 201) and was live 58.5 s after the update; container restarted: yes: new instance srv-dbg1n359fdbs73cgpgbg-7sfnj; the old instance is no longer listed. Back to 0.5c-512mb: the update answer showed 0.5c-512mb; the deploy that applied it was started by the probe, with image 2 (answer 201) and was live 56.2 s after the update; container restarted: yes: new instance srv-dbg1n359fdbs73cgpgbg-hkzjk; the old instance is no longer listed.
+- PASS Suspend and resume: the state was suspended 0.8 s after the call; the resume deploy (trigger `service_resumed`) was live 16.6 s after the resume call and runs image 2.
+- PASS Cleanup: deleted srv-dbg1n359fdbs73cgpgbg; no service named thermus-spike-* exists.
+
+A preflight at 03:38:22 UTC, with reads only, listed no service named
+`thermus-spike-*`.
+
+Manager verification run, 27 October 2026 at 03:52 UTC, with the script of
+commit `a4e861a3` (the same real-mode code): exit code 0, 9 writes, 75 reads;
+service `srv-dbg1vqt9fdbs73chii70`; first deploy `live` 81.6 s after the
+create call; image 2 deploy `live` 30.6 s after the call; plan `1c-2g`
+applied by a deploy `live` 19.8 s after the deploy call, back to
+`0.5c-512mb` in 40.9 s, each with a new instance; suspended after 0.7 s;
+resume deploy `live` 17.0 s after the resume call; delete `204` in 0.5 s; no
+service named `thermus-spike-*` left. The full tables are in the Validation
+comment of pull request #270.
+
+### Findings for Slice 2
+
+The values come from the final run and the development runs. Where two
+values are given, the first is from the final run.
+
+- Internal address. `serviceDetails.url` holds `<slug>:10000`, for example
+  `thermus-spike-20261027-033330:10000`. In both services, `slug` was the
+  service name, with no random part. `serviceDetails.openPorts` holds 8080,
+  the port of the server. From outside the private network, the probe cannot
+  tell which port reaches the server. SO-01d part two must request `/healthz`
+  on both ports. The provisioner stores the address that SO-01d part two
+  confirms, in the `internal_url` column.
+- Create. The answer was `201` after 2.8 and 3.0 s. The first deploy was
+  `live` 75.8 and 80.6 s after the create call; the Render times of the
+  deploy give 68.6 and 74.3 s. The first deploy has the trigger `manual`, and
+  its `image.sha` is the digest of image 1. The statuses seen were
+  `update_in_progress` and then `live`.
+- Image deploy. `POST /services/{id}/deploys` with `imageUrl` answered `201`
+  with the deploy in the body. The deploy was `live` 36.1 and 35.5 s after the
+  call. Then `imagePath` showed image 2: the API deploy changes the image
+  setting. A fleet upgrade by `imageUrl` therefore also sets the image of
+  later Render deploys. The resume deploy ran image 2.
+- Plan change. Each `PATCH` answered `200` in 0.1 to 0.2 s and showed the new
+  plan at once. In each of four updates, Render started no deploy in the 30 s
+  after it. The deploy of the probe applied the plan: `live` 30.4 and 29.9 s
+  after the deploy call in the final run. Each deploy replaced the instance:
+  a new instance ID, such as `srv-dbg1n359fdbs73cgpgbg-7sfnj`, and the old
+  instance was not in the list when the deploy was `live`. The events were
+  `plan_changed` at the update, then `deploy_started` and `deploy_ended`.
+  Section 4.2 of the plan says that the service update restarts the container
+  once. It does not: the provisioner must follow each plan update with a
+  deploy, and that deploy replaces the container. The runs sent no tool call
+  during the switch.
+- Suspend and resume. Suspend answered `202`. The service was `suspended`
+  after 0.8 and 0.7 s, with the suspender `user`, and the instance list was
+  empty. Resume answered `202`, and the service was `not_suspended` after 0.9
+  and 2.2 s. A new deploy with the trigger `service_resumed` was `live` 16.6
+  and 28.6 s after the resume call. The events were `service_suspended`,
+  `suspender_added`, `service_resumed`, `suspender_removed`, `deploy_started`,
+  and `deploy_ended`. The `Retry-After: 60` of the gateway in section 4.2 of
+  the plan covers these times.
+- Delete. `DELETE` answered `204` in 0.4 s, and the service left the list at
+  once: the next read, 0.1 s later, did not list it.
+- Rate limits, from the headers of each write:
+
+  | Calls | `Ratelimit-Limit` | `Ratelimit-Remaining` | `Ratelimit-Reset` | Reading |
+  | --- | --- | --- | --- | --- |
+  | `POST /services` | 20 | 19, then 18 | 2151, then 1588 | 20 creates an hour for each user, as the reference page says |
+  | `PATCH`, deploys, suspend, resume | 10 | 9 or 8 | 1 to 57 | 10 a minute for each service, as the reference page says |
+  | `DELETE /services/{id}` | 100 | 99 | 18 to 22 | a bucket of 100; the reference page says 30 a minute for other writes |
+  | `GET` | 400 | 382 to 397 | 22 to 49 | 400 a minute, as the reference page says |
+
+  `Ratelimit-Reset` is in seconds until the window resets. The credential
+  create of the manager also answered `Ratelimit-Remaining 99`. Section 3.2 of
+  the plan says 20 an hour for creates, modifies, suspends, and resumes
+  together, and 20 deploys an hour for each service. The headers show 20 an
+  hour for creates only. Modifies, deploys, suspends, and resumes have 10 a
+  minute for each service. The probe made 18 writes on 27 October 2026,
+  2 of them creates. The 20 creates an hour are shared with each other create
+  call of the same Render user.
+- IDs. Services start with `srv-`, deploys with `dep-`, and registry
+  credentials with `rgc-`. An instance ID is the service ID with a suffix of
+  five characters.
+
+### Documentation facts
+
+From the pages above, with what the runs showed:
+
+- Plans. The API calls the plans `0.5c-512mb` and `1c-2g`; the legacy names
+  `starter` and `standard` stay valid. A new private service gets
+  `0.5c-512mb` when the create call names no plan. Each answer of the runs
+  used the new names.
+- Plan change. The update endpoint does not start a deploy, and the plan
+  changes at the first successful deploy after the update. A service without
+  a disk redeploys with zero downtime: a new instance starts, gets the
+  traffic, and the old instance gets `SIGTERM` 60 seconds later. The runs
+  showed this: Render started no deploy in the 30 s after an update, and the
+  deploy of the probe replaced the instance.
+- Deploy with `imageUrl`. The answer is `201` with the deploy or `202` with no
+  body; the runs got `201`. For a deploy hook with `imgURL`, the image page
+  says that later deploys keep the image of the service settings. The API
+  deploy with `imageUrl` changed `imagePath` of the service in the runs.
+- Internal address. The Private Network page shows the service address of a
+  private service, such as `elasticsearch-2j3e:9200`, and documents port
+  10000 only for web services. The API reference names no field for it.
+- Suspend and resume. Both answer `202` with no body. The service field
+  `suspended` is `suspended` or `not_suspended`.
+- Rate limits, from the
+  [Rate Limiting](https://api-docs.render.com/reference/rate-limiting) page,
+  updated on 27 October 2025: `POST /v1/services` 20 an hour for each user;
+  `PATCH /v1/services`, deploys, resumes, suspends, and deploy hooks 10 a
+  minute for each service; other `POST`, `PATCH`, and `DELETE` calls 30 a
+  minute; other `GET` calls 400 a minute. The headers of the runs match this
+  page, except for the other writes (see the findings).
+- Rate-limit headers. The example of that page shows `Ratelimit-Limit`,
+  `Ratelimit-Remaining`, and `Ratelimit-Reset`. Its table writes `Rate-Limit`
+  and says that `Ratelimit-Reset` is a time in UTC epoch seconds. The OpenAPI
+  `429` answer says "seconds until the current rate limit window resets". The
+  runs got seconds, for example `24` on a read and `2151` on the create.
+- Lists use cursors, with at most 100 items in a page. The event list reads
+  the last hour by default. The unit of its `startTime` is not clear, so the
+  probe uses the default and filters by time itself.
+
+### Limits
+
+- The probe runs outside the private network, so it cannot call `/healthz` of
+  the service. The `live` state of the deploy is the only start signal. SO-01d
+  part two checks the internal address, and which of the ports 10000 and 8080
+  reaches the server, from inside the network.
+- The probe deletes its service at the end. SO-01d part two needs a live
+  private service for some minutes: a run with `--steps create --keep` gives
+  one, and a later run with `--service-id` and without `--keep` deletes it.
+- One run, one region, and one instance. No call reaches the service during a
+  plan change, so the probe does not show whether a call fails during the
+  switch.
+- After the image 2 deploy, `imagePath` showed image 2. So the resume deploy
+  of image 2 does not show which of the two Render uses on a resume: the
+  image setting or the last deployed image.

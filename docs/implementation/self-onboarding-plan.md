@@ -95,7 +95,7 @@ actions. Section 5 maps the decisions to this plan; SO-13 is AUTH-11.
 
 | Item | Observed on 26 October 2026 |
 | --- | --- |
-| Workspace | Thermus AI, `tea-db8i6ceq1p3s73dev9og`, Hobby plan: 7 days of logs, failure emails. A second workspace, My Workspace, exists and is empty. |
+| Workspace | Thermus AI, `tea-db8i6ceq1p3s73dev9og`, Hobby plan: 7 days of logs, failure emails. A second workspace, My Workspace, is not used: Render probes and disposable services run in Thermus AI, never on the production service ([SO-01c](self-onboarding-s1.md#so-01c-render-private-service-lifecycle)). |
 | Service | `srv-db8mnqg473hc739d529g`, web service, Docker from `main` with `Dockerfile.hosted`, Oregon, plan `1c-2g` (1 CPU, 2 GB, about 25 USD a month), one instance, health check `/healthz`, auto-deploy on commit, Render subdomain disabled, custom domain `app.thermus.ai`. |
 | Deploys | A Git-backed deploy takes 3 to 4 minutes from commit to Live. |
 | Memory, 7 days | Hourly samples: median about 100 MB, 95th percentile about 150 MB, maximum about 185 MB. CPU use is near zero. |
@@ -118,10 +118,13 @@ Render API facts that the plan uses, from the Render documentation:
 - Services in one workspace and one region share a private network. A
   private service has an internal address such as `name-2j3e:8080`. Traffic
   on that network is plain HTTP.
-- Rate limits: service create, modify, suspend, and resume share one bucket
-  of 20 an hour for each Render user. Deploys are 20 an hour for each
-  service. Other writes are 30 a minute. Reads are 400 a minute. Render
-  raises limits on request.
+- Rate limits, as the response headers showed on 27 October 2026
+  ([SO-01c](self-onboarding-s1.md#so-01c-render-private-service-lifecycle)):
+  `POST /services` 20 an hour for each Render user; `PATCH /services`,
+  deploys, suspend, and resume 10 a minute for each service; `DELETE` a
+  bucket of 100; `GET` 400 a minute. `Ratelimit-Reset` gives the seconds
+  until the window resets. The provisioner must count its writes against
+  these limits, and Render raises limits on request.
 
 ### 3.3 WorkOS
 
@@ -272,17 +275,28 @@ second service; two services with that name stop the row as `failed`. The
 create call carries every tenant variable, because creation starts the first
 deploy at once. It creates an image-backed private service on the plan of the
 tier with the `TENANT_IMAGE` digest, polls the deploy, and records the
-internal address and the digest. A failed deploy gives `failed` with the
-reason and an operator report. Retries are bounded. The Render limit of 20
-creates an hour makes the loop a queue. The control plane uses a dedicated
+internal address and the digest. Measured as orientation
+([SO-01c](self-onboarding-s1.md#so-01c-render-private-service-lifecycle)):
+the first deploy of a new service was `live` about 70 to 80 s after the
+create call, an image deploy about 35 s after its call, and a resume deploy
+17 to 29 s after the resume call. The suspend state changed after 0.7 to
+0.8 s, and the resume state after 0.9 to 2.2 s. A failed deploy gives
+`failed` with the reason and an operator report. Retries are bounded. The
+Render limit of 20 creates an hour makes the loop a queue. The control plane uses a dedicated
 Render user and API key, so the fleet script, staging, and the owner's own
 dashboard use do not share its rate-limit bucket.
 
 **Tier change.** When the tier of an organization changes, the control plane
 sets the plan of the row: `TENANT_PLAN_TEAM` for `team`, `TENANT_PLAN_FREE`
 for `free`. The provisioner applies a plan that differs from the applied one
-through the Render service update, which restarts the container once. A tool
-call during that restart gets a `503` with `Retry-After`.
+with a Render service update and then a deploy
+([SO-01c](self-onboarding-s1.md#so-01c-render-private-service-lifecycle)).
+The update alone does not restart the container; the deploy replaces the
+instance with zero downtime: the new instance goes live, and the old one gets
+`SIGTERM` 60 s later. A tool call during that deploy gets a `503` with
+`Retry-After`. Open point for Slice 3: SO-01c showed that the old instance
+serves calls until the new one is live, so the tier change ticket decides
+whether this `503` window is still needed.
 
 **Signup.** The marketing page links to
 `https://app.thermus.ai/signup?tier=free`. Only `free` exists today, so the
@@ -501,9 +515,10 @@ it records evidence. No test under `test/` covers a script; the rules of
 [AGENTS.md](../../AGENTS.md) keep tests for behavior under `src/`. Each probe
 writes its evidence into one record, `docs/implementation/self-onboarding-s1.md`,
 with one section for each probe: durations, limits, and what the client saw,
-and never a secret. Every probe runs in the My Workspace Render workspace, the
-WorkOS Staging environment, and Stripe test mode, never in production, and
-deletes what it creates, also after a failure.
+and never a secret. Owner decision of 27 October 2026: Render probes run in the
+Thermus AI workspace in a service named `thermus-spike-<time>`, never on the
+production service. Every probe runs in the WorkOS Staging environment and
+Stripe test mode, and deletes what it creates, also after a failure.
 
 Order: SO-00, SO-01a, SO-01b, and SO-01f can start at once. SO-01c needs the
 image of SO-01b. SO-01d needs the private service of SO-01c. SO-01e needs
@@ -601,8 +616,12 @@ check.
   its submodule, runs the hosted image gate, `npm run test:container:hosted`,
   on the AMD64 runner, builds `Dockerfile.hosted` for `linux/amd64`, and
   pushes `ghcr.io/tomer-mayara/thermus-hosted:<sha>`, recording the digest.
-  A Render registry credential with a read-only token is created in the My
-  Workspace workspace. SO-02 later makes the workflow the release path.
+  A Render registry credential with a read-only token is created in the
+  Thermus AI workspace, where Render probes and disposable services run,
+  never on the production service: `ghcr-thermus-hosted-read`
+  (`rgc-dbg1h0142hec73da9ra0`) exists there
+  ([SO-01c](self-onboarding-s1.md#so-01c-render-private-service-lifecycle)).
+  SO-02 later makes the workflow the release path.
 - Acceptance:
   - Given the workflow on the branch, when it is dispatched, then the hosted
     image gate passes on the runner, the GHCR package has the image by
@@ -610,9 +629,10 @@ check.
     digest.
   - Given a throwaway branch with one failing offline test, when the
     workflow is dispatched, then no image is pushed.
-  - Given the registry credential, when a Render service in My Workspace
-    pulls the digest, then it starts and `/healthz` answers `200` (SO-01c
-    shows it).
+  - Given the registry credential, when a Render service in the Thermus AI
+    workspace pulls the digest, then it starts and `/healthz` answers `200`
+    (SO-01c shows the start with the `live` deploy state; SO-01d part two
+    shows the `/healthz` answer from inside the private network).
 - Steps: 1. the workflow builds only; 2. it runs the gate and stops the
   build on a failure; 3. it pushes by digest; 4. record the GHCR quota, the
   retention of old images, and the visibility of the package.
@@ -620,10 +640,13 @@ check.
 **SO-01c Render private service lifecycle probe.** Size M. Depends on
 SO-01b.
 
-- Outcome: `script/spike/render-tenant-lifecycle.ts`, run with a Render API
-  key of My Workspace, the owner ID, the registry credential ID, and two
-  image digests. It records every API field that the provisioner of Slice 2
-  needs, each duration, and the rate-limit headers of each write.
+- Outcome: `script/spike/render-tenant-lifecycle.ts`, run in the Thermus AI
+  workspace, never on the production service, with a Render API key, the
+  owner ID, the registry credential `ghcr-thermus-hosted-read`, and two
+  image digests
+  ([SO-01c](self-onboarding-s1.md#so-01c-render-private-service-lifecycle)).
+  It records every API field that the provisioner of Slice 2 needs, each
+  duration, and the rate-limit headers of each write.
 - Acceptance, each step an assertion of the script:
   - Given the inputs, when the probe runs, then it creates an image-backed
     private service named `thermus-spike-<time>` on `0.5c-512mb` with every
@@ -678,9 +701,12 @@ SO-01c for its second part.
 and SO-01c. Its result confirms or lowers the values of D-15 and sets the
 alert threshold and the words of the failure message.
 
-- Setup: a disposable web service in My Workspace on `0.5c-512mb` from the
-  image of SO-01b with the setting of SO-01a at 10, the WorkOS Staging
-  settings, and `PUBLIC_BASE_URL` set to its Render address. The probe adds
+- Setup: a disposable web service in the Thermus AI workspace, never on the
+  production service
+  ([SO-01c](self-onboarding-s1.md#so-01c-render-private-service-lifecycle)),
+  on `0.5c-512mb` from the image of SO-01b with the setting of SO-01a at 10,
+  the WorkOS Staging settings, and `PUBLIC_BASE_URL` set to its Render
+  address. The probe adds
   the service's `/mcp` as a Staging OAuth resource through the WorkOS API,
   creates a disposable organization and a User with the hosted-live
   fixtures, and gets a Connect token with the hosted-live Connect client.
@@ -798,8 +824,14 @@ row reaches `live` with the service ID and the internal address; given a
 Render `429`, then the loop waits for `Retry-After` and creates no second
 service; given a restart after `creating`, then it finds the service by name
 and continues; given a row marked for deletion, then the service is deleted
-and the row becomes `deleted`. A live interface test in the My Workspace
-workspace creates and deletes one disposable tenant. Size L. Depends on
+and the row becomes `deleted`. The API gives the internal address in
+`serviceDetails.url` as `<slug>:10000`, while `serviceDetails.openPorts`
+holds 8080, so the provisioner stores the address that SO-01d part two
+confirms. A deploy with `imageUrl` also changes the image setting
+`imagePath` of the service
+([SO-01c](self-onboarding-s1.md#so-01c-render-private-service-lifecycle)).
+A live interface test in the Thermus AI workspace, never on the production
+service, creates and deletes one disposable tenant. Size L. Depends on
 SO-04.
 
 **SO-07 Signup handoff and workspace status.** `?tier=free` on `/signup`, the
@@ -847,9 +879,9 @@ memory kills, and the daily summary of SO-09 as the fleet alert. Size S.
 **SO-12 Free-tier release.** The deployment proof of the approved removal
 bundle from the Slice 2.5 release checkpoint; the marketing **Start free** link to `https://app.thermus.ai/signup?tier=free`
 and the free-tier guides; rehearsal with the WorkOS Staging environment, a
-staging control plane and database, a dedicated Render user, and the My
-Workspace workspace: signup, provisioning, an MCP call, suspend, resume, a
-fleet upgrade, and an organization removal. Then production, in this order:
+staging control plane and database, a dedicated Render user, and the Thermus
+AI workspace, never on the production service: signup, provisioning, an MCP
+call, suspend, resume, a fleet upgrade, and an organization removal. Then production, in this order:
 fresh WorkOS inventory and the D-10 cleanup; the owner's disposition of the
 open release holds; the database migration; the registry credential; the
 control plane deploy with the gateway switch off; the switch on; one real
@@ -917,7 +949,7 @@ consider a smaller instance for it. Size S. Depends on SO-12.
 | Risk | Fact | Mitigation |
 | --- | --- | --- |
 | Memory on the free instance | 631 MiB peak recorded for one render against 512 MB. D-15 allows 10 renders at a time, which multiplies the peak. A kill ends every active call with a failure. | Accepted in D-2 and D-15 for the defaults. SO-01e measures the concurrent peak on both instances; if the free instance cannot hold 10, the owner lowers `OPERATION_CAPACITY` for free tenants or chooses a larger instance. Render restarts the container. SO-11 watches the failure emails. |
-| Render API rate limits | 20 creates, resizes, suspends, resumes, and modifies an hour for each Render user. | A dedicated user for the control plane. The provisioner is a queue. Suspend only after 14 idle days, so resumes are rare. Ask Render for a higher limit before a launch campaign. |
+| Render API rate limits | 20 creates an hour for each Render user, and 10 updates, deploys, suspends, and resumes a minute for each service ([SO-01c](self-onboarding-s1.md#so-01c-render-private-service-lifecycle)). | A dedicated user for the control plane. The provisioner is a queue. Suspend only after 14 idle days, so resumes are rare. Ask Render for a higher limit before a launch campaign. |
 | PostgreSQL on Supabase Free | Pauses after 7 idle days; a pause stops provisioning, billing, and the audit export. | Accepted in D-8. The daily reconciliation keeps the project active. A runbook resumes it. Revisit at the first paying customer. |
 | Cost of free tenants | 7 USD a month for each live free tenant. Signup needs only a verified email. | `FREE_TENANT_LIMIT`, idle suspension from creation, deletion of dead organizations, the admission limits, the global switch. |
 | Gateway on the request path | Every MCP call crosses one more hop. The control plane is one instance with process-local state: the signup counters, the registry copy, the provisioner, the sweeps. | The proxy is light. A second instance needs a shared claim for the loops; not planned. Keep `1c-2g` until SO-16. |
