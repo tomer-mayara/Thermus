@@ -441,18 +441,37 @@ captured search results and exact query. It also checks one rules read per
 application, shared compatible cleaners and setup warning state, and separate
 converter instances.
 
+`test/integration/mcp/hosted-tool-operations.test.ts` runs the hosted composition
+with the renderer process double. With `OPERATION_CAPACITY=2`, a held fetch and
+a held search run, and a third call is busy. An invalid value stops the hosted
+composition, and the self-hosted composition does not read the setting.
+
 `test/acceptance/mcp/hosted-search-capacity.test.ts` exercises the production
-operation factories and public MCP dispatch. It checks both tool
-orders while outgoing, renderer, or incoming work is held; success, failure,
-abort, cancellation before busy, held renderer cleanup, and subsequent calls.
-Separate hosted applications and self-hosted operations can overlap. Public
-calls in both tool orders prove busy refusal, held cleanup after cancellation,
-and successful recovery. Existing MCP lifecycle tests retain the public fetch
-shutdown and cancellation proof.
+operation factories and public MCP dispatch. Its cases set
+`OPERATION_CAPACITY=1`, so they show the busy refusal of one slot. It checks
+both tool orders while outgoing, renderer, or incoming work is held; success,
+failure, abort, cancellation before busy, held renderer cleanup, and subsequent
+calls. Separate hosted applications and self-hosted operations can overlap.
+Public calls in both tool orders prove busy refusal, held cleanup after
+cancellation, and successful recovery. Existing MCP lifecycle tests retain the
+public fetch shutdown and cancellation proof. The one-slot busy cases of
+`hosted-fetch-tool.test.ts`, `incoming-step-cancellation.test.ts`,
+`outgoing-step-cancellation.test.ts`, and the hosted image gate also set
+`OPERATION_CAPACITY=1`.
+
+`test/acceptance/mcp/hosted-capacity-setting.test.ts` calls the public MCP
+tools of a hosted site with the production operation factory and the renderer
+double. Each call that runs is held in incoming processing. With
+`OPERATION_CAPACITY=2`, a held fetch and a held search run, and a third call
+gets `Server busy. Try again later.` with completion status `busy`. After the
+held fetch settles with success, failure, or abort, a new call runs. Without
+the setting, ten held fetch and search calls run, and the eleventh call is busy.
 
 `test/unit/app/operation-capacity.test.ts` checks the shared capacity contract
-with operation doubles, including context and result identity, no queue,
-cleanup settlement, independent owners, and synchronous failure.
+with operation doubles for limits of one and three calls. It includes context
+and result identity, no queue, cleanup settlement, independent owners,
+synchronous failure, and the refusal of a limit that is not a whole number of
+at least 1.
 The [SEARCH-04 record](../implementation/search-04.md) gives verification
 results and limits. SEARCH-05 adds the public search proofs above.
 
@@ -666,6 +685,17 @@ Only the server reads `AD_RULES_FILE`. A file-read double stands in for `readFil
 
 ```sh
 npm run build && node --test dist/test/unit/config/ad-rules-file.test.js
+```
+
+**Operation capacity setting** (`test/unit/config/operation-capacity-config.test.ts`)
+
+Only the hosted edition reads `OPERATION_CAPACITY`.
+
+[V] Gives 10 when `OPERATION_CAPACITY` is missing or empty, and the number for each whole number from 1 to 100
+[V] Rejects `0`, `101`, `-1`, `1.5`, `abc`, ` 5`, `0x10`, and `1e1` with a `DeploymentConfigError` whose message is exactly `OPERATION_CAPACITY must be a whole number from 1 to 100.`, without the value
+
+```sh
+npm run build && node --test dist/test/unit/config/operation-capacity-config.test.js
 ```
 
 **Local authentication migrations** (`test/unit/auth-better-auth/local-auth-migrations.test.ts`)
@@ -2284,7 +2314,7 @@ are not WorkOS, real-renderer, image, or Render deployment proofs.
 [V] `test/acceptance/mcp/http-authentication-cancellation.test.ts`: disconnect and shutdown stop token/access waits and prevent dispatch after a late result
 [V] `test/acceptance/auth/hosted-request-cancellation.test.ts`: disconnect and shutdown stop account session/access waits and prevent the protected operation
 [V] `test/acceptance/mcp/hosted-process-shutdown.test.ts`: stalled cleanup or a residual handle causes an error exit at the fixed 10-second hosted CLI deadline, while shutdown during MCP/account/session identity waits exits cleanly
-[V] `test/unit/app/operation-capacity.test.ts`: one owner shares capacity across fetch and search, refuses overlap without queuing, checks cancellation before busy, and returns capacity only after settlement
+[V] `test/unit/app/operation-capacity.test.ts`: one owner shares its limit across fetch and search, refuses a call above the limit without queuing, checks cancellation before busy, and returns capacity only after settlement
 [V] `test/unit/website-fetcher/website-fetcher-dns-wait.test.ts`: the five-second wait, abort, late completion, residual lookup ownership, and recovery do not change the resolver policy or start late rendering
 [V] `test/unit/http/request-cancellation.test.ts`, `test/integration/auth-workos/workos-session-routes-cancellation.test.ts`, and `test/integration/hosted-admin/account-routes-cancellation.test.ts`: request waits release their listeners and do not advance after cancellation
 [V] `test/integration/auth-workos/workos-session-landing-cancellation.test.ts`: cancellation after code exchange stops the landing-access wait before the provider settles, with no recovery response or operator report after a late failure
@@ -2549,6 +2579,7 @@ AUTH-06 replaced the placeholder specification, `hosted-placeholder.test.ts`. Ea
 [V] The sign-in redirects to the WorkOS AuthKit sign-in with the client ID, the registered redirect URI, an S256 challenge, a state, and a sign-in cookie; the protected-resource metadata names the AuthKit issuer; the log names the client and the issuer; no network is used
 [V] Test and demonstration settings (`NODE_ENV=test`, `AUTH_MODE=mock`, `THERMUS_DEMO`, and a test session setting) with the session cookie, form token, and organization values of the doubles still ask for a sign-in without a cookie, and the output names no organization, tenant, or user
 [V] An invalid common setting, also with every WorkOS setting, stops startup before it listens with a `FATAL` line that names the setting and the rule but not the value
+[V] An `OPERATION_CAPACITY` of `0`, `101`, `1.5`, `abc`, or ` 5` stops startup before it listens; the `FATAL` line ends with `OPERATION_CAPACITY must be a whole number from 1 to 100.` and holds no value
 
 Run only these tests:
 
@@ -2840,6 +2871,8 @@ The tests use no live WorkOS or Axiom credential. The
 gives the command and prerequisites. The final Linux AMD64 gate passed
 8/8 tests under bundled Linux Rosetta, with zero failures, cancellations,
 skips, or todo cases. [RHD-03](../implementation/rhd-03.md) records the result.
+The overload case now sets `OPERATION_CAPACITY=1`, so that the default of 10
+calls does not change its meaning. The gate has not run with that setting yet.
 
 The real CLI case uses the image unchanged with placeholder runtime settings.
 The fetch cases mount two test-only seams: the provider seam
@@ -2855,7 +2888,7 @@ The gate has a 60-minute total allowance for the build and image cases. Producti
 [V] Given the unmodified image and placeholder runtime settings, the real CLI serves portal assets and CSP, responds to health, requires MCP authentication, and refuses a foreign Origin
 [V] Given the unmodified image and placeholder credentials with signup enabled only in the test, a visitor sees the complete byte-exact approved notice before sign-in and no activation form
 [V] Given the provider seam's Connect User, the real renderer fetches public HTTPS with verified TLS and returns the controlled page's JavaScript output after the native cleaner applies the shipped policy
-[V] Given private targets, overload, disconnect, and active-renderer SIGTERM, address-policy refusals give `Page fetch failed` before rendering, a blocked renderer socket gives `Page fetch failed: Renderer connection failed`, excess work fails promptly, cancellation settles before capacity is reused, and shutdown exits with status 0 within the bound
+[V] Given private targets, overload with `OPERATION_CAPACITY=1`, disconnect, and active-renderer SIGTERM, address-policy refusals give `Page fetch failed` before rendering, a blocked renderer socket gives `Page fetch failed: Renderer connection failed`, excess work fails promptly, cancellation settles before capacity is reused, and shutdown exits with status 0 within the bound
 [V] Given missing rules, a missing renderer, an empty cookie password, or an HTTP public base URL, the real CLI exits with status 1 before listening and shows no secret
 [V] Given a final image with its portal hidden by an empty mount, startup fails before listening with a safe portal error
 

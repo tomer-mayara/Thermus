@@ -257,6 +257,9 @@ registerHooks({ resolve(specifier, context, nextResolve) {
   });
 
   test('Given hosted settings with an invalid common setting, also with every WorkOS setting, when the server starts, then it stops before it listens with a FATAL line that names the setting and the rule but not the value', { timeout: 60_000 }, async (t) => {
+    // The capacity rule ends its FATAL line, so that line holds no value. A value of one character, such as 0, can
+    // also be part of the time stamp or the rule, so only the line end shows that the value is absent.
+    const capacityRule = /FATAL\S* (?:\[[^\]]*\]: )?OPERATION_CAPACITY must be a whole number from 1 to 100\.$/m;
     const invalidSettings: ReadonlyArray<[ServerSettings, RegExp]> = [
       [{ PUBLIC_BASE_URL: 'http://localhost:8080' }, /FATAL.*PUBLIC_BASE_URL must use https\./],
       [{ PUBLIC_BASE_URL: 'https://thermus.example/?tenant=acme' }, /FATAL.*PUBLIC_BASE_URL must not contain a query\./],
@@ -264,13 +267,14 @@ registerHooks({ resolve(specifier, context, nextResolve) {
       [{ PUBLIC_BASE_URL: 'https://operator:hunter2@thermus.example' }, /FATAL.*PUBLIC_BASE_URL must not contain a username or password\./],
       [{ PUBLIC_BASE_URL: '' }, /FATAL.*PUBLIC_BASE_URL is required\./],
       [{ LISTEN_PORT: '80.5' }, /FATAL.*LISTEN_PORT must be a whole number/],
+      ...['0', '101', '1.5', 'abc', ' 5'].map((value): [ServerSettings, RegExp] => [{ OPERATION_CAPACITY: value }, capacityRule]),
     ];
 
     for (const [overrides, message] of invalidSettings) {
       const server = ServerProcess.launch(t, { ...hostedSettings, ...workOSSettings, ...overrides });
 
       await assertStopsBeforeListening(server, message);
-      for (const value of Object.values(overrides).filter((setting) => setting !== '')) assert.ok(!server.output.includes(value), server.output);
+      for (const value of Object.values(overrides).filter((setting) => setting.length > 1)) assert.ok(!server.output.includes(value), server.output);
     }
   });
 });

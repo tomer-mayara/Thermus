@@ -1,9 +1,9 @@
 {
   "version": 1,
   "classification": {
-    "container": true,
+    "container": false,
     "external": false,
-    "contract": false,
+    "contract": true,
     "deployment": true,
     "crossCutting": false,
     "component": false,
@@ -14,23 +14,42 @@
     "uncertain": false
   },
   "architecture": {
-    "modelUpdated": false,
-    "summary": "Documentation only. Two decision records under architecture/decisions/ decide the per-tenant container design and the free and team tiers of the self on-boarding plan (PR #259), from the owner answers D-1 to D-15 of 26 October 2026. The container record: one public origin with the MCP gateway inside MCPServer, Render private tenant services without credentials, an Ed25519-signed access context with an audit relay, one GHCR image with two roles, a tenant on first need, and the instance and capacity of each tier. The tiers record: free with at most 5 members, team priced for each active member through the WorkOS Seat Sync meter and Stripe, and subscription state in the existing Supabase PostgreSQL project. The container and deployment flags name the topology and deployment that these records decide; later tickets of the plan implement them. This candidate changes no source, registry view, declaration, or deployment. The organization administration plan gains one dated sentence: its free-only rule no longer applies to the tenant containers and the paid tier.",
+    "modelUpdated": true,
+    "summary": "The hosted edition reads OPERATION_CAPACITY at startup, a whole number from 1 to 100 with default 10, and its one shared OperationCapacity lets that many fetch or search calls run at the same time in one process; the next call keeps the existing Server busy result, busy completion record, and audit capture, and an invalid value stops startup before listening with a FATAL line that names the setting and the rule but not the value. This changes the documented hosted capacity contract of both MCP tools from one call to the configured number; the self-hosted edition still has no capacity wrapper. The default also raises the renderer runs of one hosted instance from 1 to 10 at the same time, while the recorded Render plan assumed one active fetch; production should set OPERATION_CAPACITY=1 until probe SO-01e measures the capacity, and the manager asks the owner for that setting. No component, component edge, public module, declaration snapshot, or Mermaid view changes: the new config reader is imported by app only, and registry prose and the config ownership entry record it.",
     "views": [
       "Context",
       "C4 containers: hosted edition",
+      "Selected C4 components: tool processing in the Node server",
       "Selected C4 components: hosted authentication in the Node server",
       "Selected C4 components: hosted membership removal in the Node server",
       "Collaboration overview",
+      "Scenario: MCP page fetch and renderer cancellation",
       "Scenario: hosted member read",
       "Deployment view",
-      "Behavior and resource ownership"
+      "Ownership",
+      "Behavior and resource ownership",
+      "Design choices and current soft spots"
     ],
     "evidence": [
-      "architecture/decisions/2026-10-26-per-tenant-containers.md",
-      "architecture/decisions/2026-10-26-tiers-and-billing.md",
-      "docs/implementation/self-onboarding-plan.md",
-      "docs/design/organization-admin-plan.md"
+      "src/app/operation-capacity.ts",
+      "src/app/fetch-tool.ts",
+      "src/runtime/config/operation-capacity-config.ts",
+      "test/acceptance/mcp/hosted-capacity-setting.test.ts",
+      "test/acceptance/auth/hosted-startup.test.ts",
+      "test/acceptance/mcp/hosted-search-capacity.test.ts",
+      "test/acceptance/mcp/hosted-fetch-tool.test.ts",
+      "test/integration/mcp/hosted-tool-operations.test.ts",
+      "test/unit/app/operation-capacity.test.ts",
+      "test/unit/config/operation-capacity-config.test.ts",
+      ".env.example",
+      "README.md",
+      "architecture/components.md",
+      "docs/reference/mcp-fetch-tool.md",
+      "docs/reference/mcp-search-tool.md",
+      "docs/design/authentication-design.md",
+      "docs/testing/test-list.md",
+      "package.json",
+      "docs/implementation/test-gate-policy.md"
     ]
   }
 }
