@@ -1,10 +1,11 @@
 # Self on-boarding plan: free tier, one container for each tenant, paid upgrade
 
-Date: 26 October 2026. Status: revision 4. The owner answered the decisions
-D-1 to D-14 on 26 October 2026. Section 5 records the answers, and the rest of
-the plan follows them. The plan is based on `main` after the Slice 2.5
-member-removal merges of the same day, PRs #251 to #257. This plan changes no code, no Render setting, no WorkOS
-setting, and no legal text.
+Date: 26 October 2026. Status: revision 4. The owner answered the decisions D-1
+to D-14 on 26 October 2026. Section 5 records the answers, and the rest of the
+plan follows them. The design answers of Slice 2 of 27 October 2026 are in
+sections 4 to 7, each with its date. The plan is based on `main` after the
+Slice 2.5 member-removal merges of the same day, PRs #251 to #257. This plan
+changes no code, no Render setting, no WorkOS setting, and no legal text.
 
 ## 1. Goal
 
@@ -227,27 +228,39 @@ One new setting, `THERMUS_ROLE`, selects the role of the hosted image.
 | `PUBLIC_BASE_URL` | `https://app.thermus.ai/` | the same value, so the token audience and the metadata URLs stay public |
 | `WORKOS_AUTHKIT_ISSUER` | required | required: the public key set that checks the bearer token |
 | `WORKOS_API_KEY`, `WORKOS_CLIENT_ID`, `WORKOS_REDIRECT_URI`, `WORKOS_COOKIE_PASSWORD` | required | not set |
-| `GATEWAY_SIGNING_KEY` (private key) | new, required | not set |
-| `GATEWAY_PUBLIC_KEY`, `CONTROL_PLANE_INTERNAL_URL` | not set | new, required |
-| `MCP_TENANTS_ENABLED` | new rollout switch, default `false` | not read |
-| `SELF_SERVE_SIGNUP_ENABLED`, `FREE_TENANT_LIMIT`, `FREE_TENANT_IDLE_DAYS` | the switch and the caps | not read |
+| `GATEWAY_SIGNING_KEY` (private key) | new, required when the switch is on | not set |
+| `GATEWAY_PUBLIC_KEY`, `CONTROL_PLANE_INTERNAL_URL` | not set | new, required. `GATEWAY_PUBLIC_KEY` holds one or more PEM public keys, separated by commas, and the tenant tries each, for the key rotation of SO-09 (27 October 2026). |
+| `MCP_TENANTS_ENABLED` | new rollout switch, default `false`; the new settings of Slice 2 are read only when it is on (27 October 2026) | not read |
+| `SELF_SERVE_SIGNUP_ENABLED`, `FREE_TENANT_LIMIT`, `FREE_TENANT_IDLE_DAYS` | the switch and the caps. `FREE_TENANT_LIMIT` is a whole number from 0 to 1000, default 25; 0 closes free signup through the cap; an invalid value stops the start with a message that names the rule, as for `OPERATION_CAPACITY` (27 October 2026). | not read |
 | `DATABASE_URL`, `LOGGING_DESTINATION_ENCRYPTION_KEY`, `DATABASE_CA_CERT_PATH` | required | not set |
-| `RENDER_API_KEY`, `RENDER_OWNER_ID`, `RENDER_REGISTRY_CREDENTIAL_ID`, `TENANT_IMAGE`, `TENANT_PLAN_FREE`, `TENANT_PLAN_TEAM` | new, required | not set |
+| `RENDER_API_KEY`, `RENDER_OWNER_ID`, `RENDER_REGISTRY_CREDENTIAL_ID`, `TENANT_IMAGE`, `TENANT_PLAN_FREE`, `TENANT_PLAN_TEAM` | new, required when the switch is on | not set |
+| `TENANT_NAME_PREFIX` | new, default `thermus-tenant-`: the name of a tenant service is the prefix and the organization ID in lower case; the staging control plane uses `thermus-spike-tenant-` (27 October 2026) | not read |
 | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_TEAM` | new, required | not set |
 | `LIGHTPANDA_BIN`, `AD_RULES_FILE` | set by the image; read until SO-16 removes the tools | read, as today |
 | Routes | today's routes, plus `/billing/*`, `/billing/events`, `/workspace/status`, and `/internal/audit`; `/mcp` is the gateway when the switch is on | `/healthz` and `/mcp` only |
 | `OPERATION_CAPACITY` | new in SO-01a, default 10; applies while the control plane still serves tools | the same setting: the calls that run at the same time. The default stays 10 in the source; the provisioner sets 5 for a free tenant and 10 for a team tenant (D-15). |
 | Tools and renderer | until SO-16: the tools of today, used when the switch is off | the fetch and search tools with the capacity above and today's page limits |
 
-The signed access context is one request header. The control plane signs it
-with an Ed25519 private key; tenants hold only the public key. It carries the
-organization ID, the user, the grants, a hash of the bearer token, and an
-expiry of a few minutes. A tenant accepts a request only when the signature
-is valid, the context names its pinned organization, the bearer token has
-that hash and a valid AuthKit signature, and the context has not expired. A
-context for organization A is useless at tenant B, and no tenant can forge
-one. The control plane accepts an audit relay only with such a context for
-the same organization, and drops a repeated operation ID.
+Since 27 October 2026, the control plane reads the new settings of Slice 2
+only when `MCP_TENANTS_ENABLED` is on. With the switch off, nothing new is
+required, the provisioner loop does not run, and signup only inserts the
+`requested` row. So a deploy with the switch off cannot fail at the start.
+The tenant role refuses to start when `WORKOS_API_KEY`,
+`WORKOS_CLIENT_SECRET`, `DATABASE_URL`, `RENDER_API_KEY`, or a `STRIPE_*`
+setting is present; the message names the setting.
+
+The signed access context is one request header, `Thermus-Access`. Since
+27 October 2026, it is an EdDSA JWT that the control plane makes and the tenant
+verifies with `jose`, the library that already verifies the AuthKit tokens. The
+control plane signs it with an Ed25519 private key; tenants hold only public
+keys. Its claims are `aud`, the organization ID; `sub`, the user; `grants`;
+`tokenHash`, the SHA-256 of the bearer token in base64url; and `exp`, 2 minutes
+after the signature. A tenant accepts a request only when the signature is
+valid, the context names its pinned organization, the bearer token has that
+hash and a valid AuthKit signature, and the context has not expired. A context
+for organization A is useless at tenant B, and no tenant can forge one. The
+control plane accepts an audit relay only with such a context for the same
+organization, and drops a repeated operation ID.
 
 A tenant therefore holds no secret. A compromised tenant can reach only its
 own organization's work. Traffic on the private network is plain HTTP; the
@@ -272,20 +285,28 @@ with a capacity message until the operator raises the cap.
 claims one `requested` row at a time and moves it through `creating`,
 `deploying`, and `live`. It names the Render service from the organization ID
 and searches by that name before it creates, so a restart never creates a
-second service; two services with that name stop the row as `failed`. The
-create call carries every tenant variable, because creation starts the first
-deploy at once. It creates an image-backed private service on the plan of the
-tier with the `TENANT_IMAGE` digest, polls the deploy, and records the
-internal address and the digest. Measured as orientation
-([SO-01c](self-onboarding-s1.md#so-01c-render-private-service-lifecycle)):
-the first deploy of a new service was `live` about 70 to 80 s after the
-create call, an image deploy about 35 s after its call, and a resume deploy
-17 to 29 s after the resume call. The suspend state changed after 0.7 to
-0.8 s, and the resume state after 0.9 to 2.2 s. A failed deploy gives
-`failed` with the reason and an operator report. Retries are bounded. The
-Render limit of 20 creates an hour makes the loop a queue. The control plane uses a dedicated
-Render user and API key, so the fleet script, staging, and the owner's own
-dashboard use do not share its rate-limit bucket.
+second service; two services with that name stop the row as `failed`. Since
+27 October 2026, the name is `TENANT_NAME_PREFIX` and the organization ID in
+lower case. The provisioner reads the slug from the API answer and never
+computes it. It moves rows only from `requested` to `live` and, after a resume,
+from `deploying` to `live`. The create call carries every tenant variable,
+because creation starts the first deploy at once. It creates an image-backed
+private service on the plan of the tier with the `TENANT_IMAGE` digest, polls
+the deploy, and records the internal address and the digest. Measured as
+orientation
+([SO-01c](self-onboarding-s1.md#so-01c-render-private-service-lifecycle)): the
+first deploy of a new service was `live` about 70 to 80 s after the create
+call, an image deploy about 35 s after its call, and a resume deploy 17 to 29 s
+after the resume call. The suspend state changed after 0.7 to 0.8 s, and the
+resume state after 0.9 to 2.2 s. A failed deploy gives `failed` with the reason
+and an operator report. Retries are bounded (27 October 2026): reads and
+deletes have up to 3 attempts after a `429`, a `5xx`, or a network failure; a
+create or a deploy is sent once; a deploy is polled every 5 s for at most 15
+minutes. The adapter refuses a write for a service ID that the registry does
+not own, and always for the production service (27 October 2026). The Render
+limit of 20 creates an hour makes the loop a queue. The control plane uses a
+dedicated Render user and API key, so the fleet script, staging, and the
+owner's own dashboard use do not share its rate-limit bucket.
 
 **Tier change.** When the tier of an organization changes, the control plane
 sets the plan of the row: `TENANT_PLAN_TEAM` for `team`, `TENANT_PLAN_FREE`
@@ -294,7 +315,8 @@ with a Render service update and then a deploy
 ([SO-01c](self-onboarding-s1.md#so-01c-render-private-service-lifecycle)).
 The capacity follows the plan: before the deploy, the provisioner also sets
 `OPERATION_CAPACITY` to 5 for `TENANT_PLAN_FREE` and to 10 for
-`TENANT_PLAN_TEAM` (D-15), so the same deploy applies both.
+`TENANT_PLAN_TEAM` (D-15), so the same deploy applies both. The values come
+from a constant map in the provisioner, with no new setting (27 October 2026).
 The update alone does not restart the container; the deploy replaces the
 instance with zero downtime: the new instance goes live, and the old one gets
 `SIGTERM` 60 s later. A tool call during that deploy gets a `503` with
@@ -305,11 +327,18 @@ whether this `503` window is still needed.
 **Signup.** The marketing page links to
 `https://app.thermus.ai/signup?tier=free`. Only `free` exists today, so the
 route ignores other values. The switch and the cap are checked before the
-notice. Sign-in, agreement, and organization creation stay as today. After
-the confirmed first Admin membership, the control plane requests the tenant
-and opens the portal. The portal reads `GET /workspace/status` and shows
-**Setting up your workspace** with a refresh until the state is `live`. The
-connection guide appears when the tenant is live.
+notice. Sign-in, agreement, and organization creation stay as today. After the
+confirmed first Admin membership, the control plane requests the tenant and
+opens the portal. The portal reads `GET /workspace/status`. The words of
+27 October 2026: while the tenant is set up, "Setting up your workspace. This
+takes about two minutes.", with a meta refresh every 5 s and no JavaScript; for
+`failed`, "Workspace setup failed. We have been notified and will fix it.",
+with an operator report; at a full cap without a tenant, "All free workspaces
+are in use. Try again later.". The connection guide appears only when the
+tenant is live. The cap race is accepted (27 October 2026): signup checks the
+cap before the agreement, so an organization created after the cap filled has
+no tenant. It sees the full-cap notice, and the status route requests the
+tenant again at each read until a place frees. There is no reservation.
 
 **MCP call.** The gateway is a step inside the existing `MCPServer` request
 path, after the bearer check and the access check, in place of the local
@@ -321,20 +350,40 @@ every denial of today stay unchanged.
    today. A missing `org_id`, an inactive membership, or a missing
    `product:access` gets today's denial.
 3. The gateway reads the tenant row from its in-memory copy of the registry.
-   State `live`: it forwards the request with the signed access context, with
-   method, headers, body, and cancellation, and streams the answer back. The
-   MCP server is per request, so no session affinity is needed. States
-   `requested`, `creating`, and `deploying`: `503` with `Retry-After` and a
-   safe message. State `suspended`: it asks Render to resume, once, then
-   `503` with `Retry-After: 60`. State `failed`: `503` and an operator report.
-   No row: it requests the tenant and answers `503`.
+   The copy refreshes every 10 s. After a failed refresh, the gateway serves
+   the stale copy up to 60 s, then answers `503` with `Retry-After: 15`
+   (27 October 2026). State `live`: it forwards the request with the signed
+   access context, with method, headers, body, and cancellation, and streams
+   the answer back. The MCP server is per request, so no session affinity is
+   needed. States `requested`, `creating`, and `deploying`: `503` with
+   `Retry-After: 15` and a safe message (27 October 2026). State `suspended`:
+   the gateway sets the row to `deploying`, sends one resume call, and answers
+   `503` with `Retry-After: 60`; the provisioner watches the newest deploy of a
+   `deploying` row and sets `live` (27 October 2026). State `failed`: `503` and
+   an operator report. No row: it requests the tenant and answers `503`.
 4. The tenant checks the context and the token, runs the tool within its
    capacity, relays its audit events to `POST /internal/audit` of the
    control plane with the same context, and answers.
 5. The control plane captures the relayed events through its existing audit
-   pipeline and updates `last_active_at` of the tenant at most once a minute.
-   A gateway refusal writes a system log line and no audit event, because no
-   tool ran. Today's `busy` audit event stays, because the tenant produces it.
+   pipeline. The `/internal/audit` route accepts a request only with a valid
+   context for the same organization, and only when the `Host` header is the
+   internal service host; a public request to `/internal/*` gets `404`
+   (27 October 2026). After a successful forward, the gateway updates
+   `last_active_at` at most once a minute for each organization, with an
+   in-memory time of the last write (27 October 2026). A gateway refusal writes
+   a system log line and no audit event, because no tool ran. Today's `busy`
+   audit event stays, because the tenant produces it.
+
+Two more answers of 27 October 2026 for a forwarded call:
+
+- The gateway reads the JSON-RPC ID from the request body that it forwards.
+  When the tenant fails before the first answer byte, the client gets one tool
+  error with `isError: true` and the words "Server restarted. Try again in a
+  minute.". When the answer stream has started, the gateway ends the stream.
+  Both cases log one line and report to the operator.
+- The gateway allows 5 searches at a time across all tenants. The sixth gets
+  the search busy message. A Brave API key or a dedicated outbound IP stays an
+  option for later.
 
 **Upgrade.**
 
@@ -387,25 +436,44 @@ paid, and it paid for each of them for at least one month.
 
 **Idle suspension.** A free tenant with no MCP call for `FREE_TENANT_IDLE_DAYS`
 is suspended through the Render API. A tenant that never served a call counts
-from its creation. A suspended service costs nothing. The first call after
-that resumes it; the client sees `503` with `Retry-After` for about a minute.
-Team tenants are never suspended. A weekly sweep compares the registry with
-the WorkOS organization list; the tenant of an organization that no longer
-exists is deleted, and its row becomes `deleted`.
+from its creation. A suspended service costs nothing. The first call after that
+resumes it; the client sees `503` with `Retry-After: 60` for about a minute.
+Team tenants are never suspended. Since 27 October 2026, the idle sweep runs
+once a day inside the control plane, with its lifetime in `app`. A failed
+suspend or resume, also a `429`, logs one line and is tried again at the next
+sweep or the next call; there is no new state. The portal notice of a suspended
+tenant says "Your workspace was paused after 14 days without use. It restarts
+on the next request, which can take about a minute.". The daily sweep also
+writes the fleet summary line of SO-09. A weekly sweep compares the registry
+with the WorkOS organization list; the tenant of an organization that no longer
+exists is deleted, and its row becomes `deleted`. Before a delete, the sweep
+reads the organization by ID and deletes only on a `404`, because the lists lag
+for seconds (27 October 2026).
 
 **Release.** A GitHub Actions workflow builds `Dockerfile.hosted` for
-`linux/amd64`, runs the offline gate that the Dockerfile already contains,
-and pushes the image to GHCR by commit and digest. The control plane runs
-that image too. The workflow deploys the control plane through its deploy
-hook with the new digest. The fleet script then deploys the digest to each
-tenant in batches with `POST /services/{id}/deploys` and `imageUrl`, checks
-each `/healthz` over the private network, and records the digest. New
-tenants use `TENANT_IMAGE`. One image, one release path.
+`linux/amd64`, runs the offline gate that the Dockerfile already contains, and
+pushes the image to GHCR by commit and digest, on each merge to `main`. The
+control plane runs that image too. Since 27 October 2026, the workflow deploys
+the control plane only on a manual dispatch with a digest input, through the
+Render API deploy with `imageUrl`, which keeps `imagePath` current. It uses the
+Render API key of a dedicated user from the GitHub secret store. The fleet
+script then deploys the digest to each tenant with
+`POST /services/{id}/deploys` and `imageUrl`, in batches of three, and records
+the digest. A deploy that reaches `live` counts as healthy; there is no health
+probe over the private network, and a batch stops at the first deploy that does
+not reach `live` (27 October 2026). The fleet script has six commands: list and
+status, request, upgrade, suspend and resume, delete, and summary
+(27 October 2026). New tenants use `TENANT_IMAGE`. One image, one release path.
+GHCR keeps every digest that the control plane or a tenant runs, and the last
+ten release digests; a monthly runbook step deletes the older ones
+(27 October 2026).
 
 ### 4.3 Data model
 
-New tables in the existing `thermus_admin` schema, applied with the
-migration process of S2-01a, with a new runtime role for the control plane.
+New tables in the existing `thermus_admin` schema, applied with the migration
+process of S2-01a. Since 27 October 2026, the control plane reuses the runtime
+role `thermus_logging`, with grants on the three new tables: one role and one
+connection, in place of a new role. A rename can come with the Slice 4 cleanup.
 Tenant containers have no database access. The membership removal store of
 Slice 2.5 shows the pattern to follow: one private SQL runtime, narrow store
 operations, and a committed intent before a provider effect.
@@ -415,6 +483,12 @@ operations, and a committed intent before a provider effect.
 | `tenants` | `organization_id` (key), `render_service_id`, `service_name`, `internal_url`, `state`, `plan`, `applied_plan`, `image_digest`, `last_active_at`, `failure_reason`, `created_at`, `updated_at` | One row for each organization. `state` is `requested`, `creating`, `deploying`, `live`, `suspended`, `failed`, or `deleted`. `plan` is the wanted Render plan; `applied_plan` is the current one. |
 | `subscriptions` | `organization_id` (key), `stripe_customer_id`, `stripe_subscription_id`, `status`, `current_period_end`, `cancel_at_period_end`, `terms_accepted_at`, `updated_at` | The last Stripe-confirmed state. No row means `free`. |
 | `billing_events` | `stripe_event_id` (key), `type`, `received_at`, `applied_at` | Duplicate protection; `applied_at` is set after a successful apply. |
+
+Since 27 October 2026, `FREE_TENANT_LIMIT` counts every row except
+`deleted` and `failed`: `requested`, `creating`, `deploying`, `live`,
+and `suspended`. No state marks a row for deletion: the fleet script and the
+weekly sweep delete the Render service through the adapter and set the row
+`deleted` themselves.
 
 The tier is derived: `team` when the subscription status is `active`,
 `trialing`, or `past_due`; `free` otherwise. Provisioning and billing changes
@@ -428,13 +502,13 @@ that the registry and the billing store can use it and `pg` is declared once.
 
 | Rule | `free` | `team` |
 | --- | --- | --- |
-| Members | Active memberships with product access plus pending invitations stay at or under 5. The creator counts as 1. An invitation beyond the limit gets the refusal `limit-reached` with an Upgrade link. | No limit. Each active member is billed. |
+| Members | Active memberships with product access plus pending invitations stay at or under 5. The creator counts as 1. A pending invitation reserves a seat. An invitation beyond the limit gets the refusal `limit-reached` with the words "This free workspace has 5 of 5 seats. Upgrade to Team to add more members.", without a link; the Upgrade button comes with SO-13 (27 October 2026). | No limit. Each active member is billed. |
 | Enforcement | `OrganizationAdministration.sendInvitation()` on the control plane, from the complete member and invitation reads, serialized for each organization so that two concurrent invitations cannot both pass at 4 of 5. A failed page fails the check. | none |
 | Invariant | An invitation from the control plane is the only way to add a member. SSO, Directory Sync, domain joining, and dashboard-created memberships stay off, as the production readback shows. | the same |
 | Inviting again after a downgrade | Needs member removal on the Members page, or an upgrade. | not applicable |
 | Container | `0.5c-512mb` with today's page limits; suspended when idle. | `1c-2g`; never suspended. |
 | Capacity | Up to 5 fetches or searches at a time in its own container (D-15); the next call gets `Server busy`. | Up to 10 at a time, with more memory for large pages (D-15). |
-| Portal | `plan: 'free'`, `memberLimit: 5`. | `plan: 'team'`. |
+| Portal | `plan: 'free'`, `memberLimit: 5`. Members shows "N of 5 seats used", where N counts the active members with product access and the pending invitations (27 October 2026). | `plan: 'team'`. |
 
 Native invitation acceptance happens in AuthKit, so the application cannot
 refuse it. Counting pending invitations as reserved seats at send time is the
@@ -451,20 +525,22 @@ and declaration as a T2 fact.
 | --- | --- | --- |
 | `tenants` (new) | `src/tenancy/tenants/` | Registry store, tenant request with the cap, provisioning state machine with the plan change, tenant lookup, idle and organization sweeps. |
 | `render` (new) | `src/tenancy/providers/render/` | Render API adapter: create, deploy, update plan, suspend, resume, delete, find by name. |
-| `sql` (new) | `src/runtime/sql/` | The bounded SQL runtime, moved from `audit-logs`; the only owner that imports `pg`. |
+| `sql` (new) | `src/runtime/sql/` | The bounded SQL runtime, moved from `audit-logs`; the only owner that imports `pg`. It connects with the existing role `thermus_logging` (27 October 2026). |
 | `stripe` (new) | `src/accounts/providers/stripe/` | Stripe API and webhook signature adapter. |
 | `billing` | `billing-stripe.ts`, `billing-store.ts` | `BillingStripe`, subscription and event storage, tier derivation. |
-| `mcp` | `mcp-gateway.ts` | Forward a resolved request with the signed context; the `503` states. |
-| `identity` | `signed-access-context.ts` | Sign and verify the access context. |
-| `audit-logs` | `audit-relay-sink.ts` | The tenant-side sink that relays events to the control plane. |
+| `mcp` | `mcp-gateway.ts` | Forward a resolved request with the signed context; the `503` states, the restart answer, and the limit of 5 searches (27 October 2026). |
+| `identity` | `signed-access-context.ts` | Sign and verify the access context, an EdDSA JWT made with `jose` (27 October 2026). |
+| `audit-logs` | `audit-relay-sink.ts` | The tenant-side sink that relays events to the control plane, with the bounds of the audit collector: 32 tenants, 2 active sends, 30 s age, and 3 attempts with backoff from 250 ms to 2 s (27 October 2026). |
 | `web` | `account/billing-routes.ts`, `internal/audit-relay-route.ts`, workspace status | Upgrade, portal, return, webhook, relay, and status routes. |
 | `app` | role selection, both compositions, the provisioner and sweep lifetimes | |
 
 New edges, at least: `app` to `tenants`, `render`, `stripe`, and `sql`;
 `tenants` and `billing` to `sql`; `billing` to `stripe`; `mcp`, `web`, and
-`audit-logs` to `identity` for the context. Declarations change in
-`deployment-config.ts`, `billing.ts`, and the change-record outcome that gains
-`limit-reached`, which also reaches the audit event contract.
+`audit-logs` to `identity` for the context. The `identity` owner uses `jose`,
+which the code already uses for the AuthKit tokens (27 October 2026).
+Declarations change in `deployment-config.ts`, `billing.ts`, and the
+change-record outcome that gains `limit-reached`, which also reaches the audit
+event contract.
 
 ## 5. Owner decisions, answered on 26 October 2026
 
@@ -478,7 +554,7 @@ New edges, at least: `app` to `tenants`, `render`, `stripe`, and `sql`;
 | D-6 | Cost caps | `FREE_TENANT_LIMIT` 25, `FREE_TENANT_IDLE_DAYS` 14. | At most about 175 USD a month of live free containers. |
 | D-7 | Tenant image source | A prebuilt image in GHCR from a GitHub Actions build. | SO-02; one image and one release path. |
 | D-8 | PostgreSQL plan | Supabase Free for now. | The daily reconciliation touches the database every day, so the 7-day pause is unlikely while the control plane runs. A pause stops provisioning, billing, and the audit export until the operator resumes the project. Revisit at the first paying customer. |
-| D-9 | Render workspace plan | Hobby for now. | 7 days of logs and failure emails only. Alerts come from the failure emails and the daily fleet summary. Revisit when the fleet grows. |
+| D-9 | Render workspace plan | Hobby for now. | 7 days of logs and failure emails only. Alerts come from the failure emails and the daily fleet summary. Amended on 27 October 2026: Axiom monitors on the production logging destination give the alerts (SO-11). Revisit when the fleet grows. |
 | D-10 | Existing organizations | Fresh inventory; delete the unused test organizations. The rest get a tenant on first use. | SO-12. |
 | D-11 | Legal and marketing | Proceed under the existing document process. | SO-12 for the free tier, SO-14 for the paid tier. No customer reaches Checkout before approval and publication. |
 | D-12 | Team container | A larger instance, `1c-2g`, with the same capacity. Amended by D-15 on 27 October 2026: 10 calls at a time, against 5 on the free instance. | The tier change resizes the container and sets its capacity. Costs about 25 USD a month for each team tenant. |
@@ -794,132 +870,208 @@ container.
 `Dockerfile.hosted` for `linux/amd64`, pushes `thermus-hosted:<sha>` to GHCR,
 and records the digest. Given a merge to `main`, when the workflow ends, then
 the image exists by digest, and a failed offline gate pushes nothing. The
-control plane service switches to that image, and the workflow deploys it
-through the deploy hook. Document the GHCR quota and the retention of old
-images. The workflow of SO-01b becomes this path.
-Size M. Depends on SO-01b.
+answers of 27 October 2026: production deploys only on a manual dispatch with
+a digest input, through the Render API deploy with `imageUrl`, so
+`autoDeploy: no` keeps its meaning; a run from another branch deploys
+nothing. The Render API key of a dedicated user lives in the GitHub secret
+store, an owner step. The control plane service switches to the image at
+step 5 of the SO-12 order. GHCR keeps every digest that the control plane or
+a tenant runs, as the registry shows, and the last ten release digests; a
+monthly runbook step deletes the older ones. The workflow of SO-01b becomes
+this path. Size M. Depends on SO-01b.
 
-**SO-03 Tenant role, signed context, and capacity.** The `identity` module
-that signs and verifies the access context. `THERMUS_ROLE=tenant` composes
+**SO-03 Tenant role, signed context, and capacity.** The `identity` module that
+signs and verifies the access context. `THERMUS_ROLE=tenant` composes
 `/healthz` and `/mcp` only, pinned to `TENANT_ORGANIZATION_ID`, with the
-settings of section 4.1 and an access resolver that takes the grants from
-the verified context. The audit relay sink. The capacity setting of SO-01a
-applies in both roles; a tenant reads the value that the provisioner sets, 5
-or 10 (D-15). Given a request with a
-valid context and token for the pinned organization, when the client calls a
-tool, then it gets the cleaned Markdown and the relay receives one event; a
-context for another organization, an expired context, a bad signature, or a
-token with another hash gets `403`; given `OPERATION_CAPACITY=5` and 5
-running calls, when a 6th arrives, then it gets `Server busy`; the start needs
-no WorkOS API key and no database. Size L.
+settings of section 4.1 and an access resolver that takes the grants from the
+verified context. The context is the EdDSA JWT of section 4.1, and
+`GATEWAY_PUBLIC_KEY` accepts several keys (27 October 2026). The audit relay
+sink, with the bounds of the audit collector (27 October 2026). The capacity
+setting of SO-01a applies in both roles; a tenant reads the value that the
+provisioner sets, 5 or 10 (D-15). This ticket measures the private address of
+the control plane with a one-off job from a disposable tenant to
+`http://<control-plane-slug>:8080/healthz`, and it fixes
+`CONTROL_PLANE_INTERNAL_URL` from the result; the disabled public subdomain of
+the production service does not change the private name (27 October 2026).
+Given a request with a valid context and token for the pinned organization,
+when the client calls a tool, then it gets the cleaned Markdown and the relay
+receives one event; a context for another organization, an expired context, a
+bad signature, or a token with another hash gets `403`; given
+`OPERATION_CAPACITY=5` and 5 running calls, when a 6th arrives, then it gets
+`Server busy`; the start needs no WorkOS API key and no database; given
+`WORKOS_API_KEY`, `WORKOS_CLIENT_SECRET`, `DATABASE_URL`, `RENDER_API_KEY`, or
+a `STRIPE_*` setting in the tenant environment, then the start stops with a
+message that names it (27 October 2026). Size L.
 
 **SO-04 Tenant registry and SQL owner.** The `sql` owner with the moved
-runtime, the three tables of section 4.3, the migration, the control-plane
-role and grants, the registry store, the idempotent tenant request with the
-cap check, and an in-memory lookup with a refresh bound. Given a row, when the
-gateway asks for the organization, then it gets the state and the internal
-address; a stale copy never outlives its bound. Size M. Depends on SO-01c.
+runtime, the three tables of section 4.3, the migration, the grants of the role
+`thermus_logging` on the new tables (27 October 2026), the registry store, the
+idempotent tenant request with the cap check, and an in-memory lookup with a
+refresh bound. The answers of 27 October 2026: the cap counts every row except
+`deleted` and `failed`; `FREE_TENANT_LIMIT` is a whole number from 0 to 1000,
+default 25, and 0 closes free signup through the cap; the copy refreshes every
+10 s, and after a failed refresh the stale copy serves up to 60 s. Given a row,
+when the gateway asks for the organization, then it gets the state and the
+internal address; a stale copy never outlives 60 s; given an invalid
+`FREE_TENANT_LIMIT`, then the start stops with a message that names the rule.
+Size M. Depends on SO-01c.
 
 **SO-05 MCP gateway.** Inside `MCPServer`, after the bearer and access checks,
 a supplied forward step replaces the local dispatch when `MCP_TENANTS_ENABLED`
 is on: the signed context, the forward with streaming and cancellation, the
-`503` states with `Retry-After`, the tenant request for a missing row, and
-the `last_active_at` update. The `/internal/audit` route captures relayed
-events through the existing audit pipeline. With the switch off, the control
-plane behaves as today. Given a live tenant, when the client calls a tool,
-then the tenant answers through the gateway, the control plane exports the
-audit event, and the audience and metadata URLs stay public; given a
-suspended tenant, then the client gets `503` and Render gets one resume
-request. For a 2025-era client, the gateway forwards the
-`notifications/cancelled` POST and the GET stream to the same tenant like each
-other request; the record
+`503` states with `Retry-After`, the tenant request for a missing row, and the
+`last_active_at` update. The `/internal/audit` route captures relayed events
+through the existing audit pipeline. With the switch off, the control plane
+behaves as today and reads none of the new settings. The answers of
+27 October 2026, as section 4.2 states them: the restart answer,
+`Retry-After: 15` and `Retry-After: 60`, the resume path through `deploying`
+with a supplied resume operation, the limit of 5 searches across all tenants,
+the `Host` check of `/internal/audit` with `404` for a public `/internal/*`
+request, and the `last_active_at` update once a minute. Given a live tenant,
+when the client calls a tool, then the tenant answers through the gateway, the
+control plane exports the audit event, and the audience and metadata URLs stay
+public; given a suspended tenant, then the client gets `503` with
+`Retry-After: 60`, the row is `deploying`, and the resume operation gets one
+call; given a tenant that fails before the first answer byte, then the client
+gets the tool error "Server restarted. Try again in a minute."; given 5 running
+searches, then a sixth gets the search busy message. For a 2025-era client, the
+gateway forwards the `notifications/cancelled` POST and the GET stream to the
+same tenant like each other request; the record
 [Cancellation by notifications/cancelled (2025-era clients)](self-onboarding-s1.md#cancellation-by-notificationscancelled-2025-era-clients)
 shows that this alone does not stop the running call and names the change in
 the tenant. Acceptance tests use a fake tenant upstream; one integration test
 runs both roles as two local processes. Size L. Depends on SO-03, SO-04.
 
 **SO-06 Provisioner.** The state machine of section 4.2 behind a small
-`TenantPlatform` interface with a Render adapter: idempotent creation by
-name, the duplicate-name stop, deletion, bounded retries, failure reports,
-and the claim of one row at a time. The create call sets
-`OPERATION_CAPACITY=5`, the value of a free tenant (D-15). The plan change
-comes with Slice 3.
-Given a `requested` row, when the loop runs with a fake Render API, then the
-row reaches `live` with the service ID and the internal address, and the
-create call has `OPERATION_CAPACITY=5`; given a
-Render `429`, then the loop waits for `Retry-After` and creates no second
-service; given a restart after `creating`, then it finds the service by name
-and continues; given a row marked for deletion, then the service is deleted
-and the row becomes `deleted`. The API gives the internal address in
-`serviceDetails.url` as `<slug>:10000`, while `serviceDetails.openPorts`
-holds 8080. SO-01d part two confirmed `http://<slug>:8080`: port 8080
-answered `/healthz` from inside the private network, and port 10000 refused
-the connection. So the provisioner stores `http://<slug>:8080` in
-`internal_url`, the host of `serviceDetails.url` with the port of
-`serviceDetails.openPorts`, and not the field as it is
+`TenantPlatform` interface with a Render adapter: idempotent creation by name,
+the duplicate-name stop, deletion, bounded retries, failure reports, and the
+claim of one row at a time. The create call sets `OPERATION_CAPACITY=5`, the
+value of a free tenant (D-15), from a constant map in the provisioner
+(27 October 2026). The plan change comes with Slice 3. The answers of
+27 October 2026: the service name is `TENANT_NAME_PREFIX` and the organization
+ID in lower case; with the switch off, the loop does not run and reads no
+Render setting; the retry bounds and the write guard of section 4.2 apply; the
+provisioner moves rows only from `requested` to `live` and, after a resume,
+from `deploying` to `live`; the deletion is the work of SO-09. Given a
+`requested` row, when the loop runs with a fake Render API, then the row
+reaches `live` with the service ID and the internal address, and the create
+call has `OPERATION_CAPACITY=5`; given a Render `429`, then the loop waits for
+`Retry-After` and creates no second service; given a restart after `creating`,
+then it finds the service by name and continues; given a `deploying` row after
+a resume, then the loop sets `live` when the newest deploy is live; given a
+write for a service ID that the registry does not own, or for the production
+service, then the adapter refuses it (27 October 2026). The API gives the
+internal address in `serviceDetails.url` as `<slug>:10000`, while
+`serviceDetails.openPorts` holds 8080. SO-01d part two confirmed
+`http://<slug>:8080`: port 8080 answered `/healthz` from inside the private
+network, and port 10000 refused the connection. So the provisioner stores
+`http://<slug>:8080` in `internal_url`, the host of `serviceDetails.url` with
+the port of `serviceDetails.openPorts`, and not the field as it is
 ([SO-01d](self-onboarding-s1.md#part-two-findings-for-slice-2)). A deploy with
 `imageUrl` also changes the image setting `imagePath` of the service
-([SO-01c](self-onboarding-s1.md#so-01c-render-private-service-lifecycle)).
-A live interface test in the Thermus AI workspace, never on the production
-service, creates and deletes one disposable tenant. Size L. Depends on
-SO-04.
+([SO-01c](self-onboarding-s1.md#so-01c-render-private-service-lifecycle)). A
+live interface test in the Thermus AI workspace, never on the production
+service, creates and deletes one disposable tenant. Size L. Depends on SO-04.
 
 **SO-07 Signup handoff and workspace status.** `?tier=free` on `/signup`, the
 cap check with the closed notice, the tenant request after the first Admin is
 confirmed, `GET /workspace/status`, and the portal setup page that shows the
-connection guide only when the tenant is live. Given an eligible visitor,
-when the agreement is accepted, then the organization exists, the row is
-`requested`, and the portal shows the setup state until `live`. The hosted
-live gate gains this scenario. Size M. Depends on SO-05, SO-06.
+connection guide only when the tenant is live. The portal words, the meta
+refresh every 5 s, and the accepted cap race are those of section 4.2
+(27 October 2026). Given an eligible visitor, when the agreement is accepted,
+then the organization exists, the row is `requested`, and the portal shows the
+setup state until `live`; given a full cap, then the status route requests the
+tenant again at each read. The hosted live gate gains this scenario. It runs
+the control plane with an in-process fake of the Render platform and the
+registry on the disposable PostgreSQL of the removal proof, with no Render
+call; the SO-06 live interface test and the SO-12 rehearsal prove the real path
+(27 October 2026). Size M. Depends on SO-05, SO-06.
 
-**SO-08 Free member limit.** `BillingState` gains `plan: 'free' | 'team'`
-and `memberLimit`. `BillingFree` answers `free` with the limit 5. The members
-page shows "N of 5 members" on `free`; `sendInvitation()` refuses beyond the
-limit with `limit-reached` and an Upgrade link, serialized for each
-organization; the portal accepts both plans. Given a free organization with
-4 members and 1 pending invitation, when two Admins invite at the same time,
-then one invitation is sent and the other is refused. Size M. Depends on
-SO-04.
+**SO-08 Free member limit.** `BillingState` gains `plan: 'free' | 'team'` and
+`memberLimit`. `BillingFree` answers `free` with the limit 5. The members page
+shows "N of 5 seats used" on `free`, where N counts the active members with
+product access and the pending invitations. `sendInvitation()` refuses beyond
+the limit with `limit-reached` and the words "This free workspace has 5 of 5
+seats. Upgrade to Team to add more members.", without a link, serialized for
+each organization; the portal accepts both plans (27 October 2026). Given a
+free organization with 3 members and 1 pending invitation, when two Admins
+invite at the same time, then one invitation is sent and the other is refused.
+Until 27 October 2026, the example had 4 members, which is already 5 of 5 with
+the pending invitation. Size M. Depends on SO-04.
 
-**SO-09 Fleet script and organization removal.** `script/fleet/*.ts` over
-the Render adapter and the registry: list, status, request a tenant for an
-organization, upgrade one or all tenants to a digest in batches with health
-checks, suspend, resume, repair a `failed` row, rotate the gateway key pair,
-delete a tenant with its Render service, and the daily cost and state
-summary. Each command prints what it will do and asks before a write. The
-owner's removal of an organization: the deletion runbook gains the order
-(remove the WorkOS organization under the existing procedure, then delete
-the tenant with the fleet script) and the registry rows, and a weekly sweep
-deletes the tenant of an organization that WorkOS no longer lists. Given an
-organization that WorkOS no longer lists, when the sweep runs, then its
-Render service is deleted and its row is `deleted`. Size M. Depends on SO-06.
+**SO-09 Fleet script and organization removal.** `script/fleet/*.ts` over the
+Render adapter and the registry, with six commands since 27 October 2026: list
+and status, request, upgrade, suspend and resume, delete, and summary. An
+upgrade runs in batches of three and stops at the first deploy that does not
+reach `live`; a deploy that reaches `live` counts as healthy. The delete
+command deletes the Render service through the adapter and sets the row
+`deleted`. Repair is a runbook step: delete, then request. The key rotation is
+a runbook over settings updates: add the new public key to each tenant and
+deploy in batches, switch the control plane to the new private key, then remove
+the old key. The script and the orphan runbook filter by `TENANT_NAME_PREFIX`.
+Each command prints what it will do and asks before a write. The daily summary
+is one log line of the daily sweep inside the control plane: the counts and the
+cost by state and plan, the restarts outside a deploy, and the memory values
+from the Render metrics API. The owner's removal of an organization: the
+deletion runbook gains the order (remove the WorkOS organization under the
+existing procedure, then delete the tenant with the fleet script) and the
+registry rows, and a weekly sweep deletes the tenant of an organization that
+WorkOS no longer lists. Before a delete, the sweep reads the organization by ID
+and deletes only on a `404` (27 October 2026). Given an organization that
+WorkOS no longer lists, when the sweep runs and the read by ID answers `404`,
+then its Render service is deleted and its row is `deleted`. Size M. Depends on
+SO-06.
 
-**SO-10 Idle suspension and resume.** The idle sweep, the resume path of the
-gateway, and the portal notice. Given a free tenant idle for the period, when
-the sweep runs, then Render suspends it; given a call after that, then the
-gateway resumes it once and answers `503` with `Retry-After` until it is
-live. Size M. Depends on SO-05, SO-09.
+**SO-10 Idle suspension and resume.** The idle sweep, the Render side of the
+resume operation of SO-05, and the portal notice (27 October 2026). The sweep
+runs once a day inside the control plane, with its lifetime in `app`. A failed
+suspend or resume, also a `429`, logs one line and is tried again at the next
+sweep or the next call. Team tenants are never touched. Given a free tenant
+idle for the period, when the sweep runs, then Render suspends it, and the
+portal shows "Your workspace was paused after 14 days without use. It restarts
+on the next request, which can take about a minute."; given a call after that,
+then the gateway resumes it once and answers `503` with `Retry-After: 60` until
+it is live. Size M. Depends on SO-05, SO-09.
 
 **SO-11 Runbooks, alerts, and secrets.** Runbooks for a failed provision, an
 orphaned Render service, a paused Supabase project, the deletion of a tenant,
 and the rotation of the Render API key, the gateway key pair, and the
-settings encryption key. Within the Hobby plan: Render failure emails for
-memory kills, and the daily summary of SO-09 as the fleet alert. Size S.
+settings encryption key. Since 27 October 2026, the alerts are Axiom monitors
+on the production logging destination, and they email the owner: the restart
+line of the gateway, the memory line at or above 80 % of the limit, and the
+daily summary line of the control plane. The Render failure emails of the
+Hobby plan stay, but they did not report the restarts of SO-01e. The GitHub
+token of the registry credential `ghcr-thermus-hosted-read` gets a rotation
+entry with its expiry date. The gateway key rotation adds, switches, and
+removes public keys (SO-09). The search limit is a runbook entry, not an
+alert: a Brave API key or a dedicated outbound IP is the later option.
+Size S.
 
 **SO-12 Free-tier release.** The deployment proof of the approved removal
-bundle from the Slice 2.5 release checkpoint; the marketing **Start free** link to `https://app.thermus.ai/signup?tier=free`
-and the free-tier guides; rehearsal with the WorkOS Staging environment, a
-staging control plane and database, a dedicated Render user, and the Thermus
-AI workspace, never on the production service: signup, provisioning, an MCP
-call, suspend, resume, a fleet upgrade, and an organization removal. Then production, in this order:
-fresh WorkOS inventory and the D-10 cleanup; the owner's disposition of the
-open release holds; the database migration; the registry credential; the
-control plane deploy with the gateway switch off; the switch on; one real
-MCP call for each kept organization, which provisions its tenant; a canary
-signup with an owner account; marketing publication; then the signup switch.
-Rollback: turn the gateway switch off, close signup, keep the tenants
-running, and redeploy the previous control plane release if needed. Size M.
-Depends on SO-02 to SO-11.
+bundle from the Slice 2.5 release checkpoint; the marketing **Start free** link
+to `https://app.thermus.ai/signup?tier=free` and the free-tier guides;
+rehearsal with the WorkOS Staging environment, a staging control plane and
+database, a dedicated Render user, and the Thermus AI workspace, never on the
+production service: signup, provisioning, an MCP call, suspend, resume, a fleet
+upgrade, an organization removal, and then the rollback steps before the
+cleanup (27 October 2026). The rehearsal setup of 27 October 2026: the staging
+database is a second free Supabase project with the same migration process and
+connection pattern; the staging control plane is `thermus-spike-control`, and
+its `TENANT_NAME_PREFIX` is `thermus-spike-tenant-`; in WorkOS Staging, the
+rehearsal adds its redirect URI and resource indicator beside those of the
+gate, and the initiate-login URI stays with the gate, so rehearsal sign-ins
+start from the application. Then production, in this order: 1. fresh WorkOS
+inventory and the D-10 cleanup; 2. the owner's disposition of the open release
+holds; 3. the database migration; 4. the registry credential, which reuses
+`ghcr-thermus-hosted-read`; 5. an API deploy of the release candidate digest to
+the production service with the gateway switch off, where the Git build ends
+(27 October 2026); 6. the new settings with the switch on; 7. one real MCP call
+for each kept organization, which provisions its tenant; 8. a canary signup
+with an owner account; 9. marketing publication; 10. the signup switch. A
+manual dispatch stays the deploy trigger. The search limit of 5 is part of
+SO-05, so the release does not wait for it. Rollback: turn the gateway switch
+off, close signup, keep the tenants running, and redeploy the previous control
+plane release if needed. Size M. Depends on SO-02 to SO-11.
 
 ### Slice 3: upgrade to team
 
@@ -990,21 +1142,22 @@ consider a smaller instance for it. Size S. Depends on SO-12.
 
 | Risk | Fact | Mitigation |
 | --- | --- | --- |
-| Memory on the free instance | 631 MiB peak recorded for one render against 512 MB. SO-01e measured the 9 MiB page: on `0.5c-512mb`, five calls at a time peaked at 379 MiB with no restart, and ten restarted the container; on `1c-2g`, ten needed 709 MiB. A restart ends every active call with a failure. | Accepted in D-2. D-15 sets 5 calls at a time for a free tenant and 10 for a team tenant (27 October 2026). Render restarts the container, but it reported no event for these restarts, so the failure emails of SO-11 can miss them ([SO-01e](self-onboarding-s1.md#recommendation-for-d-15)). |
+| Memory on the free instance | 631 MiB peak recorded for one render against 512 MB. SO-01e measured the 9 MiB page: on `0.5c-512mb`, five calls at a time peaked at 379 MiB with no restart, and ten restarted the container; on `1c-2g`, ten needed 709 MiB. A restart ends every active call with a failure. | Accepted in D-2. D-15 sets 5 calls at a time for a free tenant and 10 for a team tenant (27 October 2026). Render restarts the container, but it reported no event for these restarts ([SO-01e](self-onboarding-s1.md#recommendation-for-d-15)). So the alerts are Axiom monitors on the restart line of the gateway and on the memory line at or above 80 % of the limit (27 October 2026). |
 | Render API rate limits | 20 creates an hour for each Render user, and 10 updates, deploys, suspends, and resumes a minute for each service ([SO-01c](self-onboarding-s1.md#so-01c-render-private-service-lifecycle)). | A dedicated user for the control plane. The provisioner is a queue. Suspend only after 14 idle days, so resumes are rare. Ask Render for a higher limit before a launch campaign. |
 | PostgreSQL on Supabase Free | Pauses after 7 idle days; a pause stops provisioning, billing, and the audit export. | Accepted in D-8. The daily reconciliation keeps the project active. A runbook resumes it. Revisit at the first paying customer. |
 | Cost of free tenants | 7 USD a month for each live free tenant. Signup needs only a verified email. | `FREE_TENANT_LIMIT`, idle suspension from creation, deletion of dead organizations, the admission limits, the global switch. |
 | Gateway on the request path | Every MCP call crosses one more hop. The control plane is one instance with process-local state: the signup counters, the registry copy, the provisioner, the sweeps. | The proxy is light. A second instance needs a shared claim for the loops; not planned. Keep `1c-2g` until SO-16. |
+| Shared search limit | The public Brave website answered `HTTP 429` to 10 searches at the same time from the shared outbound addresses of a region ([SO-01e](self-onboarding-s1.md#findings)). | The gateway allows 5 searches at a time across all tenants (27 October 2026). A Brave API key or a dedicated outbound IP is a later option. |
 | Member limit | Native acceptance cannot be refused. An organization keeps the members it added while it paid. Member removal and its verification merged on 26 October 2026 (PRs #251 to #257); the removal release itself is still pending in the S2.5-02 ledger. | The limit counts pending invitations. Pending invitations above the limit are revoked at a downgrade. The invariant on joining paths holds. The kept members are accepted in D-5. |
 | Billed count | WorkOS counts every active membership, also a membership with only the default role, which gives no product access. | Default-role memberships do not exist in normal use; the fleet summary reports one. |
-| Image pull at each deploy | Render pulls the large hosted image at every tenant deploy. | Measure in SO-01c. Keep old digests for rollback. Prune GHCR under its quota. |
+| Image pull at each deploy | Render pulls the large hosted image at every tenant deploy. | Measure in SO-01c. GHCR keeps every digest that runs and the last ten release digests for a rollback; a monthly runbook step deletes the older ones (27 October 2026). |
 | Legal | Paid fees are outside the approved Terms. The published price must match Stripe. | SO-14 before any customer reaches Checkout. |
 | WorkOS metadata is full | 10 of 10 keys used. | All tier and tenant facts live in PostgreSQL. |
-| Credentials in the control plane | The Render API key can change every service of the workspace. The Stripe key can create charges. | Render secret variables, a dedicated Render user, a Stripe restricted key, rotation runbooks, and no credential in any tenant. |
+| Credentials in the control plane | The Render API key can change every service of the workspace. The Stripe key can create charges. | Render secret variables, a dedicated Render user, a Stripe restricted key, rotation runbooks, and no credential in any tenant. The adapter refuses a write for a service that the registry does not own, and always for the production service; the GitHub token of the registry credential has a rotation entry with its expiry date (27 October 2026). |
 | Webhook order and duplicates | Stripe can deliver an event twice and out of order. | Event ID table with the applied mark; read the subscription from Stripe on each event; daily reconciliation. |
 | Private network is plain HTTP | Render does not encrypt traffic between services. | Accepted: every service on that network is Thermus; the forwarded bearer token is short-lived, and the context is signed. |
 | Audit relay | Relayed events add one private call for each tool call; a failed relay loses the event. | Bounded best effort, as today's capture; the control plane keeps the queue across tenant deploys and suspensions. |
-| Logs on Hobby | 7 days of logs, no log forwarding. | Accepted in D-9. The daily summary and the runbooks record what matters. |
+| Logs on Hobby | 7 days of logs, no log forwarding. | Accepted in D-9. The daily summary and the runbooks record what matters. The control plane writes the restart, memory, and daily summary lines to its production logging destination, Axiom, where monitors email the owner (27 October 2026). |
 | Owner-only steps | WorkOS dashboard settings including the Stripe add-on, Render plan changes, legal approval, the open release holds, and decision records need the owner. | Section 5 and the runbooks name each step. |
 
 ## 8. Cost model
