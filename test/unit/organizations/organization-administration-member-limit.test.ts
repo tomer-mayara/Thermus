@@ -123,7 +123,7 @@ describe('OrganizationAdministration free member limit', () => {
     assert.deepEqual(outcomes, ['applied', 'applied']);
   });
 
-  test('Given a team organization with 5 seats and a pending invitation, when an Admin invites, then no member limit applies and the invitation is applied without a member read', async () => {
+  test('Given a team organization with 5 active members with product access and 2 pending invitations, when an Admin invites, then no member limit applies and the invitation is applied without a member read', async () => {
     const { directory, billing, administration } = invitationsWith();
 
     const outcome = await sendAs(administration, 'user-eve', 'org-a')('new@example.com');
