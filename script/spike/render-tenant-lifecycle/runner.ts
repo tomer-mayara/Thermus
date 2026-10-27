@@ -2,7 +2,6 @@ import { basename } from 'node:path';
 import { messageOf, progress } from './context.ts';
 import { UsageError } from './inputs.ts';
 
-// The step runner of the Render probes: each probe gives its own steps, context, and usage.
 export interface RunnableStep<C> {
   readonly name: string;
   readonly spec: string;
@@ -33,7 +32,6 @@ export async function runStep<C extends Concluding>(step: RunnableStep<C>, conte
   }
 }
 
-// The steps run in order until one fails; the steps after it get one NOT RUN line.
 export async function runInOrder<C extends Concluding>(steps: readonly RunnableStep<C>[], context: C): Promise<boolean> {
   for (const [index, step] of steps.entries()) {
     if (await runStep(step, context)) continue;

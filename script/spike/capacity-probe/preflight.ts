@@ -32,7 +32,6 @@ async function checkServices(context: ProbeContext, problems: string[]): Promise
   if (others.length > 0) problems.push(`Services of an earlier run exist: ${others.map((service) => service.name).join(', ')}. Delete them, or give them with ${REUSE_OPTION.tenant} and ${REUSE_OPTION.pages}.`);
 }
 
-// A read of the WorkOS Staging environment: its resource list answers and holds the live gate URI.
 async function checkWorkOS(context: ProbeContext, problems: string[]): Promise<string> {
   const resources = await listResources(context.secrets.workos);
   const gate = resources.some((item) => item.uri === LIVE_GATE_RESOURCE);

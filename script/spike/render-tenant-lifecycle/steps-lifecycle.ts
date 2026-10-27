@@ -7,7 +7,6 @@ import {
   deployIds, deployImage, deployStartedByRender, eventTypesSince, instanceIds, listedDeploy, readService, waitForLive, waitForSuspended,
 } from './waits.ts';
 
-// The image of the deploy that applies a plan, the words that name it in a row, and the name of the image of a deploy.
 export interface PlanImage {
   readonly url: string;
   readonly label: string;

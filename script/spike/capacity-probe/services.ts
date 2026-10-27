@@ -87,7 +87,6 @@ export interface Health {
   readonly at: number;
 }
 
-// GET <origin>/healthz from this machine, repeated for a bounded time until it answers 200 with ok.
 export async function waitHealthy(context: ProbeContext, role: Role): Promise<Health> {
   const url = `${context.state.services[role].origin ?? ''}${HEALTH_CHECK_PATH}`;
   const { outcome, tries, ms } = await requestUntilOk(context, url);

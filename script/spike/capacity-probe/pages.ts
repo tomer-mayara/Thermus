@@ -44,7 +44,6 @@ function literal(text: string): string {
   return quoted;
 }
 
-// The JSON array holds small records, then one filler record that makes it exactly NEAR_JSON_BYTES long.
 function nearPageFunction(): string {
   return [
     `function nearPage(){const target=${NEAR_JSON_BYTES};const items=[];let size=2;`,
@@ -55,7 +54,6 @@ function nearPageFunction(): string {
   ].join('');
 }
 
-// Paragraphs of generated sentences, then one padding paragraph that makes the page exactly JS_BYTES long.
 function jsPageFunction(): string {
   return [
     `function jsPage(){const head=${literal(JS_HEAD)};const tail=${literal(JS_TAIL)};let body="";`,

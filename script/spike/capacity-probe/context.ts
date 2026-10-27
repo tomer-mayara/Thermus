@@ -59,15 +59,13 @@ interface Report {
   readonly conclusions: string[];
 }
 
-// The OAuth resource of the tenant service. The cleanup deletes only an ID that this run created.
+// The cleanup deletes only an ID that this run created.
 interface ResourceState {
   readonly uri: string;
   readonly id: string;
   readonly createdInRun: boolean;
 }
 
-// The WorkOS Staging parts of one run. The registry knows each fixture that the run created, so the cleanup can
-// delete them; the browser runs the Connect authorization.
 export interface FixtureParts {
   readonly workos: WorkOS;
   readonly registry: FixtureRegistry;
@@ -75,7 +73,6 @@ export interface FixtureParts {
   readonly runId: string;
 }
 
-// Gives a Connect access token for the tenant resource, refreshed before it expires.
 export interface TokenProvider {
   token(): Promise<string>;
   readonly lifetimeSeconds: number;
@@ -110,7 +107,7 @@ export interface ProbeStep {
   run(context: ProbeContext): Promise<string>;
 }
 
-// The service names of a run end with its UTC start time. A reused service gets its listed name in the preflight.
+// A reused service gets its listed name in the preflight.
 export function newState(inputs: ProbeInputs, run: string): RunState {
   return {
     services: {
@@ -124,7 +121,6 @@ export function newReport(): Report {
   return { rows: [], windows: [], workosWrites: [], conclusions: [] };
 }
 
-// The SO-01c waits and reads take one service; this gives them the service of one role, with the rows of the report.
 export function sessionOf(context: ProbeContext, role: Role): ServiceSession & { readonly report: { readonly rows: Row[] } } {
   return { client: context.client, signal: context.signal, state: context.state.services[role], report: context.report };
 }
