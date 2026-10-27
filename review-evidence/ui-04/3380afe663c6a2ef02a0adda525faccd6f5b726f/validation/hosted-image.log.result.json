@@ -1,0 +1,12 @@
+{
+  "command": "npm",
+  "args": [
+    "run",
+    "test:container:hosted"
+  ],
+  "started": "2026-10-27T00:15:01.783Z",
+  "ended": "2026-10-27T00:24:06.296Z",
+  "exitCode": 0,
+  "signal": null,
+  "logPath": ".cache/ui04/validation/hosted-image.log"
+}

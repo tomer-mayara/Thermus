@@ -1,0 +1,12 @@
+{
+  "command": "sh",
+  "args": [
+    "-c",
+    "npm run build && node --test --test-name-pattern=\"different allowed actions\" dist/test/integration/hosted-admin/account-routes-administration-pages.test.js"
+  ],
+  "started": "2026-10-26T23:50:51.223Z",
+  "ended": "2026-10-26T23:50:53.165Z",
+  "exitCode": 1,
+  "signal": null,
+  "logPath": ".cache/ui04/implementation/05-row-integration-red.log"
+}

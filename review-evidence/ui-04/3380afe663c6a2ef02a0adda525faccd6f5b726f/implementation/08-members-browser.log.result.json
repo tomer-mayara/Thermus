@@ -1,0 +1,12 @@
+{
+  "command": "sh",
+  "args": [
+    "-c",
+    "npm run build:user-portal && npm run build && node --test dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js"
+  ],
+  "started": "2026-10-26T23:52:52.313Z",
+  "ended": "2026-10-26T23:53:29.933Z",
+  "exitCode": 1,
+  "signal": null,
+  "logPath": ".cache/ui04/implementation/08-members-browser.log"
+}

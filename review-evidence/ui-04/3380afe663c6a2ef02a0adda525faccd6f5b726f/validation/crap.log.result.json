@@ -1,0 +1,17 @@
+{
+  "command": "pnpm",
+  "args": [
+    "exec",
+    "node",
+    "script/code-quality/ast-metrics-crap.ts",
+    "--base",
+    "origin/codex/ui-03-invitation-disclosure",
+    "--json",
+    "ast-report/crap.json"
+  ],
+  "started": "2026-10-27T00:25:35.776Z",
+  "ended": "2026-10-27T00:25:40.287Z",
+  "exitCode": 0,
+  "signal": null,
+  "logPath": ".cache/ui04/validation/crap.log"
+}

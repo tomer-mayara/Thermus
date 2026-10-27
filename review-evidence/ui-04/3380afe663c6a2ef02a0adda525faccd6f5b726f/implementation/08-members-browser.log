@@ -1,0 +1,227 @@
+
+> thermus@0.0.0 build:user-portal
+> npm run typecheck:user-portal && vite build --config src/interfaces/user-portal/vite.config.ts
+
+
+> thermus@0.0.0 typecheck:user-portal
+> tsc --project tsconfig.user-portal.json
+
+vite v6.4.4 building for production...
+transforming...
+✓ 9 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                  0.64 kB │ gzip: 0.38 kB
+dist/assets/index-D5W7cptp.css   9.40 kB │ gzip: 2.63 kB
+dist/assets/index-vf7lpPWV.js   16.60 kB │ gzip: 5.89 kB
+✓ built in 114ms
+
+> thermus@0.0.0 build
+> test ! -L dist && { test ! -e dist || test -d dist; } && rm -rf dist && tsc --project tsconfig.build.json --outDir dist
+
+✖ Given a complete invitation overview with 0 pending entries and terminal entries with JavaScript off at 320px, when Members opens, then its counted native disclosure starts closed and can be discovered by keyboard (834.181084ms)
+✖ Given a complete invitation overview with 2 pending entries and terminal entries with JavaScript off at 320px, when Members opens, then its counted native disclosure starts open and can be discovered by keyboard (452.604167ms)
+✔ Given short and long pending invitations with JavaScript off at 320px, when Members is read at normal and 200% text, then compact rows show roles, UTC expiry and quiet allowed actions in order (541.331792ms)
+✔ Given an independent pending invitation with JavaScript off at 320px, when an Admin uses Resend by keyboard, then one existing protected POST returns to Members with the current pending state (466.941334ms)
+✔ Given an independent pending invitation with JavaScript off at 320px, when an Admin uses Revoke by keyboard, then one existing protected POST returns to Members with the current pending state (550.207875ms)
+✖ Given a complete invitation overview with 0 pending entries and terminal entries with JavaScript off at 1280px, when Members opens, then its counted native disclosure starts closed and can be discovered by keyboard (553.211667ms)
+✖ Given a complete invitation overview with 2 pending entries and terminal entries with JavaScript off at 1280px, when Members opens, then its counted native disclosure starts open and can be discovered by keyboard (504.597084ms)
+✔ Given short and long pending invitations with JavaScript off at 1280px, when Members is read at normal and 200% text, then compact rows show roles, UTC expiry and quiet allowed actions in order (592.650375ms)
+✔ Given an independent pending invitation with JavaScript off at 1280px, when an Admin uses Resend by keyboard, then one existing protected POST returns to Members with the current pending state (544.735334ms)
+✔ Given an independent pending invitation with JavaScript off at 1280px, when an Admin uses Revoke by keyboard, then one existing protected POST returns to Members with the current pending state (554.952084ms)
+✖ Given a complete invitation overview with 0 pending entries and terminal entries with JavaScript on at 320px, when Members opens, then its counted native disclosure starts closed and can be discovered by keyboard (502.448125ms)
+✖ Given a complete invitation overview with 2 pending entries and terminal entries with JavaScript on at 320px, when Members opens, then its counted native disclosure starts open and can be discovered by keyboard (498.540666ms)
+✔ Given short and long pending invitations with JavaScript on at 320px, when Members is read at normal and 200% text, then compact rows show roles, UTC expiry and quiet allowed actions in order (565.371792ms)
+✔ Given an independent pending invitation with JavaScript on at 320px, when an Admin uses Resend by keyboard, then one existing protected POST returns to Members with the current pending state (529.261542ms)
+✔ Given an independent pending invitation with JavaScript on at 320px, when an Admin uses Revoke by keyboard, then one existing protected POST returns to Members with the current pending state (718.410916ms)
+✖ Given a complete invitation overview with 0 pending entries and terminal entries with JavaScript on at 1280px, when Members opens, then its counted native disclosure starts closed and can be discovered by keyboard (455.507458ms)
+✖ Given a complete invitation overview with 2 pending entries and terminal entries with JavaScript on at 1280px, when Members opens, then its counted native disclosure starts open and can be discovered by keyboard (470.594209ms)
+✔ Given short and long pending invitations with JavaScript on at 1280px, when Members is read at normal and 200% text, then compact rows show roles, UTC expiry and quiet allowed actions in order (559.437709ms)
+✔ Given an independent pending invitation with JavaScript on at 1280px, when an Admin uses Resend by keyboard, then one existing protected POST returns to Members with the current pending state (473.176708ms)
+✔ Given an independent pending invitation with JavaScript on at 1280px, when an Admin uses Revoke by keyboard, then one existing protected POST returns to Members with the current pending state (500.106208ms)
+✔ Given Members without JavaScript, when an Admin first reads the page, then Invite member is a closed native disclosure with its form hidden (463.34025ms)
+✔ Given Members with JavaScript off at 320px, when an Admin opens Invite member by keyboard and cancels a typed draft, then the native form discards input through a fresh GET without a write (816.29225ms)
+✔ Given a fresh invitation form with JavaScript off at 320px, when an Admin submits an invalid email with Admin selected, then native validation retains both values without a request (530.091959ms)
+✔ Given a fresh invitation form with JavaScript off at 320px, when an Admin submits an existing member address, then the existing fixed refusal appears without form restoration or a write (546.086209ms)
+✔ Given a fresh invitation form with JavaScript off at 320px and an uncertain provider result, when an Admin submits once, then the existing unconfirmed notice provides Check status without a restored form or retry (440.88725ms)
+✔ Given a fresh invitation form with JavaScript off at 320px, when an Admin submits User once, then one protected POST creates that pending role and a 303 returns the closed Members form (542.144292ms)
+✔ Given a fresh invitation form with JavaScript off at 320px, when an Admin submits Admin once, then one protected POST creates that pending role and a 303 returns the closed Members form (521.689916ms)
+✔ Given Members with JavaScript off at 1280px, when an Admin opens Invite member by keyboard and cancels a typed draft, then the native form discards input through a fresh GET without a write (649.1455ms)
+✔ Given a fresh invitation form with JavaScript off at 1280px, when an Admin submits an invalid email with Admin selected, then native validation retains both values without a request (478.725458ms)
+✔ Given a fresh invitation form with JavaScript off at 1280px, when an Admin submits an existing member address, then the existing fixed refusal appears without form restoration or a write (463.279084ms)
+✔ Given a fresh invitation form with JavaScript off at 1280px and an uncertain provider result, when an Admin submits once, then the existing unconfirmed notice provides Check status without a restored form or retry (425.980541ms)
+✔ Given a fresh invitation form with JavaScript off at 1280px, when an Admin submits User once, then one protected POST creates that pending role and a 303 returns the closed Members form (559.169792ms)
+✔ Given a fresh invitation form with JavaScript off at 1280px, when an Admin submits Admin once, then one protected POST creates that pending role and a 303 returns the closed Members form (489.074875ms)
+✔ Given Members with JavaScript on at 320px, when an Admin opens Invite member by keyboard and cancels a typed draft, then the native form discards input through a fresh GET without a write (599.6705ms)
+✔ Given a fresh invitation form with JavaScript on at 320px, when an Admin submits an invalid email with Admin selected, then native validation retains both values without a request (443.632917ms)
+✔ Given a fresh invitation form with JavaScript on at 320px, when an Admin submits an existing member address, then the existing fixed refusal appears without form restoration or a write (440.272ms)
+✔ Given a fresh invitation form with JavaScript on at 320px and an uncertain provider result, when an Admin submits once, then the existing unconfirmed notice provides Check status without a restored form or retry (494.254708ms)
+✔ Given a fresh invitation form with JavaScript on at 320px, when an Admin submits User once, then one protected POST creates that pending role and a 303 returns the closed Members form (547.057791ms)
+✔ Given a fresh invitation form with JavaScript on at 320px, when an Admin submits Admin once, then one protected POST creates that pending role and a 303 returns the closed Members form (630.407417ms)
+✔ Given Members with JavaScript on at 1280px, when an Admin opens Invite member by keyboard and cancels a typed draft, then the native form discards input through a fresh GET without a write (694.467708ms)
+✔ Given a fresh invitation form with JavaScript on at 1280px, when an Admin submits an invalid email with Admin selected, then native validation retains both values without a request (480.442792ms)
+✔ Given a fresh invitation form with JavaScript on at 1280px, when an Admin submits an existing member address, then the existing fixed refusal appears without form restoration or a write (476.130833ms)
+✔ Given a fresh invitation form with JavaScript on at 1280px and an uncertain provider result, when an Admin submits once, then the existing unconfirmed notice provides Check status without a restored form or retry (444.350959ms)
+✔ Given a fresh invitation form with JavaScript on at 1280px, when an Admin submits User once, then one protected POST creates that pending role and a 303 returns the closed Members form (579.535542ms)
+✔ Given a fresh invitation form with JavaScript on at 1280px, when an Admin submits Admin once, then one protected POST creates that pending role and a 303 returns the closed Members form (569.754833ms)
+✔ Given Members at 481px with long workspace text and JavaScript off, when Invite member opens with 200% text, then the heading, trigger and full form reflow without overlap (500.093333ms)
+✔ Given Members at 600px with long workspace text and JavaScript off, when Invite member opens with 200% text, then the heading, trigger and full form reflow without overlap (582.830084ms)
+✔ Given Members at 860px with long workspace text and JavaScript off, when Invite member opens with 200% text, then the heading, trigger and full form reflow without overlap (499.864709ms)
+✔ Given Members at 1280px with long workspace text and JavaScript off, when Invite member opens with 200% text, then the heading, trigger and full form reflow without overlap (565.951459ms)
+✔ Given the last Admin with JavaScript off, when self-removal is refused and Invite another Admin is followed, then the guidance opens the ordinary closed Members invitation task (608.705625ms)
+✔ Given the last Admin with JavaScript on, when self-removal is refused and Invite another Admin is followed, then the guidance opens the ordinary closed Members invitation task (635.959667ms)
+✔ Given Members at a 320 by 844 viewport, when an Admin uses the keyboard to open, cancel, and confirm Remove, then the controls have names, cancellation writes nothing, and confirmation removes only the chosen membership (841.436959ms)
+✔ Given Audit logs without JavaScript, when an Admin opens full help by keyboard at narrow and desktop widths, then all approved text and links are readable without overflow or a write (664.474875ms)
+Audit tablet geometry {"width":800,"navigation":{"x":24,"y":76,"width":752,"height":48},"main":{"x":24,"y":125,"width":752,"height":1412.71875},"destination":{"x":24,"y":259.53125,"width":752,"height":1206.1875}}
+Audit tablet geometry {"width":860,"navigation":{"x":24,"y":76,"width":812,"height":48},"main":{"x":24,"y":125,"width":812,"height":1412.71875},"destination":{"x":24,"y":259.53125,"width":812,"height":1206.1875}}
+✔ Given Audit logs at tablet widths without JavaScript, when an Admin opens its settings, then the form keeps the full content width (533.23275ms)
+✔ Given built Members with JavaScript off at 320px, when an Admin reads long values and uses shared navigation, then full-width content, keyboard focus, doubled text and Audit controls stay usable (1256.660416ms)
+✔ Given built Members with JavaScript off at 1280px, when an Admin reads long values and uses shared navigation, then full-width content, keyboard focus, doubled text and Audit controls stay usable (1287.922875ms)
+✔ Given built Members with JavaScript on at 320px, when an Admin reads long values and uses shared navigation, then full-width content, keyboard focus, doubled text and Audit controls stay usable (1226.765333ms)
+✔ Given built Members with JavaScript on at 1280px, when an Admin reads long values and uses shared navigation, then full-width content, keyboard focus, doubled text and Audit controls stay usable (1407.220417ms)
+ℹ tests 58
+ℹ suites 0
+ℹ pass 50
+ℹ fail 8
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 35236.343959
+
+✖ failing tests:
+
+test at dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js:22:13
+✖ Given a complete invitation overview with 0 pending entries and terminal entries with JavaScript off at 320px, when Members opens, then its counted native disclosure starts closed and can be discovered by keyboard (834.181084ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js:37:24)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js:22:13
+✖ Given a complete invitation overview with 2 pending entries and terminal entries with JavaScript off at 320px, when Members opens, then its counted native disclosure starts open and can be discovered by keyboard (452.604167ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js:37:24)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js:22:13
+✖ Given a complete invitation overview with 0 pending entries and terminal entries with JavaScript off at 1280px, when Members opens, then its counted native disclosure starts closed and can be discovered by keyboard (553.211667ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js:37:24)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js:22:13
+✖ Given a complete invitation overview with 2 pending entries and terminal entries with JavaScript off at 1280px, when Members opens, then its counted native disclosure starts open and can be discovered by keyboard (504.597084ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js:37:24)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js:22:13
+✖ Given a complete invitation overview with 0 pending entries and terminal entries with JavaScript on at 320px, when Members opens, then its counted native disclosure starts closed and can be discovered by keyboard (502.448125ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js:37:24)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js:22:13
+✖ Given a complete invitation overview with 2 pending entries and terminal entries with JavaScript on at 320px, when Members opens, then its counted native disclosure starts open and can be discovered by keyboard (498.540666ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js:37:24)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js:22:13
+✖ Given a complete invitation overview with 0 pending entries and terminal entries with JavaScript on at 1280px, when Members opens, then its counted native disclosure starts closed and can be discovered by keyboard (455.507458ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js:37:24)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js:22:13
+✖ Given a complete invitation overview with 2 pending entries and terminal entries with JavaScript on at 1280px, when Members opens, then its counted native disclosure starts open and can be discovered by keyboard (470.594209ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js:37:24)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

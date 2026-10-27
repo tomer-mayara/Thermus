@@ -1,0 +1,12 @@
+{
+  "command": "npm",
+  "args": [
+    "run",
+    "test:container"
+  ],
+  "started": "2026-10-27T00:13:29.111Z",
+  "ended": "2026-10-27T00:15:01.734Z",
+  "exitCode": 0,
+  "signal": null,
+  "logPath": ".cache/ui04/validation/self-hosted-container.log"
+}

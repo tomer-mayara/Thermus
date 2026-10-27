@@ -1,0 +1,31 @@
+{
+  "container": [],
+  "network": [
+    {
+      "CreatedAt": "2026-10-14 22:26:15.974424479 -0600 MDT",
+      "Driver": "bridge",
+      "ID": "f315cf6301f6",
+      "IPv4": "true",
+      "IPv6": "false",
+      "Internal": "true",
+      "Labels": "thermus.container-gate.site=a7df7aa3-2,thermus.container-gate=a7df7aa3",
+      "Name": "thermus-gate-a7df7aa3-2-offline",
+      "Scope": "local"
+    },
+    {
+      "CreatedAt": "2026-10-14 22:26:16.019153673 -0600 MDT",
+      "Driver": "bridge",
+      "ID": "351ef95f3ebe",
+      "IPv4": "true",
+      "IPv6": "false",
+      "Internal": "false",
+      "Labels": "thermus.container-gate.site=a7df7aa3-2,thermus.container-gate=a7df7aa3",
+      "Name": "thermus-gate-a7df7aa3-2-outside",
+      "Scope": "local"
+    }
+  ],
+  "volume": [],
+  "image": [],
+  "scope": "Read-only list of Thermus test resources; unrelated resources were not changed.",
+  "retained_preexisting_networks": "The two listed networks were created on 14 October 2026, before this task. They are not this run's resources and were left unchanged."
+}

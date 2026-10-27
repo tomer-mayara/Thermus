@@ -1,0 +1,195 @@
+
+> thermus@0.0.0 build:user-portal
+> npm run typecheck:user-portal && vite build --config src/interfaces/user-portal/vite.config.ts
+
+
+> thermus@0.0.0 typecheck:user-portal
+> tsc --project tsconfig.user-portal.json
+
+vite v6.4.4 building for production...
+transforming...
+✓ 9 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                  0.64 kB │ gzip: 0.38 kB
+dist/assets/index-D5W7cptp.css   9.40 kB │ gzip: 2.63 kB
+dist/assets/index-vf7lpPWV.js   16.60 kB │ gzip: 5.89 kB
+✓ built in 112ms
+
+> thermus@0.0.0 build
+> test ! -L dist && { test ! -e dist || test -d dist; } && rm -rf dist && tsc --project tsconfig.build.json --outDir dist
+
+✔ Given an Admin and a current invitation form, when role, origin, CSRF, or selected organization is forged, then native invitation writes are refused and refreshed session cookies remain usable (52.4105ms)
+✔ Given a User without administration authority, when it opens Members or sends a native invitation, then current authority refuses both without changing provider state (9.565125ms)
+▶ Hosted invitations through the public routes, with session and directory doubles
+  ✔ Given two Admins, when each sends a native invitation, then each can invite either role, unsupported roles are refused, and accepted Admin access includes product access (53.13225ms)
+  ✔ Given pending, accepted, revoked, and expired invitations, when an Admin resends and revokes them, then only pending invitations appear and only pending invitations of its organization change, and no invitation token reaches a page or a record (13.198625ms)
+  ✔ Given a directory that enforces the invited address and then one that accepts by its own rules, when Members opens, then the page claims a strict address match only for the first (2.87725ms)
+  ✔ Given an inactive membership with User and Admin and a pending membership with User, when an Admin invites the first address as User, another Admin invites the second as Admin, and each person accepts, then each membership becomes active with only the role of its invitation, so that no invitation restores a grant outside the authority of its sender (7.225458ms)
+  ✔ Given a pending User invitation, when an Admin sends the same address as User again, also in another letter case, then nothing is sent and the browser returns to Members; after another Admin revokes the invitation, a new send is a new invitation (8.805583ms)
+  ✔ Given an Admin without completed MFA, when it opens Members and sends either invitation role, then password access permits both and records each applied change (3.608584ms)
+✔ Hosted invitations through the public routes, with session and directory doubles (89.71475ms)
+▶ Members through the hosted HTTP server
+  ✔ Given an invitation read whose later page fails after a pending entry, when Members opens through the public route, then the existing failure has no partial list or count (21.411209ms)
+  ✔ Given an Admin in Acme Labs and unavailable Audit storage, when Members and Audit logs open through their page links, then workspace context stays beside Switch workspace and only the current page is marked (15.340667ms)
+  ✔ Given an Admin and invitations in several states, when Members opens, then one page shows current members, You, pending expiry, navigation, and one invitation form (10.143ms)
+  ✔ Given a Members page, when an Admin invites a User and an Admin and then resends and revokes, then each confirmed change returns to Members without changing active memberships (16.549458ms)
+  ✔ Given an unconfirmed sendInvitation response, when the Admin submits and checks status, then the page gives no retry form and the status read sends no second write (6.517916ms)
+  ✔ Given an unconfirmed resendInvitation response, when the Admin submits and checks status, then the page gives no retry form and the status read sends no second write (3.14125ms)
+  ✔ Given an unconfirmed revokeInvitation response, when the Admin submits and checks status, then the page gives no retry form and the status read sends no second write (3.304666ms)
+✔ Members through the hosted HTTP server (77.284125ms)
+▶ Hosted WorkOS edition: current grants and revocation at the next request
+  ✔ Given Ada and Hal with User and Admin, each with a browser session and an MCP token for Acme, when the provider removes Admin from Ada and User from Hal, then Ada loses administration but keeps product access, and Hal keeps product and administration access with Admin alone (287.543292ms)
+  ✔ Given Bea with only User in Acme and User in Globex, when the provider removes its last grant in Acme, then WorkOS keeps the membership with only the default role: Bea is refused in Acme at the next request and has no seat there, keeps its identity and Globex, and no default role restores access (136.08125ms)
+✔ Hosted WorkOS edition: current grants and revocation at the next request (424.24975ms)
+▶ Hosted WorkOS edition: changes on stale, inactive, foreign, and forged targets
+  ✔ Given Dan signed in as Admin and then changed to User in WorkOS, when Dan opens administration pages or sends an invitation with the existing form token, then current membership checks deny each request before reading members or invitations or making changes (99.779083ms)
+✔ Hosted WorkOS edition: changes on stale, inactive, foreign, and forged targets (99.905166ms)
+▶ Hosted WorkOS edition: organization invitations
+  ✔ Given Dan with Admin alone, when Dan invites a new address as User, repeats the send, invites it as Admin, invites the active Ada, resends, and revokes, then WorkOS gets one send with only the User role, one resend, and one revoke; the repeat changes nothing, both other sends get 409 address-in-use, and the page shows the state that WorkOS gives without a token or link (250.414542ms)
+  ✔ Given Eve with an inactive membership that had User and Admin, when Hal invites Eve as User and Eve accepts in AuthKit, then the membership becomes active with only User: no earlier Admin returns, Members no longer shows the accepted invitation, and the active product members count Eve (177.4325ms)
+  ✔ Given Cal with only Admin, a User invitation whose expiry passed while WorkOS still says pending, and a pending Admin invitation, when Cal opens the invitations page, posts an Admin invitation, and posts a resend of the expired User invitation, then the page offers both roles and changes for the pending Admin invitation, the new Admin invitation succeeds, and the expired resend is refused (130.084ms)
+✔ Hosted WorkOS edition: organization invitations (558.22825ms)
+▶ Hosted WorkOS edition: the active product member count from every WorkOS page
+  ✔ Given WorkOS pages of two memberships that repeat one membership on the next page, when Dan opens the members page, then each active product membership counts once, including Admin-only and combined User/Admin memberships, and default-role, inactive, and pending memberships count zero (207.2105ms)
+  ✔ Given a WorkOS outage on a later page of the members, when Dan opens the members page, then it gives the 500 failure page with an operator report and no partial count (100.530875ms)
+✔ Hosted WorkOS edition: the active product member count from every WorkOS page (307.938458ms)
+▶ Hosted invitation management with the real composition, routes, service, and MCPServer, and provider doubles
+  ✔ Given a directory change that fails after its effect, when an Admin sends an invitation after the provider refreshed the session, then the browser gets a safe unconfirmed notice with the refreshed cookie, a status read shows the pending invitation, and a fresh duplicate form sends nothing again (20.4165ms)
+  ✔ Given a directory that cannot make a change safely, when an Admin sends an invitation, then it gets 503 with the notice, nothing changes, and each record says unsupported (1.6335ms)
+  ✔ Given the change recorder of the hosted edition, when an Admin sends and resends an invitation, then the operator log gets one info line with each record, and no line holds the form token, the session cookie, or an invitation token (2.851958ms)
+  ✔ Given an outage of the member pages after the provider refreshed the session, when the members page opens, then it gets the failure page with the refreshed session cookie and no partial count, and the operator log gets one line (0.630208ms)
+  ✔ Given the production hosted application with the WorkOS provider, when the member and invitation pages and their changes arrive with the session cookie, form token, and values of the doubles, then each asks for a sign-in without a cookie or a form, and nothing is recorded (299.348583ms)
+✔ Hosted invitation management with the real composition, routes, service, and MCPServer, and provider doubles (325.671375ms)
+▶ HostedAccountRoutes invitation changes
+  ✔ Given an invitation address already in use, when the native send is refused, then the notice explains the conflict without offering retired member role controls (5.177375ms)
+  ✔ Given a valid send post from this site, when the service answers applied, then the service gets the decided actor and only the fields of the change, and the browser gets 303 to the page with the session cookies (1.10325ms)
+  ✔ Given a valid send post from this site, when the service answers unchanged, then the service gets the decided actor and only the fields of the change, and the browser gets 303 to the page with the session cookies (0.54625ms)
+  ✔ Given a valid resend post from this site, when the service answers applied, then the service gets the decided actor and only the fields of the change, and the browser gets 303 to the page with the session cookies (0.491417ms)
+  ✔ Given a valid resend post from this site, when the service answers unchanged, then the service gets the decided actor and only the fields of the change, and the browser gets 303 to the page with the session cookies (0.452833ms)
+  ✔ Given a valid revoke post from this site, when the service answers applied, then the service gets the decided actor and only the fields of the change, and the browser gets 303 to the page with the session cookies (0.457292ms)
+  ✔ Given a valid revoke post from this site, when the service answers unchanged, then the service gets the decided actor and only the fields of the change, and the browser gets 303 to the page with the session cookies (0.359833ms)
+  ✔ Given a session without MFA and allowed current access, when each valid change is posted, then the change succeeds with the session cookies and the decided actor (0.823959ms)
+  ✔ Given valid posts, when they reach the service, then each change gets exactly the fields of its form (0.600125ms)
+  ✔ Given a service that answers denied, when each change is posted, then it gets 403 with its notice and the session cookies, and no redirect (1.008958ms)
+  ✔ Given a service that answers stale, when each change is posted, then it gets 409 with its notice and the session cookies, and no redirect (0.721083ms)
+  ✔ Given a service that answers not-pending, when each change is posted, then it gets 409 with its notice and the session cookies, and no redirect (0.734084ms)
+  ✔ Given a service that answers address-in-use, when each change is posted, then it gets 409 with its notice and the session cookies, and no redirect (6.565917ms)
+  ✔ Given a service that answers unsupported, when each change is posted, then it gets 503 with its notice and the session cookies, and no redirect (0.970708ms)
+  ✔ Given a change that fails in the service, when it is posted, then it gets the failure page with the session cookies and no redirect, and the operator gets the path and the cause (1.761458ms)
+  ✔ Given an unconfirmed write, when any invitation form is posted, then the only next action is a safe status read (0.836042ms)
+  ✔ Given a signed-out session or access that the resolver denies, when a change is posted, then it gets 401 or 403 before any form check, and the service is not asked (0.313208ms)
+✔ HostedAccountRoutes invitation changes (23.890084ms)
+▶ HostedAccountRoutes combined Members page
+  ✔ Given a complete overview with 0 pending invitations and a terminal entry, when Members opens, then its native disclosure counts pending entries and starts closed (9.61ms)
+  ✔ Given a complete overview with 2 pending invitations and a terminal entry, when Members opens, then its native disclosure counts pending entries and starts open (2.78725ms)
+  ✔ Given pending invitations with different allowed actions, when Members opens, then labelled row facts keep UTC expiry and only the exact protected forms for each row (2.557334ms)
+  ✔ Given an invitable role, when Members opens, then one closed native disclosure beside Members contains the protected Send invitation form before the list (1.556667ms)
+  ✔ Given a public base path, when Members opens, then invitation Cancel is an ordinary Members GET link (1.664541ms)
+  ✔ Given no invitable roles, when Members opens, then no invitation trigger or send form is offered (0.742709ms)
+  ✔ Given only user is invitable, when Members opens, then the form offers only that allowed role and keeps the existing User default (1.335666ms)
+  ✔ Given only admin is invitable, when Members opens, then the form offers only that allowed role and keeps the existing User default (7.179708ms)
+  ✔ Given a trusted workspace name with markup, when Members receives a forged name, then the header shows the escaped overview name beside Switch workspace (2.744959ms)
+  ✔ Given current Admin access, when a GET request opens Members with forged organization values, then both complete reads use the trusted actor and organization (1.045292ms)
+  ✔ Given current Admin access, when a HEAD request opens Members with forged organization values, then both complete reads use the trusted actor and organization (0.450541ms)
+  ✔ Given invited-address invitations, when Members opens, then one email form defaults to User and only pending invitations have expiry and current actions (0.586917ms)
+  ✔ Given provider-rules invitations, when Members opens, then one email form defaults to User and only pending invitations have expiry and current actions (0.428ms)
+  ✔ Given an unknown identity policy, when Members opens, then it makes no strict address promise (0.293167ms)
+  ✔ Given no pending invitations, when Members opens, then the empty state keeps the single invitation form (0.30475ms)
+  ✔ Given another member with the same email, when Members opens, then only the trusted subject gets the You label (3.231792ms)
+  ✔ Given hostile provider text and an unsupported member, when Members opens, then values are escaped and that member has no removal form (0.720042ms)
+  ✔ Given a session without MFA, when Members opens, then current Admin access is sufficient (0.331416ms)
+  ✔ Given current Admin access, when GET opens the old Invitations URL, then it redirects to Members with no history page (0.252708ms)
+  ✔ Given current Admin access, when HEAD opens the old Invitations URL, then it redirects to Members with no history page (0.157417ms)
+  ✔ Given a service that denies the actor, when either page opens, then current service authorization refuses it (0.532917ms)
+  ✔ Given a failed members read, when Members opens, then no partial page or invitation form is returned (0.280375ms)
+  ✔ Given a failed invitations read, when Members opens, then no partial page or invitation form is returned (0.208084ms)
+  ✔ Given a POST request to a page, when it arrives, then no read or write runs (0.321583ms)
+  ✔ Given a PUT request to a page, when it arrives, then no read or write runs (0.286667ms)
+  ✔ Given a DELETE request to a page, when it arrives, then no read or write runs (0.276708ms)
+  ✔ Given a base path, when Members opens, then navigation, forms, and the old page redirect remain under that path (0.452375ms)
+  ✔ Given a denied resolver or no selected organization, when either page opens, then the service is not asked (0.391459ms)
+✔ HostedAccountRoutes combined Members page (41.975ms)
+▶ OrganizationAdministration invitation overview
+  ✔ Given a pending invitation with a provider expiry time, when an Admin reads the overview, then the expiry is retained without a token or link (1.330291ms)
+  ✔ Given invitations in each state on several pages, with one repeated, when an Admin asks for the overview, then it reads each state explicitly, lists each invitation of the organization once with its state, offers changes only for pending invitations of its authority, and copies no invitation token (0.322334ms)
+  ✔ Given an Admin alone, a member with User and Admin, and a directory that accepts by its own rules, when each asks for the overview, then each can invite and change only the roles of its authority, and the overview gives the policy of the directory (0.258875ms)
+  ✔ Given an invitation page that fails or a record of another organization, when the overview is read, then a failure reaches the caller, and a record of another organization is not listed (1.086916ms)
+  ✔ Given a User without Admin, when it asks for the invitation overview, then it is refused as denied, and no invitation is read (0.104833ms)
+✔ OrganizationAdministration invitation overview (3.742917ms)
+ℹ tests 78
+ℹ suites 10
+ℹ pass 78
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1695.667208
+✔ Given a complete invitation overview with 0 pending entries and terminal entries with JavaScript off at 320px, when Members opens, then its counted native disclosure starts closed and can be discovered by keyboard (861.137792ms)
+✔ Given a complete invitation overview with 2 pending entries and terminal entries with JavaScript off at 320px, when Members opens, then its counted native disclosure starts open and can be discovered by keyboard (513.946542ms)
+✔ Given short and long pending invitations with JavaScript off at 320px, when Members is read at normal and 200% text, then compact rows show roles, UTC expiry and quiet allowed actions in order (510.1795ms)
+✔ Given an independent pending invitation with JavaScript off at 320px, when an Admin uses Resend by keyboard, then one existing protected POST returns to Members with the current pending state (514.922125ms)
+✔ Given an independent pending invitation with JavaScript off at 320px, when an Admin uses Revoke by keyboard, then one existing protected POST returns to Members with the current pending state (529.41975ms)
+✔ Given a complete invitation overview with 0 pending entries and terminal entries with JavaScript off at 1280px, when Members opens, then its counted native disclosure starts closed and can be discovered by keyboard (464.6195ms)
+✔ Given a complete invitation overview with 2 pending entries and terminal entries with JavaScript off at 1280px, when Members opens, then its counted native disclosure starts open and can be discovered by keyboard (490.880666ms)
+✔ Given short and long pending invitations with JavaScript off at 1280px, when Members is read at normal and 200% text, then compact rows show roles, UTC expiry and quiet allowed actions in order (598.035666ms)
+✔ Given an independent pending invitation with JavaScript off at 1280px, when an Admin uses Resend by keyboard, then one existing protected POST returns to Members with the current pending state (475.161167ms)
+✔ Given an independent pending invitation with JavaScript off at 1280px, when an Admin uses Revoke by keyboard, then one existing protected POST returns to Members with the current pending state (503.656375ms)
+✔ Given a complete invitation overview with 0 pending entries and terminal entries with JavaScript on at 320px, when Members opens, then its counted native disclosure starts closed and can be discovered by keyboard (520.662708ms)
+✔ Given a complete invitation overview with 2 pending entries and terminal entries with JavaScript on at 320px, when Members opens, then its counted native disclosure starts open and can be discovered by keyboard (516.51425ms)
+✔ Given short and long pending invitations with JavaScript on at 320px, when Members is read at normal and 200% text, then compact rows show roles, UTC expiry and quiet allowed actions in order (617.5585ms)
+✔ Given an independent pending invitation with JavaScript on at 320px, when an Admin uses Resend by keyboard, then one existing protected POST returns to Members with the current pending state (542.270416ms)
+✔ Given an independent pending invitation with JavaScript on at 320px, when an Admin uses Revoke by keyboard, then one existing protected POST returns to Members with the current pending state (612.321ms)
+✔ Given a complete invitation overview with 0 pending entries and terminal entries with JavaScript on at 1280px, when Members opens, then its counted native disclosure starts closed and can be discovered by keyboard (484.676292ms)
+✔ Given a complete invitation overview with 2 pending entries and terminal entries with JavaScript on at 1280px, when Members opens, then its counted native disclosure starts open and can be discovered by keyboard (494.987958ms)
+✔ Given short and long pending invitations with JavaScript on at 1280px, when Members is read at normal and 200% text, then compact rows show roles, UTC expiry and quiet allowed actions in order (516.956167ms)
+✔ Given an independent pending invitation with JavaScript on at 1280px, when an Admin uses Resend by keyboard, then one existing protected POST returns to Members with the current pending state (431.776875ms)
+✔ Given an independent pending invitation with JavaScript on at 1280px, when an Admin uses Revoke by keyboard, then one existing protected POST returns to Members with the current pending state (522.897667ms)
+✔ Given Members without JavaScript, when an Admin first reads the page, then Invite member is a closed native disclosure with its form hidden (317.581833ms)
+✔ Given Members with JavaScript off at 320px, when an Admin opens Invite member by keyboard and cancels a typed draft, then the native form discards input through a fresh GET without a write (587.758459ms)
+✔ Given a fresh invitation form with JavaScript off at 320px, when an Admin submits an invalid email with Admin selected, then native validation retains both values without a request (522.74625ms)
+✔ Given a fresh invitation form with JavaScript off at 320px, when an Admin submits an existing member address, then the existing fixed refusal appears without form restoration or a write (538.085709ms)
+✔ Given a fresh invitation form with JavaScript off at 320px and an uncertain provider result, when an Admin submits once, then the existing unconfirmed notice provides Check status without a restored form or retry (457.978292ms)
+✔ Given a fresh invitation form with JavaScript off at 320px, when an Admin submits User once, then one protected POST creates that pending role and a 303 returns the closed Members form (466.433917ms)
+✔ Given a fresh invitation form with JavaScript off at 320px, when an Admin submits Admin once, then one protected POST creates that pending role and a 303 returns the closed Members form (603.3045ms)
+✔ Given Members with JavaScript off at 1280px, when an Admin opens Invite member by keyboard and cancels a typed draft, then the native form discards input through a fresh GET without a write (707.711417ms)
+✔ Given a fresh invitation form with JavaScript off at 1280px, when an Admin submits an invalid email with Admin selected, then native validation retains both values without a request (514.834542ms)
+✔ Given a fresh invitation form with JavaScript off at 1280px, when an Admin submits an existing member address, then the existing fixed refusal appears without form restoration or a write (404.5975ms)
+✔ Given a fresh invitation form with JavaScript off at 1280px and an uncertain provider result, when an Admin submits once, then the existing unconfirmed notice provides Check status without a restored form or retry (425.87375ms)
+✔ Given a fresh invitation form with JavaScript off at 1280px, when an Admin submits User once, then one protected POST creates that pending role and a 303 returns the closed Members form (529.520375ms)
+✔ Given a fresh invitation form with JavaScript off at 1280px, when an Admin submits Admin once, then one protected POST creates that pending role and a 303 returns the closed Members form (509.928583ms)
+✔ Given Members with JavaScript on at 320px, when an Admin opens Invite member by keyboard and cancels a typed draft, then the native form discards input through a fresh GET without a write (660.31125ms)
+✔ Given a fresh invitation form with JavaScript on at 320px, when an Admin submits an invalid email with Admin selected, then native validation retains both values without a request (465.510625ms)
+✔ Given a fresh invitation form with JavaScript on at 320px, when an Admin submits an existing member address, then the existing fixed refusal appears without form restoration or a write (453.650375ms)
+✔ Given a fresh invitation form with JavaScript on at 320px and an uncertain provider result, when an Admin submits once, then the existing unconfirmed notice provides Check status without a restored form or retry (437.784917ms)
+✔ Given a fresh invitation form with JavaScript on at 320px, when an Admin submits User once, then one protected POST creates that pending role and a 303 returns the closed Members form (501.59075ms)
+✔ Given a fresh invitation form with JavaScript on at 320px, when an Admin submits Admin once, then one protected POST creates that pending role and a 303 returns the closed Members form (578.465ms)
+✔ Given Members with JavaScript on at 1280px, when an Admin opens Invite member by keyboard and cancels a typed draft, then the native form discards input through a fresh GET without a write (666.765833ms)
+✔ Given a fresh invitation form with JavaScript on at 1280px, when an Admin submits an invalid email with Admin selected, then native validation retains both values without a request (520.891917ms)
+✔ Given a fresh invitation form with JavaScript on at 1280px, when an Admin submits an existing member address, then the existing fixed refusal appears without form restoration or a write (550.579583ms)
+✔ Given a fresh invitation form with JavaScript on at 1280px and an uncertain provider result, when an Admin submits once, then the existing unconfirmed notice provides Check status without a restored form or retry (495.426541ms)
+✔ Given a fresh invitation form with JavaScript on at 1280px, when an Admin submits User once, then one protected POST creates that pending role and a 303 returns the closed Members form (550.822917ms)
+✔ Given a fresh invitation form with JavaScript on at 1280px, when an Admin submits Admin once, then one protected POST creates that pending role and a 303 returns the closed Members form (562.4315ms)
+✔ Given Members at 481px with long workspace text and JavaScript off, when Invite member opens with 200% text, then the heading, trigger and full form reflow without overlap (528.378917ms)
+✔ Given Members at 600px with long workspace text and JavaScript off, when Invite member opens with 200% text, then the heading, trigger and full form reflow without overlap (583.834875ms)
+✔ Given Members at 860px with long workspace text and JavaScript off, when Invite member opens with 200% text, then the heading, trigger and full form reflow without overlap (499.522792ms)
+✔ Given Members at 1280px with long workspace text and JavaScript off, when Invite member opens with 200% text, then the heading, trigger and full form reflow without overlap (516.524584ms)
+✔ Given the last Admin with JavaScript off, when self-removal is refused and Invite another Admin is followed, then the guidance opens the ordinary closed Members invitation task (586.096417ms)
+✔ Given the last Admin with JavaScript on, when self-removal is refused and Invite another Admin is followed, then the guidance opens the ordinary closed Members invitation task (654.881042ms)
+✔ Given Members at a 320 by 844 viewport, when an Admin uses the keyboard to open, cancel, and confirm Remove, then the controls have names, cancellation writes nothing, and confirmation removes only the chosen membership (875.917417ms)
+✔ Given Audit logs without JavaScript, when an Admin opens full help by keyboard at narrow and desktop widths, then all approved text and links are readable without overflow or a write (666.770833ms)
+Audit tablet geometry {"width":800,"navigation":{"x":24,"y":76,"width":752,"height":48},"main":{"x":24,"y":125,"width":752,"height":1412.71875},"destination":{"x":24,"y":259.53125,"width":752,"height":1206.1875}}
+Audit tablet geometry {"width":860,"navigation":{"x":24,"y":76,"width":812,"height":48},"main":{"x":24,"y":125,"width":812,"height":1412.71875},"destination":{"x":24,"y":259.53125,"width":812,"height":1206.1875}}
+✔ Given Audit logs at tablet widths without JavaScript, when an Admin opens its settings, then the form keeps the full content width (532.611625ms)
+✔ Given built Members with JavaScript off at 320px, when an Admin reads long values and uses shared navigation, then full-width content, keyboard focus, doubled text and Audit controls stay usable (1191.107875ms)
+✔ Given built Members with JavaScript off at 1280px, when an Admin reads long values and uses shared navigation, then full-width content, keyboard focus, doubled text and Audit controls stay usable (1261.452209ms)
+✔ Given built Members with JavaScript on at 320px, when an Admin reads long values and uses shared navigation, then full-width content, keyboard focus, doubled text and Audit controls stay usable (1209.961458ms)
+✔ Given built Members with JavaScript on at 1280px, when an Admin reads long values and uses shared navigation, then full-width content, keyboard focus, doubled text and Audit controls stay usable (1486.703833ms)
+ℹ tests 58
+ℹ suites 0
+ℹ pass 58
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 34780.858708

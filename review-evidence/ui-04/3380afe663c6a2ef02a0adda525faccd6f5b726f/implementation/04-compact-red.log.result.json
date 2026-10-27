@@ -1,0 +1,12 @@
+{
+  "command": "sh",
+  "args": [
+    "-c",
+    "npm run build && node --test --test-name-pattern=\"short and long pending\" dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js"
+  ],
+  "started": "2026-10-26T23:50:34.150Z",
+  "ended": "2026-10-26T23:50:36.849Z",
+  "exitCode": 1,
+  "signal": null,
+  "logPath": ".cache/ui04/implementation/04-compact-red.log"
+}

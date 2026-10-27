@@ -1,0 +1,13 @@
+{
+  "command": "node",
+  "args": [
+    ".cache/ui04/with-test-env.cjs",
+    "npm",
+    "test"
+  ],
+  "started": "2026-10-26T23:57:08.872Z",
+  "ended": "2026-10-27T00:02:29.094Z",
+  "exitCode": 0,
+  "signal": null,
+  "logPath": ".cache/ui04/validation/ordinary.log"
+}

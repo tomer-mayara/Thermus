@@ -1,0 +1,26 @@
+
+> thermus@0.0.0 build
+> test ! -L dist && { test ! -e dist || test -d dist; } && rm -rf dist && tsc --project tsconfig.build.json --outDir dist
+
+▶ HostedAccountRoutes combined Members page
+  ✔ Given a complete overview with 0 pending invitations and a terminal entry, when Members opens, then its native disclosure counts pending entries and starts closed (10.457791ms)
+  ✔ Given a complete overview with 2 pending invitations and a terminal entry, when Members opens, then its native disclosure counts pending entries and starts open (2.45825ms)
+✔ HostedAccountRoutes combined Members page (13.904709ms)
+ℹ tests 2
+ℹ suites 1
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 162.414791
+✔ Given a complete invitation overview with 0 pending entries and terminal entries, when Members opens without JavaScript, then a counted native disclosure starts closed (898.448416ms)
+✔ Given a complete invitation overview with 2 pending entries and terminal entries, when Members opens without JavaScript, then a counted native disclosure starts open (390.564583ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1693.4985

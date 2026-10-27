@@ -1,0 +1,12 @@
+{
+  "command": "habit-hooks",
+  "args": [
+    "--branch",
+    "origin/codex/ui-03-invitation-disclosure"
+  ],
+  "started": "2026-10-27T00:20:15.055Z",
+  "ended": "2026-10-27T00:20:17.531Z",
+  "exitCode": 1,
+  "signal": null,
+  "logPath": ".cache/ui04/validation/habit-hooks.log"
+}

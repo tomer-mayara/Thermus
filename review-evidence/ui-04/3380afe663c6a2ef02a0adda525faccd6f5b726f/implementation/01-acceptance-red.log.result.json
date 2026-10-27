@@ -1,0 +1,12 @@
+{
+  "command": "sh",
+  "args": [
+    "-c",
+    "npm run build:user-portal && npm run build && node --test --test-name-pattern=\"complete invitation overview\" dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js"
+  ],
+  "started": "2026-10-26T23:49:29.497Z",
+  "ended": "2026-10-26T23:49:34.486Z",
+  "exitCode": 1,
+  "signal": null,
+  "logPath": ".cache/ui04/implementation/01-acceptance-red.log"
+}

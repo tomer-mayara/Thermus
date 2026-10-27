@@ -1,0 +1,15 @@
+{
+  "command": "pnpm",
+  "args": [
+    "exec",
+    "node",
+    "script/code-quality/ast-metrics-snapshot.ts",
+    "--base",
+    "origin/codex/ui-03-invitation-disclosure"
+  ],
+  "started": "2026-10-27T00:25:13.437Z",
+  "ended": "2026-10-27T00:25:16.089Z",
+  "exitCode": 0,
+  "signal": null,
+  "logPath": ".cache/ui04/validation/snapshot-base.log"
+}

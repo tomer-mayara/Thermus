@@ -1,0 +1,49 @@
+{
+  "methodologyVersion": "1.1",
+  "baseRef": "origin/codex/ui-03-invitation-disclosure",
+  "baseSha": "12d1a3c5b7cab197fa828ef89b7f650f918a7ea2",
+  "headSha": "3380afe663c6a2ef02a0adda525faccd6f5b726f",
+  "summary": {
+    "filesChanged": 11,
+    "filesAdded": 13,
+    "filesDeleted": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 3,
+    "improvements": 0
+  },
+  "regressions": [
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "bugs-regression",
+      "file": "test/acceptance/auth/hosted-invitations.test.ts",
+      "message": "Estimated bugs (Halstead): 0.80 -\u003e 1.20",
+      "suggestion": "This estimate grows with code volume and complexity; consider simplifying or splitting this file",
+      "before": 0.8014555823748702,
+      "after": 1.2015650814380403
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "bugs-regression",
+      "file": "test/acceptance/auth/hosted-members.test.ts",
+      "message": "Estimated bugs (Halstead): 1.80 -\u003e 2.06",
+      "suggestion": "This estimate grows with code volume and complexity; consider simplifying or splitting this file",
+      "before": 1.803554963077646,
+      "after": 2.0573942985382714
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "bugs-regression",
+      "file": "test/integration/hosted-admin/account-routes-administration-pages.test.ts",
+      "message": "Estimated bugs (Halstead): 3.56 -\u003e 4.54",
+      "suggestion": "This estimate grows with code volume and complexity; consider simplifying or splitting this file",
+      "before": 3.556631736541344,
+      "after": 4.542565365451586
+    }
+  ],
+  "improvements": [],
+  "gate": "passed"
+}

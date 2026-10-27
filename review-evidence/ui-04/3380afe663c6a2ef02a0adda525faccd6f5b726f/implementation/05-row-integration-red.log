@@ -1,0 +1,36 @@
+
+> thermus@0.0.0 build
+> test ! -L dist && { test ! -e dist || test -d dist; } && rm -rf dist && tsc --project tsconfig.build.json --outDir dist
+
+▶ HostedAccountRoutes combined Members page
+  ✖ Given pending invitations with different allowed actions, when Members opens, then labelled row facts keep UTC expiry and only the exact protected forms for each row (9.323459ms)
+✖ HostedAccountRoutes combined Members page (10.379875ms)
+ℹ tests 1
+ℹ suites 1
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 175.076875
+
+✖ failing tests:
+
+test at dist/test/integration/hosted-admin/account-routes-administration-pages.test.js:26:5
+✖ Given pending invitations with different allowed actions, when Members opens, then labelled row facts keep UTC expiry and only the exact protected forms for each row (9.323459ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 2
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/dist/test/integration/hosted-admin/account-routes-administration-pages.test.js:31:16)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Promise.all (index 2)
+      at async Suite.run (node:internal/test_runner/test:1889:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 2,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

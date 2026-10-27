@@ -1,0 +1,89 @@
+
+> thermus@0.0.0 build:user-portal
+> npm run typecheck:user-portal && vite build --config src/interfaces/user-portal/vite.config.ts
+
+
+> thermus@0.0.0 typecheck:user-portal
+> tsc --project tsconfig.user-portal.json
+
+vite v6.4.4 building for production...
+transforming...
+✓ 9 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                  0.64 kB │ gzip: 0.38 kB
+dist/assets/index-D5W7cptp.css   9.40 kB │ gzip: 2.63 kB
+dist/assets/index-vf7lpPWV.js   16.60 kB │ gzip: 5.89 kB
+✓ built in 106ms
+
+> thermus@0.0.0 build
+> test ! -L dist && { test ! -e dist || test -d dist; } && rm -rf dist && tsc --project tsconfig.build.json --outDir dist
+
+✔ Given a complete invitation overview with 0 pending entries and terminal entries with JavaScript off at 320px, when Members opens, then its counted native disclosure starts closed and can be discovered by keyboard (897.661833ms)
+✔ Given a complete invitation overview with 2 pending entries and terminal entries with JavaScript off at 320px, when Members opens, then its counted native disclosure starts open and can be discovered by keyboard (550.690375ms)
+✔ Given short and long pending invitations with JavaScript off at 320px, when Members is read at normal and 200% text, then compact rows show roles, UTC expiry and quiet allowed actions in order (548.652083ms)
+✔ Given an independent pending invitation with JavaScript off at 320px, when an Admin uses Resend by keyboard, then one existing protected POST returns to Members with the current pending state (494.097125ms)
+✔ Given an independent pending invitation with JavaScript off at 320px, when an Admin uses Revoke by keyboard, then one existing protected POST returns to Members with the current pending state (473.746042ms)
+✔ Given a complete invitation overview with 0 pending entries and terminal entries with JavaScript off at 1280px, when Members opens, then its counted native disclosure starts closed and can be discovered by keyboard (458.962584ms)
+✔ Given a complete invitation overview with 2 pending entries and terminal entries with JavaScript off at 1280px, when Members opens, then its counted native disclosure starts open and can be discovered by keyboard (473.684917ms)
+✔ Given short and long pending invitations with JavaScript off at 1280px, when Members is read at normal and 200% text, then compact rows show roles, UTC expiry and quiet allowed actions in order (582.843042ms)
+✔ Given an independent pending invitation with JavaScript off at 1280px, when an Admin uses Resend by keyboard, then one existing protected POST returns to Members with the current pending state (469.950792ms)
+✔ Given an independent pending invitation with JavaScript off at 1280px, when an Admin uses Revoke by keyboard, then one existing protected POST returns to Members with the current pending state (529.6225ms)
+✔ Given a complete invitation overview with 0 pending entries and terminal entries with JavaScript on at 320px, when Members opens, then its counted native disclosure starts closed and can be discovered by keyboard (449.491167ms)
+✔ Given a complete invitation overview with 2 pending entries and terminal entries with JavaScript on at 320px, when Members opens, then its counted native disclosure starts open and can be discovered by keyboard (477.050458ms)
+✔ Given short and long pending invitations with JavaScript on at 320px, when Members is read at normal and 200% text, then compact rows show roles, UTC expiry and quiet allowed actions in order (574.049833ms)
+✔ Given an independent pending invitation with JavaScript on at 320px, when an Admin uses Resend by keyboard, then one existing protected POST returns to Members with the current pending state (487.062458ms)
+✔ Given an independent pending invitation with JavaScript on at 320px, when an Admin uses Revoke by keyboard, then one existing protected POST returns to Members with the current pending state (489.929125ms)
+✔ Given a complete invitation overview with 0 pending entries and terminal entries with JavaScript on at 1280px, when Members opens, then its counted native disclosure starts closed and can be discovered by keyboard (488.739ms)
+✔ Given a complete invitation overview with 2 pending entries and terminal entries with JavaScript on at 1280px, when Members opens, then its counted native disclosure starts open and can be discovered by keyboard (466.4445ms)
+✔ Given short and long pending invitations with JavaScript on at 1280px, when Members is read at normal and 200% text, then compact rows show roles, UTC expiry and quiet allowed actions in order (566.508208ms)
+✔ Given an independent pending invitation with JavaScript on at 1280px, when an Admin uses Resend by keyboard, then one existing protected POST returns to Members with the current pending state (631.626ms)
+✔ Given an independent pending invitation with JavaScript on at 1280px, when an Admin uses Revoke by keyboard, then one existing protected POST returns to Members with the current pending state (499.169875ms)
+✔ Given Members without JavaScript, when an Admin first reads the page, then Invite member is a closed native disclosure with its form hidden (369.482083ms)
+✔ Given Members with JavaScript off at 320px, when an Admin opens Invite member by keyboard and cancels a typed draft, then the native form discards input through a fresh GET without a write (653.303042ms)
+✔ Given a fresh invitation form with JavaScript off at 320px, when an Admin submits an invalid email with Admin selected, then native validation retains both values without a request (469.784917ms)
+✔ Given a fresh invitation form with JavaScript off at 320px, when an Admin submits an existing member address, then the existing fixed refusal appears without form restoration or a write (443.085667ms)
+✔ Given a fresh invitation form with JavaScript off at 320px and an uncertain provider result, when an Admin submits once, then the existing unconfirmed notice provides Check status without a restored form or retry (510.723416ms)
+✔ Given a fresh invitation form with JavaScript off at 320px, when an Admin submits User once, then one protected POST creates that pending role and a 303 returns the closed Members form (680.568125ms)
+✔ Given a fresh invitation form with JavaScript off at 320px, when an Admin submits Admin once, then one protected POST creates that pending role and a 303 returns the closed Members form (718.516583ms)
+✔ Given Members with JavaScript off at 1280px, when an Admin opens Invite member by keyboard and cancels a typed draft, then the native form discards input through a fresh GET without a write (779.264125ms)
+✔ Given a fresh invitation form with JavaScript off at 1280px, when an Admin submits an invalid email with Admin selected, then native validation retains both values without a request (503.57475ms)
+✔ Given a fresh invitation form with JavaScript off at 1280px, when an Admin submits an existing member address, then the existing fixed refusal appears without form restoration or a write (428.111584ms)
+✔ Given a fresh invitation form with JavaScript off at 1280px and an uncertain provider result, when an Admin submits once, then the existing unconfirmed notice provides Check status without a restored form or retry (462.822667ms)
+✔ Given a fresh invitation form with JavaScript off at 1280px, when an Admin submits User once, then one protected POST creates that pending role and a 303 returns the closed Members form (465.704583ms)
+✔ Given a fresh invitation form with JavaScript off at 1280px, when an Admin submits Admin once, then one protected POST creates that pending role and a 303 returns the closed Members form (571.761625ms)
+✔ Given Members with JavaScript on at 320px, when an Admin opens Invite member by keyboard and cancels a typed draft, then the native form discards input through a fresh GET without a write (729.785833ms)
+✔ Given a fresh invitation form with JavaScript on at 320px, when an Admin submits an invalid email with Admin selected, then native validation retains both values without a request (465.426208ms)
+✔ Given a fresh invitation form with JavaScript on at 320px, when an Admin submits an existing member address, then the existing fixed refusal appears without form restoration or a write (454.176375ms)
+✔ Given a fresh invitation form with JavaScript on at 320px and an uncertain provider result, when an Admin submits once, then the existing unconfirmed notice provides Check status without a restored form or retry (507.791583ms)
+✔ Given a fresh invitation form with JavaScript on at 320px, when an Admin submits User once, then one protected POST creates that pending role and a 303 returns the closed Members form (491.339792ms)
+✔ Given a fresh invitation form with JavaScript on at 320px, when an Admin submits Admin once, then one protected POST creates that pending role and a 303 returns the closed Members form (563.727625ms)
+✔ Given Members with JavaScript on at 1280px, when an Admin opens Invite member by keyboard and cancels a typed draft, then the native form discards input through a fresh GET without a write (726.944375ms)
+✔ Given a fresh invitation form with JavaScript on at 1280px, when an Admin submits an invalid email with Admin selected, then native validation retains both values without a request (517.215625ms)
+✔ Given a fresh invitation form with JavaScript on at 1280px, when an Admin submits an existing member address, then the existing fixed refusal appears without form restoration or a write (511.233583ms)
+✔ Given a fresh invitation form with JavaScript on at 1280px and an uncertain provider result, when an Admin submits once, then the existing unconfirmed notice provides Check status without a restored form or retry (443.374792ms)
+✔ Given a fresh invitation form with JavaScript on at 1280px, when an Admin submits User once, then one protected POST creates that pending role and a 303 returns the closed Members form (453.742208ms)
+✔ Given a fresh invitation form with JavaScript on at 1280px, when an Admin submits Admin once, then one protected POST creates that pending role and a 303 returns the closed Members form (545.048667ms)
+✔ Given Members at 481px with long workspace text and JavaScript off, when Invite member opens with 200% text, then the heading, trigger and full form reflow without overlap (501.66025ms)
+✔ Given Members at 600px with long workspace text and JavaScript off, when Invite member opens with 200% text, then the heading, trigger and full form reflow without overlap (499.870667ms)
+✔ Given Members at 860px with long workspace text and JavaScript off, when Invite member opens with 200% text, then the heading, trigger and full form reflow without overlap (533.552167ms)
+✔ Given Members at 1280px with long workspace text and JavaScript off, when Invite member opens with 200% text, then the heading, trigger and full form reflow without overlap (516.105292ms)
+✔ Given the last Admin with JavaScript off, when self-removal is refused and Invite another Admin is followed, then the guidance opens the ordinary closed Members invitation task (565.980417ms)
+✔ Given the last Admin with JavaScript on, when self-removal is refused and Invite another Admin is followed, then the guidance opens the ordinary closed Members invitation task (608.024458ms)
+✔ Given Members at a 320 by 844 viewport, when an Admin uses the keyboard to open, cancel, and confirm Remove, then the controls have names, cancellation writes nothing, and confirmation removes only the chosen membership (897.338875ms)
+✔ Given Audit logs without JavaScript, when an Admin opens full help by keyboard at narrow and desktop widths, then all approved text and links are readable without overflow or a write (783.569334ms)
+Audit tablet geometry {"width":800,"navigation":{"x":24,"y":76,"width":752,"height":48},"main":{"x":24,"y":125,"width":752,"height":1412.71875},"destination":{"x":24,"y":259.53125,"width":752,"height":1206.1875}}
+Audit tablet geometry {"width":860,"navigation":{"x":24,"y":76,"width":812,"height":48},"main":{"x":24,"y":125,"width":812,"height":1412.71875},"destination":{"x":24,"y":259.53125,"width":812,"height":1206.1875}}
+✔ Given Audit logs at tablet widths without JavaScript, when an Admin opens its settings, then the form keeps the full content width (561.533833ms)
+✔ Given built Members with JavaScript off at 320px, when an Admin reads long values and uses shared navigation, then full-width content, keyboard focus, doubled text and Audit controls stay usable (1235.517375ms)
+✔ Given built Members with JavaScript off at 1280px, when an Admin reads long values and uses shared navigation, then full-width content, keyboard focus, doubled text and Audit controls stay usable (1250.194583ms)
+✔ Given built Members with JavaScript on at 320px, when an Admin reads long values and uses shared navigation, then full-width content, keyboard focus, doubled text and Audit controls stay usable (1200.909625ms)
+✔ Given built Members with JavaScript on at 1280px, when an Admin reads long values and uses shared navigation, then full-width content, keyboard focus, doubled text and Audit controls stay usable (1314.871333ms)
+ℹ tests 58
+ℹ suites 0
+ℹ pass 58
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 34995.789333

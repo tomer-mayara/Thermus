@@ -1,0 +1,12 @@
+{
+  "command": "sh",
+  "args": [
+    "-c",
+    "npm run build && node --test dist/test/integration/hosted-admin/account-routes-administration-pages.test.js && node --test --test-name-pattern=\"complete invitation overview|short and long pending\" dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js"
+  ],
+  "started": "2026-10-26T23:51:09.512Z",
+  "ended": "2026-10-26T23:51:13.276Z",
+  "exitCode": 0,
+  "signal": null,
+  "logPath": ".cache/ui04/implementation/06-compact-green.log"
+}

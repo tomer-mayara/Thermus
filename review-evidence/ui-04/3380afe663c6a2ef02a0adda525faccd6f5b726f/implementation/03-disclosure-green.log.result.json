@@ -1,0 +1,12 @@
+{
+  "command": "sh",
+  "args": [
+    "-c",
+    "npm run build && node --test --test-name-pattern=\"complete overview\" dist/test/integration/hosted-admin/account-routes-administration-pages.test.js && node --test --test-name-pattern=\"complete invitation overview\" dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js"
+  ],
+  "started": "2026-10-26T23:50:10.470Z",
+  "ended": "2026-10-26T23:50:13.956Z",
+  "exitCode": 0,
+  "signal": null,
+  "logPath": ".cache/ui04/implementation/03-disclosure-green.log"
+}

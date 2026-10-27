@@ -1,0 +1,12 @@
+{
+  "command": "sh",
+  "args": [
+    "-c",
+    "npm run build:user-portal && npm run build && node --test dist/test/integration/hosted-admin/account-routes-administration-pages.test.js dist/test/integration/hosted-admin/account-routes-administration-changes.test.js dist/test/integration/auth/hosted-administration.test.js dist/test/acceptance/auth/hosted-members.test.js dist/test/acceptance/auth/hosted-invitations.test.js dist/test/acceptance/auth/hosted-invitation-refusals.test.js dist/test/acceptance/auth/hosted-workos-administration.test.js dist/test/unit/organizations/organization-administration-invitation-overview.test.js && node --test dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js"
+  ],
+  "started": "2026-10-26T23:54:47.982Z",
+  "ended": "2026-10-26T23:55:27.116Z",
+  "exitCode": 0,
+  "signal": null,
+  "logPath": ".cache/ui04/implementation/10-final-focused-and-browser-green.log"
+}

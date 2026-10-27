@@ -1,0 +1,53 @@
+
+> thermus@0.0.0 build
+> test ! -L dist && { test ! -e dist || test -d dist; } && rm -rf dist && tsc --project tsconfig.build.json --outDir dist
+
+▶ HostedAccountRoutes combined Members page
+  ✔ Given a complete overview with 0 pending invitations and a terminal entry, when Members opens, then its native disclosure counts pending entries and starts closed (8.948458ms)
+  ✔ Given a complete overview with 2 pending invitations and a terminal entry, when Members opens, then its native disclosure counts pending entries and starts open (2.250334ms)
+  ✔ Given pending invitations with different allowed actions, when Members opens, then labelled row facts keep UTC expiry and only the exact protected forms for each row (2.639583ms)
+  ✔ Given an invitable role, when Members opens, then one closed native disclosure beside Members contains the protected Send invitation form before the list (1.887125ms)
+  ✔ Given a public base path, when Members opens, then invitation Cancel is an ordinary Members GET link (1.669291ms)
+  ✔ Given no invitable roles, when Members opens, then no invitation trigger or send form is offered (0.707625ms)
+  ✔ Given only user is invitable, when Members opens, then the form offers only that allowed role and keeps the existing User default (3.521291ms)
+  ✔ Given only admin is invitable, when Members opens, then the form offers only that allowed role and keeps the existing User default (1.105625ms)
+  ✔ Given a trusted workspace name with markup, when Members receives a forged name, then the header shows the escaped overview name beside Switch workspace (2.405625ms)
+  ✔ Given current Admin access, when a GET request opens Members with forged organization values, then both complete reads use the trusted actor and organization (0.931542ms)
+  ✔ Given current Admin access, when a HEAD request opens Members with forged organization values, then both complete reads use the trusted actor and organization (0.490291ms)
+  ✔ Given invited-address invitations, when Members opens, then one email form defaults to User and only pending invitations have expiry and current actions (0.609084ms)
+  ✔ Given provider-rules invitations, when Members opens, then one email form defaults to User and only pending invitations have expiry and current actions (0.39675ms)
+  ✔ Given an unknown identity policy, when Members opens, then it makes no strict address promise (0.286834ms)
+  ✔ Given no pending invitations, when Members opens, then the empty state keeps the single invitation form (0.318083ms)
+  ✔ Given another member with the same email, when Members opens, then only the trusted subject gets the You label (0.379041ms)
+  ✔ Given hostile provider text and an unsupported member, when Members opens, then values are escaped and that member has no removal form (0.443625ms)
+  ✔ Given a session without MFA, when Members opens, then current Admin access is sufficient (0.246417ms)
+  ✔ Given current Admin access, when GET opens the old Invitations URL, then it redirects to Members with no history page (0.205292ms)
+  ✔ Given current Admin access, when HEAD opens the old Invitations URL, then it redirects to Members with no history page (0.125292ms)
+  ✔ Given a service that denies the actor, when either page opens, then current service authorization refuses it (0.453083ms)
+  ✔ Given a failed members read, when Members opens, then no partial page or invitation form is returned (0.240459ms)
+  ✔ Given a failed invitations read, when Members opens, then no partial page or invitation form is returned (0.17575ms)
+  ✔ Given a POST request to a page, when it arrives, then no read or write runs (0.282417ms)
+  ✔ Given a PUT request to a page, when it arrives, then no read or write runs (0.250458ms)
+  ✔ Given a DELETE request to a page, when it arrives, then no read or write runs (0.256167ms)
+  ✔ Given a base path, when Members opens, then navigation, forms, and the old page redirect remain under that path (0.377625ms)
+  ✔ Given a denied resolver or no selected organization, when either page opens, then the service is not asked (0.381417ms)
+✔ HostedAccountRoutes combined Members page (33.049583ms)
+ℹ tests 28
+ℹ suites 1
+ℹ pass 28
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 181.130333
+✔ Given a complete invitation overview with 0 pending entries and terminal entries, when Members opens without JavaScript, then a counted native disclosure starts closed (770.562208ms)
+✔ Given a complete invitation overview with 2 pending entries and terminal entries, when Members opens without JavaScript, then a counted native disclosure starts open (368.819458ms)
+✔ Given short and long pending invitations at 320px and 1280px, when Members is read, then compact rows keep each allowed action visible within the viewport (442.432875ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1953.493917
