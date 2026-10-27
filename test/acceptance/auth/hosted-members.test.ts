@@ -5,9 +5,31 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { serveAdministrationSite, shownPage, submitOnPage } from '../../support/dsl/hosted-administration.ts';
 import { formsIn } from '../../support/drivers/browser/hosted-browser.ts';
-import { userOf } from '../../support/fixtures/hosted-members.ts';
+import { administrationMembers, userOf } from '../../support/fixtures/hosted-members.ts';
 
 describe('Members through the hosted HTTP server', () => {
+  test('Given an Admin in Acme Labs and unavailable Audit storage, when Members and Audit logs open through their page links, then workspace context stays beside Switch workspace and only the current page is marked', async (t) => {
+    const site = await serveAdministrationSite(t);
+    site.directory.replaceMemberships(administrationMembers.map(member => ({ ...member, organizationName: member.organizationId === 'org-a' ? 'Acme Labs' : member.organizationName })));
+    const admin = site.browserOf(userOf('user-eve', 'org-a'));
+    let answer = await admin.open('members');
+    let document = parseHTML(answer.body).document;
+    const switchLink = [...document.querySelectorAll('header a')].find(link => link.textContent === 'Switch workspace');
+    assert.ok(switchLink);
+    assert.match(switchLink.parentElement?.textContent ?? '', /Acme Labs/, 'The workspace name must be beside Switch workspace');
+    for (const [current, destination] of [['Members', 'Audit logs'], ['Audit logs', 'Members']] as const) {
+      assert.equal(answer.status, current === 'Members' ? 200 : 503);
+      const links = [...document.querySelectorAll('header a')];
+      for (const label of ['Connect', 'Members', 'Audit logs', 'Switch workspace']) assert.ok(links.some(link => link.textContent === label && link.getAttribute('href')?.startsWith('/team/')), `${label} must be a page link`);
+      assert.deepEqual(links.filter(link => link.hasAttribute('aria-current')).map(link => [link.textContent, link.getAttribute('aria-current')]), [[current, 'page']]);
+      const next = links.find(link => link.textContent === destination)?.getAttribute('href');
+      assert.ok(next);
+      answer = await admin.open(next);
+      document = parseHTML(answer.body).document;
+    }
+    assert.equal(document.querySelector('header [aria-current="page"]')?.textContent, 'Members');
+  });
+
   test('Given an Admin and invitations in several states, when Members opens, then one page shows current members, You, pending expiry, navigation, and one invitation form', async (t) => {
     const site = await serveAdministrationSite(t);
     site.directory.addInvitations(
@@ -36,7 +58,7 @@ describe('Members through the hosted HTTP server', () => {
     assert.deepEqual(site.directory.invitationChanges, []);
     assert.match(answer.body, /Invite to Acme<\/h2>/);
     assert.equal(forms[0]?.fields.organization_id, 'org-a');
-    assert.match(answer.body, /href="\/team\/">Product \/ Connect<\/a>/);
+    assert.match(answer.body, /href="\/team\/">Connect<\/a>/);
     assert.match(answer.body, /href="\/team\/members" aria-current="page">Members<\/a>/);
     assert.match(answer.body, /href="\/team\/logging"[^>]*>Audit logs<\/a>/);
     assert.match(answer.body, /href="\/team\/organizations">Switch workspace<\/a>/);

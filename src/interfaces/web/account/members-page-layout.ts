@@ -17,14 +17,15 @@ const memberHeaders = {
   'Content-Security-Policy': `${FORM_HEADERS['Content-Security-Policy']}; style-src 'sha256-${styleHash}'; img-src 'self'; font-src 'self'`,
 };
 
-export function membersPageLayout(navigation: Navigation, content: string, options: { readonly title: string; readonly current: 'members' | 'logging'; readonly script?: string } = { title: 'Members', current: 'members' }): Response {
+export function membersPageLayout(navigation: Navigation, content: string, options: { readonly title: string; readonly current: 'members' | 'logging'; readonly script?: string; readonly organizationName?: string } = { title: 'Members', current: 'members' }): Response {
   const page = `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${escapeHtml(options.title)} · Thermus</title><link rel="icon" href="/assets/thermus-favicon.svg" type="image/svg+xml"><style>${MEMBERS_STYLE}</style></head>
 <body><a class="skip-link" href="#main-content">Skip to content</a>
 <header class="site-header"><div class="header-content"><a class="brand" href="${escapeHtml(navigation.product)}" aria-label="Thermus home"><img src="/assets/thermus-logo.svg" alt="thermus" width="166" height="40"></a>
-<nav aria-label="Workspace"><a href="${escapeHtml(navigation.product)}">Product / Connect</a><a href="${escapeHtml(navigation.members)}" ${options.current === 'members' ? 'aria-current="page"' : ''}>Members</a>${navigation.logging === undefined ? '' : `<a href="${escapeHtml(navigation.logging)}" ${options.current === 'logging' ? 'aria-current="page"' : ''}>Audit logs</a>`}<a href="${escapeHtml(navigation.organizations)}">Switch workspace</a></nav></div></header>
-<main id="main-content" class="members-layout${options.current === 'logging' ? ' logging-layout' : ''}">${content}</main><footer class="site-footer">Thermus AI Inc.</footer>${options.script === undefined ? '' : `<script>${options.script}</script>`}</body></html>`;
+<div class="workspace-context">${options.organizationName === undefined ? '' : `<span class="workspace-name">${escapeHtml(options.organizationName)}</span>`}<a href="${escapeHtml(navigation.organizations)}">Switch workspace</a></div>
+<nav aria-label="Workspace"><a href="${escapeHtml(navigation.product)}">Connect</a><a href="${escapeHtml(navigation.members)}" ${options.current === 'members' ? 'aria-current="page"' : ''}>Members</a>${navigation.logging === undefined ? '' : `<a href="${escapeHtml(navigation.logging)}" ${options.current === 'logging' ? 'aria-current="page"' : ''}>Audit logs</a>`}</nav></div></header>
+<main id="main-content" tabindex="-1" class="members-layout${options.current === 'logging' ? ' logging-layout' : ''}">${content}</main><footer class="site-footer">Thermus AI Inc.</footer>${options.script === undefined ? '' : `<script>${options.script}</script>`}</body></html>`;
   return new Response(page, { status: 200, headers: options.script === undefined ? memberHeaders : {
     ...memberHeaders,
     'Content-Security-Policy': `${memberHeaders['Content-Security-Policy']}; script-src 'sha256-${createHash('sha256').update(options.script).digest('base64')}'`,

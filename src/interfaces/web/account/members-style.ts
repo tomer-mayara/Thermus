@@ -10,18 +10,24 @@ a{color:inherit;text-underline-offset:.2em}
 .skip-link:focus{transform:none}
 .site-header{border-bottom:1px solid #2C2D34}
 .header-content,.members-layout,.site-footer{width:min(1200px,calc(100% - 48px));margin-inline:auto}
-.header-content{min-height:88px;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;padding-block:12px}
+.header-content{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:8px 24px;padding-top:20px}
 .brand{display:inline-flex;align-items:center;min-height:48px;flex-shrink:0}
 .brand img{display:block;width:166px;height:auto}
-nav{display:flex;align-items:center;gap:24px;flex-wrap:wrap}
-nav a{display:inline-flex;align-items:center;min-height:48px;text-decoration:none;color:#B4BAC0;font-size:15px}
-nav a:hover,nav [aria-current]{color:#F3F2EE;text-decoration:underline}
-.members-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,380px);grid-template-areas:"intro intro" "lists invite";gap:32px;align-content:start;align-items:start;padding-block:48px 72px}
+.workspace-context{display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:16px;min-width:0;max-width:100%;font-size:15px;color:#B4BAC0}
+.workspace-name{flex:0 1 auto;min-width:0;max-width:40ch;overflow-wrap:anywhere}
+.workspace-context>a{flex-shrink:0}
+nav{grid-column:1/-1;display:flex;align-items:center;gap:28px;flex-wrap:wrap}
+nav a,.workspace-context>a{display:inline-flex;align-items:center;min-height:48px;text-decoration:none;color:#B4BAC0;font-size:15px}
+nav a{border-bottom:2px solid transparent}
+nav a:hover,.workspace-context>a:hover{color:#F3F2EE;text-decoration:underline}
+nav [aria-current]{color:#F3F2EE;border-bottom-color:#E8552A}
+.members-layout{display:grid;gap:32px;align-content:start;align-items:start;padding-block:48px 72px}
+.members-layout:not(.logging-layout){grid-template-columns:minmax(0,1fr);grid-template-areas:"intro" "invite" "lists";gap:24px;max-width:none;padding-top:32px}
 .members-layout.logging-layout{grid-template-columns:minmax(0,1fr);grid-template-areas:"intro" "invite";max-width:none}
 .introduction{grid-area:intro}
 .eyebrow{color:#E8552A;font-size:13px;letter-spacing:.08em;text-transform:uppercase;margin:0 0 12px}
 h1,h2{font-family:"IBM Plex Serif",Georgia,serif;font-weight:500;letter-spacing:-.02em;line-height:1.2;margin:0;overflow-wrap:anywhere}
-h1{font-size:44px}h2{font-size:26px}
+h1{font-size:32px}h2{font-size:26px}
 .introduction>p:last-child{color:#B4BAC0;margin-bottom:0}
 .invite-card,.members-card{min-width:0;padding:28px;background:#212228;border:1px solid #43454E;border-radius:12px}
 .invite-card{grid-area:invite}.member-lists{grid-area:lists;display:grid;gap:24px;min-width:0}
@@ -80,6 +86,6 @@ button:hover{border-color:#F3F2EE;background:#2C2D34}
 .invitation-actions form[action$="/invitations/revoke"] button{background:#40282C;border-color:#C66E76;color:#FFCDD2}
 .invitation-actions form[action$="/invitations/revoke"] button:hover{background:#533038;border-color:#E58F98}
 .site-footer{padding:24px 0;border-top:1px solid #2C2D34;color:#B4BAC0;font-size:12px}
-@media(max-width:860px){.members-layout{grid-template-columns:minmax(0,1fr);grid-template-areas:"intro" "invite" "lists";max-width:650px;padding-top:32px}.header-content{gap:12px}nav{gap:20px}h1{font-size:40px}}
-@media(max-width:480px){.header-content,.members-layout,.site-footer{width:calc(100% - 32px)}.brand img{width:120px}nav{gap:12px}nav a{font-size:13px}.invite-card,.members-card{padding:20px}h1{font-size:36px}h2{font-size:24px}.member-row{gap:8px}.invitation-actions{display:grid;grid-template-columns:minmax(0,1fr)}}
+@media(max-width:860px){.members-layout.logging-layout{padding-top:32px}.header-content{gap:8px 16px}nav{gap:24px}}
+@media(max-width:480px){.header-content,.members-layout,.site-footer{width:calc(100% - 32px)}.brand img{width:120px}.workspace-context{grid-column:1/-1;justify-content:space-between}nav{gap:24px}nav a{font-size:15px}.invite-card,.members-card{padding:20px}h2{font-size:24px}.member-row{gap:8px}.invitation-actions{display:grid;grid-template-columns:minmax(0,1fr)}}
 `;
