@@ -61,7 +61,7 @@ const builders: Readonly<Record<StepId, Builder>> = {
     planned(envVarsCall(service), 'The keys must be the keys of the create call. No value is printed.'),
   ] }],
   'internal-address': (_inputs, _name, service) => [{ title: 'Read the internal address', calls: [
-    planned(serviceCall(service), 'A field must hold <host>:8080, or slug and openPorts must give it.'),
+    planned(serviceCall(service), 'A field must hold <slug>:<port>, and serviceDetails.openPorts must hold 8080.'),
   ] }],
   'image-2': (inputs, _name, service) => [{ title: 'Deploy image 2', calls: [
     planned(recentDeploysCall(service), 'The deploy IDs before the deploy.'),

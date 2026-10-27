@@ -428,7 +428,8 @@ not resolve. The transcript of that check goes here.
 ## SO-01c: Render private service lifecycle
 
 Date: 27 October 2026 (UTC). Branch `self-ob-s1-so-01c-render-lifecycle-570d06`,
-from main `2b3ad13b`. The final run used the script of commit `22cff848`.
+from main `2b3ad13b`. The final run used the script of commit `22cff848`. A
+later commit changed only the dry-run note of the address step.
 
 Owner decision of 27 October 2026: probes run in the Thermus AI workspace in a
 service named `thermus-spike-<time>`, never on the production service.
