@@ -1,11 +1,12 @@
 # Self on-boarding Slice 1 evidence
 
 This record keeps the evidence of the Slice 1 tickets of the self on-boarding
-plan ([PR #259](https://github.com/tomer-mayara/Thermus/pull/259)), and of two
-Slice 2 tickets: SO-03, the private address of the control plane, and SO-02,
-which makes the workflow of SO-01b the release path. Each ticket or probe adds
-one section: what ran and where, the durations and limits, and what a client
-saw. The record holds no secret.
+plan ([PR #259](https://github.com/tomer-mayara/Thermus/pull/259)), and of three
+Slice 2 tickets: SO-03, the private address of the control plane; SO-02, which
+makes the workflow of SO-01b the release path; and SO-06, the live runs of the
+Render adapter of the tenant provisioner. Each ticket or probe adds one section:
+what ran and where, the durations and limits, and what a client saw. The record
+holds no secret.
 
 SO-03 of Slice 2 adds its measurement of the private address of the control
 plane here, because it extends the private network probe of SO-01d.
@@ -3332,3 +3333,47 @@ These checks used scripts in the session scratchpad, not in the branch:
   each run names its digest, and the skipped push steps show that runs B, C,
   and G pushed nothing.
 - One run of each path, one region, and one disposable service.
+
+## SO-06: live interface run of the Render adapter
+
+Date: 27 October 2026 (UTC). Ticket SO-06 of Slice 2 (board ticket 63a5c8),
+branch `self-ob-s2-so-06-tenant-provisioner-63a5c8`. The live interface test
+of the Render adapter,
+[`render-tenant-platform.live.ts`](../../test/interface/render/render-tenant-platform.live.ts),
+ran one time on the owner's Mac with Node v24.20.0, from 21:15:49 to
+21:17:07 UTC, with
+`node --env-file=<main checkout>/.env.local --test dist/test/interface/render/render-tenant-platform.live.js`
+after a build. The published image has no tenant role yet (SO-03), so the
+service got the six variables of the
+[placeholder environment](#placeholder-environment) of SO-01c, with which the
+image starts as a control plane. The adapter sent the calls of SO-01c that it
+owns: the search by name, the create, the deploy list, the service read, and
+the delete.
+
+| Step | Measured |
+| --- | --- |
+| Preflight, reads only | Workspace Thermus AI (team), credential `ghcr-thermus-hosted-read` (`rgc-dbg1h0142hec73da9ra0`), no `thermus-spike-*` service |
+| Create | `thermus-spike-tenant-org_01live20261027211549`, `srv-dbgh91t9fdbs73dftf70`: `201` after 2.9 s |
+| First deploy | `dep-dbgh9259fdbs73dftfn0`, `live` 76.2 s after the create call (`update_in_progress` > `live`), with the given image `sha256:d6b8a8fd…dbfbd` |
+| Internal address | `http://thermus-spike-tenant-org:8080`: the host of `serviceDetails.url` with the port of `serviceDetails.openPorts` |
+| Delete | Done after 0.6 s; then the search by name and the service list of the workspace showed no service of the test |
+
+A read of the service list of Thermus AI after the run showed only the
+production service.
+
+### Findings for Slice 2
+
+- The host of the internal address was `thermus-spike-tenant-org`: the name up
+  to its first underscore. With the name rule of 27 October 2026, the prefix
+  and the organization ID in lower case, each tenant name has an underscore
+  after `org`, so the slug of each tenant can start as `thermus-tenant-org`.
+  The provisioner reads the address from the API answer and never computes it.
+  The run made one service, so it does not show the slug of a second service
+  with the same start; check it before a second tenant goes live.
+- The create answer, the first deploy, and the delete took the times of SO-01c.
+
+### Limits
+
+- One run, one service, one region. The service ran the control-plane role
+  with placeholder values, not the tenant role, and no call reached it over the
+  private network.

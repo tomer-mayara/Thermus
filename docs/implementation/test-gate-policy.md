@@ -28,6 +28,7 @@ cached. `pnpm exec node --version` must report `v24.20.0`. For direct `npm` or
 | Acceptance | `npm run test:acceptance` | `dist/test/acceptance/**/!(hosted-image).test.js` and `test/acceptance/user-portal/**/*.test.ts` | Axiom ingest credentials and public network access for the OTel logger test. |
 | Interface | `npm run test:interface` | `dist/test/interface/**/*.test.js` | Lightpanda 1.0.0, Axiom ingest credentials, and public network access. |
 | Axiom interface | `npm run test:interface:axiom` | `dist/test/interface/logging/system/otel-logger-axiom.live.js` | Axiom ingest credentials and public network access. Writes one test log to `system-log-test`. |
+| Render interface | `npm run test:interface:render` | `dist/test/interface/render/render-tenant-platform.live.js` only | `RENDER_API_KEY` in the environment, of a Render user that sees the workspace Thermus AI, its registry credential `ghcr-thermus-hosted-read`, and public network access. Creates one disposable private service named `thermus-spike-tenant-*` and deletes it. The [Render interface gate](#render-interface-gate-so-06) gives the details. |
 | Audit Collector | `npm run test:logging:collector` | Audit sender integration and hosted audit journey acceptance `.runtime.js` files | Docker Engine and OpenSSL. Pinned image pulls need network access or a local cache. The isolated test network has no outbound access. No live credentials. |
 | Portal | `npm run test:user-portal` | Portal unit and acceptance tests from TypeScript source | Offline. Local DOM and provider doubles. |
 | All | `npm test` | `dist/test/**/!(hosted-image).test.js` and portal source tests: the unit, integration, acceptance, and interface suites | Lightpanda 1.0.0, Axiom ingest credentials, and public network access. |
@@ -36,7 +37,7 @@ cached. `pnpm exec node --version` must report `v24.20.0`. For direct `npm` or
 | Hosted image | `npm run test:container:hosted` | `dist/test/acceptance/auth/hosted-image.test.js` only | Docker Engine with Buildx and a Linux AMD64 builder/runtime, native or emulated. Image build needs network access or cached pinned inputs; the renderer test needs HTTPS egress to `https://example.com/`. No live WorkOS or Axiom credential. |
 | Hosted live | `npm run test:hosted-live` | `hosted.live.js` and `hosted-removal.live.js`, in sequence after a build of the portal | A WorkOS staging environment with its settings and dashboard configuration, absolute pinned `LIGHTPANDA_BIN`, public network access, Playwright Chromium, OpenSSL, Docker Engine for the scoped removal proof’s disposable PostgreSQL, and free local ports 24443 and 24480. The [hosted live gate](#hosted-live-gate-auth-06) gives the details. |
 | Search live | `npm run test:mcp:search:live` | `dist/test/acceptance/mcp/search-pipeline.live.js` only | Absolute pinned `LIGHTPANDA_BIN` and public Brave access. No API key or Axiom credential. |
-| Private PostgreSQL | `npm run test:logging:postgres` | Settings and removal-store integration, settings and hosted storage-failure acceptance, membership-removal overlap/restart and integrated hosted acceptance, and tenant registry store integration and acceptance `.runtime.js` files | Docker Engine and OpenSSL. Uses disposable local PostgreSQL 17 with verified test TLS and the scoped runtime role; no Supabase or other live credentials. |
+| Private PostgreSQL | `npm run test:logging:postgres` | Settings and removal-store integration, settings and hosted storage-failure acceptance, membership-removal overlap/restart and integrated hosted acceptance, tenant registry store and tenant provisioner integration, and tenant registry acceptance `.runtime.js` files | Docker Engine and OpenSSL. Uses disposable local PostgreSQL 17 with verified test TLS and the scoped runtime role; no Supabase or other live credentials. |
 | Members browser | `npm run build:user-portal && npm run build && node --test dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js` | Labelled member rows and distinct counts; short closed desktop rows at most 72px with 48px actions; quiet self/other actions, keyboard Cancel and one confirmation at 320px/1280px without JavaScript; expanded-row reflow at 481px/600px/860px/861px; shared Members/Audit navigation, focus, text resize and Save/Test with JavaScript on/off; Audit width at 800px/860px; closed/open invitation, typed Cancel, native validation, User/Admin send and last-Admin guidance; counted zero/nonzero pending disclosure, compact long rows, UTC expiry, section order and protected keyboard Resend/Revoke, with JavaScript on/off | Playwright Chromium, OpenSSL and the built portal assets. Uses a temporary loopback HTTPS bridge to the local HTTP site and provider doubles; no live credentials. |
 | Renderer | `npm run test:mcp:renderer` | `dist/test/acceptance/mcp/get-url-as-markdown.runtime.js` and `dist/test/acceptance/mcp/search-pipeline.runtime.js` | `LIGHTPANDA_BIN` with the absolute path of the pinned Lightpanda 1.0.0 executable. No public network access and no Axiom credentials: the pages are local fixtures on `127.0.0.1`. |
 
@@ -292,11 +293,16 @@ changed source affects their behavior:
   available. If they are unavailable, record that the gate did not run.
 - `npm run test:logging:postgres` for the private logging settings store,
   membership-removal coordinator/store, shared SQL runtime
-  (`src/runtime/sql/`), tenant registry (`src/tenancy/tenants/`), the
-  `thermus_admin` migrations, or their hosted configuration and lifetime.
+  (`src/runtime/sql/`), tenant registry and provisioner (`src/tenancy/tenants/`),
+  the `thermus_admin` migrations, or their hosted configuration and lifetime.
   This separate gate
   exercises real PostgreSQL; ordinary test globs do not select its `.runtime.ts`
   files. Docker image builds do not start nested PostgreSQL containers.
+- `npm run test:interface:render` for the Render adapter of the tenant
+  platform (`src/tenancy/providers/render/`), when a Render key of the workspace
+  Thermus AI is available. If it is unavailable, record that the gate did not
+  run. The gate makes real Render writes, so run it at most once for each
+  candidate change of the adapter.
 - `npm run test:logging:collector` for the customer Audit sender's encoding,
   protocol outcomes, transport, public-address/TLS policy, or integrated
   browser/MCP export journey. This dedicated gate
@@ -465,7 +471,8 @@ then runs these emitted files directly, without another build:
    `dist/test/acceptance/mcp/hosted-tenant-capacity.test.js`,
    `dist/test/acceptance/mcp/search-lifecycle.test.js`,
    `dist/test/acceptance/mcp/hosted-process-shutdown.test.js`,
-   `dist/test/acceptance/mcp/server-only-modules.test.js`, and
+   `dist/test/acceptance/mcp/server-only-modules.test.js`,
+   `dist/test/acceptance/tenants/provisioner.test.js`, and
    `dist/test/interface/hosted-renderer-startup.test.js`.
 3. `dist/test/acceptance/mcp/get-url-as-markdown.runtime.js` and
    `dist/test/acceptance/mcp/search-pipeline.runtime.js`: both real local
@@ -679,6 +686,47 @@ and tool result in a new dated implementation record, preserving earlier
 records. [SEARCH-09](search-09.md) records the stronger association check.
 Earlier raw requests or nightly
 renderer probes do not replace this complete proof.
+
+## Render interface gate (SO-06)
+
+`npm run test:interface:render` makes a clean backend build and runs only
+`dist/test/interface/render/render-tenant-platform.live.js`. The `.live.ts`
+name keeps the file out of the ordinary, interface, offline, and container
+globs. The file reads `RENDER_API_KEY` from the environment; load it from the
+git-ignored `.env.local` of the main checkout, for example:
+
+```sh
+npm run build && node --env-file=<main checkout>/.env.local --test dist/test/interface/render/render-tenant-platform.live.js
+```
+
+`node --env-file` does not reach a script of `node --run`, so give the option
+to the test run itself. The file never prints the key or a request header.
+
+Given the workspace Thermus AI (`tea-db8i6ceq1p3s73dev9og`), the registry
+credential `ghcr-thermus-hosted-read`, and a hosted image digest, the file
+creates one disposable tenant through the real Render adapter, in a private
+service named `thermus-spike-tenant-org_01live<UTC time>`. Its deploy must reach
+`live`, its internal address must have the form `http://<slug>:8080`, and its
+delete must leave no service of the test. Before any call, the file refuses the
+workspace My Workspace (`tea-d3mlbrvdiees73ca4rdg`), and the adapter refuses
+each write for a service that the test did not create and for the production
+service `srv-db8mnqg473hc739d529g`. A preflight with reads only must find the
+workspace, the credential with registry `GITHUB`, and no `thermus-spike-*`
+service of any type; else the file sends no write. Its cleanup runs after a
+failure too: it deletes each service with the exact name of the test and waits
+until the service list no longer shows it. A second signal or a killed process
+can leave the service; then delete it in the Render Dashboard.
+
+The image digest defaults to the hosted image of the SO-01e record;
+`RENDER_LIVE_IMAGE`, `RENDER_LIVE_OWNER_ID`, and
+`RENDER_LIVE_REGISTRY_CREDENTIAL_ID` can name others, and My Workspace stays
+refused. Until a published image has the tenant role of SO-03, the service gets
+the placeholder environment of SO-01c
+([record](self-onboarding-s1.md#placeholder-environment)), with which the image
+starts as a control plane. Each run uses one of the 20 creates an hour of the
+Render user. A pass gives evidence of the Render calls of the adapter for one
+service in one region; it does not run the provisioner loop, a tenant role, or
+a call over the private network.
 
 ## Hosted offline checks
 
