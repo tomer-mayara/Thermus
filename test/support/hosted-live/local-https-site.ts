@@ -1,11 +1,7 @@
 import type { SystemLog } from '../../../src/logs/system/system-logger.ts';
 import { execFile } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
-import { once } from 'node:events';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
-import type { RequestListener } from 'node:http';
-import { createServer, type Server } from 'node:https';
-import type { AddressInfo } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
@@ -16,22 +12,11 @@ import { startHttpServer, type HttpServer } from '../../../src/runtime/http/serv
 import { OperatorLogSpy } from '../doubles/application/operator-log-spy.ts';
 import { portalBuild } from '../processes/module-paths.ts';
 import { trustedAdRulesFile } from '../fixtures/ad-rules.ts';
+import { listenFronts, type TlsCertificate } from './https-fronts.ts';
 import { answer, portalFiles, portalHeaders, type PortalSite } from './portal-front.ts';
 import { browserRedirectUri, localOrigin, localSitePort, type HostedLiveSettings } from './settings.ts';
 
-interface TlsCertificate {
-  readonly key: Buffer | string;
-  readonly cert: Buffer | string;
-}
-
-interface FrontPlan {
-  readonly tls: TlsCertificate;
-  readonly port: number;
-  readonly listener: RequestListener;
-}
-
 const publicBaseUrl = `${localOrigin}/`;
-const listenAddresses = ['127.0.0.1', '::1'];
 // Writes key.pem and cert.pem into the directory and gives their PEM contents.
 export async function selfSignedCertificate(directory: string): Promise<{ key: Buffer; cert: Buffer }> {
   const key = join(directory, 'key.pem');
@@ -41,37 +26,6 @@ export async function selfSignedCertificate(directory: string): Promise<{ key: B
     '-subj', '/CN=localhost', '-addext', 'subjectAltName=DNS:localhost,IP:127.0.0.1,IP:::1',
   ]);
   return { key: await readFile(key), cert: await readFile(cert) };
-}
-
-function closeFront(front: Server): Promise<void> {
-  front.closeAllConnections();
-  return new Promise<void>((resolve) => front.close(() => resolve()));
-}
-
-// The runs that use the fixed port also use the registered WorkOS Staging URIs of its origin, so one run at a time.
-function busyPortError(host: string, port: number, cause: unknown): unknown {
-  if (!(cause instanceof Error) || (cause as NodeJS.ErrnoException).code !== 'EADDRINUSE') return cause;
-  return new Error([
-    `Port ${port} of ${host} is in use, so the local HTTPS site did not start.`,
-    'Most likely another run of the hosted live gate, the auth WorkOS MCP URL fetch work slice, or the fetch script proof holds it:',
-    'they use this fixed port for the registered WorkOS Staging URIs. Wait for that run to end or stop it, then start again.',
-  ].join(' '), { cause });
-}
-
-// Both fronts listen on one port. For port 0, the first front gets a free port, and the second front listens on it too.
-// One front after the other: when a listen fails, the stack already owns each front that listens.
-async function listenFronts(fronts: AsyncDisposableStack, plan: FrontPlan): Promise<number> {
-  let port = plan.port;
-  for (const host of listenAddresses) {
-    const front = createServer(plan.tls, plan.listener);
-    front.listen({ host, port });
-    await once(front, 'listening').catch((error: unknown) => {
-      throw plan.port === 0 ? error : busyPortError(host, port, error);
-    });
-    fronts.adopt(front, closeFront);
-    port = (front.address() as AddressInfo).port;
-  }
-  return port;
 }
 
 interface LocalHttpsSiteOptions {
