@@ -300,7 +300,8 @@ dependency_graph:
     - { from: cli, to: system-logs, kind: type }
     - { from: audit-logs, to: organizations, kind: type }
     - { from: audit-logs, to: sql, kind: runtime }
-    # 56 permitted owner edges on 2026-10-27; runtime includes public types.
+    - { from: tenants, to: sql, kind: type }
+    # 57 permitted owner edges on 2026-10-27; runtime includes public types.
   forbidden_edges:
     - { from: html-processing, to: [ mcp ] }
     - { from: website-fetcher, to: [ identity, workos, better-auth, web, cli ] }
@@ -332,6 +333,7 @@ dependency_graph:
     - { from: http, to: app }
     - { from: config, to: app }
     - { from: sql, to: app }
+    - { from: tenants, to: app }
   file_guards: keep # the eslint import rules in .habit-hooks continue to apply
   known_cycles: []
   allowed_external_imports:
@@ -387,6 +389,7 @@ dependency_graph:
     http: { roots: [ src/runtime/http/ ] }
     config: { roots: [ src/runtime/config/ ] }
     sql: { roots: [ src/runtime/sql/ ] }
+    tenants: { roots: [ src/tenancy/tenants/ ] }
 
 # The facts that the check establishes from the merge base and HEAD. Each is
 # T2 Need architect: an architect reviews the pull request. The check reads the
