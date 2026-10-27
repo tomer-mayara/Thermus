@@ -20,7 +20,7 @@ export function isServiceId(value: string): boolean {
   return SERVICE_ID.test(value);
 }
 
-export function serviceOf(value: unknown): PlatformService | undefined {
+function serviceOf(value: unknown): PlatformService | undefined {
   const { id, name } = record(value);
   return typeof id === 'string' && isServiceId(id) && typeof name === 'string' ? { id, name } : undefined;
 }

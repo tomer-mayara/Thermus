@@ -1,6 +1,6 @@
 // D-15, final on 27 October 2026: a free tenant serves 5 tool calls at a time, and a team tenant 10. The provisioner
 // sets the value of the tier in the tenant; the default of OPERATION_CAPACITY in the source stays 10.
-export const OPERATION_CAPACITY_BY_TIER = { free: 5, team: 10 } as const;
+const OPERATION_CAPACITY_BY_TIER = { free: 5, team: 10 } as const;
 
 /** The public values of the control plane that each tenant gets (plan section 4.1). None of them is a secret. */
 export interface TenantPublicSettings {
