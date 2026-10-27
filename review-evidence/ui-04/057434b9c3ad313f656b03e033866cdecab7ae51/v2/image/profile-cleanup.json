@@ -1,0 +1,26 @@
+{
+  "startedAt": "2026-10-27T06:38:01.737303+00:00",
+  "completedAt": "2026-10-27T06:38:05.230064+00:00",
+  "stopCommand": [
+    "colima",
+    "stop",
+    "--profile",
+    "thermus-s25-merge"
+  ],
+  "stopExitCode": 0,
+  "profile": "thermus-s25-merge",
+  "originalState": "Stopped",
+  "finalState": "Stopped",
+  "persistedConfigSha256Before": "598f406bedc125a19d20baefcdf9a67135af5e153bc2c62923a9b47798e18e75",
+  "persistedConfigSha256After": "598f406bedc125a19d20baefcdf9a67135af5e153bc2c62923a9b47798e18e75",
+  "defaultContextBefore": "colima",
+  "defaultContextAfter": "colima",
+  "ownedContainersBeforeStop": 0,
+  "unrelatedContainerIdsAndStatesUnchanged": true,
+  "unrelatedContainerCountBefore": 10,
+  "unrelatedContainerCountAfter": 10,
+  "allFourImageGatesPassed": true,
+  "sourceAssertionsDeadlinesChanged": false,
+  "cloudWorkflowOrDeployTriggered": false,
+  "note": "Only the task-specific profile was stopped. Its saved config is unchanged. The normal Docker profile and its unrelated containers were read but not mutated. Test worktrees and evidence are preserved."
+}

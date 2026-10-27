@@ -1,0 +1,11 @@
+{
+  "command": [
+    "git",
+    "switch",
+    "--detach",
+    "057434b9c3ad313f656b03e033866cdecab7ae51"
+  ],
+  "exitCode": 0,
+  "stdout": "",
+  "stderr": "Previous HEAD position was aa8c56bb Show the invitation form on demand for UI-03\nHEAD is now at 057434b9 Record the latest main rebase and validation provenance\n"
+}

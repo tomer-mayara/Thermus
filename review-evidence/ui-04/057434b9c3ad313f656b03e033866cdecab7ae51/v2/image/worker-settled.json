@@ -1,0 +1,39 @@
+{
+  "head": "057434b9c3ad313f656b03e033866cdecab7ae51",
+  "base": "aa8c56bb7e195e97d2362b2c661cc63a760a5cc9",
+  "gateResult": {
+    "command": "npm",
+    "args": [
+      "run",
+      "test:container:hosted"
+    ],
+    "started": "2026-10-27T06:21:23.440Z",
+    "ended": "2026-10-27T06:36:04.597Z",
+    "exitCode": 0,
+    "signal": null,
+    "logPath": "/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/.cache/ui-stack-finish/local-image/ui04/hosted-image.log"
+  },
+  "historyReaderExit": 0,
+  "ownedContainersAfter": {
+    "command": [
+      "docker",
+      "--context",
+      "colima-thermus-s25-merge",
+      "ps",
+      "--all",
+      "--no-trunc",
+      "--filter",
+      "label=thermus.hosted-image-gate",
+      "--format",
+      "{{json .}}"
+    ],
+    "exitCode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "defaultContextUnchanged": true,
+  "trackedInputsUnchanged": true,
+  "specialTrackedUnchanged": true,
+  "localOnly": true,
+  "at": "2026-10-27T06:36:07.448407+00:00"
+}

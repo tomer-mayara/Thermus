@@ -1,0 +1,37 @@
+{
+  "listing": {
+    "command": [
+      "docker",
+      "--context",
+      "colima-thermus-s25-merge",
+      "image",
+      "ls",
+      "--no-trunc",
+      "--filter",
+      "label=thermus.hosted-image-gate",
+      "--format",
+      "{{json .}}"
+    ],
+    "exitCode": 0,
+    "stdout": "{\"Containers\":\"0\",\"CreatedAt\":\"2026-10-27 00:35:27 -0600 MDT\",\"CreatedSince\":\"7 seconds ago\",\"Digest\":\"\\u003cnone\\u003e\",\"ID\":\"sha256:ba536c9dae9cd391160dbdd60081e94580931cacde010d7e088df7964dcd368e\",\"Repository\":\"thermus-hosted-gate\",\"SharedSize\":\"N/A\",\"Size\":\"154MB\",\"Tag\":\"2a13141cb371\",\"UniqueSize\":\"N/A\"}\n",
+    "stderr": ""
+  },
+  "identities": [
+    {
+      "command": [
+        "docker",
+        "--context",
+        "colima-thermus-s25-merge",
+        "image",
+        "inspect",
+        "--format",
+        "{{json .Id}} {{json .Os}} {{json .Architecture}} {{json .RepoTags}} {{json .RepoDigests}}",
+        "sha256:ba536c9dae9cd391160dbdd60081e94580931cacde010d7e088df7964dcd368e"
+      ],
+      "exitCode": 0,
+      "stdout": "\"sha256:ba536c9dae9cd391160dbdd60081e94580931cacde010d7e088df7964dcd368e\" \"linux\" \"amd64\" [\"thermus-hosted-gate:2a13141cb371\"] [\"thermus-hosted-gate@sha256:ba536c9dae9cd391160dbdd60081e94580931cacde010d7e088df7964dcd368e\"]\n",
+      "stderr": ""
+    }
+  ],
+  "at": "2026-10-27T06:35:34.322923+00:00"
+}

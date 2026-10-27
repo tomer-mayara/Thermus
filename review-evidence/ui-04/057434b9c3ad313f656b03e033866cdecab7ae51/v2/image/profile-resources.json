@@ -1,0 +1,44 @@
+{
+  "preflightAt": "2026-10-27T05:10:24.692354+00:00",
+  "startedAt": "2026-10-27T05:12:12.576878+00:00",
+  "originalProfile": {
+    "name": "thermus-s25-merge",
+    "status": "Stopped",
+    "arch": "aarch64",
+    "cpus": 3,
+    "memory": 4294967296,
+    "disk": 19327352832,
+    "runtime": "docker"
+  },
+  "temporaryStartCommand": {
+    "command": "colima",
+    "args": [
+      "start",
+      "--profile",
+      "thermus-s25-merge",
+      "--activate=false",
+      "--cpus",
+      "2",
+      "--memory",
+      "3",
+      "--save-config=false"
+    ],
+    "started": "2026-10-27T05:11:28.257Z",
+    "ended": "2026-10-27T05:11:44.221Z",
+    "exitCode": 0,
+    "signal": null,
+    "logPath": ".cache/ui-stack-finish/local-image/profile-start.log"
+  },
+  "runningEngine": {
+    "NCPU": 2,
+    "MemTotal": 3040784384,
+    "Architecture": "aarch64",
+    "ServerVersion": "29.5.2",
+    "OperatingSystem": "Ubuntu 24.04.4 LTS"
+  },
+  "persistedProfileConfigBefore": "598f406bedc125a19d20baefcdf9a67135af5e153bc2c62923a9b47798e18e75",
+  "persistedProfileConfigAfterStart": "598f406bedc125a19d20baefcdf9a67135af5e153bc2c62923a9b47798e18e75",
+  "defaultContextBefore": "colima",
+  "defaultContextAfterStart": "colima",
+  "note": "Only the existing dedicated profile is used. Its prior state was stopped. No deadline/assertion or source change. Original unrelated-container inventory is retained privately, not published."
+}

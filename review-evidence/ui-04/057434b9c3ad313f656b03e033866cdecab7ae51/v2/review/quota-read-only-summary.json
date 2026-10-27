@@ -1,0 +1,22 @@
+{
+  "checkedAt": "2026-10-27T06:04:46.967Z",
+  "scope": "Read-only invitation-quota check; no provider mutation or test send. Sanitized summary; raw connector operation index and environment identifiers are not published.",
+  "observations": [
+    "Connector operation index exposes no quota operation; email settings expose toggles, not available quota or reset time.",
+    "Staging invitation emails are enabled in connector/dashboard; enabled state does not prove available sending capacity.",
+    "Dashboard email/configuration/provider surfaces exposed no quota balance or reset information; absence of displayed events does not prove sending availability.",
+    "No settings were changed. No current sending availability, reset time, historical scoped503 provider cause or new passing live result was established."
+  ],
+  "conclusion": "Selected full live groups remain on hold. Keep six explicit quota429 fixture failures separate from the scoped application503 of unknown provider cause. No mutation or test send ran.",
+  "officialSources": [
+    {
+      "url": "https://workos.com/docs/email",
+      "facts": "Reserved example domains and .test are accepted without dispatch, but sending restrictions and quotas still apply; they do not bypass the observed limit."
+    },
+    {
+      "url": "https://workos.com/docs/reference/rate-limits",
+      "facts": "Additional email delivery limits can apply independently of API request rates; no environment-specific quota reset was obtained."
+    }
+  ],
+  "privateSourceSha256": "f75ce3a2856a712d4a72e3fa0378789b2033731a455509bb12cf4b8c0a3cb199"
+}
