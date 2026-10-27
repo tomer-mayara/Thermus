@@ -1,0 +1,63 @@
+import { createPrivateKey, createPublicKey, type KeyObject } from 'node:crypto';
+import { DeploymentConfigError } from './deployment-config.ts';
+import { originWithSlashOf } from './setting-origins.ts';
+
+type Environment = Readonly<Record<string, string | undefined>>;
+
+/** The settings of the MCP gateway. The control plane reads them only with MCP_TENANTS_ENABLED=true (plan section 4.1). */
+export interface GatewaySettings {
+  /** GATEWAY_SIGNING_KEY: the Ed25519 private key that signs each access context. Only the control plane holds it. */
+  readonly signingKey: KeyObject;
+  /** The public key of the signing key: the relay route checks the context of each relay with it. */
+  readonly verifyingKey: KeyObject;
+  /**
+   * CONTROL_PLANE_INTERNAL_URL: the origin of the control plane on the private network, without a final slash. Each
+   * tenant relays its audit events to this origin, so the relay route accepts only its host.
+   */
+  readonly controlPlaneInternalUrl: string;
+}
+
+const KEY_RULE = 'GATEWAY_SIGNING_KEY must be one PEM private key of type Ed25519.';
+const INTERNAL_URL_RULE = 'CONTROL_PLANE_INTERNAL_URL must be the http or https origin of the control plane on the private network, such as http://thermus-control-plane:8080, without a path, a username, a password, a query, or a fragment.';
+// Exactly one PEM block with the private key label, as Node writes an Ed25519 key in PKCS #8.
+const PEM_PRIVATE_KEY = /^-----BEGIN PRIVATE KEY-----[A-Za-z0-9+/=\s]+-----END PRIVATE KEY-----$/;
+
+/** Reads and checks the gateway settings. A missing or invalid setting stops the start before the server listens. */
+export function loadGatewaySettings(environment: Environment): GatewaySettings {
+  const signingKey = signingKeyOf(required(environment, 'GATEWAY_SIGNING_KEY'));
+  return Object.freeze({
+    signingKey,
+    verifyingKey: createPublicKey(signingKey),
+    controlPlaneInternalUrl: internalOriginOf(required(environment, 'CONTROL_PLANE_INTERNAL_URL')),
+  });
+}
+
+function required(environment: Environment, name: string): string {
+  const value = environment[name];
+  if (value === undefined || value === '') throw new DeploymentConfigError(`${name} is required when MCP_TENANTS_ENABLED is true.`);
+  return value;
+}
+
+// Each rule names the setting, never its value.
+function signingKeyOf(value: string): KeyObject {
+  const pem = value.trim();
+  const key = PEM_PRIVATE_KEY.test(pem) ? privateKeyOf(pem) : undefined;
+  if (key?.asymmetricKeyType !== 'ed25519') throw new DeploymentConfigError(KEY_RULE);
+  return key;
+}
+
+function privateKeyOf(pem: string): KeyObject | undefined {
+  try {
+    return createPrivateKey({ key: pem, format: 'pem' });
+  } catch {
+    // A refused key gives no detail: the message of the start names the setting only.
+    return undefined;
+  }
+}
+
+// The origin without its final slash, as the tenant role reads it.
+function internalOriginOf(value: string): string {
+  const origin = originWithSlashOf(value, ['http:', 'https:']);
+  if (origin === undefined) throw new DeploymentConfigError(INTERNAL_URL_RULE);
+  return origin.slice(0, -1);
+}
