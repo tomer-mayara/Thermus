@@ -26,14 +26,13 @@ Inventory presence is not a passing result; the pull request records the runs.
   `test/unit/user-portal/portal.test.ts` check that the portal accepts the team
   plan and reads the member limit of a free plan.
 - `test/unit/organizations/organization-administration-member-limit.test.ts`
-  has eight member limit cases: the count with a pending and an expired
+  has ten member limit cases: the count with a pending and an expired
   invitation, the repeat of a pending invitation at 5 of 5, a failed member
   page, invitation page, or billing read, two concurrent sends at 4 of 5, two
-  organizations that do not wait for each other, and the team plan.
-  `organization-administration-invitation-overview.test.ts`,
-  `change-records.test.ts`, and `test/unit/logging/audit/audit-log.test.ts`
-  check the seats of the overview and `limit-reached` in the record and the
-  audit event.
+  organizations that do not wait for each other, the team plan, and the seats
+  of the invitation overview, also after a failed member page.
+  `change-records.test.ts` and `test/unit/logging/audit/audit-log.test.ts`
+  check `limit-reached` in the record and the audit event.
 - `test/integration/hosted-admin/account-routes-administration-changes.test.ts`,
   `account-routes-administration-pages.test.ts`, and
   `account-routes-billing-page.test.ts` check the refusal through the routes,
@@ -1178,6 +1177,8 @@ npm run build && node --test dist/test/unit/organizations/organization-administr
 [V] With 3 members and 1 pending invitation, two Admins send at the same time while the directory holds the first send: the second check waits, so one send is applied and the other is `limit-reached`
 [V] The send of one free organization does not wait for a held send of another, and a failed send releases its organization for the next send
 [V] A team organization has no member limit: the send is applied after one billing read and no member read
+[V] A free organization above its limit after a downgrade has the seats 7 of 5 in its frozen invitation overview; a team organization has none; the count makes no display read
+[V] A failed member page of a free organization fails the invitation overview without a partial seat count
 
 Run only these tests:
 
@@ -1191,8 +1192,6 @@ npm run build && node --test dist/test/unit/organizations/organization-administr
 [V] A Super Admin alone can invite and change only Admin, and a member with both roles both; the overview gives the `provider-rules` policy of the directory
 [V] Gives a failed invitation page to the caller, and does not list a record of another organization
 [V] Refuses the invitation overview with `denied` for a User without Admin or Super Admin and with `mfa-required` for an Admin whose sign-in did not complete MFA; reads no invitation page
-[V] A free organization above its limit after a downgrade has the seats 7 of 5 in its frozen overview; a team organization has none; the count makes no display read
-[V] A failed member page of a free organization fails the overview without a partial seat count
 
 Run only these tests:
 
