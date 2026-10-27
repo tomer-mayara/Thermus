@@ -66,7 +66,6 @@ function causeCode(error: unknown): string | undefined {
   return cause instanceof Error && 'code' in cause && typeof cause.code === 'string' ? cause.code : undefined;
 }
 
-// A transport failure: an HTTP status of the tenant or the Render proxy, a client timeout, or a network error.
 export function errorOutcome(error: unknown): string {
   if (SdkHttpError.isInstance(error)) return `HTTP ${error.status}`;
   if (SdkError.isInstance(error)) return String(error.code) === 'REQUEST_TIMEOUT' ? 'client timeout' : `client ${String(error.code)}`;

@@ -27,7 +27,6 @@ async function checkMcp(context: ProbeContext): Promise<string> {
   }
 }
 
-// The pages origin, the tenant service, its OAuth resource, the fixtures and the token, and one MCP check, in order.
 export async function setup(context: ProbeContext): Promise<string> {
   const pages = await setupPages(context);
   const tenant = await setupTenant(context);
@@ -39,7 +38,6 @@ export async function setup(context: ProbeContext): Promise<string> {
   return `pages origin: ${pages} Tenant: ${tenant} Resource: ${resource} Identity: ${identity} ${mcp}`;
 }
 
-// The SO-01c plan change: the update, the deploy that applies it, and the replacement of the instance.
 export async function planTeam(context: ProbeContext): Promise<string> {
   const change = await changePlan(sessionOf(context, 'tenant'), TEAM_PLAN, probeImage(context.inputs.image));
   const health = await healthFromHere(context, 'tenant', `Plan ${TEAM_PLAN}`);

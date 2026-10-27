@@ -45,7 +45,6 @@ export async function createdIds(lister: Lister, state: { readonly serviceId?: s
   return named ?? [];
 }
 
-// Reads the service list until no service with one of the names is listed; gives the thermus-spike-* names then listed.
 export function untilGone(lister: Lister, gone: { readonly names: readonly string[]; readonly types: readonly ServiceType[]; readonly what: string }): Promise<readonly string[]> {
   return poll({ plan: POLLS.cleanup, signal: lister.signal, what: gone.what }, async () => {
     const listed = (await probeServices({ client: lister.client, inputs: { owner: lister.owner } }, lister.signal, gone.types)).map((service) => service.name);

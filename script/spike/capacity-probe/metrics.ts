@@ -83,7 +83,6 @@ export async function readMetric(reader: MetricsReader, query: MetricQuery): Pro
   return seriesOf((await reader.client.read(metricCall(query), reader.signal)).json);
 }
 
-// The series of the three reads with shifted starts, together.
 async function windowSeries(reader: MetricsReader, query: MetricQuery): Promise<readonly Series[]> {
   const { range } = query;
   const shifted = SHIFTS_SECONDS.map((shift) => ({ ...query, range: { startSeconds: range.startSeconds + shift, endSeconds: range.endSeconds + shift } }));
@@ -100,14 +99,12 @@ export function peakOf(series: readonly Series[]): { readonly value: number; rea
   return best;
 }
 
-// A memory value in bytes is shown in MiB too. Each other unit is shown as Render gives it.
 export function quantity(peak: { readonly value: number; readonly unit: string } | undefined): string {
   if (peak === undefined) return 'no point';
   if (/^(b|bytes?)$/i.test(peak.unit)) return `${Math.round(peak.value).toLocaleString('en-US')} bytes (${(peak.value / 1_048_576).toFixed(0)} MiB)`;
   return `${Number(peak.value.toPrecision(4))} ${peak.unit}`;
 }
 
-// The buckets of a window: from the bucket of its start to the bucket after the bucket of its end.
 export function windowRange(window: { readonly startMs: number; readonly endMs: number }): Range {
   const bucket = (ms: number): number => Math.floor(ms / 1_000 / RESOLUTION_SECONDS) * RESOLUTION_SECONDS;
   return { startSeconds: bucket(window.startMs), endSeconds: bucket(window.endMs) + RESOLUTION_SECONDS };

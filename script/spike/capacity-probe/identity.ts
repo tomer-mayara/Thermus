@@ -121,7 +121,6 @@ function checkClaims(context: ProbeContext, tokens: IssuedTokens, expected: { re
   return view.lifetime ?? 0;
 }
 
-// A disposable organization, a user with one membership, and a Connect application of the run, then a token.
 export async function createIdentity(context: ProbeContext, resource: string): Promise<string> {
   const settings: HostedLiveSettings = context.secrets.workos;
   const workos = workosClient(settings);

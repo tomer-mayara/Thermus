@@ -11,7 +11,6 @@ import { deleteOwnResource } from './oauth-resource.ts';
 const STEP = 'Cleanup';
 const DELETE_ORDER: readonly Role[] = ['tenant', 'pages'];
 
-// The fixtures of the run, found again by their names and their email: none may remain after the deletes.
 async function fixturesOfRun(fixtures: FixtureParts): Promise<readonly string[]> {
   const { workos, runId } = fixtures;
   const name = `${fixtureNamePrefix}${runId} `;
@@ -25,7 +24,6 @@ async function fixturesOfRun(fixtures: FixtureParts): Promise<readonly string[]>
   ];
 }
 
-// The registry deletes the application, then the user with its membership, then the organization.
 async function deleteFixtures(context: ProbeContext, problems: string[]): Promise<string> {
   const fixtures = context.state.fixtures;
   if (fixtures === undefined) return 'no WorkOS fixture of this run';

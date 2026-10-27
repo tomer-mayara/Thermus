@@ -63,7 +63,6 @@ interface RecoveryFacts {
   readonly early?: Promise<Health | Error>;
 }
 
-// After a kill or a transport failure, the next window waits until the service answers again.
 async function recovery(context: ProbeContext, facts: RecoveryFacts): Promise<string> {
   const killed = facts.events.find((event) => event.type === KILL_TYPE);
   if (killed === undefined && facts.early === undefined) return 'none';
