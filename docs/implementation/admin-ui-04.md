@@ -2,11 +2,11 @@
 
 Candidate: [PR #268](https://github.com/tomer-mayara/Thermus/pull/268).
 Scope: [UI-04](../design/organization-admin-plan.md#ui-04--compact-pending-invitations)
-of the Refined tabs plan. This candidate is now stacked on the restacked UI-03
-PR #266, which includes UI-02 PR #264 and its density correction. The original
-evidence below describes the earlier branch without UI-02; the maintained PR
-comments record the new head, parent and validation. This record claims no merge
-or deployment.
+of the Refined tabs plan. PR #266 has merged into main and includes UI-02
+PR #264 and its density correction. UI-04 now uses that merged main revision
+as its base. The evidence below retains its original execution scope; the
+maintained PR comments record the rebased head, base and validation. This
+record claims no UI-04 merge or deployment.
 
 ## Behavior
 
@@ -82,3 +82,24 @@ These checks characterize the resolved code before the rebase commit. They do
 not replace the complete candidate gates. The maintained PR evidence will record
 their final input comparison and complete gate results, including unresolved
 staging failures. No merge or deployment is claimed here.
+
+## Rebase after UI-03 merge
+
+On 27 October 2026, all six UI-04 commits replayed unchanged onto merged
+UI-03 main revision `0377cd12022d0c6fa9250107bc89aeaf9c457423`.
+That base has the same complete tree as final UI-03
+`94c5b0d850a2ebdd20fdd42581f1c6a6fd28202e`. PR #268 now targets main.
+The initial difference from old UI-04 `057434b9` is inherited UI-03
+documentation and metric history. The rebase adds no source behavior change.
+
+Fresh checks at `a64bf2f80f96ea54afcb61ad3e8a3aeddf07d787` passed typecheck,
+the portal and server builds, and all 71 Members browser cases, with zero
+failures, cancellations, skips or todo cases. Final evidence must compare the
+check inputs with the committed candidate.
+
+Old native, image and live results retain their execution pins. The historical
+live result still has six explicit quota HTTP 429 fixture failures and one
+separate application HTTP 503 with no proven provider cause. No new live run
+is claimed. The old exact-head human approval does not transfer to the rebased
+candidate. The PR remains Draft until the remaining gates pass; the maintained
+comments record current quality review and approval limits.
