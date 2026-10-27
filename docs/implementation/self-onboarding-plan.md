@@ -818,7 +818,12 @@ plane behaves as today. Given a live tenant, when the client calls a tool,
 then the tenant answers through the gateway, the control plane exports the
 audit event, and the audience and metadata URLs stay public; given a
 suspended tenant, then the client gets `503` and Render gets one resume
-request. Acceptance tests use a fake tenant upstream; one integration test
+request. For a 2025-era client, the gateway forwards the
+`notifications/cancelled` POST and the GET stream to the same tenant like each
+other request; the record
+[Cancellation by notifications/cancelled (2025-era clients)](self-onboarding-s1.md#cancellation-by-notificationscancelled-2025-era-clients)
+shows that this alone does not stop the running call and names the change in
+the tenant. Acceptance tests use a fake tenant upstream; one integration test
 runs both roles as two local processes. Size L. Depends on SO-03, SO-04.
 
 **SO-06 Provisioner.** The state machine of section 4.2 behind a small

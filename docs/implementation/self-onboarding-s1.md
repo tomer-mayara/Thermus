@@ -418,7 +418,9 @@ ran the probe, and then reverted the change. No change is in the branch.
   The proxy signs one fixed organization and subject.
 - Only protocol 2026-07-28. In protocol 2025-11-25, the SDK client cancels
   with a `notifications/cancelled` POST and does not close the stream (SDK
-  client source). The probe does not test that era.
+  client source). The default run does not test that era; the 2025-11-25 run
+  of the probe now measures it, in
+  [Cancellation by notifications/cancelled](#cancellation-by-notificationscancelled-2025-era-clients).
 - No compressed answer, no large body, no slow reader, and no calls at the same
   time. SO-01e measures the capacity. The proxy forwards only `POST /mcp` and
   answers `404` to other requests.
@@ -803,6 +805,234 @@ The measured times of the three jobs and the four new services:
   name does not resolve in public DNS and that `onrender.com` has no route to
   the service. It does not test other ways into the private network.
 - The services ran with the placeholder WorkOS values of SO-01c.
+
+### Cancellation by notifications/cancelled (2025-era clients)
+
+Date: 27 October 2026 (UTC). Board ticket 9f8980, pull request
+[#272](https://github.com/tomer-mayara/Thermus/pull/272), branch
+`self-ob-s1-cancel-notification-9f8980`. A local probe: no Render and no
+secret. The SDK lines below are in version 2.3.1, under
+`node_modules/@modelcontextprotocol/client/dist/` (client) and
+`node_modules/@modelcontextprotocol/server/dist/` (server).
+
+**Question.** In protocol 2026-07-28, the SDK client cancels a call when it
+closes the HTTP stream of that call, and part one shows that the upstream
+handler then stops. In protocol 2025-11-25, the SDK client sends a
+`notifications/cancelled` POST and keeps the stream open. The upstream makes
+one MCP server for each request, like the hosted server. When a 2025-era
+client cancels a running call through the gateway, does the running handler
+stop? How long does the client wait? What must the gateway do with the POST?
+
+**How the client was pinned.** The SDK refuses `{ pin: '2025-11-25' }`:
+pinning is for 2026-07-28 and later (client `index.mjs:2570`). So
+`newLegacyClient()` in [`client.ts`](../../script/spike/gateway-proxy/client.ts)
+uses `versionNegotiation: { mode: 'legacy' }` and
+`supportedProtocolVersions: ['2025-11-25']`. Mode `legacy` runs the
+`initialize` handshake. The client offers the first legacy version of its list
+(client `index.mjs:3351`) and accepts only a version of that list (client
+`index.mjs:3362`). Thus it offers and accepts only 2025-11-25. Mode `legacy`
+is also the default of the SDK (client `index.mjs:2559`).
+
+**What the run does.** Type
+`node script/spike/gateway-proxy-probe.ts --protocol 2025-11-25` in the
+repository root. The run starts the three parts of part one, with the client
+pinned to 2025-11-25. A wire tap,
+[`wire-tap.ts`](../../script/spike/gateway-proxy/wire-tap.ts), is the `fetch`
+of the client transport. It records each request with its JSON-RPC message,
+the answer status, and the end of the answer stream at the client. It also
+keeps each error that the client reports. The proxy also records when it ends
+an answer. The steps are in
+[`cancel-notification.ts`](../../script/spike/gateway-proxy/cancel-notification.ts),
+and the measure of one aborted call is in
+[`cancel-measure.ts`](../../script/spike/gateway-proxy/cancel-measure.ts). A
+run takes about 4 seconds and uses no network. Without the option, the probe
+runs part one. Its output before and after this change is the same apart from
+the times: a `diff` of the two outputs, with the times masked, found no
+difference.
+
+| Step | Given, when, then |
+| --- | --- |
+| Handshake (extra) | Given the three parts with the client pinned to 2025-11-25, when it connects, then `initialize` gets `200` and `notifications/initialized` gets `202` through the proxy, and the proxy answers the GET stream of the client with `404`. A direct GET to the upstream with a signed header gets `405`. |
+| Cancel by notification | Given a `slow` call of that client, when the client aborts it after 500 ms, then the client sends one `notifications/cancelled` POST with the id of the call and settles the call within 100 ms. The proxy forwards the POST, and a new upstream server answers `202`. The upstream handler sees no signal while it runs and sends all 15 progress notifications. The stream of the call stays open until the result, and the client drops each later message. |
+| Contrast 2026-07-28 | Given a second client pinned to 2026-07-28, when it aborts a `slow` call after 500 ms, then it sends no request and closes the stream of the call. The upstream handler sees its signal within 100 ms of the abort and stops within 20 ms of its signal. |
+| Cleanup | The Cleanup step of part one. |
+
+**Measured times.** Run 1 of 5, on 27 October 2026 (UTC), on the owner's Mac
+(Darwin 27.0.0). The table and the conclusions are as the script printed
+them. The script printed this line first: "Node v24.20.0,
+@modelcontextprotocol/server 2.3.1, @modelcontextprotocol/client 2.3.1,
+protocol 2025-11-25. Times are milliseconds after the start of each call, on
+one clock; a "+" time is after the client abort."
+
+| Part | Event | Expected | Measured |
+| --- | --- | --- | --- |
+| Handshake | initialize POST through the proxy | 200, version 2025-11-25 | 200; offered and negotiated 2025-11-25 |
+| Handshake | notifications/initialized POST | 202 | 202 |
+| Handshake | GET stream after notifications/initialized | 404: the proxy forwards only POST | 404; the client reported "Failed to open SSE stream: Not Found" 2 times |
+| Handshake | Direct GET to the upstream with a signed header | 405 | 405 |
+| Cancel by notification | Client abort | about 500 ms | 501.4 ms |
+| Cancel by notification | Progress received before the abort | 2 | 2 |
+| Cancel by notification | Request on the abort | notifications/cancelled POST | POST at +0.9 ms: notifications/cancelled, requestId 1 (the id of the call), reason "AbortError: This operation was aborted" |
+| Cancel by notification | Answer to that POST | 202 from a new upstream server | 202 at +6.9 ms; the upstream factory made a server for it |
+| Cancel by notification | Client call settles | at the abort, with an error | +1.3 ms: SdkError REQUEST_TIMEOUT "AbortError: This operation was aborted" |
+| Cancel by notification | Stream of the call at the client | stays open | open; it ended at 3009.6 ms, after the result |
+| Cancel by notification | Proxy sees the client go (response close) | not seen | not seen; the proxy ended the answer at 3009.2 ms |
+| Cancel by notification | Upstream handler signal | none while it runs | none while it ran; it fired 1.0 ms after its end, when the SDK closed its server |
+| Cancel by notification | Upstream handler end | runs to its end | finished at 3007.8 ms, after 15 of 15 progress notifications |
+| Cancel by notification | Messages the client drops after the abort | 13 progress notifications and the result | 13 progress notifications and 1 result |
+| Contrast 2026-07-28 | Client abort | about 500 ms | 500.2 ms |
+| Contrast 2026-07-28 | Progress received before the abort | 2 | 2 |
+| Contrast 2026-07-28 | Request on the abort | none; the client closes the stream of the call | none |
+| Contrast 2026-07-28 | Client call settles | at the abort, with an error | +4.0 ms: SdkError REQUEST_TIMEOUT "AbortError: This operation was aborted" |
+| Contrast 2026-07-28 | Stream of the call at the client | closed at the abort | closed (aborted) at +3.3 ms |
+| Contrast 2026-07-28 | Proxy sees the client go (response close) | after the abort | +4.5 ms |
+| Contrast 2026-07-28 | Upstream handler signal | within 100 ms of the abort | +5.8 ms |
+| Contrast 2026-07-28 | Upstream handler end | stops within 20 ms of its signal | stopped at +6.0 ms, after 2 of 15 progress notifications |
+| Contrast 2026-07-28 | Messages the client drops after the abort | none | 0 |
+| Cleanup | Open listeners and TCP handles | 0 | 0 |
+
+- PASS Handshake: the client negotiated 2025-11-25 through the proxy with initialize (200) and notifications/initialized (202); the proxy answered its GET stream with 404, and the client reported it 2 times and kept working; a direct GET to the upstream got 405.
+- PASS Cancel by notification: on the abort, the client sent one notifications/cancelled POST for request 1 and settled its call 1.3 ms later; the proxy forwarded it, and a new upstream server answered 202; the running handler saw no signal and ran to its end at 3007.8 ms; the proxy sent the whole answer, and the client dropped 13 progress notifications and the result.
+- PASS Contrast 2026-07-28: the 2026-07-28 client sent no request on the abort and closed the stream of the call; the upstream handler saw its signal 5.8 ms after the abort and stopped.
+- PASS Cleanup: both listeners are closed and no TCP handle is open; a watchdog stops the process with code 1 if it does not exit.
+
+Five runs in sequence, all with exit code 0, each in 3.80 to 3.93 s. The two
+clients side by side:
+
+| Measure | 2025-11-25 client | 2026-07-28 client |
+| --- | --- | --- |
+| Client abort after the call start | 500.6 to 502.6 ms | 500.2 to 502.6 ms |
+| Request on the abort | `notifications/cancelled` POST at +0.9 to +1.3 ms, with `requestId` 1 and `reason` "AbortError: This operation was aborted" | none |
+| Answer to that request | `202` at +6.9 to +8.8 ms | none |
+| Client call settles | +1.3 to +2.4 ms, `SdkError` `REQUEST_TIMEOUT` | +2.2 to +4.7 ms, `SdkError` `REQUEST_TIMEOUT` |
+| Stream of the call at the client | open until 3,008.4 to 3,019.2 ms, after the result | closed at +1.9 to +3.5 ms |
+| Proxy sees the client go | not seen; the proxy ended the answer at 3,008.0 to 3,018.1 ms | +2.4 to +4.9 ms |
+| Upstream handler signal | none while it ran; 1.0 to 4.6 ms after its end | +3.7 to +5.8 ms |
+| Upstream handler end | finished at 3,006.4 to 3,011.3 ms, after 15 of 15 progress notifications | stopped at +3.8 to +6.0 ms, after 2 of 15 |
+| Messages the client drops after the abort | 13 progress notifications and the result | none |
+
+**Mutation check.** To show that the new assertion can fail, the worker
+changed the proxy, ran the 2025-11-25 run, and then reverted the change. No
+change is in the branch.
+
+| Change | Result |
+| --- | --- |
+| The proxy reads each request body. When the body is a `notifications/cancelled` POST, the proxy aborts its pending upstream requests and then forwards the POST. | `FAIL Cancel by notification: The upstream handler saw its signal 12.5 ms after the abort, while it ran`, exit code 1. |
+
+**Findings.**
+
+- The 2025-era client does not wait. 0.9 to 1.3 ms after the abort, it sends
+  the notification with the id of the call, and the text of the abort reason
+  as `reason`. Then it rejects the call at once, with `SdkError` code
+  `REQUEST_TIMEOUT` and the message "AbortError: This operation was aborted"
+  (client `src-WCy6ifGf.mjs:6189` to `6206`). It does not wait for the `202`.
+  A 2026-era abort gives the same error.
+- The client closes the stream of the call only when the era is 2026-07-28
+  and the transport has a stream for each request (client
+  `src-WCy6ifGf.mjs:6169`; `StreamableHTTPClientTransport` sets
+  `hasPerRequestStream`, client `index.mjs:5368`). In the 2025 era, it sends
+  the notification instead.
+- The stream of the call stays open. The client reads it to its end and drops
+  each later message, with the client errors "Received a progress
+  notification for an unknown token" and "Received a response for an unknown
+  message ID" (client `src-WCy6ifGf.mjs:6024` and `6050`). Thus the gateway
+  streams the whole answer of a cancelled call, and the tenant does all the
+  work.
+- The proxy forwards the notification like each other `POST /mcp`, with its
+  signed header, to the same upstream. The upstream answers `202` from a new
+  server. For each 2025-era POST, `createMcpHandler` gets a new server from
+  the factory and a new stateless transport (server `index.mjs:1064` to
+  `1083`), and a POST without a request gets `202` (server `index.mjs:771` to
+  `776`). `_oncancel` looks for the request id only in the map of its own
+  server (server `src-Cqbh3MYc.mjs:6337` to `6339`). That map gets an entry
+  only when the same server runs the request (server
+  `src-Cqbh3MYc.mjs:6508`). So the notification cannot reach the running
+  call.
+- The handler of the call saw no signal while it ran. Its signal fired 1.0 to
+  4.6 ms after its end: at the end of the answer stream, the SDK closes the
+  server (server `index.mjs:1105`), and the close aborts each handler that is
+  still registered (server `src-Cqbh3MYc.mjs:6424`).
+- The hosted server of today has the same behavior. `MCPServer` mounts
+  `createMcpHandler` with the default stateless serving of 2025-era requests
+  ([`mcp-server.ts`](../../src/interfaces/mcp/mcp-server.ts), line 59), and
+  makes a new server for each request (`serverForRequest`, line 187). The
+  signal of a tool joins the signal of the SDK request and the signal of the
+  HTTP request
+  ([`fetch-tool-server.ts`](../../src/interfaces/mcp/fetch-tool-server.ts),
+  line 39). Neither fires on a 2025-era cancel. So a 2025-era cancel does not
+  stop a fetch or a search today, with or without a gateway.
+- A closed upstream request stops the handler in both eras. For a 2025-era
+  request, the stateless serving closes the server when the request signal
+  aborts (server `index.mjs:1083`). In the mutation check, the handler saw its
+  signal 12.5 ms after the abort.
+- After `notifications/initialized`, a 2025-era client opens a GET stream
+  (client `index.mjs:5797`). The proxy forwards only `POST` and answered
+  `404`. The client reported "Failed to open SSE stream: Not Found" two times
+  to its error handler (client `index.mjs:5548`) and kept working. The
+  stateless SDK serving answers a GET with `405` (server `index.mjs:1066`),
+  and the client accepts a `405` without an error (client `index.mjs:5543`).
+  So the gateway must pass a GET to the tenant; with `404`, each 2025-era
+  client reports an error at each connect.
+
+**What the gateway must do with the POST.** Forward it like each other
+`POST /mcp`: to the tenant of the same organization, with the signed context.
+Return the `202` of the tenant. A `202` from the gateway itself would hide the
+notification from the tenant, and a later fix in the tenant would then also
+need a gateway change. The gateway needs nothing more. Forwarding alone does
+not stop the call.
+
+**Design note for Slice 2.** Two options:
+
+1. **Documented limit.** A 2025-era cancel does not stop the work in the
+   tenant. The call runs to its own bounds, for a page render up to the
+   60-second limit of Lightpanda (`LIGHTPANDA_TIMEOUT_MS` in
+   [`website-fetcher-lightpanda.ts`](../../src/pipelines/providers/website-fetcher/website-fetcher-lightpanda.ts)).
+   Until then, it keeps one `OPERATION_CAPACITY` slot and its renderer. The
+   client discards the result, and the audit event records the real end, for
+   example `success`, not `cancelled`. Cost: no code; one sentence in the plan
+   and in the client guide. Risk: with a small capacity, a retry after a
+   cancel can get `Server busy` until the first call ends, and a render (one
+   reached 631 MiB, D-15) runs for nothing.
+2. **Cancellation registry in the tenant process.** The gateway forwards the
+   notification to the same tenant, as above. In the tenant, `MCPServer` keeps
+   one map for the process. Its key is the hash of the bearer token and the
+   JSON-RPC request id; its value is the abort controller of the running tool
+   call. The `tools/call` handler adds its entry and removes it at its end,
+   and the signal of the tool also joins that controller. Each per-request
+   server gets a `notifications/cancelled` handler that finds the key and
+   aborts the call. The token hash is necessary: the stateless 2025-era
+   serving has no session ID, and each client numbers its requests from 0. So
+   two clients can run a call with the same id at the same time. When more
+   than one running call has the key, the handler aborts none. A notification
+   that comes before its call starts has no effect. Cost, an estimate: size S,
+   about 50 to 80 lines in `src/interfaces/mcp/`, one acceptance test (a
+   2025-11-25 client cancels a fetch; the tool signal fires, and the audit
+   status is `cancelled`), and unit tests of the map. No gateway change. It
+   also fixes the hosted server of today.
+
+A third option is rejected: a registry in the gateway that closes the
+upstream stream of the matching call. The mutation check shows that this
+stops the handler. But the gateway must then parse each JSON-RPC body and keep
+the request ids, and the plan keeps the gateway a light streaming proxy.
+
+Recommendation: option 2, the registry in the tenant, as a small ticket in
+Slice 2 next to SO-03, or earlier on main. Reason: mode `legacy` is the SDK
+default, so a client that does not choose a mode negotiates 2025-11-25 and
+cancels by notification. With the limit, each cancel keeps a capacity slot
+and a renderer of a small free container busy for up to 60 seconds. The
+registry needs no gateway change, and it also fixes the hosted server of
+today. The manager decides; option 1 is the fallback.
+
+**Limits.**
+
+- The limits of part one apply: one process, one clock, loopback ports, and a
+  model of the upstream, not the production code.
+- One client of each era, one call at a time, and one abort time. The probe
+  does not test two clients with the same request id, a notification that
+  comes before its call, or a cancel while the tenant resumes.
+- We still do not know which protocol versions the production clients
+  negotiate. The default of SDK 2.3.1 is `legacy`; other client libraries can
+  differ.
 
 ## SO-01c: Render private service lifecycle
 

@@ -4,32 +4,65 @@
 // gateway-proxy/upstream.ts, proxy.ts, and client.ts. The upstream accepts only a Thermus-Access header with a valid
 // Ed25519 signature (gateway-proxy/access-context.ts); both listeners use gateway-proxy/http-bridge.ts. Each step of
 // gateway-proxy/steps.ts asserts one Given-When-Then specification. At the end, the script prints one Markdown table
-// of the measured times and one conclusion for each step. This is a probe, not production code.
-// Run it from the repository root: node script/spike/gateway-proxy-probe.ts
+// of the measured times and one conclusion for each step. The default run pins the client to protocol 2026-07-28.
+// With --protocol 2025-11-25, the client is pinned to that version, and the steps of
+// gateway-proxy/cancel-notification.ts check a cancellation by notifications/cancelled, with a 2026-07-28 client as
+// the contrast. This is a probe, not production code.
+// Run it from the repository root: node script/spike/gateway-proxy-probe.ts [--protocol 2025-11-25]
 import assert from 'node:assert/strict';
 import { generateKeyPairSync } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { pathToFileURL } from 'node:url';
+import type { Client } from '@modelcontextprotocol/client';
 import { probeContext, signAccess } from './gateway-proxy/access-context.ts';
-import { connectClient, newClient, PROTOCOL_VERSION } from './gateway-proxy/client.ts';
+import { connectThroughTap, notificationSteps } from './gateway-proxy/cancel-notification.ts';
+import { connectClient, LEGACY_PROTOCOL_VERSION, newClient, newLegacyClient, PROTOCOL_VERSION } from './gateway-proxy/client.ts';
 import { startProxy } from './gateway-proxy/proxy.ts';
 import { cleanupStep, messageOf, partSteps, type Parts, type ProbeStep, type Report } from './gateway-proxy/steps.ts';
 import { startUpstream } from './gateway-proxy/upstream.ts';
+import { wireTap } from './gateway-proxy/wire-tap.ts';
 
 type Closer = () => Promise<void>;
+interface ProtocolRun {
+  readonly protocol: string;
+  readonly steps: readonly ProbeStep[];
+  newClient(): Client;
+  connect(client: Client, proxy: URL): Promise<void>;
+}
 
-async function startParts(closers: Closer[]): Promise<Parts> {
+const USAGE = `Usage: node script/spike/gateway-proxy-probe.ts [--protocol ${PROTOCOL_VERSION} | --protocol ${LEGACY_PROTOCOL_VERSION}]`;
+
+function protocolRun(args: readonly string[]): ProtocolRun | undefined {
+  if (args.length === 0) return modernRun();
+  if (args.length !== 2 || args[0] !== '--protocol') return undefined;
+  if (args[1] === PROTOCOL_VERSION) return modernRun();
+  return args[1] === LEGACY_PROTOCOL_VERSION ? notificationRun() : undefined;
+}
+
+function modernRun(): ProtocolRun {
+  return { protocol: PROTOCOL_VERSION, steps: partSteps, newClient, connect: (client, proxy) => connectClient(client, proxy) };
+}
+
+function notificationRun(): ProtocolRun {
+  const tap = wireTap();
+  return {
+    protocol: LEGACY_PROTOCOL_VERSION, steps: notificationSteps(tap), newClient: newLegacyClient,
+    connect: (client, proxy) => connectThroughTap(client, proxy, tap),
+  };
+}
+
+async function startParts(run: ProtocolRun, closers: Closer[]): Promise<Parts> {
   const gateway = generateKeyPairSync('ed25519');
   const keys = { gateway, other: generateKeyPairSync('ed25519') };
   const upstream = await startUpstream(gateway.publicKey);
   closers.push(() => upstream.close());
   const proxy = await startProxy(new URL('/mcp', upstream.url), () => signAccess(probeContext(), gateway.privateKey));
   closers.push(() => proxy.close());
-  const client = newClient();
+  const client = run.newClient();
   closers.push(() => client.close());
-  await connectClient(client, proxy.url);
-  assert.equal(client.getNegotiatedProtocolVersion(), PROTOCOL_VERSION, 'The client must negotiate the pinned protocol version');
+  await run.connect(client, proxy.url);
+  assert.equal(client.getNegotiatedProtocolVersion(), run.protocol, 'The client must negotiate the pinned protocol version');
   return { keys, upstream, proxy, client };
 }
 
@@ -54,13 +87,13 @@ async function closeAll(closers: Closer[]): Promise<unknown> {
   return failure;
 }
 
-async function runProbe(report: Report): Promise<void> {
+async function runProbe(run: ProtocolRun, report: Report): Promise<void> {
   const closers: Closer[] = [];
   let parts: Parts | undefined;
   let failure: unknown;
   try {
-    parts = await startParts(closers);
-    for (const step of partSteps) await check(step, parts, report);
+    parts = await startParts(run, closers);
+    for (const step of run.steps) await check(step, parts, report);
   } catch (error) {
     failure = parts === undefined ? new Error(`Setup: ${messageOf(error)}`, { cause: error }) : error;
   }
@@ -71,8 +104,8 @@ async function runProbe(report: Report): Promise<void> {
   await check(cleanupStep, parts, report);
 }
 
-function renderReport(report: Report): string {
-  const versions = `Node ${process.version}, @modelcontextprotocol/server ${sdkVersion('@modelcontextprotocol/server')}, @modelcontextprotocol/client ${sdkVersion('@modelcontextprotocol/client')}, protocol ${PROTOCOL_VERSION}`;
+function renderReport(protocol: string, report: Report): string {
+  const versions = `Node ${process.version}, @modelcontextprotocol/server ${sdkVersion('@modelcontextprotocol/server')}, @modelcontextprotocol/client ${sdkVersion('@modelcontextprotocol/client')}, protocol ${protocol}`;
   return [
     '## Gateway proxy probe', '',
     `${versions}. Times are milliseconds after the start of each call, on one clock; a "+" time is after the client abort.`, '',
@@ -88,15 +121,20 @@ function sdkVersion(name: string): string {
   return typeof manifest.version === 'string' ? manifest.version : 'unknown';
 }
 
-async function main(): Promise<number> {
+async function main(args: readonly string[]): Promise<number> {
+  const run = protocolRun(args);
+  if (run === undefined) {
+    process.stderr.write(`gateway-proxy-probe: ${USAGE}\n`);
+    return 2;
+  }
   const report: Report = { rows: [], conclusions: [] };
   try {
-    await runProbe(report);
+    await runProbe(run, report);
   } catch (error) {
     process.stderr.write(`gateway-proxy-probe: FAIL ${messageOf(error)}\n`);
     return 1;
   }
-  process.stdout.write(renderReport(report));
+  process.stdout.write(renderReport(run.protocol, report));
   return 0;
 }
 
@@ -107,5 +145,5 @@ function failIfAHandleKeepsTheProcessAlive(): void {
   }, 5_000).unref();
 }
 
-process.exitCode = await main();
+process.exitCode = await main(process.argv.slice(2));
 failIfAHandleKeepsTheProcessAlive();

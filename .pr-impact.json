@@ -27,7 +27,10 @@
       "Behavior and resource ownership"
     ],
     "evidence": [
-      "script/spike/capacity-probe.ts",
+      "script/spike/gateway-proxy-probe.ts",
+      "script/spike/gateway-proxy/cancel-notification.ts",
+      "script/spike/gateway-proxy/cancel-measure.ts",
+      "script/spike/gateway-proxy/wire-tap.ts",
       "docs/implementation/self-onboarding-s1.md",
       "docs/implementation/self-onboarding-plan.md"
     ]
