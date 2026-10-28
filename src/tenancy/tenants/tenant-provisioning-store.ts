@@ -1,0 +1,43 @@
+/** A row that the provisioner works on: it creates the service of a creating row and watches the deploy of a deploying row. */
+export interface ProvisioningRow {
+  readonly organizationId: string;
+  readonly state: 'creating' | 'deploying';
+  readonly serviceName: string;
+  readonly serviceId: string | null;
+}
+
+export interface ClaimRequest {
+  /** The name of the service of an organization, for a row that has no name yet. */
+  serviceNameOf(organizationId: string): string;
+  /** The plan that a newly claimed row wants. */
+  readonly plan: string;
+}
+
+/**
+ * The next row to work on. A row in creating or deploying comes first: the work of an earlier run or a resume
+ * (resumed). Else the oldest requested row moves to creating with its service name and plan.
+ */
+export type ClaimResult =
+  | { readonly status: 'claimed'; readonly resumed: boolean; readonly row: ProvisioningRow }
+  | { readonly status: 'idle' }
+  | { readonly status: 'unavailable' };
+
+/** moved: the row is no longer in the state that the change starts from. unavailable: the change can be absent. */
+export type RecordResult = { readonly status: 'recorded' | 'moved' | 'unavailable' };
+
+export interface LiveRecord {
+  readonly internalUrl: string;
+  readonly imageDigest?: string;
+}
+
+export interface TenantProvisioningStore {
+  claimNext(request: ClaimRequest): Promise<ClaimResult>;
+  /** creating to deploying, with the ID of the service. */
+  recordService(organizationId: string, serviceId: string): Promise<RecordResult>;
+  /** deploying to live, with the internal address and the digest of the live deploy. */
+  recordLive(organizationId: string, live: LiveRecord): Promise<RecordResult>;
+  /** creating or deploying to failed, with the reason. */
+  recordFailed(organizationId: string, reason: string): Promise<RecordResult>;
+  /** True when a row of the registry has this service ID. An unreadable registry gives false. */
+  ownsService(serviceId: string): Promise<boolean>;
+}

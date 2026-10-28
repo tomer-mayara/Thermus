@@ -1,11 +1,12 @@
 # Self on-boarding Slice 1 evidence
 
 This record keeps the evidence of the Slice 1 tickets of the self on-boarding
-plan ([PR #259](https://github.com/tomer-mayara/Thermus/pull/259)), and of two
-Slice 2 tickets: SO-03, the private address of the control plane, and SO-02,
-which makes the workflow of SO-01b the release path. Each ticket or probe adds
-one section: what ran and where, the durations and limits, and what a client
-saw. The record holds no secret.
+plan ([PR #259](https://github.com/tomer-mayara/Thermus/pull/259)), and of three
+Slice 2 tickets: SO-03, the private address of the control plane; SO-02, which
+makes the workflow of SO-01b the release path; and SO-06, the live runs of the
+Render adapter of the tenant provisioner. Each ticket or probe adds one section:
+what ran and where, the durations and limits, and what a client saw. The record
+holds no secret.
 
 SO-03 of Slice 2 adds its measurement of the private address of the control
 plane here, because it extends the private network probe of SO-01d.
@@ -3332,3 +3333,93 @@ These checks used scripts in the session scratchpad, not in the branch:
   each run names its digest, and the skipped push steps show that runs B, C,
   and G pushed nothing.
 - One run of each path, one region, and one disposable service.
+
+## SO-06: live interface run of the Render adapter
+
+Date: 27 October 2026 (UTC). Ticket SO-06 of Slice 2 (board ticket 63a5c8),
+branch `self-ob-s2-so-06-tenant-provisioner-63a5c8`. The live interface test
+of the Render adapter,
+[`render-tenant-platform.live.ts`](../../test/interface/render/render-tenant-platform.live.ts),
+ran four times on the owner's Mac with Node v24.20.0, each time with
+`node --env-file=<main checkout>/.env.local --test dist/test/interface/render/render-tenant-platform.live.js`
+after a build. The published image has no tenant role yet (SO-03), so each
+service got the six variables of the
+[placeholder environment](#placeholder-environment) of SO-01c, with which the
+image starts as a control plane. The adapter sent the calls of SO-01c that it
+owns: the search by name, the create, the deploy list, the service read, and
+the delete. Each run started with a preflight with reads only: the workspace
+Thermus AI (team), the credential `ghcr-thermus-hosted-read`
+(`rgc-dbg1h0142hec73da9ra0`), and no `thermus-spike-*` service. After each
+run, the service list of Thermus AI showed only the production service.
+
+- Run 1, 21:15:49 to 21:17:07 UTC, the first version of the adapter, with the
+  name rule of the owner's answer of 27 October 2026 (the prefix and the
+  organization ID in lower case).
+- Run 2, 22:20:39 to 22:22:08 UTC, commit `85dae8ce`, after the adapter was
+  split into its read, write, and answer modules; the same name rule.
+- Run 3, 22:45:36 to 22:47:13 UTC, commit `ce95acea`, with the hyphen rule:
+  each character of the organization ID outside a-z, 0-9, and hyphen as a
+  hyphen. The test expected the whole name as the slug and failed on that
+  check; its cleanup deleted the service.
+- Run 4, 22:53:08 to 22:55:33 UTC, commit `267b8bb8`, with two services
+  whose names share their first 27 characters, the second created after the
+  first was `live`.
+
+| Run | Service name (length) | Service ID | Create | First deploy `live` after the create call | Slug and internal address | Delete |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | `thermus-spike-tenant-org_01live20261027211549` (45) | `srv-dbgh91t9fdbs73dftf70` | `201` after 2.9 s | 76.2 s, `dep-dbgh9259fdbs73dftfn0` | `thermus-spike-tenant-org`, `http://thermus-spike-tenant-org:8080` | 0.6 s |
+| 2 | `thermus-spike-tenant-org_01live20261027222039` (45) | `srv-dbgi7ec9v7es738lo7ig` | `201` after 3.0 s | 86.5 s, `dep-dbgi7es9v7es738lo8j0` | `thermus-spike-tenant-org`, the same address | 0.6 s |
+| 3 | `thermus-spike-tenant-org-01live20261027224539` (45) | `srv-dbgij5fb9u1s73fv0n0g` | `201` after 2.7 s | 91.9 s, `dep-dbgij5nb9u1s73fv0nj0` | `thermus-spike-tenant-org`, the same address | by the cleanup, after the failed check |
+| 4, first | `thermus-spike-tenant-org-01a20261027225310` (42) | `srv-dbgimm1srm7s73el4fg0` | `201` after 2.6 s | 64.8 s, `dep-dbgimm9srm7s73el4g40` | `thermus-spike-tenant-org`, `http://thermus-spike-tenant-org:8080` | 0.5 s |
+| 4, second | `thermus-spike-tenant-org-01b20261027225310` (42) | `srv-dbgin6e1egvs73b1pmu0` | `201` after 2.7 s | 75.2 s, `dep-dbgin6m1egvs73b1po4g` | `thermus-spike-tenant-org-oz02`, `http://thermus-spike-tenant-org-oz02:8080` | 0.5 s |
+
+Each deploy went `update_in_progress` > `live` with the given image
+`sha256:d6b8a8fd…dbfbd`. The internal address was the slug of the API answer,
+the host of `serviceDetails.url`, with the port of `serviceDetails.openPorts`.
+
+The slug by the length of the name, with the measurements of SO-01d and SO-03:
+
+| Service name | Length | Slug | Run |
+| --- | --- | --- | --- |
+| `thermus-spike-20261027-050852` | 29 | the whole name | SO-01d |
+| `thermus-spike-20261027-184609` | 29 | the whole name | SO-03, run 2 |
+| `thermus-spike-web-20261027-184609` | 33 | the whole name | SO-03, run 2 |
+| `thermus-spike-tenant-org-01a20261027225310` | 42 | `thermus-spike-tenant-org` | SO-06, run 4 |
+| `thermus-spike-tenant-org-01b20261027225310` | 42 | `thermus-spike-tenant-org-oz02` | SO-06, run 4, while the first existed |
+| `thermus-spike-tenant-org_01live…` | 45 | `thermus-spike-tenant-org` | SO-06, runs 1 and 2 |
+| `thermus-spike-tenant-org-01live…` | 45 | `thermus-spike-tenant-org` | SO-06, run 3 |
+
+### Findings for Slice 2
+
+- Render shortens a long service name into its hostname at a separator: names
+  of up to 33 characters stayed whole, and names of 42 and 45 characters
+  became `thermus-spike-tenant-org`. The underscore of runs 1 and 2 was not the
+  cause: run 3, without one, got the same slug. The limit lies between 34 and
+  41 characters; the documentation of Render gives none.
+- Render keeps hostnames unique. The second service of run 4 shared the
+  shortened start while the first existed and got
+  `thermus-spike-tenant-org-oz02`: the shortened start, a hyphen, and four
+  lowercase letters and digits, the shape of the examples of the documentation
+  (`elasticsearch-2j3e`). The [Private
+  Network](https://render.com/docs/private-network) page says: "Each web service
+  and private service has a unique hostname on the private network."
+- The owner's answer of 27 October 2026 named a tenant service by the prefix
+  and the organization ID in lower case. From runs 1 and 2, the manager
+  decided on the same day that each character of the organization ID outside
+  a-z, 0-9, and hyphen becomes a hyphen; the rule stays, because it keeps the
+  name DNS-safe. A production name has 45 characters
+  (`thermus-tenant-org-01hx…`), so a tenant gets a shortened hostname, and a
+  second tenant gets a suffix. The provisioner stores the address that Render
+  returns, and the gateway uses it, never one computed from the name.
+- The create answers, the first deploys, and the deletes took the times of
+  SO-01c.
+
+### Limits
+
+- Four runs, five services, one region. The services ran the control-plane
+  role with placeholder values, not the tenant role, and no call reached them
+  over the private network. The runs used the adapter, not the provisioner
+  loop: the loop has the acceptance and PostgreSQL cases with a fake Render
+  API.
+- Run 4 measured two services of one shortened start, not more; the shape of
+  further suffixes is not measured.

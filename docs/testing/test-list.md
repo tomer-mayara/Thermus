@@ -1,5 +1,57 @@
 # Test inventory
 
+## Current SO-06 inventory scope
+
+SO-06 of the [self on-boarding plan](../implementation/self-onboarding-plan.md#slice-2-free-tier-end-to-end)
+adds the tenant provisioner, the Render adapter of the tenant platform, and the
+switch `MCP_TENANTS_ENABLED`. Inventory presence is not a passing result; the
+pull request records the runs.
+
+- `test/acceptance/tenants/provisioner.test.ts` has the fourteen acceptance
+  cases of the ticket, its answers of 27 October 2026, and the name rule of the
+  manager. It runs the loop as app composes it from the control plane settings,
+  against the fake of the Render API
+  `test/support/doubles/render/render-fake.ts`, which makes the slug as Render
+  does: a long name is shortened at a separator, and a second service with the
+  same start gets a suffix, the registry fake
+  `test/support/doubles/tenants/tenant-provisioning-store-fake.ts`, and a
+  virtual clock: a requested row reaches `live` with `http://<slug>:8080` and
+  `OPERATION_CAPACITY=5`; the service name is the prefix and the organization ID
+  in lower case with each character outside a-z, 0-9, and hyphen as a hyphen,
+  and two tenants with the same shortened start get two addresses; the hosted
+  image reads the create variables in the tenant role; the create call holds the
+  tenant variables and no secret; a `429` waits for `Retry-After`; a restart and
+  a lost create answer find the service by name; two services of the name and a
+  failed deploy give `failed` with one report; one row at a time; failed reads
+  repeat within their bound; a `deploying` row after a resume goes `live`; other
+  states stay; and the adapter refuses a write for a service that the registry
+  does not own, and always for the production service.
+- `test/integration/tenants/provisioner-registry.runtime.ts` runs the
+  provisioner with the real registry store and the `sql` runtime on disposable
+  PostgreSQL 17: one row at a time, a stop during a deploy and a second
+  control plane that continues it, a creating row of an earlier run, a failed
+  deploy, the production storage composition with the switch on, and a
+  database that stops while a claim waits. It runs in
+  `npm run test:logging:postgres`.
+- `test/interface/render/render-tenant-platform.live.ts` creates two disposable
+  tenants whose names share their first 27 characters, one after the other, in
+  the workspace Thermus AI through the real Render adapter, checks that each
+  address is the slug of the API answer and that the two differ, and deletes
+  both. It runs only through `npm run test:interface:render`, with
+  `RENDER_API_KEY`; the [test gate policy](../implementation/test-gate-policy.md#render-interface-gate-so-06)
+  gives its rules.
+- `test/unit/tenants/provisioner.test.ts`, `pg-tenant-provisioning-store.test.ts`,
+  `test/unit/render/render-tenant-platform.test.ts`, and
+  `test/unit/config/mcp-tenants-config.test.ts` check the state machine with a
+  fake platform, the SQL of each provisioning statement, the calls and answers
+  of the adapter with a stub of `fetch`, and the rules of the switch and the
+  tenant settings. `test/acceptance/auth/hosted-startup.test.ts` checks the
+  switch at the start of the built server.
+
+The runtime file needs Docker Engine and OpenSSL, and the live file a Render key;
+both are outside the ordinary suite. The other files are in the ordinary suite,
+and the hosted offline build selects the acceptance file.
+
 ## Current SO-08 inventory scope
 
 SO-08 of the [self on-boarding plan](../implementation/self-onboarding-plan.md#slice-2-free-tier-end-to-end)
@@ -913,6 +965,39 @@ bounded runtime over a client double.
 
 ```sh
 npm run build && node --test dist/test/unit/tenants/*.test.js
+```
+
+**Tenant switch and settings** (`test/unit/config/mcp-tenants-config.test.ts`)
+
+Only the hosted edition reads `MCP_TENANTS_ENABLED`, and only with `true` the tenant settings.
+
+[V] Gives off for no value, an empty value, and `false`, and on for `true`; each other value, such as `TRUE`, `yes`, `1`, or ` true`, stops with `MCP_TENANTS_ENABLED must be exactly true or false.`
+[V] Gives the Render key, workspace, registry credential, tenant image, free plan, the default name prefix `thermus-tenant-`, the gateway public keys, and the origin of `CONTROL_PLANE_INTERNAL_URL`; a set prefix, two keys, and a final slash are kept or normalized
+[V] A missing or empty required setting stops with `<setting> is required when MCP_TENANTS_ENABLED is true.`; an invalid value stops with the rule of the setting and without the value, also an RSA or private key and a URL with a path, a password, or a query
+
+**Tenant provisioner** (`test/unit/tenants/provisioner.test.ts`, `pg-tenant-provisioning-store.test.ts`)
+
+A fake of the tenant platform, the registry fake, a virtual clock, and a spy of the operator log run the state machine; the SQL adapter runs on the real bounded runtime over a client double.
+
+[V] A requested row is named with the prefix and the organization ID in lower case, each character outside a-z, 0-9, and hyphen as a hyphen (also for capital letters, dots, plus signs, and letters outside a-z), created once on the free plan with the closed list of tenant variables and `OPERATION_CAPACITY` 5, and recorded as `creating`, `deploying`, and `live`, with one record line for each state
+[V] One service of the name is taken without a create; two services, a refused create, and a failed deploy give `failed` with the reason and one operator report
+[V] A create without a clear answer waits 30 s and searches by name before another create; a rate-limited create waits the given time, at most one hour; three attempts without a service, or three unavailable service lists, give `failed`
+[V] The newest deploy is read every 5 s for at most 15 minutes, 180 reads; a live deploy waits for the internal address; a gone service fails the row
+[V] A `deploying` row after a resume goes `live` without a create; a `deploying` row without a service ID fails
+[V] An idle loop reads the registry every 5 s; an unreadable registry, a failed write, and an unexpected failure log one error and wait 60 s; a row that changed elsewhere is left; a failure that the registry cannot record is reported once it is recorded; a stop leaves the row for the next start
+[V] The claim selects with `FOR UPDATE SKIP LOCKED` in one transaction and moves the oldest requested row to `creating` with its name and plan; a resumed row keeps its name; each record names the state that it starts from; a failure reason is bounded to 1000 characters; the write guard owns a service ID only when a row has it
+
+**Render adapter** (`test/unit/render/render-tenant-platform.test.ts`)
+
+A stub of `fetch` gives the answers; a virtual clock gives the waits.
+
+[V] The search, the create, the deploy list, the service read, and the delete send the calls of the SO-01c probe with the bearer key; the search keeps only the exact name; invalid answers are unavailable
+[V] A create is sent one time only: `201` gives the service, `429` the wait of `Retry-After`, else `Ratelimit-Reset`, else 60 s, a `5xx` or no answer gives unknown, and another `4xx` refused with a bounded message; `Ratelimit-Remaining` 0 holds the next create until the reset
+[V] The newest deploy is the one with the latest creation time, with its progress and its digest; the internal address is `http://` with the host of `serviceDetails.url` and the first TCP port of `serviceDetails.openPorts`, else pending
+[V] A read or the delete has up to 3 attempts after a `429`, a `5xx`, or no answer; a delete is refused before any request for the production service, a service that the registry does not own, or a bad ID; no result holds the key, and a stop of the caller rejects the call
+
+```sh
+npm run build && node --test dist/test/unit/tenants/*.test.js dist/test/unit/render/*.test.js dist/test/unit/config/mcp-tenants-config.test.js
 ```
 
 **Local authentication migrations** (`test/unit/auth-better-auth/local-auth-migrations.test.ts`)
@@ -2823,6 +2908,9 @@ AUTH-06 replaced the placeholder specification, `hosted-placeholder.test.ts`. Ea
 [V] An invalid common setting, also with every WorkOS setting, stops startup before it listens with a `FATAL` line that names the setting and the rule but not the value
 [V] An `OPERATION_CAPACITY` of `0`, `101`, `1.5`, `abc`, or ` 5` stops startup before it listens; the `FATAL` line ends with `OPERATION_CAPACITY must be a whole number from 1 to 100.` and holds no value
 [V] A `FREE_TENANT_LIMIT` of `1001`, `2.5`, `abc`, ` 25`, or `1e3` stops startup before it listens; the `FATAL` line ends with `FREE_TENANT_LIMIT must be a whole number from 0 to 1000.` and holds no value
+[V] `MCP_TENANTS_ENABLED=yes`, or `true` with a missing Render key or an invalid workspace, image, gateway key, or internal URL, stops startup before it listens with a `FATAL` line that names the setting and its rule, and the output holds no value and no Render key
+[V] `MCP_TENANTS_ENABLED=true` with valid tenant settings but without the private hosted storage stops startup before it listens, because the provisioner needs the tenant registry
+[V] With `MCP_TENANTS_ENABLED` off or empty, startup listens also with invalid tenant settings, and no provisioner starts
 
 Run only these tests:
 

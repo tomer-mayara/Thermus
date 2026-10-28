@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { describe, test } from 'node:test';
 import { pathToFileURL } from 'node:url';
 import { hostedFetchSettings, workOSSettings } from '../../support/fixtures/hosted-placeholder.ts';
+import { tenantProvisioningSettings } from '../../support/fixtures/control-plane-tenants.ts';
 import { gatewayKeyPairOf, tenantSettingsOf } from '../../support/fixtures/hosted-tenant.ts';
 import { dataDirectory } from '../../support/isolation/data-directory.ts';
 import { withPreload } from '../../support/processes/server-preloads.ts';
@@ -278,6 +279,48 @@ registerHooks({ resolve(specifier, context, nextResolve) {
 
       await assertStopsBeforeListening(server, message);
       for (const value of Object.values(overrides).filter((setting) => setting.length > 1)) assert.ok(!server.output.includes(value), server.output);
+    }
+  });
+
+  test('Given MCP_TENANTS_ENABLED with a value other than true or false, or on with an invalid tenant setting, when the server starts, then it stops before it listens with a FATAL line that names the setting and the rule but not the value', { timeout: 60_000 }, async (t) => {
+    const invalidSettings: ReadonlyArray<[ServerSettings, RegExp]> = [
+      [{ MCP_TENANTS_ENABLED: 'yes' }, /FATAL\S* (?:\[[^\]]*\]: )?MCP_TENANTS_ENABLED must be exactly true or false\.$/m],
+      [{ ...tenantProvisioningSettings, RENDER_API_KEY: '' }, /FATAL\S* (?:\[[^\]]*\]: )?RENDER_API_KEY is required when MCP_TENANTS_ENABLED is true\.$/m],
+      [{ ...tenantProvisioningSettings, RENDER_OWNER_ID: 'srv-notaworkspace' }, /FATAL\S* (?:\[[^\]]*\]: )?RENDER_OWNER_ID must be the ID of a Render workspace, such as tea-<lowercase letters and digits>\.$/m],
+      [{ ...tenantProvisioningSettings, TENANT_IMAGE: 'ghcr.io/tomer-mayara/thermus-hosted:latest' }, /FATAL\S* (?:\[[^\]]*\]: )?TENANT_IMAGE must be an image reference by digest/m],
+      [{ ...tenantProvisioningSettings, GATEWAY_PUBLIC_KEY: 'not-a-public-key' }, /FATAL\S* (?:\[[^\]]*\]: )?GATEWAY_PUBLIC_KEY must hold one or more PEM public keys of type Ed25519, separated by commas\.$/m],
+      [{ ...tenantProvisioningSettings, CONTROL_PLANE_INTERNAL_URL: 'http://thermus-control-plane:8080/private-path' }, /FATAL\S* (?:\[[^\]]*\]: )?CONTROL_PLANE_INTERNAL_URL must be the http or https origin of the control plane/m],
+    ];
+
+    for (const [overrides, message] of invalidSettings) {
+      const server = ServerProcess.launch(t, { ...hostedSettings, ...workOSSettings, ...overrides });
+
+      await assertStopsBeforeListening(server, message);
+      for (const name of ['MCP_TENANTS_ENABLED', 'RENDER_OWNER_ID', 'TENANT_IMAGE', 'GATEWAY_PUBLIC_KEY', 'CONTROL_PLANE_INTERNAL_URL']) {
+        const value = overrides[name];
+        if (value !== undefined && value.length > 3 && value !== tenantProvisioningSettings[name]) assert.ok(!server.output.includes(value), server.output);
+      }
+      assert.ok(!server.output.includes(tenantProvisioningSettings.RENDER_API_KEY ?? ''), 'The output shows no Render API key');
+      assert.equal(server.attemptedOutboundAccess, false, server.output);
+    }
+  });
+
+  test('Given MCP_TENANTS_ENABLED=true and valid tenant settings without the private hosted storage, when the server starts, then it stops before it listens, because the provisioner needs the tenant registry', { timeout: 60_000 }, async (t) => {
+    const server = ServerProcess.launch(t, { ...hostedSettings, ...workOSSettings, ...tenantProvisioningSettings });
+
+    await assertStopsBeforeListening(server, /FATAL.*MCP_TENANTS_ENABLED=true needs the tenant registry: DATABASE_URL and LOGGING_DESTINATION_ENCRYPTION_KEY must be valid\./);
+    assert.ok(!server.output.includes(tenantProvisioningSettings.RENDER_API_KEY ?? ''), 'The output shows no Render API key');
+    assert.equal(server.attemptedOutboundAccess, false, server.output);
+  });
+
+  test('Given MCP_TENANTS_ENABLED off, also with invalid tenant settings, when the server starts, then it listens, reads no tenant setting, and starts no provisioner', { timeout: 60_000 }, async (t) => {
+    const invalidTenantSettings = { RENDER_API_KEY: 'a key with spaces', RENDER_OWNER_ID: 'srv-notaworkspace', TENANT_IMAGE: 'latest', GATEWAY_PUBLIC_KEY: 'not-a-public-key', CONTROL_PLANE_INTERNAL_URL: 'not-a-url' };
+    for (const MCP_TENANTS_ENABLED of ['false', '']) {
+      const server = await ServerProcess.start(t, { ...hostedSettings, ...workOSSettings, ...invalidTenantSettings, MCP_TENANTS_ENABLED });
+      await server.stop();
+
+      assert.doesNotMatch(server.output, /FATAL|tenant provisioner/i);
+      assert.equal(server.attemptedOutboundAccess, false, server.output);
     }
   });
 });

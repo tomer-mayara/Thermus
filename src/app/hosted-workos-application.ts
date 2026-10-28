@@ -3,6 +3,7 @@ import { AuditLog } from '../logs/audit/audit-log.ts';
 import { AuditSnapshots, type AuditSnapshotsOptions, type RevisionBoundAuditSink } from '../logs/audit/audit-snapshots.ts';
 import type { ToolOperations } from './fetch-tool.ts';
 import type { HostedLoggingStorage } from './logging-storage.ts';
+import type { TenantProvisioningSettings } from '../runtime/config/mcp-tenants-config.ts';
 import type { WorkOS } from '@workos-inc/node';
 import type { JWTVerifyGetKey } from 'jose';
 import {
@@ -66,6 +67,7 @@ export async function openWorkOSApplication(config: RouteConfig, logger: SystemL
   const operations = createHostedToolOperations(environment, logger);
   const { loadFreeTenantLimit } = await import('../runtime/config/free-tenant-limit-config.ts');
   const freeTenantLimit = loadFreeTenantLimit(environment);
+  const provisioningSettings = await tenantProvisioningSettingsOf(environment);
   if (new URL(config.publicBaseUrl).pathname !== '/') throw new Error('The hosted portal requires PUBLIC_BASE_URL with the base path /.');
   const { assertHostedRenderer } = await import('./hosted-renderer-startup.ts');
   await assertHostedRenderer(environment.LIGHTPANDA_BIN);
@@ -73,11 +75,20 @@ export async function openWorkOSApplication(config: RouteConfig, logger: SystemL
   const portal = await HostedPortal.load(['https://api.workos.com', connection.settings.authkitIssuer]);
   const { openLoggingStorage } = await import('./logging-storage.ts');
   await using resources = new AsyncDisposableStack();
-  const loggingStorage = await openLoggingStorage(environment, logger, freeTenantLimit);
+  const opened = await openLoggingStorage(environment, logger, freeTenantLimit);
+  const loggingStorage = provisioningSettings === undefined ? opened : (await import('./tenant-provisioning.ts')).withTenantProvisioning(opened, {
+    settings: provisioningSettings, publicBaseUrl: config.publicBaseUrl, authkitIssuer: connection.settings.authkitIssuer, logger,
+  });
   if (loggingStorage !== undefined) resources.defer(() => loggingStorage.close());
   const application = await composeWorkOSApplication(config, connection, { logger, toolOperations: operations, signup, loggingStorage });
   resources.move();
   return portal.withApplication(application);
+}
+
+// With MCP_TENANTS_ENABLED off, the control plane reads none of the tenant settings (plan section 4.1).
+async function tenantProvisioningSettingsOf(environment: Environment): Promise<TenantProvisioningSettings | undefined> {
+  const { loadMcpTenantsEnabled, loadTenantProvisioningSettings } = await import('../runtime/config/mcp-tenants-config.ts');
+  return loadMcpTenantsEnabled(environment) ? loadTenantProvisioningSettings(environment) : undefined;
 }
 
 // Invalid or missing WorkOS settings stop the start before the server listens. There is no fallback to local or
