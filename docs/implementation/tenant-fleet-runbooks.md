@@ -96,7 +96,7 @@ production service in the Render Dashboard for the prefix of the line.
 | `Tenant fleet summary: {json}` | INFO | [`src/tenancy/tenants/fleet-summary.ts`](../../src/tenancy/tenants/fleet-summary.ts) | Once a day at the tick, the daily summary. The fields are in [the summary fields](#the-summary-fields). |
 | `Tenant fleet summary stopped: {json}` | ERROR | `fleet-summary.ts` | The tick could not read the registry, so no summary line came. The field is `reason`. |
 | `Organization sweep: {json}` | INFO | [`src/tenancy/tenants/organization-sweep.ts`](../../src/tenancy/tenants/organization-sweep.ts) | On Mondays at the tick, the counts of the organization sweep: `rows` (not deleted), `organizations` (in the WorkOS list), `deleted`, `foundOnRead` (left out by the list, found by the read by ID), `unreadable`, `inFlight` (`creating` or `deploying`, left for the next sweep), `moved`, and `failed`. |
-| `Organization sweep stopped: {json}` | ERROR | `organization-sweep.ts` | The sweep deleted nothing: the registry cannot be read, or the WorkOS list is not complete. The field is `reason`. |
+| `Organization sweep stopped: {json}` | ERROR | `organization-sweep.ts` | The sweep deleted nothing. The field `reason` says why: the registry cannot be read, the WorkOS list is not complete, the list is empty, or more than 2 tenants have no organization in the list. A WorkOS key of another environment or a defect of the list read gives the last two, so for them the line also has the counts `rows` (not deleted), `organizations` (in the list), and `absent` (rows without an organization in the list). Then check the WorkOS key and the list in the WorkOS Dashboard. Delete the tenant of each organization that is really gone by hand with `fleet.ts delete --organization <organization ID>` ([runbook 4](#4-deletion-of-a-tenant)); the sweep removes no more than 2 tenants in one run. |
 | `Tenant removal record: {json}` | INFO | `organization-sweep.ts` | The sweep deleted one tenant. The fields are `organizationId`, `state` (`deleted`), `from`, `serviceId`, `serviceName`, and `cause` (`organization-absent`). |
 | `Tenant removal failed: {json}` | ERROR | `organization-sweep.ts` | The removal of one tenant failed. The fields are `organizationId`, `serviceId`, and `reason`. The next sweep tries again. |
 | `The organization sweep keeps the tenant of organization` | INFO | `organization-sweep.ts` | The read by ID of a left-out organization failed, so its tenant stays until the next sweep. |
@@ -373,11 +373,17 @@ If step 2 does not happen, the weekly organization sweep of the control plane
 deletes the tenant. It runs on Mondays at the daily tick of
 `TENANT_SWEEP_HOUR_UTC` (default 04:00 UTC). It compares the rows that are not
 `deleted` with the complete WorkOS organization list; a failed page deletes
-nothing and gives `Organization sweep stopped:`. It reads each organization
-that the list leaves out by its ID, and it deletes only after a `404`, because
-the WorkOS lists lag for some seconds. Then the row is `deleted`, and the log
-has one `Tenant removal record:` line for the tenant. A row that the
-provisioner works on (`creating` or `deploying`) waits for the next sweep.
+nothing and gives `Organization sweep stopped:`. An empty list, or a list that
+leaves out more than 2 of these rows, also deletes nothing and gives
+`Organization sweep stopped:` with the counts (manager decision of 28 October
+2026), because a WorkOS key of another environment or a defect of the list
+read would make every organization look gone. Then do steps 2 to 4 by hand for
+each organization that is really gone. Inside that bound, the sweep reads each
+organization that the list leaves out by its ID, and it deletes only after a
+`404`, because the WorkOS lists lag for some seconds. Then the row is
+`deleted`, and the log has one `Tenant removal record:` line for the tenant. A
+row that the provisioner works on (`creating` or `deploying`) waits for the
+next sweep.
 
 The row stays in the registry in state `deleted`, because the runtime role has
 no `DELETE` grant. It keeps its service ID and name for the record, and its

@@ -3524,3 +3524,8 @@ production service.
   Render reports.
 - The default-role read covered each organization of WorkOS Staging; only the
   membership of this run had the default role alone.
+- Step 11 ran before the bound of the deletion authority (manager review of 28
+  October 2026): the sweep now deletes nothing when the list is empty or leaves
+  out more than 2 rows that are not deleted. Step 11 had one absent row, inside
+  the bound; the acceptance and unit cases check the stops, and no manual run
+  showed them.

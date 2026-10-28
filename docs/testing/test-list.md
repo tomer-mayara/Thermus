@@ -17,7 +17,10 @@ request records the runs.
   its service and its row becomes `deleted`; listed organizations keep their
   tenants; a failed list page deletes nothing; a deleted tenant has one log
   line; an organization that the list leaves out but a read by ID finds keeps
-  its tenant; a day that is not Monday runs the summary and no sweep. They run
+  its tenant; a day that is not Monday runs the summary and no sweep. Three
+  cases check the bound of the deletion authority (manager review of 28 October
+  2026): three absent organizations delete nothing and give one stop line with
+  the counts, two are both removed, and an empty list deletes nothing. They run
   the sweeps as app composes them (`startTenantSweeps`), with the WorkOS fake
   `test/support/doubles/workos/workos-fake.ts` (now with the organization list,
   removed organizations, and the lag of the list), the Render fake, the
@@ -1213,6 +1216,7 @@ The same stub of `fetch` and virtual clock, in `test/unit/render/fixtures/render
 A fake of the tenant platform, a fake of the organization inventory, the fleet registry fake, and a spy of the operator log; the SQL adapter runs on the real bounded runtime over a client double.
 
 [V] The sweep compares the rows that are not deleted with a complete list, reads each left-out organization by ID, and removes the tenant only when the read says absent: the platform deletes the service first, then the row becomes `deleted` from the state that the sweep read, with one `Tenant removal record:` line
+[V] An empty list, or more than 2 absent rows that are not deleted (also `creating` and `deploying` rows), stops the sweep before any read by ID, delete, or row change, with one `Organization sweep stopped:` line with `reason`, `rows`, `organizations`, and `absent`; also an empty list without a row; two absent rows are both removed
 [V] A list that is not complete or a registry that cannot be read deletes nothing and gives one `Organization sweep stopped:` line; a deleted row is not read or deleted again; a found, unreadable, `creating`, or `deploying` row stays; a failed removal is reported and the next row goes on; a row that moved is left for the next sweep; the sweep runs on the Monday tick only
 [V] The summary counts the rows that are not deleted by state and plan with 7 USD a month for a running free tenant and 25 USD for another plan, reads the memory of all live tenants in one read and the restarts of each, names each read that failed, counts the default-role memberships and lists the first 50, and gives no record without the registry
 [V] The runner ticks each day at the hour in UTC, runs the steps of that day in their order, reports a failed step and runs the next one, and ends at the stop

@@ -679,7 +679,12 @@ the idle suspension. On Mondays the organization sweep compares the rows that
 are not deleted with the complete list of the
 [`OrganizationInventory`](../src/tenancy/tenants/organization-inventory.ts)
 contract, which the [WorkOS adapter](../src/accounts/providers/workos/workos-organization-inventory.ts)
-implements; a failed page deletes nothing. It reads each left-out organization
+implements; a failed page deletes nothing. An empty list, or a list that leaves
+out more than 2 rows that are not deleted, also deletes nothing: a WorkOS key of
+another environment or a defect of the list read would make every organization
+absent, so the sweep writes one `Organization sweep stopped:` line with the
+counts, and the operator deletes by hand with the fleet script (manager decision
+of 28 October 2026). Inside that bound, it reads each left-out organization
 by ID and removes the tenant only when that read says absent (a WorkOS `404`),
 and it leaves a `creating` or `deploying` row for the next sweep. Each day the
 summary writes one line, `Tenant fleet summary: <JSON>`, with the count and the
@@ -1577,7 +1582,10 @@ sequenceDiagram
   break A page fails, or the registry cannot be read
     Note over Sweep,Inv: One stop line, and nothing is deleted
   end
-  loop Each row that is not deleted and whose organization is not listed
+  break The list is empty, or more than 2 rows are absent from it
+    Note over Sweep,Inv: One stop line with the counts, and nothing is deleted
+  end
+  loop Each of the 1 or 2 absent rows that are not deleted
     Note over Sweep,Store: A creating or deploying row waits for the next sweep
     Sweep->>Inv: Read the organization by ID
     Inv->>WorkOS: GET /organizations/{id}
@@ -1592,6 +1600,12 @@ sequenceDiagram
   App->>Sweep: Stop at close
 ```
 
+The second stop is the bound of the deletion authority (manager decision of 28
+October 2026): a WorkOS key of another environment, or a defect of the list
+read, makes every organization absent and every read by ID a `404`, so without
+the bound one tick would delete the whole fleet. The stop line names `rows`,
+`organizations`, and `absent`; the operator checks the key and the list and
+deletes each tenant whose organization is really gone with `fleet.ts delete`.
 A list that lags behind a delete cannot remove a tenant, because the read by ID
 decides; an organization that the read still finds keeps its tenant. A failed
 read keeps the tenant until the next sweep. A failed platform delete changes no
@@ -2040,7 +2054,10 @@ The following limits affect architectural decisions today:
 - The tenant sweeps tick once a day in one process. A tick that falls while the
   control plane is down, for example during a deploy, waits until the next day,
   so the weekly sweep can wait two weeks; the runner keeps no record of a missed
-  tick. A second control plane would run a second sweep. The summary counts the
+  tick. A second control plane would run a second sweep. The organization sweep
+  removes at most 2 tenants in one run; with more absent rows, or an empty
+  list, it only reports, and no monitor watches that line yet, so the operator
+  reads it in the system log. The summary counts the
   restarts that Render reports, which SO-01e showed to be incomplete, and its
   memory points are 10 minutes apart, so a short peak can show lower. The cost
   counts each plan other than `TENANT_PLAN_FREE` as the team plan of D-12 until

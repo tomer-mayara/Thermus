@@ -267,7 +267,12 @@ it compares the registry with the WorkOS organization list, reads each
 organization that the list leaves out by its ID, and deletes the tenant only
 after a `404`, because the lists lag for some seconds. The system log then has
 one `Tenant removal record:` line for the tenant. A tenant that the provisioner
-works on (`creating` or `deploying`) waits for the next sweep.
+works on (`creating` or `deploying`) waits for the next sweep. The sweep
+removes at most 2 tenants in one run: with an empty list, or with more than 2
+tenants whose organization the list leaves out, it deletes nothing and writes
+one `Organization sweep stopped:` line with the counts, because a wrong WorkOS
+key would make every organization look gone. Then delete each tenant by hand
+with step 2.
 
 The registry rows after the deletion:
 
