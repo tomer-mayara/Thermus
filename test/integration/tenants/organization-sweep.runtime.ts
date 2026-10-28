@@ -59,7 +59,8 @@ test('Given rows on the real registry and organizations that WorkOS no longer ha
   const absentSuspended = await rowWithService(site, render, 'org_01JSWEEPPAUSED', 'suspended');
   await site.ownerQuery(`INSERT INTO thermus_admin.tenants (organization_id, state, service_name) VALUES ('org_01JSWEEPNEW', 'creating', '${nameOf('org_01JSWEEPNEW')}')`);
   await site.ownerQuery("INSERT INTO thermus_admin.tenants (organization_id, state, updated_at) VALUES ('org_01JSWEEPGONE', 'deleted', '2026-10-01T00:00:00Z')");
-  const workos = await WorkOSFake.start(t, controlPlanePublicBaseUrl, ['org_01JSWEEPKEEP']);
+  // WorkOS lists the organization of the creating row too, so two rows are absent: inside the bound of the sweep.
+  const workos = await WorkOSFake.start(t, controlPlanePublicBaseUrl, ['org_01JSWEEPKEEP', 'org_01JSWEEPNEW']);
   const { fleet, provisioning } = storesOn(t, site);
   const log = new OperatorLogSpy();
   const platform = tenantPlatformOf({ settings, store: provisioning, fetch: render.fetch, clock: new VirtualClock() });
@@ -79,7 +80,7 @@ test('Given rows on the real registry and organizations that WorkOS no longer ha
   assert.equal(await site.ownerQuery("SELECT render_service_id FROM thermus_admin.tenants WHERE organization_id = 'org_01JSWEEPLIVE'"), absentLive, 'The deleted row keeps the ID of its service for the record');
   assert.equal(await site.ownerQuery("SELECT updated_at = '2026-10-01T00:00:00Z' FROM thermus_admin.tenants WHERE organization_id = 'org_01JSWEEPGONE'"), 't', 'A deleted row is not deleted again');
   assert.equal(log.lines.filter((line) => line.startsWith('INFO Tenant removal record: ')).length, 2);
-  assert.equal(log.lines.at(-1), `INFO Organization sweep: ${JSON.stringify({ rows: 4, organizations: 1, deleted: 2, foundOnRead: 0, unreadable: 0, inFlight: 1, moved: 0, failed: 0 })}`);
+  assert.equal(log.lines.at(-1), `INFO Organization sweep: ${JSON.stringify({ rows: 4, organizations: 2, deleted: 2, foundOnRead: 0, unreadable: 0, inFlight: 0, moved: 0, failed: 0 })}`);
 });
 
 test('Given a deleted row on the real registry, when it is revived, then a full cap keeps it deleted, and a free place makes it a new requested row without its old service', { timeout: 120_000 }, async (t) => {

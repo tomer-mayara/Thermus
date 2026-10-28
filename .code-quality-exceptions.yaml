@@ -232,5 +232,5 @@ exceptions:
   - path: src/tenancy/tenants/organization-sweep.ts
     metric: mi
     bound: 75
-    reason: One step keeps the delete authority of the weekly sweep in one ordered flow - a complete registry read, a complete organization list, the in-flight rule, the read by ID, the removal, and one operator line for each outcome. Its largest function has five paths. Eleven unit, six acceptance, and one real PostgreSQL case check each branch. A split would spread the order that makes a failed list or read delete nothing.
+    reason: One step keeps the delete authority of the weekly sweep in one ordered flow - a complete registry read, a complete organization list, the bound of an empty list or more than 2 absent rows, the in-flight rule, the read by ID, the removal, and one operator line for each outcome. Its largest function has six paths. Sixteen unit, nine acceptance, and one real PostgreSQL case check each branch. A split would spread the order that makes a failed or doubtful list, or a failed read, delete nothing.
     expires: 2026-12-28

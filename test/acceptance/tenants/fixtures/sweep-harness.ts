@@ -17,6 +17,8 @@ import { TickClock } from './tick-clock.ts';
 
 export const organizationA = 'org_01JSWEEPAAAAAAAAAAAAAAAAAA';
 export const organizationB = 'org_01JSWEEPBBBBBBBBBBBBBBBBBB';
+export const organizationC = 'org_01JSWEEPCCCCCCCCCCCCCCCCCC';
+export const organizationD = 'org_01JSWEEPDDDDDDDDDDDDDDDDDD';
 // Monday 2 November 2026, one minute before the default sweep hour of 04:00 UTC: the first tick is a sweep day.
 export const mondayBeforeTheSweep = Date.parse('2026-11-02T03:59:00Z');
 export const tuesdayBeforeTheSweep = Date.parse('2026-11-03T03:59:00Z');

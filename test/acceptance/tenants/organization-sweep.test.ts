@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { mondayBeforeTheSweep, organizationA, organizationB, serviceNameOf, SweepHarness, tuesdayBeforeTheSweep } from './fixtures/sweep-harness.ts';
+import {
+  mondayBeforeTheSweep, organizationA, organizationB, organizationC, organizationD, serviceNameOf, SweepHarness, tuesdayBeforeTheSweep,
+} from './fixtures/sweep-harness.ts';
 
 // SO-09 of the self on-boarding plan: the weekly organization sweep of the control plane deletes the tenant of each
 // organization that WorkOS no longer has, and its row becomes deleted (plan section 4.2). The sweep runs as app composes
@@ -88,6 +90,59 @@ test('Given an organization that the list leaves out while a read by its ID stil
   assert.equal(reads.length, 1, 'The sweep reads the left-out organization by its ID once');
   assert.deepEqual(harness.linesWith('Organization sweep:'), [
     `INFO Organization sweep: ${JSON.stringify({ rows: 2, organizations: 1, deleted: 0, foundOnRead: 1, unreadable: 0, inFlight: 0, moved: 0, failed: 0 })}`,
+  ]);
+});
+
+// The bound of the deletion authority (manager decision of 28 October 2026): a WorkOS key of another environment, or a
+// defect of the list read, makes every organization absent and every read by ID a 404, so one tick would delete the
+// whole fleet. More than two absent organizations, or an empty list, stop the sweep; the operator deletes by hand.
+
+test('Given three tenants whose organizations WorkOS no longer has, when the sweep runs, then it deletes nothing and writes one stop line with the counts', async (t) => {
+  const harness = await SweepHarness.start(t, [organizationA, organizationB, organizationC, organizationD]);
+  for (const organizationId of [organizationA, organizationB, organizationC, organizationD]) harness.liveTenant(organizationId);
+  for (const organizationId of [organizationB, organizationC, organizationD]) harness.workos.removedOrganizationIds.add(organizationId);
+
+  await harness.runOneTick(mondayBeforeTheSweep);
+
+  assert.deepEqual(harness.render.requestsOf('delete service'), []);
+  assert.equal(harness.render.services().length, 4);
+  assert.deepEqual([organizationA, organizationB, organizationC, organizationD].map((organizationId) => harness.store.stateOf(organizationId)), ['live', 'live', 'live', 'live']);
+  const reads = harness.workos.fake.takeRequests().filter((request) => request.method === 'GET' && request.path.startsWith('/organizations/'));
+  assert.deepEqual(reads, [], 'The sweep reads no organization by its ID');
+  assert.deepEqual(harness.linesWith('Organization sweep'), [
+    `ERROR Organization sweep stopped: ${JSON.stringify({ reason: 'More than 2 tenants have no organization in the list', rows: 4, organizations: 1, absent: 3 })}`,
+  ]);
+  assert.deepEqual(harness.linesWith('Tenant removal'), []);
+});
+
+test('Given two tenants whose organizations WorkOS no longer has, when the sweep runs, then both are removed, because two absent organizations are inside the bound', async (t) => {
+  const harness = await SweepHarness.start(t, [organizationA, organizationB, organizationC]);
+  harness.liveTenant(organizationA);
+  const removed = [harness.liveTenant(organizationB), harness.liveTenant(organizationC)];
+  harness.workos.removedOrganizationIds.add(organizationB);
+  harness.workos.removedOrganizationIds.add(organizationC);
+
+  await harness.runOneTick(mondayBeforeTheSweep);
+
+  assert.deepEqual(harness.render.requestsOf('delete service').map((request) => request.path).toSorted(), removed.map((service) => `/services/${service.id}`).toSorted());
+  assert.deepEqual([harness.store.stateOf(organizationA), harness.store.stateOf(organizationB), harness.store.stateOf(organizationC)], ['live', 'deleted', 'deleted']);
+  assert.equal(harness.linesWith('Tenant removal record:').length, 2);
+  assert.deepEqual(harness.linesWith('Organization sweep'), [
+    `INFO Organization sweep: ${JSON.stringify({ rows: 3, organizations: 1, deleted: 2, foundOnRead: 0, unreadable: 0, inFlight: 0, moved: 0, failed: 0 })}`,
+  ]);
+});
+
+test('Given an empty organization list, when the sweep runs, then it deletes nothing and writes one stop line with the counts', async (t) => {
+  const harness = await SweepHarness.start(t, [organizationA]);
+  harness.liveTenant(organizationA);
+  harness.workos.removedOrganizationIds.add(organizationA);
+
+  await harness.runOneTick(mondayBeforeTheSweep);
+
+  assert.deepEqual(harness.render.requestsOf('delete service'), []);
+  assert.equal(harness.store.stateOf(organizationA), 'live');
+  assert.deepEqual(harness.linesWith('Organization sweep'), [
+    `ERROR Organization sweep stopped: ${JSON.stringify({ reason: 'The organization list is empty', rows: 1, organizations: 0, absent: 1 })}`,
   ]);
 });
 
