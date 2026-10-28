@@ -93,9 +93,10 @@ async function prepareFiles(directory: string): Promise<void> {
   await mkdir(join(directory, 'app/src/runtime/config'), { recursive: true });
   await cp(join(auditSenderRuntime.source, `app/logging-storage.${auditSenderRuntime.extension}`), join(directory, `app/src/app/logging-storage.${auditSenderRuntime.extension}`));
   await cp(join(auditSenderRuntime.source, `runtime/config/logging-storage-config.${auditSenderRuntime.extension}`), join(directory, `app/src/runtime/config/logging-storage-config.${auditSenderRuntime.extension}`));
-  // The storage opener composes the tenant registry of SO-04 on the same SQL runtime, so it imports these modules.
+  // The storage opener composes the tenant registry of SO-04 and the provisioning store of SO-06 on the same SQL
+  // runtime, so it imports these modules.
   await mkdir(join(directory, 'app/src/tenancy/tenants'), { recursive: true });
-  for (const name of ['pg-tenant-registry-store', 'tenant-lookup', 'tenant-requests']) {
+  for (const name of ['pg-tenant-registry-store', 'tenant-lookup', 'tenant-requests', 'pg-tenant-provisioning-store', 'pg-tenant-claim']) {
     await cp(join(auditSenderRuntime.source, `tenancy/tenants/${name}.${auditSenderRuntime.extension}`), join(directory, `app/src/tenancy/tenants/${name}.${auditSenderRuntime.extension}`));
   }
   await cp(join(auditSenderRuntime.support, `processes/audit-capture-export-probe.${auditSenderRuntime.extension}`), join(directory, `app/test/support/processes/audit-capture-export-probe.${auditSenderRuntime.extension}`));
