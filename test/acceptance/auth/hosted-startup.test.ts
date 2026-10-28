@@ -290,6 +290,7 @@ registerHooks({ resolve(specifier, context, nextResolve) {
       [{ ...switchSettings, TENANT_IMAGE: 'ghcr.io/tomer-mayara/thermus-hosted:latest' }, /FATAL\S* (?:\[[^\]]*\]: )?TENANT_IMAGE must be an image reference by digest/m],
       [{ ...switchSettings, GATEWAY_PUBLIC_KEY: 'not-a-public-key' }, /FATAL\S* (?:\[[^\]]*\]: )?GATEWAY_PUBLIC_KEY must hold one or more PEM public keys of type Ed25519, separated by commas\.$/m],
       [{ ...switchSettings, CONTROL_PLANE_INTERNAL_URL: 'http://thermus-control-plane:8080/private-path' }, /FATAL\S* (?:\[[^\]]*\]: )?CONTROL_PLANE_INTERNAL_URL must be the http or https origin of the control plane/m],
+      [{ ...switchSettings, TENANT_SWEEP_HOUR_UTC: '24' }, /FATAL\S* (?:\[[^\]]*\]: )?TENANT_SWEEP_HOUR_UTC must be a whole number from 0 to 23\.$/m],
     ];
 
     for (const [overrides, message] of invalidSettings) {
