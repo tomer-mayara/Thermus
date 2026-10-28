@@ -280,6 +280,3 @@ independent human architect approval remains pending.
 Full notes and history remain linked above, including the
 [final document/impact findings](./quick-start-review/findings-final.md)
 and [gate failure/retry record](./environment-gates/summary.md).
-Replace `{{EVIDENCE_BASE}}` with accessible retained artifact URLs, verify every
-link and the final manager record, then read back this maintained comment after
-publication. Local ignored paths alone are not published evidence.
