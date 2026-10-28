@@ -1487,7 +1487,7 @@ surface and the narrower file-context restrictions.
 | `config` — [`src/runtime/config/`](../src/runtime/config/) | Validate deployment/listen settings, `THERMUS_ROLE` and the tenant settings with the refusal of control-plane secrets, optional hosted logging storage settings, the hosted operation capacity, the free-tenant cap, and the switch `MCP_TENANTS_ENABLED` with the provisioning settings that only the switch reads, and read trusted ad rules. Provider settings stay with their provider; a tenant has no provider settings. | Deployment-config and ad-rules-file modules; app selects the logging-storage settings reader, the operation-capacity reader, and the free-tenant-limit reader. |
 | `sql` — [`src/runtime/sql/`](../src/runtime/sql/) | Own the one bounded SQL runtime of the hosted stores: the `pg` pool with verified TLS, admission of active and pending work, acquisition, operation and statement deadlines, late-work accounting, and bounded close. The only owner that imports `pg`. | [Bounded SQL runtime](../src/runtime/sql/bounded-sql-runtime.ts) for the stores; app opens it and owns its lifetime. |
 | `tenants` — [`src/tenancy/tenants/`](../src/tenancy/tenants/) | Own the tenant registry of the control plane: the tenant request inside the free-tenant cap, the in-memory route lookup with its refresh bounds, the provisioner state machine with its bounds, and the SQL adapters of the `tenants` table. | [Tenant platform](../src/tenancy/tenants/tenant-platform.ts), the contract that render implements; app composes the request, the lookup, the provisioner, and the adapters. The gateway and signup use the request and the lookup in later tickets. |
-| `render` — [`src/tenancy/providers/render/`](../src/tenancy/providers/render/) | The Render API adapter of the tenant platform: the search by name, the create of an image-backed private service, the newest deploy, the internal address, and the delete, with the retry bounds, the count of the create limit, and the write guard. It holds the Render API key. | No public module; app composes it with the write guard of the registry. It imports only the contract types of tenants. |
+| `render` — [`src/tenancy/providers/render/`](../src/tenancy/providers/render/) | The Render API adapter of the tenant platform: the search by name, the create of an image-backed private service, the newest deploy, the internal address, and the delete, with the retry bounds, the count of the create limit, and the write guard. It holds the Render API key. | No public module; app composes it with the write guard of the registry. It imports only the contract types of tenants. Another platform would be a sibling owner under `src/tenancy/providers/` behind the same contract; the soft spots below name what moves with it. |
 
 ## Behavior and resource ownership
 
@@ -1675,6 +1675,31 @@ The following limits affect architectural decisions today:
   organization IDs of the WorkOS form, `org_` and capital letters and digits: two
   IDs that differ only in case or in such a character would share a name, and
   the search by name would take the service of the other organization.
+- The platform of the tenant containers is replaceable behind the
+  [`TenantPlatform`](../src/tenancy/tenants/tenant-platform.ts) contract of
+  `tenants`: only app composes the Render adapter
+  ([`src/tenancy/providers/render/`](../src/tenancy/providers/render/)),
+  `render` imports only the types of `tenants`, and `tenants` never names
+  `render`. A second platform, such as another managed container service, is a
+  new owner under `src/tenancy/providers/<platform>/` that implements the five
+  operations, a settings reader of its credentials in `config`, and one line in
+  the composition; the provisioner, the registry statements, the gateway, and
+  the loop tests stay. Three things outside the adapter still carry the shape of
+  Render and move with it: the registry column `render_service_id` and its
+  `srv-` check and the live-row constraint of the SO-04 migration; the
+  Render-named settings `RENDER_API_KEY`, `RENDER_OWNER_ID`, and
+  `RENDER_REGISTRY_CREDENTIAL_ID`, and the plan values of `TENANT_PLAN_FREE`,
+  which are Render plan names behind the opaque `plan` of the contract; and the
+  internal address, a plain HTTP origin whose column check and design assume a
+  flat private network with name-based DNS. A fourth is wording, not a
+  dependency: six operator-facing reason strings and some comments inside
+  `tenants` say "Render" (for example `Render refused the create`, `The Render
+  service <id> no longer exists`, and `No Render service after 3 attempts`);
+  SO-09, which changes the same loop messages for the fleet commands, makes them
+  platform-neutral ("the platform", "the tenant service"). The unit tests of the
+  loop run on `TenantPlatformFake` (the port), and the acceptance and PostgreSQL
+  cases on `RenderFake` (the protocol), so only the live interface test touches
+  Render (28 October 2026, owner review of PR #283).
 - The free-tenant cap counts registry rows by state, not by tier, and a tenant
   request keeps an existing row in every state, also `failed` and `deleted`.
   Slice 3 must decide whether a team tenant holds a free place, and the repair
