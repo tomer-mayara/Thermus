@@ -1076,7 +1076,12 @@ refuses the connection, then the control plane keeps serving and writes at
 most one export failure line a minute; given the endpoint without the token,
 or the token without the endpoint, then the start stops with a message that
 names the setting. Size M. Depends on SO-11. The production service gets the
-three settings at step 6 of the SO-12 order at the latest.
+three settings at step 6 of the SO-12 order at the latest. Open before the
+token is set: the privacy text of the hosted document bundles names Render as
+the processor of the service logs and says that Thermus avoids routine
+operator-log exports, while the export sends each line, also the account
+change records with email addresses, to Axiom; the owner decides the update of
+that text under the document process of D-11 (28 October 2026).
 
 **SO-12 Free-tier release.** The deployment proof of the approved removal
 bundle from the Slice 2.5 release checkpoint; the marketing **Start free** link

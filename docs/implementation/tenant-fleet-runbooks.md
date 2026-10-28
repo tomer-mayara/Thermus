@@ -943,11 +943,16 @@ Do them in this order:
 
 1. Set the Render failure emails ([7.2](#72-render-failure-emails)).
 2. Make the log path ([7.3](#73-axiom-monitors)), at step 6 of the SO-12
-   order at the latest: make the ingest token with steps 1 to 3 of
-   [5.6](#56-axiom-ingest-token-of-the-system-log), set
+   order at the latest, after the owner decided the privacy text: the hosted
+   document bundles name Render, not Axiom, as the processor of the service
+   logs (the open point of SO-11a in
+   [plan section 6](self-onboarding-plan.md#slice-2-free-tier-end-to-end)).
+   Make the ingest token with steps 1 and 2 of
+   [5.6](#56-axiom-ingest-token-of-the-system-log). On the production service,
+   set the secret variable `SYSTEM_LOG_OTLP_TOKEN`, and
    `SYSTEM_LOG_OTLP_ENDPOINT` and `SYSTEM_LOG_AXIOM_DATASET` of the
-   precondition table as plain variables of the production service, and
-   deploy. Then do the check of the log path.
+   precondition table as plain variables, and deploy. Then do the check of the
+   log path.
 3. Make the email notifier ([7.3](#73-axiom-monitors)).
 4. After the production control plane runs with `MCP_TENANTS_ENABLED` on
    (step 6 of the SO-12 order), make the monitor Tenant restart.

@@ -32,13 +32,8 @@ async function httpsEndpoint(t: TestContext, options: LogReceiverOptions = {}): 
   return { receiver, settings: { ...exportSettings(receiver.endpoint, receiver.port), NODE_EXTRA_CA_CERTS: join(directory, 'cert.pem') } };
 }
 
-function exportedRecords(receiver: LogReceiver): ConsoleRecord[] {
-  return receiver.requests.flatMap(logRecordsOf).map(({ severityText, body }) => ({ level: severityText, message: body.stringValue }));
-}
-
-function failureLines(server: ServerProcess): ConsoleRecord[] {
-  return consoleRecordsIn(server.output).filter(({ message }) => message.includes(failureLine));
-}
+const exportedRecords = (receiver: LogReceiver): ConsoleRecord[] => receiver.requests.flatMap(logRecordsOf).map(({ severityText, body }) => ({ level: severityText, message: body.stringValue }));
+const failureLines = (server: ServerProcess): ConsoleRecord[] => consoleRecordsIn(server.output).filter(({ message }) => message.includes(failureLine));
 
 // The first scheduled export starts at most 2 s after the first line, and its retries end within 4 s.
 async function untilFailureLine(t: TestContext, server: ServerProcess): Promise<void> {
@@ -146,6 +141,16 @@ describe('System log export of the control plane (SO-11a)', () => {
       for (const value of Object.values(overrides)) assert.ok(!server.output.includes(value), server.output);
       assert.equal(server.attemptedOutboundAccess, false, server.output);
     }
+  });
+
+  test('Given the three export settings and a refused WorkOS setting, when the control plane stops at its start, then the double gets the FATAL line before the process ends', { timeout: 60_000 }, async (t) => {
+    const { receiver, settings } = await httpsEndpoint(t);
+    const server = ServerProcess.launch(t, { ...hostedSettings, ...settings, WORKOS_COOKIE_PASSWORD: 'too-short' });
+
+    await assertStopsBeforeListening(server, /FATAL.*The hosted edition cannot start/);
+    const fatal = exportedRecords(receiver).filter(({ level }) => level === 'FATAL');
+    assert.equal(fatal.length, 1, server.output);
+    assert.match(fatal[0]?.message ?? '', /The hosted edition cannot start/);
   });
 
   test('Given THERMUS_ROLE=tenant with SYSTEM_LOG_OTLP_TOKEN, when the tenant starts, then it stops before it listens with the refusal that names the setting but not the value', { timeout: 60_000 }, async (t) => {
