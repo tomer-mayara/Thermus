@@ -27,8 +27,8 @@ export const quickStartProviders = [
 
 export const quickStartInstructions = {
   internet: {
-    title: 'Turn off direct internet access to AI Agents',
-    lead: 'Select the correct organization in each provider before changing its controls. Turn off direct web access to AI Agents, then connect Thermus for search and page retrieval. Keep Thermus and required agent services allowed. Thermus does not enforce these external network settings.',
+    title: 'Turn off direct internet access for AI agents',
+    lead: 'Open each AI provider’s admin console, select your organization, and turn off direct internet access for its agents. Then connect Thermus for search and page retrieval. Keep Thermus and required agent services allowed. Thermus does not enforce these external network settings.',
     scope: 'Review native web tools, shell commands, cloud agents, and other connectors separately. A web-search switch does not block shell or cloud traffic. Policies vary by edition and deployment. Prompts alone do not enforce network policy.',
     fallback: 'ChatGPT / Codex and VS Code / Copilot have guidance fallbacks; no stable organization control URL was verified. Check each policy\'s scope.',
     connect: 'Follow your client\'s connection and authorization guide.',
