@@ -1,0 +1,8 @@
+{
+  "time": "2026-10-28T23:34:50.594Z",
+  "url": "https://example.com",
+  "isError": false,
+  "textBlocks": 1,
+  "textBytes": 957,
+  "assessment": "The authenticated production MCP call returned one non-empty text block without a tool error. Page content is not retained here."
+}

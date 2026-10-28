@@ -1,0 +1,18 @@
+
+X main Hosted image · 40787808346
+Triggered via push about 4 minutes ago
+
+JOBS
+X Build, gate, and push the hosted image in 3s (ID 123165299502)
+- Deploy a pushed digest to a Render web service (ID 123165301275)
+
+ANNOTATIONS
+X The job was not started because recent account payments have failed or your spending limit needs to be increased. Please check the 'Billing & plans' section in your settings
+Build, gate, and push the hosted image: .github#1
+
+- "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+Build, gate, and push the hosted image: .github#1
+
+
+To see what failed, try: gh run view 40787808346 --log-failed
+View this run on GitHub: https://github.com/tomer-mayara/Thermus/actions/runs/40787808346

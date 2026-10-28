@@ -1,0 +1,14 @@
+{
+  "time": "2026-10-28T23:36:01.192Z",
+  "primaryRoot": "/Users/tomermayara/.codex/worktrees/3e6e/Thermus",
+  "gateWorktrees": [
+    {
+      "type": "archived_worktree",
+      "root": "/Users/tomermayara/.codex/worktrees/quick-start-copy-native/Thermus"
+    },
+    {
+      "type": "archived_worktree",
+      "root": "/Users/tomermayara/.codex/worktrees/quick-start-copy-image/Thermus"
+    }
+  ]
+}

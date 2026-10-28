@@ -8,6 +8,7 @@ Base: `cc2ed669d6821525e23c6ff3d6ddcdc6339862bd`.
 - [Validation](pr-validation.md)
 - [Quality review](pr-quality.md)
 - [Manager sign-off](manager-review.md)
+- [Production deployment verification](deployment/README.md)
 - [Desktop screenshot](ui/quick-start-1024.png)
 - [Mobile screenshot](ui/quick-start-390.png)
 - [Separate mockup checks](artifact/manual-check.log)

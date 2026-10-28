@@ -1,0 +1,11 @@
+{
+  "candidate": "0445dfa6e566bf99155a6bf8f4e65c7619b3c322",
+  "merged": "21458b0d18cc4f9efd3a59f6361a86f1acdc317c",
+  "candidateTree": "f3dc8c645f693ca60320d2d536e128cefd8703a5",
+  "mergedTree": "f3dc8c645f693ca60320d2d536e128cefd8703a5",
+  "clean": true,
+  "files": {
+    "src/interfaces/web/account/quick-start-content.ts": "d9a8a31f3b2a0571fdc9a5ede688ecc9e024c28ba55c926f8557267549ab062b",
+    "docs/design/admin-quick-start/guide.md": "471961466f506f87864502fca20ef2ac67e1c8e5219aaafe82ab59c881a582e9"
+  }
+}

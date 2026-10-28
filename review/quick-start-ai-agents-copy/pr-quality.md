@@ -29,3 +29,7 @@ The manager reviewed the complete four-file candidate, independent review, deskt
 </details>
 
 Precommit reports and [initial PR draft](./publication-initial.json) retain their original identities as history. Final reports supersede their pending status; no earlier candidate's checks or approval substitute for this increment.
+
+### Merge and deployment closeout
+
+The eligible candidate was marked Ready and merged once as `21458b0d18cc4f9efd3a59f6361a86f1acdc317c`. Candidate and merge trees are identical. The existing Render Git-backed service reports that exact revision live, and public health/access probes passed. The separate GitHub image workflow was prevented from starting by the account billing/spending-limit condition; no platform settings changed. Both temporary gate worktrees are archived, the primary worktree remains active, and its tracked files are clean. [Deployment evidence](./deployment/README.md), [cleanup](./deployment/cleanup.json). These facts supplement the original pinned review and do not change its base or candidate.

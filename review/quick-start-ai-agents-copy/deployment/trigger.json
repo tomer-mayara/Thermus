@@ -1,0 +1,13 @@
+{
+  "commit": {
+    "createdAt": "2026-10-28T23:30:12Z",
+    "id": "21458b0d18cc4f9efd3a59f6361a86f1acdc317c",
+    "message": "Clarify AI Agents wording in Admin quick start (#291)"
+  },
+  "createdAt": "2026-10-28T23:30:36.289992Z",
+  "id": "dep-dbh8b77b9u1s73e901bg",
+  "startedAt": "2026-10-28T23:30:36.258131Z",
+  "status": "build_in_progress",
+  "trigger": "api",
+  "updatedAt": "2026-10-28T23:30:36.289992Z"
+}

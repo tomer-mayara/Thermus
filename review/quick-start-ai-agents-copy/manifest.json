@@ -1,12 +1,12 @@
 {
   "candidate": "0445dfa6e566bf99155a6bf8f4e65c7619b3c322",
   "base": "cc2ed669d6821525e23c6ff3d6ddcdc6339862bd",
-  "createdAt": "2026-10-28T23:29:35.043Z",
+  "createdAt": "2026-10-28T23:36:11.730Z",
   "files": [
     {
       "path": "README.md",
-      "bytes": 774,
-      "sha256": "2acddd968a57ea1352d12558e684786f9386baa9bd68ccabe85c9b13e6c44bb5"
+      "bytes": 835,
+      "sha256": "908085d146526626ae35d303a0ee5fd9e46187204904f39220a34ad40831e790"
     },
     {
       "path": "artifact/admin-quick-start.after.html",
@@ -67,6 +67,66 @@
       "path": "crap.md",
       "bytes": 1187,
       "sha256": "a0b5b7c0054fdb791b079ca7040f3385bbd2459f3648a635b0d78f3dd88eddaa"
+    },
+    {
+      "path": "deployment/README.md",
+      "bytes": 2775,
+      "sha256": "3ba474961d982180d45b15d93f468aee86a412d78c1d3306f972455255e523bc"
+    },
+    {
+      "path": "deployment/cleanup.json",
+      "bytes": 398,
+      "sha256": "6b512ae9a40d621864f416f43cf3bd55fbe9c555f0f7e9d927570adf75f7b398"
+    },
+    {
+      "path": "deployment/github-image-run.json",
+      "bytes": 267,
+      "sha256": "c7effe80e0e22f15966086ca7a93de4c67ef626fdc4e3d282da60984300dc0f9"
+    },
+    {
+      "path": "deployment/github-image-run.log",
+      "bytes": 819,
+      "sha256": "b61cbc58e7147e1ceb688c29d4f0e968714229869cfe11ab387589f266a731b5"
+    },
+    {
+      "path": "deployment/live.json",
+      "bytes": 449,
+      "sha256": "8921f770d2229db3c079f99dc64b57d17feaaf4397b0141037693aa0d170bcc9"
+    },
+    {
+      "path": "deployment/mcp-probe.json",
+      "bytes": 280,
+      "sha256": "1e0b780153941b61cbeb5333456bb686bb823b5511b420a157c84bd134af6a0f"
+    },
+    {
+      "path": "deployment/merge.json",
+      "bytes": 123,
+      "sha256": "3375c98fd592dffa915caab4708af59ae3f67d3e582523fac9682dbd142e105d"
+    },
+    {
+      "path": "deployment/public-after.json",
+      "bytes": 1718,
+      "sha256": "62811bb61a24da6a73365cce6eabe181ab7a82e2cb6b490b14cee60dc7e1d1f3"
+    },
+    {
+      "path": "deployment/public-smoke.cjs",
+      "bytes": 2811,
+      "sha256": "3fc3d202345292abab07d03dddfc3560be1be760dfe8c0ee48ee3beff46721a3"
+    },
+    {
+      "path": "deployment/runtime-errors.json",
+      "bytes": 332,
+      "sha256": "d783eec0b752b8be34eb481b44b65ae391f9f7656156d122ba50ea5a0b809747"
+    },
+    {
+      "path": "deployment/source-identity.json",
+      "bytes": 514,
+      "sha256": "b3dad31494b70321a6c4136457bff31bddd59a707eccaf6770ebd8ca01dae4ed"
+    },
+    {
+      "path": "deployment/trigger.json",
+      "bytes": 415,
+      "sha256": "56449c527ab89000436a7b268ddef2edd9859daf49df876c65686c23fdca347f"
     },
     {
       "path": "environment-gates/01-self-hosted-container.json",
@@ -195,18 +255,18 @@
     },
     {
       "path": "pr-body.md",
-      "bytes": 1751,
-      "sha256": "9a5d47b89592259d1f850372c209a3c11e07f6027c264d7b8e21b0f3c0770f14"
+      "bytes": 2094,
+      "sha256": "85ed44f3ba4a31e1237c11545d6ab981a967551e500cfbe02d36db9836d31422"
     },
     {
       "path": "pr-quality.md",
-      "bytes": 5088,
-      "sha256": "47f47808296665984468b0431c30c3ee9c532b159c6dd97b8190c354c78ac184"
+      "bytes": 5813,
+      "sha256": "c6b5a99b974df00ea73f618649742102afaec2fb7580eafc2a388d194ecfb30a"
     },
     {
       "path": "pr-validation.md",
-      "bytes": 4308,
-      "sha256": "d974b8a05898cfcf6c488cc2fc054d0b981e5633cf352f1b58e86f72a79c2050"
+      "bytes": 5483,
+      "sha256": "5fc3dd1f022d3a9208f247cd6febcc4a3731171550125d2d94b622ea2bb43da3"
     },
     {
       "path": "process-final.log",
@@ -242,6 +302,11 @@
       "path": "publication-initial.json",
       "bytes": 1753,
       "sha256": "4408fdbe8b29513ff0cb0f4e1c1b00f9e82ed0b072deb9b3ea31d46a1846fa12"
+    },
+    {
+      "path": "publication-readback.json",
+      "bytes": 311,
+      "sha256": "8f0177f077426448cc89fae42208be019e7e3d04775b475c8981b751546ef5c8"
     },
     {
       "path": "review-precommit.json",

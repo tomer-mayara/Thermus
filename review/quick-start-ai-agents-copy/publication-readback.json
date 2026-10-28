@@ -1,0 +1,11 @@
+{
+  "head": "0445dfa6e566bf99155a6bf8f4e65c7619b3c322",
+  "base": "cc2ed669d6821525e23c6ff3d6ddcdc6339862bd",
+  "bodyMatches": true,
+  "validationMatches": true,
+  "qualityMatches": true,
+  "comments": 2,
+  "mergeable": true,
+  "evidence": "4a54dd737c230919b522b884779c28daca1508c6",
+  "stage": "pre-release"
+}

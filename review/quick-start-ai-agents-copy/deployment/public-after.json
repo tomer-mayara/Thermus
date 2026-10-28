@@ -1,0 +1,80 @@
+{
+  "time": "2026-10-28T23:34:48.001Z",
+  "origin": "https://app.thermus.ai",
+  "status": "passed",
+  "quickStartBundle": true,
+  "results": [
+    {
+      "path": "/healthz",
+      "method": "GET",
+      "status": 200,
+      "bytes": 3,
+      "contentType": "text/plain; charset=utf-8",
+      "csp": false
+    },
+    {
+      "path": "/healthz",
+      "method": "HEAD",
+      "status": 200,
+      "bytes": 0,
+      "contentType": "text/plain; charset=utf-8",
+      "csp": false
+    },
+    {
+      "path": "/",
+      "method": "GET",
+      "status": 200,
+      "bytes": 637,
+      "contentType": "text/html; charset=utf-8",
+      "csp": true
+    },
+    {
+      "path": "/assets/thermus-favicon.svg",
+      "method": "GET",
+      "status": 200,
+      "bytes": 582,
+      "contentType": "image/svg+xml",
+      "csp": true
+    },
+    {
+      "path": "/assets/index-ByeNiTlW.js",
+      "method": "GET",
+      "status": 200,
+      "bytes": 16943,
+      "contentType": "text/javascript; charset=utf-8",
+      "csp": true
+    },
+    {
+      "path": "/assets/index-7glWBjbz.css",
+      "method": "GET",
+      "status": 200,
+      "bytes": 9671,
+      "contentType": "text/css; charset=utf-8",
+      "csp": true
+    },
+    {
+      "path": "/quick-start",
+      "method": "GET",
+      "status": 401,
+      "bytes": 269,
+      "contentType": "text/html; charset=utf-8",
+      "csp": true
+    },
+    {
+      "path": "/quick-start",
+      "method": "HEAD",
+      "status": 401,
+      "bytes": 0,
+      "contentType": "text/html; charset=utf-8",
+      "csp": true
+    },
+    {
+      "path": "/mcp",
+      "method": "GET",
+      "status": 401,
+      "bytes": 76,
+      "contentType": "application/json",
+      "csp": false
+    }
+  ]
+}
