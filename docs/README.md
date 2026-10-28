@@ -14,6 +14,7 @@ runtime guides stay current after implementation.
 - [Work slices](../test/acceptance/work-slice/README.md): the manual runs of one thin path through the product, their entry points, and what each needs.
 - [Container installation](../README.md#container-installation): the self-hosted evaluation image, its data volume, the stopped-server commands, backup and restore, and recovery.
 - [Hosted organization setup and recovery](implementation/hosted-organization-setup.md): the operator runbook to set up a hosted organization and its Super Admin, and to revoke, replace, or recover a Super Admin in WorkOS.
+- [Tenant fleet runbooks](implementation/tenant-fleet-runbooks.md): the operator steps for a failed provision, an orphaned Render service, a paused Supabase project, and the deletion of a tenant; the rotation of the Render API keys, the gateway key pair, the settings encryption key, and the GitHub token of the registry credential; the monthly GHCR pruning, the shared Brave search limit, and the alerts.
 
 ## Current reference
 
