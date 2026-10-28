@@ -17,14 +17,12 @@ resource first. Keep notes in the private operator record, outside Git, as the
 
 ## How to use these runbooks
 
-The provisioner of SO-06 and the release path of SO-02 are on `main`. The MCP
-gateway of SO-05, the fleet script and the sweeps of SO-09, and the idle
-suspension of SO-10 are not on `main` yet. A step that needs one of them has a
-marker, for example **Waits for SO-09.** Until that ticket is on `main` and in
-production, do the fallback of the step if it has one, or do not do the step.
-The steps of SO-05 use the source of its pull request
-[#285](https://github.com/tomer-mayara/Thermus/pull/285) at `fd4c4454`, and
-can change before its merge.
+The provisioner of SO-06, the release path of SO-02, and the MCP gateway of
+SO-05 are on `main`. The signup of SO-07, the fleet script and the sweeps of
+SO-09, and the idle suspension of SO-10 are not on `main` yet. A step that
+needs one of them has a marker, for example **Waits for SO-09.** Until that
+ticket is on `main` and in production, do the fallback of the step if it has
+one, or do not do the step.
 
 The production control plane runs with `MCP_TENANTS_ENABLED` off until step 6
 of the SO-12 order, so production has no tenant yet.
@@ -46,7 +44,7 @@ of the SO-12 order, so production has no tenant yet.
 | `RENDER_API_KEY` of the control plane | The API key of the dedicated Render user of the control plane. | A Render secret variable of the production service `srv-db8mnqg473hc739d529g`, from step 6 of the SO-12 order. |
 | `RENDER_API_KEY` of the release workflow | The API key of a dedicated Render user, a Member of Thermus AI. | The GitHub repository secret `RENDER_API_KEY` of `tomer-mayara/Thermus`. Before step 5 of the SO-12 order, it can move to a GitHub environment that allows only `main` (manager note of the SO-02 review). |
 | Fleet key | The API key of the Render user of the fleet script. It is not the key of the control plane. | The git-ignored `.env.local` of the main checkout, `/Users/tomermayara/git/Thermus/.env.local`. Today the file holds `RENDER_API_KEY` for the probes and the [Render interface gate](test-gate-policy.md#render-interface-gate-so-06). **Waits for SO-09:** SO-09 names the variable of the fleet key. |
-| `GATEWAY_SIGNING_KEY` | The Ed25519 private key that signs each access context. Only the control plane holds it. | A Render secret variable of the production service. **Waits for SO-05.** |
+| `GATEWAY_SIGNING_KEY` | The Ed25519 private key that signs each access context. Only the control plane holds it, and it reads the key only with `MCP_TENANTS_ENABLED` on. | A Render secret variable of the production service, from step 6 of the SO-12 order. |
 | `GATEWAY_PUBLIC_KEY` | One or more Ed25519 public keys in PEM form, separated by commas. It is not a secret. | A Render variable of the production service, and a Render variable of each tenant service. The provisioner copies the value of the control plane into each new tenant. |
 | `LOGGING_DESTINATION_ENCRYPTION_KEY` | The key that encrypts the saved bearer token of each Audit logs destination. | A Render secret variable of the production service, and the protected copy outside the database that [S2-01a](admin-s2-01a-database-setup.md#initial-credentials-and-configuration) asks for. |
 | `DATABASE_URL` | The connection of the runtime role `thermus_logging` to the Supabase project. | A Render secret variable of the production service. The runtime password is in the password manager of the owner. |
@@ -81,16 +79,19 @@ production service in the Render Dashboard for the prefix of the line.
 | `Tenant provisioning could not write the row of organization` | ERROR | `tenant-provisioning-log.ts` | A record did not reach the registry. The row waits for the next claim. |
 | `Tenant provisioning failed unexpectedly:` | ERROR | `tenant-provisioner.ts` | A defect. The loop tries again in 60 s. |
 | `Logging storage is unavailable:` | ERROR | [`src/app/logging-storage.ts`](../../src/app/logging-storage.ts) | At the start: `DATABASE_URL`, `LOGGING_DESTINATION_ENCRYPTION_KEY`, or `DATABASE_CA_CERT_PATH` is missing or invalid. |
-| `MCP gateway tenant restart: {json}` | ERROR | **Waits for SO-05:** `src/interfaces/mcp/mcp-gateway-refusals.ts` of PR #285 | A live tenant stopped during a call. The fields are `organizationId`, `phase` (`before-answer` or `during-answer`), and `cause` (`http-502` or `connection`). |
-| `MCP gateway refusal: {json}` | INFO, or ERROR for an operator report | **Waits for SO-05:** the same file | The gateway answered by itself, with `503` or with the search busy words. The fields are `organizationId`, `reason`, and, when they apply, `state`, `resume`, and `resumeFailure`. |
+| `MCP gateway tenant restart: {json}` | ERROR | [`src/interfaces/mcp/mcp-gateway-refusals.ts`](../../src/interfaces/mcp/mcp-gateway-refusals.ts) | A live tenant stopped during a call. The fields are `organizationId`, `phase` (`before-answer` or `during-answer`), and `cause` (`http-502` or `connection`). |
+| `MCP gateway refusal: {json}` | INFO, or ERROR for an operator report | `mcp-gateway-refusals.ts` | The gateway answered by itself, with `503` or with the search busy words. The fields are `organizationId`, `reason`, and, when they apply, `state`, `resume`, and `resumeFailure`. The operator reports are the first refusal of a `failed` tenant and a failed resume. |
+| `Audit relay refusal: {json}` | ERROR | [`src/app/mcp-gateway-composition.ts`](../../src/app/mcp-gateway-composition.ts) | The relay route refused an audit event of a tenant, so the event is not exported. The fields are `reason` (`body`, `event`, `organization`, `context`, `actor`, or `memory`), `detail` (the reason of a refused context, for example `signature`), and `organizationId` when it is known. The line never shows the context or the event. |
 | The daily summary line | INFO | **Waits for SO-09:** SO-09 gives the prefix | Once a day: the counts and the cost by state and plan, the memberships with only the default role, the restarts outside a deploy, and the memory values of the live tenants. |
 
 ## 1. Failed provision
 
 **Signs.** The log has a `Tenant provisioning failed:` line. The row of the
-organization in `thermus_admin.tenants` is in state `failed`. **Waits for
-SO-05 and SO-07:** the gateway and the portal show "Workspace setup failed. We
-have been notified and will fix it.".
+organization in `thermus_admin.tenants` is in state `failed`. With
+`MCP_TENANTS_ENABLED` on, each MCP call of the organization gets `503` with
+"Workspace setup failed. We have been notified and will fix it.". The first
+one writes an `MCP gateway refusal:` line with `"reason":"failed"` at the
+level ERROR. **Waits for SO-07:** the portal shows the same words.
 
 **State and reason.** The provisioner stops a row as `failed` from `creating`
 or `deploying`. It writes the reason to the column `failure_reason`, at most
@@ -248,14 +249,15 @@ the database, so 7 days without use can pause the project.
 - Provisioning. The loop writes
   `Tenant provisioning cannot read the tenant registry. It tries again in 60 s.`
   each minute. Each row stays in its state.
-- New tenants. Signup and the gateway cannot insert a `requested` row.
-  **Waits for SO-05 and SO-07.**
+- New tenants. The gateway cannot insert a `requested` row, so the MCP call
+  of an organization without a tenant gets the `503` of the next item.
+  **Waits for SO-07:** signup cannot insert a row either.
 - The registry reads of the gateway. The gateway serves its copy of the
   registry for up to 60 s. Then each MCP call through the gateway gets `503`
   with `Retry-After: 15` and "The service is temporarily unavailable. Try
   again in 15 seconds.". The log gets `MCP gateway refusal:` lines with
-  `"reason":"registry-unavailable"`. **Waits for SO-05.** With the switch off,
-  the control plane runs the MCP calls itself, and they do not stop.
+  `"reason":"registry-unavailable"`. With the switch off, the control plane
+  runs the MCP calls itself, and they do not stop.
 - The audit export. Each export reads the destination settings first, so it
   sends nothing, and the events are lost: there is no durable queue
   ([S2-01a](admin-s2-01a-database-setup.md#verify-and-retain-rollout-evidence)).
@@ -290,7 +292,7 @@ the pages that need no storage keep working.
 
 - The `Tenant provisioning cannot read the tenant registry.` lines stop. A row
   that waited moves on with `Tenant provisioning record:` lines.
-- **Waits for SO-05:** the `registry-unavailable` refusals stop, and an MCP
+- With the switch on: the `registry-unavailable` refusals stop, and an MCP
   call reaches its tenant.
 - In an organization with a saved destination, open Audit logs. The page
   shows the settings, and **Test** passes.
@@ -349,7 +351,7 @@ the user of the control plane
 
 | Key | Used by | Where it lives |
 | --- | --- | --- |
-| Control plane key | The provisioner. **Waits for SO-05 and SO-10:** the resume of the gateway. **Waits for SO-09:** the sweeps and the daily summary. | The Render secret variable `RENDER_API_KEY` of the production service. |
+| Control plane key | The provisioner. **Waits for SO-10:** the resume of the gateway. **Waits for SO-09:** the sweeps and the daily summary. | The Render secret variable `RENDER_API_KEY` of the production service. |
 | Release key | The deploy job of [`hosted-image.yml`](../../.github/workflows/hosted-image.yml) ([Hosted release](../../README.md#hosted-release)). | The GitHub repository secret `RENDER_API_KEY`, or the GitHub environment that SO-12 can add. |
 | Fleet key | The fleet script. **Waits for SO-09.** Today also the probes and the Render interface gate. | The git-ignored `.env.local` of the main checkout. |
 
@@ -400,10 +402,9 @@ places before step 5.
 
 ### 5.2 Gateway key pair
 
-**Waits for SO-05** (the signing key, its start check, and the gateway) **and
-SO-09** (the fleet upgrade that deploys the tenants in batches of three). The
-order is add, switch, remove, with several accepted public keys (answer 3 of
-the SO-11 ticket, from SO-09).
+**Waits for SO-09** (the fleet upgrade that deploys the tenants in batches of
+three). The order is add, switch, remove, with several accepted public keys
+(answer 3 of the SO-11 ticket, from SO-09).
 
 - `GATEWAY_SIGNING_KEY` is the private key. It lives in a Render secret
   variable of the production service.
@@ -412,16 +413,24 @@ the SO-11 ticket, from SO-09).
   tenant tries each key of its list
   ([`access-context-verifier.ts`](../../src/accounts/identity/access-context-verifier.ts)).
   The provisioner copies the list of the control plane into each new tenant.
-- The start check of SO-05: the control plane does not start when its
-  `GATEWAY_PUBLIC_KEY` does not hold the public key of its
-  `GATEWAY_SIGNING_KEY`. So add the new public key to the control plane before
-  the switch, and remove the old public key from it only after the switch.
+- The start check: with `MCP_TENANTS_ENABLED` on, the control plane does not
+  start when its `GATEWAY_PUBLIC_KEY` does not include the public key of its
+  `GATEWAY_SIGNING_KEY`. The log then has a `FATAL` line with
+  `GATEWAY_PUBLIC_KEY must include the public key of GATEWAY_SIGNING_KEY.`
+  ([`gateway-settings.ts`](../../src/runtime/config/gateway-settings.ts)). The
+  check compares the keys, not their text. So add the new public key to the
+  control plane before the switch, and remove the old public key from it only
+  after the switch.
 - A context expires 2 minutes after the gateway signs it
   ([`signed-access-context.ts`](../../src/accounts/identity/signed-access-context.ts)).
-  In PR #285, the relay route checks each relay with the public key of the
-  current signing key only. So for about 2 minutes after the switch, the route
-  refuses the relay of a call that started before the switch. That audit event
-  is lost. Do the switch at a quiet time.
+  The relay route checks each relay with the public key of the current signing
+  key only
+  ([`mcp-gateway-composition.ts`](../../src/app/mcp-gateway-composition.ts)).
+  So for about 2 minutes after the switch, the route refuses the relay of a
+  call that started before the switch. The log then has an
+  `Audit relay refusal:` line with `"reason":"context"` and
+  `"detail":"signature"`. That audit event is lost. Do the switch at a quiet
+  time.
 
 The fleet script has no command for a variable. Change a variable of a
 service in the Render Dashboard (the service, then **Environment**), or with
@@ -619,11 +628,12 @@ together. In SO-01e, Brave answered `HTTP 429` to 10 searches at the same
 time, and 5 searches at the same time passed
 ([SO-01e findings](self-onboarding-s1.md#findings)).
 
-**The guard.** **Waits for SO-05.** The gateway allows 5 searches at a time
-across all tenants. The sixth gets the tool error "Server busy. Try again
-later.", and the log gets an `MCP gateway refusal:` line with
-`"reason":"search-busy"`. The limit is the constant `SEARCH_LIMIT` of the
-gateway source in PR #285, not a setting.
+**The guard.** With `MCP_TENANTS_ENABLED` on, the gateway allows 5 searches
+at a time across all tenants. The sixth gets the tool error "Server busy. Try
+again later.", and the log gets an `MCP gateway refusal:` line with
+`"reason":"search-busy"`. The limit is the constant `SEARCH_LIMIT` of
+[`mcp-gateway-searches.ts`](../../src/interfaces/mcp/mcp-gateway-searches.ts),
+not a setting.
 
 **Signs.** Users get "Server busy. Try again later." for searches, or the tool
 error "Search failed: HTTP 429". The second one comes when Brave refuses
@@ -731,7 +741,7 @@ The query uses `where`, and no aggregation
 
 | Monitor | Match | Meaning |
 | --- | --- | --- |
-| Tenant restart | **Waits for SO-05.** Each line that contains `MCP gateway tenant restart: `. | A live tenant answered `HTTP 502` or reset the connection during a call. With `phase` `before-answer`, the client got "Server restarted. Try again in a minute.". With `during-answer`, the gateway ended the answer stream. This is the alert on the first restart outside a deploy (SO-01e). A restart during a fleet upgrade also gives a line: compare its time with the upgrade. |
+| Tenant restart | Each line that contains `MCP gateway tenant restart: `. | A live tenant answered `HTTP 502` or reset the connection during a call. With `phase` `before-answer`, the client got "Server restarted. Try again in a minute.". With `during-answer`, the gateway ended the answer stream. This is the alert on the first restart outside a deploy (SO-01e). A restart during a fleet upgrade also gives a line: compare its time with the upgrade. |
 | Tenant memory at 80 % | **Waits for SO-09.** The memory line of the daily summary, with a value at or above 80 % of the limit of the plan: 410 MiB for `0.5c-512mb`, and 1,638 MiB for `1c-2g`. | A tenant came near its memory limit. On `0.5c-512mb`, five 9 MiB calls peaked at 379 MiB, 74 % of the limit, and ten calls restarted the container (SO-01e). |
 | Fleet summary | **Waits for SO-09.** Each daily summary line. | One email a day with the counts and the cost by state and plan, the memberships with only the default role, the restarts outside a deploy, and the memory values. This is the fleet alert of D-9. |
 
@@ -787,8 +797,8 @@ Do them in this order:
    Render and in Axiom. Check: a new log line of the control plane comes into
    the dataset.
 3. Make the email notifier ([7.3](#73-axiom-monitors)).
-4. After SO-05 is in production with `MCP_TENANTS_ENABLED` on, make the
-   monitor Tenant restart.
+4. After the production control plane runs with `MCP_TENANTS_ENABLED` on
+   (step 6 of the SO-12 order), make the monitor Tenant restart.
 5. After SO-09 is in production, make the monitors Tenant memory at 80 % and
    Fleet summary.
 6. For each monitor, run its query over the last 7 days in the preview. Check
@@ -799,14 +809,14 @@ monitors.
 
 ## Sources
 
-Repository, at `main` `c4594b2f`: sections 4.2, 4.3, 5, 7, and 8 of the
-[self on-boarding plan](self-onboarding-plan.md); the sections SO-01b, SO-01c,
-SO-01e, SO-02, SO-03, and SO-06 of the
+Repository, at `main` after the merge of #285 (SO-05): sections 4.2, 4.3, 5,
+7, and 8 of the [self on-boarding plan](self-onboarding-plan.md); the sections
+SO-01b, SO-01c, SO-01e, SO-02, SO-03, and SO-06 of the
 [Slice 1 record](self-onboarding-s1.md); the
 [database setup](admin-s2-01a-database-setup.md); the
 [account deletion](hosted-account-deletion.md) runbook;
 [Hosted release](../../README.md#hosted-release); the source files that the
-sections link. PR #285 at `fd4c4454` for the lines of SO-05. External pages,
+sections link, among them the gateway lines of SO-05. External pages,
 read on 28 October 2026: Render
 [notifications](https://render.com/docs/notifications),
 [log streams](https://render.com/docs/log-streams),
