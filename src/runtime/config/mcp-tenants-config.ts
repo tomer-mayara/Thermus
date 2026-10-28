@@ -1,6 +1,7 @@
 import { DeploymentConfigError } from './deployment-config.ts';
 import { ed25519PublicKeysOf } from './gateway-public-keys.ts';
 import { originWithSlashOf } from './setting-origins.ts';
+import { loadTenantSweepHour } from './tenant-sweep-config.ts';
 
 type Environment = Readonly<Record<string, string | undefined>>;
 
@@ -22,6 +23,8 @@ export interface TenantProvisioningSettings {
   // private address of the control plane.
   readonly gatewayPublicKey: string;
   readonly controlPlaneInternalUrl: string;
+  // The hour in UTC of the daily tick of the tenant sweeps.
+  readonly sweepHourUtc: number;
 }
 
 const DEFAULT_NAME_PREFIX = 'thermus-tenant-';
@@ -59,8 +62,14 @@ export function loadTenantProvisioningSettings(environment: Environment): Tenant
     namePrefix: namePrefixOf(environment.TENANT_NAME_PREFIX),
     gatewayPublicKey: gatewayPublicKeyOf(required(environment, 'GATEWAY_PUBLIC_KEY')),
     controlPlaneInternalUrl: internalOriginOf(required(environment, 'CONTROL_PLANE_INTERNAL_URL')),
+    sweepHourUtc: loadTenantSweepHour(environment),
   };
   return Object.freeze(settings);
+}
+
+/** TENANT_NAME_PREFIX alone, for the fleet script, which works only on the tenants of its prefix. */
+export function loadTenantNamePrefix(environment: Environment): string {
+  return namePrefixOf(environment.TENANT_NAME_PREFIX);
 }
 
 function required(environment: Environment, name: string): string {

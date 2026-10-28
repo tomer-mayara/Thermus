@@ -14,6 +14,7 @@ import { PgTenantProvisioningStore } from '../../../src/tenancy/tenants/pg-tenan
 import { OperatorLogSpy } from '../../support/doubles/application/operator-log-spy.ts';
 import { RenderFake } from '../../support/doubles/render/render-fake.ts';
 import { VirtualClock } from '../../support/doubles/tenants/virtual-clock.ts';
+import { WorkOSFakeApi, workosClientFor } from '../../support/doubles/workos/workos-fake-api.ts';
 import { controlPlaneAuthkitIssuer, controlPlaneEnvironment, controlPlanePublicBaseUrl, tenantImageDigest } from '../../support/fixtures/control-plane-tenants.ts';
 import { postgresSettingsSite } from '../../support/in-process/postgres-settings-site.ts';
 
@@ -156,8 +157,11 @@ test('Given production storage settings with the switch on, when a tenant is req
   const environment = { DATABASE_URL: site.connection.connectionString, DATABASE_CA_CERT_PATH: certificate, LOGGING_DESTINATION_ENCRYPTION_KEY: Buffer.alloc(32, 7).toString('base64') };
   const log = new OperatorLogSpy();
   const render = renderFake();
+  // The sweeps of this control plane never reach their daily tick: their clock waits until the close.
+  const sweepClock = { now: () => 0, sleep: (_ms: number, signal: AbortSignal) => new Promise<void>((_resolve, reject) => signal.addEventListener('abort', () => reject(signal.reason), { once: true })) };
   const storage = withTenantProvisioning(await openLoggingStorage(environment, log, 25), {
     settings, publicBaseUrl: controlPlanePublicBaseUrl, authkitIssuer: controlPlaneAuthkitIssuer, logger: log, fetch: render.fetch, clock: new VirtualClock(10),
+    workos: workosClientFor(await WorkOSFakeApi.start(t)), sweepClock,
   });
   t.after(() => storage.close());
 
