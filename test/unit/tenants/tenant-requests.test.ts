@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import type { TenantState } from '../../../src/tenancy/tenants/tenant-registry-store.ts';
-import { TenantRequests } from '../../../src/tenancy/tenants/tenant-requests.ts';
+import { reviveTenant, TenantRequests } from '../../../src/tenancy/tenants/tenant-requests.ts';
+import { TenantFleetStoreFake } from '../../support/doubles/tenants/tenant-fleet-store-fake.ts';
 import { TenantRegistryStoreFake } from './fixtures/tenant-registry-store-fake.ts';
 
 const allStates: readonly TenantState[] = ['requested', 'creating', 'deploying', 'live', 'suspended', 'failed', 'deleted'];
@@ -59,4 +60,44 @@ test('Given unavailable or unconfirmed storage, when an organization requests a 
   store.insertFailure = undefined;
   store.rows.set('org_A', { state: 'requested', internalUrl: null });
   assert.deepEqual(await requests.request('org_A'), { status: 'present', state: 'requested' });
+});
+
+function fleetWith(rows: Readonly<Record<string, TenantState>>): TenantFleetStoreFake {
+  const store = new TenantFleetStoreFake();
+  for (const [organizationId, state] of Object.entries(rows)) {
+    store.put({ organizationId, state, serviceName: `thermus-tenant-${organizationId}`, serviceId: `srv-${organizationId.toLowerCase().replace('_', '')}`, plan: '0.5c-512mb', imageDigest: `sha256:${'c'.repeat(64)}` });
+  }
+  return store;
+}
+
+test('Given a deleted row and a free place, when the tenant is revived, then the row is requested again as a new request, without its old service', async () => {
+  const store = fleetWith({ org_A: 'deleted', org_B: 'live' });
+  assert.deepEqual(await reviveTenant(store, 'org_A', 2), { status: 'revived' });
+  const row = store.row('org_A');
+  assert.deepEqual(
+    { state: row.state, serviceId: row.serviceId, serviceName: row.serviceName, plan: row.plan, imageDigest: row.imageDigest },
+    { state: 'requested', serviceId: null, serviceName: null, plan: null, imageDigest: null },
+  );
+});
+
+test('Given a deleted row and a full cap, when the tenant is revived, then the row stays deleted and the cap is full', async () => {
+  const store = fleetWith({ org_A: 'deleted', org_B: 'live', org_C: 'suspended' });
+  assert.deepEqual(await reviveTenant(store, 'org_A', 2), { status: 'full' });
+  assert.equal(store.stateOf('org_A'), 'deleted');
+});
+
+test('Given a row that is not deleted, or no row, when the tenant is revived, then nothing changes and the result says why', async () => {
+  for (const state of allStates.filter((each) => each !== 'deleted')) {
+    const store = fleetWith({ org_A: state });
+    assert.deepEqual(await reviveTenant(store, 'org_A', 25), { status: 'present', state });
+    assert.equal(store.stateOf('org_A'), state);
+  }
+  assert.deepEqual(await reviveTenant(fleetWith({}), 'org_A', 25), { status: 'absent' });
+});
+
+test('Given unavailable storage, when the tenant is revived, then the result is unavailable and the row stays deleted', async () => {
+  const store = fleetWith({ org_A: 'deleted' });
+  store.fleetUnavailable.add('revive');
+  assert.deepEqual(await reviveTenant(store, 'org_A', 25), { status: 'unavailable' });
+  assert.equal(store.stateOf('org_A'), 'deleted');
 });

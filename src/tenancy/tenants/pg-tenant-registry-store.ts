@@ -3,9 +3,9 @@ import type { GatewayWrite, ResumeMark, TenantGatewayStore } from './tenant-gate
 import type { InsertRequestedResult, ReadRoutesResult, RegistryCount, TenantRegistryStore, TenantRoute, TenantState } from './tenant-registry-store.ts';
 
 // This mode conflicts with itself and with every row write, but not with a plain read: concurrent requests take
-// turns at the cap, while the lookup keeps reading.
-const LOCK_REGISTRY = 'LOCK TABLE thermus_admin.tenants IN SHARE ROW EXCLUSIVE MODE';
-const COUNT_ROWS = `SELECT state, count(*)::integer AS rows, bool_or(organization_id = $1) AS current
+// turns at the cap, while the lookup keeps reading. The revive of the fleet store takes the same lock and count.
+export const LOCK_REGISTRY = 'LOCK TABLE thermus_admin.tenants IN SHARE ROW EXCLUSIVE MODE';
+export const COUNT_ROWS = `SELECT state, count(*)::integer AS rows, bool_or(organization_id = $1) AS current
   FROM thermus_admin.tenants GROUP BY state`;
 const INSERT_REQUESTED = "INSERT INTO thermus_admin.tenants (organization_id, state) VALUES ($1, 'requested')";
 const READ_ROUTES = 'SELECT organization_id, state, internal_url FROM thermus_admin.tenants';
@@ -64,7 +64,7 @@ export class PgTenantRegistryStore implements TenantRegistryStore, TenantGateway
   }
 }
 
-function registryCount(rows: Record<string, unknown>[]): RegistryCount {
+export function registryCount(rows: Record<string, unknown>[]): RegistryCount {
   const rowsByState = new Map(rows.map((row) => [row.state as TenantState, row.rows as number]));
   const current = rows.find((row) => row.current === true)?.state as TenantState | undefined;
   return current === undefined ? { rowsByState } : { current, rowsByState };
