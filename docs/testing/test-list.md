@@ -36,12 +36,19 @@ request records the runs.
   expired, a malformed, and no context, with nothing captured; the drop of a
   repeated operation ID; `404` for the public host and other paths; and
   refused events.
-- `test/acceptance/auth/hosted-startup-gateway.test.ts` (4 cases) takes the
+- `test/acceptance/auth/hosted-startup-gateway.test.ts` (5 cases) takes the
   `FREE_TENANT_LIMIT` rows of `hosted-startup.test.ts` behind the switch and
   checks the built server process: an invalid `FREE_TENANT_LIMIT` with the
-  switch on; an invalid switch and each missing or invalid gateway setting;
-  the switch without the hosted storage; and the switch off, which reads none
-  of the settings.
+  switch on; an invalid switch and each missing or invalid gateway setting; a
+  `GATEWAY_PUBLIC_KEY` without the public key of `GATEWAY_SIGNING_KEY`, with
+  one and with two other keys, which stops the start with a line that names
+  both settings and no key; a rotation list with that key, which passes the key
+  check and stops without the hosted storage; and the switch off, which reads
+  none of the settings. With the switch on, the cases give the provisioning
+  settings of SO-06 and the gateway settings of one key pair
+  (`controlPlaneTenantSettingsOf()` of
+  `test/support/fixtures/control-plane-tenants.ts`); the switch cases of
+  `hosted-startup.test.ts` use the same settings.
 - `test/unit/mcp/mcp-gateway.test.ts` (16 cases), `mcp-gateway-forward.test.ts`
   (13 cases), and `mcp-gateway-searches.test.ts` (3 cases) check the gateway
   with doubles of the registry port, the signer, and the fetch of the tenant
@@ -68,8 +75,10 @@ request records the runs.
   copy of a relayed tool completion with the projection rules, the redaction,
   each broken field, and the capture.
 - `test/unit/config/mcp-tenants-config.test.ts` (8 cases) and
-  `gateway-settings.test.ts` (15 cases) check the switch and the gateway
-  settings, with no value in a message. `test/unit/web/accepted-relays.test.ts`
+  `gateway-settings.test.ts` (22 cases) check the switch and the gateway
+  settings, with no value in a message, and the key check: the public key of
+  `GATEWAY_SIGNING_KEY` alone, before or after another key, and with other line
+  ends passes; a list with only other keys or no key stops the start. `test/unit/web/accepted-relays.test.ts`
   (3 cases) checks the memory of the accepted operation IDs.
 - `test/unit/http/bounded-body.test.ts` (7 cases) checks the bounded read of a
   request body that the gateway and the relay route share: the body at and
@@ -81,6 +90,10 @@ request records the runs.
 - `test/integration/mcp/gateway-tenant-processes.test.ts` (1 case) runs both
   roles as two local processes on loopback: a client calls a tool through the
   control plane, the tenant answers, and its relay reaches the control plane.
+  The control plane gets the provisioning settings and the gateway settings of
+  the key pair of the tenant; its preload
+  `test/support/processes/serve-one-live-tenant.ts` gives one live registry row
+  and an idle provisioner loop without PostgreSQL.
 - `test/integration/tenants/tenant-gateway-writes.runtime.ts` (3 cases) checks
   the gateway writes on disposable PostgreSQL with the scoped role, and
   `tenant-registry-store.runtime.ts` checks that they use the store of the

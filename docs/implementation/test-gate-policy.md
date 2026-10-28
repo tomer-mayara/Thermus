@@ -500,7 +500,11 @@ the signed access context, the `503` answers of each tenant state, the restart
 answer, the search limit, the cancellation paths, and the relay route
 `/internal/audit`. They are offline cases: the WorkOS fake, an in-memory
 registry, a spy of the resume operation, and a fake tenant upstream on a
-loopback port stand in for the real parts.
+loopback port stand in for the real parts. The start file of the gateway
+starts the built server with the gateway settings and the provisioning
+settings of SO-06: it checks each rule of the gateway settings and the key
+check, which stops the start unless `GATEWAY_PUBLIC_KEY` holds the public key
+of `GATEWAY_SIGNING_KEY`.
 
 The exact selection is in `package.json`. It includes the current emitted
 integration glob and explicit, nonempty acceptance and interface paths. It

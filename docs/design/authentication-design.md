@@ -1255,12 +1255,23 @@ listens:
 | `FREE_TENANT_LIMIT` | The rule of SO-04: a whole number from 0 to 1000, default 25. Without the switch, the cap is 25 and the setting is not read. |
 | `GATEWAY_SIGNING_KEY` | One Ed25519 private key in PEM form (`-----BEGIN PRIVATE KEY-----`, PKCS #8). It signs each access context. Only the control plane holds it; each tenant gets its public key in `GATEWAY_PUBLIC_KEY`. |
 | `CONTROL_PLANE_INTERNAL_URL` | The origin of the control plane on the private network, with the rule of the tenant setting. It is the value that each tenant gets, and the relay route answers only its host. |
+| `GATEWAY_PUBLIC_KEY` | Read with the provisioning settings of SO-06, with the rule of the tenant setting; each new tenant gets it. It must include the public key of `GATEWAY_SIGNING_KEY`. |
 
 A missing setting gives `<NAME> is required when MCP_TENANTS_ENABLED is true.`,
 and a refused value gives the rule of the setting. No message shows a value.
 The switch also needs the private hosted storage: without the tenant registry,
 the start stops with `MCP_TENANTS_ENABLED=true needs the tenant registry:
 DATABASE_URL and LOGGING_DESTINATION_ENCRYPTION_KEY must be valid.`.
+
+After it reads the gateway settings and the provisioning settings, and before
+it opens the storage, the start compares the two key settings: the public key
+of `GATEWAY_SIGNING_KEY` must be one of the keys of `GATEWAY_PUBLIC_KEY`,
+compared in DER form. Else the start stops with `GATEWAY_PUBLIC_KEY must
+include the public key of GATEWAY_SIGNING_KEY.`, because each new tenant would
+refuse each context of the gateway. The list can hold more keys. A rotation of
+the signing key has three steps, in this order: add the new public key to
+`GATEWAY_PUBLIC_KEY` of the control plane and of each tenant; set
+`GATEWAY_SIGNING_KEY` to the new private key; remove the old public key.
 
 **The gateway.** The [gateway](../../src/interfaces/mcp/mcp-gateway.ts) is the
 forward step of `MCPServer`: it runs after the Origin check, the bearer check,
@@ -1401,8 +1412,9 @@ the [route integration](../../test/integration/logging/audit/audit-relay-route.t
 with the real context check and capture; the
 [two-process integration](../../test/integration/mcp/gateway-tenant-processes.test.ts)
 of both roles; and the start cases of the
-[hosted control plane](../../test/acceptance/auth/hosted-startup-gateway.test.ts). They run
-offline; they are no proof of Render behavior.
+[hosted control plane](../../test/acceptance/auth/hosted-startup-gateway.test.ts)
+and the key check of the [gateway settings](../../test/unit/config/gateway-settings.test.ts).
+They run offline; they are no proof of Render behavior.
 
 ### Pinned WorkOS SDK proof
 
