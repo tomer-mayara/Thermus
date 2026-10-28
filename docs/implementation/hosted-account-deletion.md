@@ -235,6 +235,56 @@ authorized deletion duties and track their legal deadline.
    never delete the new ID as a substitute. Record confirmed absence separately
    from provider residual-record and backup uncertainty.
 
+### Delete the tenant of a removed organization
+
+With `MCP_TENANTS_ENABLED` on, each organization can have a tenant: one Render
+private service named `TENANT_NAME_PREFIX` and its organization ID, and one row
+in the tenant registry `thermus_admin.tenants`. The tenant has no person data
+of its own, but it serves the organization and costs about 7 USD a month while
+it runs. Delete it only after the organization itself is deleted, in this order:
+
+1. Remove the WorkOS organization under the procedure above, with its approval,
+   its read before the action, and its read after the action. Then no member
+   has access when the tenant goes.
+2. Delete the tenant with the fleet script, one exact organization ID:
+   `node --env-file=<main checkout>/.env.local script/fleet/fleet.ts delete --organization <organization ID>`,
+   with the registry and Render settings of
+   [Operate the tenant fleet](../../script/README.md#operate-the-tenant-fleet).
+   The command prints the row, the service ID, and the service name. Compare
+   them with the record, then answer `yes`. It deletes the Render service
+   through the adapter, which writes only to a service of a registry row and
+   never to the production service, and then sets the row `deleted`.
+3. Check: `status` for the organization shows the row `deleted`, and the
+   Render Dashboard of the workspace Thermus AI does not list the service. A
+   service that Render no longer has counts as deleted, so a repeat of step 2
+   is safe.
+4. Record the organization ID, the service ID, the time, and the result in
+   the private record.
+
+If step 2 does not happen, the weekly organization sweep of the control plane
+deletes the tenant: on Mondays at `TENANT_SWEEP_HOUR_UTC` (default 04:00 UTC),
+it compares the registry with the WorkOS organization list, reads each
+organization that the list leaves out by its ID, and deletes the tenant only
+after a `404`, because the lists lag for some seconds. The system log then has
+one `Tenant removal record:` line for the tenant. A tenant that the provisioner
+works on (`creating` or `deploying`) waits for the next sweep.
+
+The registry rows after the deletion:
+
+| Column | After the delete |
+| --- | --- |
+| `state` | `deleted` |
+| `render_service_id`, `service_name` | kept, so the record shows which service was deleted |
+| `internal_url` | empty: no route leads to the deleted service |
+| `organization_id`, `plan`, `image_digest`, `last_active_at`, `failure_reason`, `created_at` | kept |
+| `updated_at` | the time of the delete |
+
+The runtime role `thermus_logging` has no `DELETE` grant, so the row stays in
+the registry; it holds no place under `FREE_TENANT_LIMIT`. A later tenant
+request for the same organization keeps the `deleted` row. Only the fleet
+command `request` brings it back to `requested`, as a new request without its
+old service. Treat the kept row as retained operational data in section 4.
+
 Handle the remaining user, memberships, sessions, invitations, and Connect
 records under their own approved scope and controls. Preserve unrelated access
 and records; organization deletion is not evidence that those separate actions
@@ -258,6 +308,11 @@ describes the history window; it does not prove physical erasure. Do not remove
 a shared service or log history to delete one user's entries. If selective
 removal is needed and no supported control is verified, record the limitation
 and have the owner seek a provider procedure.
+
+The tenant registry keeps the `deleted` row of a deleted tenant: the
+organization ID, the service ID and name, the plan, the digest, and the times.
+It holds no person data, and the runtime role cannot delete it. Record it as
+retained operational data with the request.
 
 WorkOS and Render residual records, security records, and backup purge schedules
 remain unknown for this account. The WorkOS Audit Logs product's retention

@@ -17,12 +17,22 @@ resource first. Keep notes in the private operator record, outside Git, as the
 
 ## How to use these runbooks
 
-The provisioner of SO-06, the release path of SO-02, and the MCP gateway of
-SO-05 are on `main`. The signup of SO-07, the fleet script and the sweeps of
-SO-09, and the idle suspension of SO-10 are not on `main` yet. A step that
-needs one of them has a marker, for example **Waits for SO-09.** Until that
+The provisioner of SO-06, the release path of SO-02, the MCP gateway of SO-05,
+and the fleet script and the tenant sweeps of SO-09 are on `main`. The signup
+of SO-07 and the idle suspension of SO-10 are not on `main` yet. A step that
+needs one of them has a marker, for example **Waits for SO-10.** Until that
 ticket is on `main` and in production, do the fallback of the step if it has
 one, or do not do the step.
+The tenant sweeps run only with `MCP_TENANTS_ENABLED` on.
+[Operate the tenant fleet](../../script/README.md#operate-the-tenant-fleet)
+gives the fleet commands, their settings, and their guards. Each write command
+prints what it will do and waits for the answer `yes`; another answer writes
+nothing. In the commands of these runbooks, `fleet.ts` is short for
+`node --env-file=/Users/tomermayara/git/Thermus/.env.local script/fleet/fleet.ts`,
+run from the repository root with the registry settings (`DATABASE_URL`,
+`DATABASE_CA_CERT_PATH`), `RENDER_OWNER_ID`, and `TENANT_NAME_PREFIX` of the
+fleet. A command that reads WorkOS, `request` or `summary`, runs through the
+WorkOS launcher of the environment.
 
 The production control plane runs with `MCP_TENANTS_ENABLED` off until step 6
 of the SO-12 order, so production has no tenant yet.
@@ -43,7 +53,7 @@ of the SO-12 order, so production has no tenant yet.
 | --- | --- | --- |
 | `RENDER_API_KEY` of the control plane | The API key of the dedicated Render user of the control plane. | A Render secret variable of the production service `srv-db8mnqg473hc739d529g`, from step 6 of the SO-12 order. |
 | `RENDER_API_KEY` of the release workflow | The API key of a dedicated Render user, a Member of Thermus AI. | The GitHub repository secret `RENDER_API_KEY` of `tomer-mayara/Thermus`. Before step 5 of the SO-12 order, it can move to a GitHub environment that allows only `main` (manager note of the SO-02 review). |
-| Fleet key | The API key of the Render user of the fleet script. It is not the key of the control plane. | The git-ignored `.env.local` of the main checkout, `/Users/tomermayara/git/Thermus/.env.local`. Today the file holds `RENDER_API_KEY` for the probes and the [Render interface gate](test-gate-policy.md#render-interface-gate-so-06). **Waits for SO-09:** SO-09 names the variable of the fleet key. |
+| Fleet key | The API key of the owner's Render user, which the fleet script uses. It is not the key of the control plane, so the fleet has its own rate-limit bucket. | The variable `RENDER_API_KEY` in the git-ignored `.env.local` of the main checkout, `/Users/tomermayara/git/Thermus/.env.local`. The probes and the [Render interface gate](test-gate-policy.md#render-interface-gate-so-06) read the same variable. The fleet script reads it from the environment of `node --env-file`. |
 | `GATEWAY_SIGNING_KEY` | The Ed25519 private key that signs each access context. Only the control plane holds it, and it reads the key only with `MCP_TENANTS_ENABLED` on. | A Render secret variable of the production service, from step 6 of the SO-12 order. |
 | `GATEWAY_PUBLIC_KEY` | One or more Ed25519 public keys in PEM form, separated by commas. It is not a secret. | A Render variable of the production service, and a Render variable of each tenant service. The provisioner copies the value of the control plane into each new tenant. |
 | `LOGGING_DESTINATION_ENCRYPTION_KEY` | The key that encrypts the saved bearer token of each Audit logs destination. | A Render secret variable of the production service, and the protected copy outside the database that [S2-01a](admin-s2-01a-database-setup.md#initial-credentials-and-configuration) asks for. |
@@ -82,7 +92,32 @@ production service in the Render Dashboard for the prefix of the line.
 | `MCP gateway tenant restart: {json}` | ERROR | [`src/interfaces/mcp/mcp-gateway-refusals.ts`](../../src/interfaces/mcp/mcp-gateway-refusals.ts) | A live tenant stopped during a call. The fields are `organizationId`, `phase` (`before-answer` or `during-answer`), and `cause` (`http-502` or `connection`). |
 | `MCP gateway refusal: {json}` | INFO, or ERROR for an operator report | `mcp-gateway-refusals.ts` | The gateway answered by itself, with `503` or with the search busy words. The fields are `organizationId`, `reason`, and, when they apply, `state`, `resume`, and `resumeFailure`. The operator reports are the first refusal of a `failed` tenant and a failed resume. |
 | `Audit relay refusal: {json}` | ERROR | [`src/app/mcp-gateway-composition.ts`](../../src/app/mcp-gateway-composition.ts) | The relay route refused an audit event of a tenant, so the event is not exported. The fields are `reason` (`body`, `event`, `organization`, `context`, `actor`, or `memory`), `detail` (the reason of a refused context, for example `signature`), and `organizationId` when it is known. The line never shows the context or the event. |
-| The daily summary line | INFO | **Waits for SO-09:** SO-09 gives the prefix | Once a day: the counts and the cost by state and plan, the memberships with only the default role, the restarts outside a deploy, and the memory values of the live tenants. |
+| `The tenant sweeps run each day at` | INFO | [`src/app/tenant-sweeps.ts`](../../src/app/tenant-sweeps.ts) | The start began the tenant sweeps. The line names the hour of `TENANT_SWEEP_HOUR_UTC`. |
+| `Tenant fleet summary: {json}` | INFO | [`src/tenancy/tenants/fleet-summary.ts`](../../src/tenancy/tenants/fleet-summary.ts) | Once a day at the tick, the daily summary. The fields are in [the summary fields](#the-summary-fields). |
+| `Tenant fleet summary stopped: {json}` | ERROR | `fleet-summary.ts` | The tick could not read the registry, so no summary line came. The field is `reason`. |
+| `Organization sweep: {json}` | INFO | [`src/tenancy/tenants/organization-sweep.ts`](../../src/tenancy/tenants/organization-sweep.ts) | On Mondays at the tick, the counts of the organization sweep: `rows` (not deleted), `organizations` (in the WorkOS list), `deleted`, `foundOnRead` (left out by the list, found by the read by ID), `unreadable`, `inFlight` (`creating` or `deploying`, left for the next sweep), `moved`, and `failed`. |
+| `Organization sweep stopped: {json}` | ERROR | `organization-sweep.ts` | The sweep deleted nothing: the registry cannot be read, or the WorkOS list is not complete. The field is `reason`. |
+| `Tenant removal record: {json}` | INFO | `organization-sweep.ts` | The sweep deleted one tenant. The fields are `organizationId`, `state` (`deleted`), `from`, `serviceId`, `serviceName`, and `cause` (`organization-absent`). |
+| `Tenant removal failed: {json}` | ERROR | `organization-sweep.ts` | The removal of one tenant failed. The fields are `organizationId`, `serviceId`, and `reason`. The next sweep tries again. |
+| `The organization sweep keeps the tenant of organization` | INFO | `organization-sweep.ts` | The read by ID of a left-out organization failed, so its tenant stays until the next sweep. |
+| `Tenant sweep step failed: {json}` | ERROR | [`src/tenancy/tenants/tenant-sweeps.ts`](../../src/tenancy/tenants/tenant-sweeps.ts) | A defect in a step of the tick. The fields are `step` and `reason`. The next step runs. |
+
+### The summary fields
+
+The line `Tenant fleet summary: <JSON>` has one JSON object. Its window is the
+24 hours before the tick. It names organizations, services, and memberships by
+ID only, never a person.
+
+| Field | Meaning |
+| --- | --- |
+| `at`, `windowHours` | The time of the tick in ISO 8601, and 24. |
+| `tenants` | The rows that are not `deleted`. |
+| `monthlyUsd` | The sum of `monthlyUsd` of `byState`. |
+| `byState` | One item for each state and plan: `state`, `plan` (`null` for a `requested` row), `count`, and `monthlyUsd`: about 7 USD a month for each running tenant (`creating`, `deploying`, or `live`) on `TENANT_PLAN_FREE`, about 25 USD for each running tenant on another plan, and 0 for each other state ([plan section 8](self-onboarding-plan.md#8-cost-model)). |
+| `defaultRoleMemberships`, `defaultRoleMembershipList` | The count of the active memberships of each WorkOS organization whose roles hold neither `user` nor `admin`, and the first 50 of them, each with `organizationId` and `membershipId`. WorkOS bills each one as a seat ([plan section 7](self-onboarding-plan.md#7-risks-and-limits)). The count is `null` when the read failed. |
+| `restarts`, `restartList` | The count of the restarts outside a deploy that Render reports for the live tenants (the events `server_failed` and `server_restarted`), and each tenant with one or more, with `organizationId`, `serviceId`, and `restarts`. Render does not report each restart (SO-01e). |
+| `highestMemoryShare`, `memory` | The highest `peakShare`, and one item for each live tenant with a memory point: `organizationId`, `serviceId`, `peakBytes`, `limitBytes`, and `peakShare`, the peak divided by the limit with 3 decimals. The points are 10 minutes apart. `highestMemoryShare` is `null` without a share. |
+| `unavailable` | One text for each read that failed, such as `memory: Render answered 503`. The other fields keep what answered. |
 
 ## 1. Failed provision
 
@@ -105,17 +140,19 @@ claims a `failed` row again. A `failed` row holds no place under
 
 | `failure_reason` starts with | Cause | Do this before the repair |
 | --- | --- | --- |
-| `<n> Render services have the name <name>` | Two or more services have the name of the tenant. The provisioner cannot tell which one is the tenant. | In step 3 of the repair, delete each service with that name. |
-| `Render refused the create: Render answered <status>` | Render refused the create call. Examples: a key of a user without access to the workspace, a wrong registry credential, a wrong plan, or a wrong image. | Read the status and the message. Correct the setting of the control plane, then deploy it. |
-| `No Render service after 3 attempts. The last attempt: <reason>` | Three attempts got no service. The `<reason>` names the last cause: `the service list is unavailable (...)`, `the create got no clear answer (...)`, or `Render limits the creates for <n> s`. A wrong key of the control plane gives `the service list is unavailable (Render answered 401...)`. | Read the [Render status page](https://status.render.com) and the create limit below. A create without a clear answer can have made the service. The next request finds that service by its name. |
+| `<n> services of the platform have the name <name>` | Two or more services have the name of the tenant. The provisioner cannot tell which one is the tenant. | In step 3 of the repair, delete each service with that name. |
+| `The platform refused the create: Render answered <status>` | Render refused the create call. Examples: a key of a user without access to the workspace, a wrong registry credential, a wrong plan, or a wrong image. | Read the status and the message. Correct the setting of the control plane, then deploy it. |
+| `No tenant service after 3 attempts. The last attempt: <reason>` | Three attempts got no service. The `<reason>` names the last cause: `the service list is unavailable (...)`, `the create got no clear answer (...)`, or `The platform limits the creates for <n> s`. A wrong key of the control plane gives `the service list is unavailable (Render answered 401...)`. | Read the [Render status page](https://status.render.com) and the create limit below. A create without a clear answer can have made the service. The next request finds that service by its name. |
 | `The deploy <deploy ID> of <service ID> ended as <status>` | The first deploy failed, for example with `update_failed` or `build_failed`. A failed image pull also ends here. | Read the deploy log of the service in the Render Dashboard within 7 days. For a failed pull, check the token of [5.4](#54-github-token-of-the-registry-credential), and check that GHCR has the digest of `TENANT_IMAGE` ([5.5](#55-monthly-ghcr-pruning)). |
 | `The deploy of <service ID> did not reach live within 15 minutes. Last seen: <seen>` | The deploy did not end in 15 minutes. The `<seen>` gives the last state, for example `no deploy yet` or `<deploy ID> live, internal address pending`. | Read the deploy and the events of the service in the Render Dashboard. |
-| `The Render service <service ID> no longer exists` | The service was deleted during its first deploy. | Find out who deleted it. |
-| `The deploying row has no Render service ID` | A fault of the registry. | Report it as a defect. |
+| `The tenant service <service ID> no longer exists` | The service was deleted during its first deploy. | Find out who deleted it. |
+| `The deploying row has no tenant service ID` | A fault of the registry. | Report it as a defect. |
 
-**Waits for SO-09:** SO-09 changes the word "Render" in these reasons to
-platform-neutral words, such as "the platform" and "the tenant service"
-(manager note of 28 October 2026). Match a reason by its meaning.
+Since SO-09, these reasons say "the platform" and "the tenant service" in place
+of Render (manager note of 28 October 2026). The text from the adapter in a
+reason, such as `Render answered 402: ...`, keeps its Render words. A row that
+failed before SO-09 keeps the earlier words, such as `Render refused the
+create:`. Match a reason by its meaning.
 
 **The create limit.** Render allows 20 creates an hour for each Render user
 ([SO-01c](self-onboarding-s1.md#so-01c-render-private-service-lifecycle)).
@@ -124,18 +161,23 @@ the Render Dashboard do not use its limit. The adapter counts the window from
 the rate-limit headers of each create answer, and it sends no create that
 Render would refuse ([`render-creation.ts`](../../src/tenancy/providers/render/render-creation.ts)).
 Then the `Tenant provisioning retry:` line has the reason
-`Render limits the creates for <n> s`, and the attempt waits up to one hour.
+`The platform limits the creates for <n> s`, and the attempt waits up to one hour.
 The loop works on one row at a time, so this wait delays each later row too.
 A row that waits is not failed: do not repair it. Each repair uses one create
 of the same limit.
 
-**Repair: delete, then request.** **Waits for SO-09:** the fleet commands
-`status`, `delete`, and `request`, and the registry operation that brings a
-`deleted` row back to `requested`. A request alone keeps a `failed` row
-(manager note of the SO-04 review). The fleet script prints what it will do
-and waits for a yes before each write.
+**Repair: delete, then request.** The fleet commands `status`, `delete`, and
+`request` do it ([Operate the tenant fleet](../../script/README.md#operate-the-tenant-fleet)).
+A tenant request of signup or of the gateway keeps a `failed` or `deleted` row
+(manager note of the SO-04 review). The fleet command `request` brings a
+`deleted` row back to `requested` with the registry operation `reviveDeleted`
+of [`pg-tenant-fleet-store.ts`](../../src/tenancy/tenants/pg-tenant-fleet-store.ts):
+under the registry lock and inside `FREE_TENANT_LIMIT`, as a new request
+without its old service. The fleet script prints what it will do and waits for
+the answer `yes` before each write; another answer writes nothing.
 
-1. Find the row with the fleet command `status`. Fallback: in the Supabase
+1. Find the row: `fleet.ts status --organization <organization ID>`, or
+   `fleet.ts list` for each row of the prefix. Fallback: in the Supabase
    Dashboard, open the SQL Editor of the project and run this read:
 
    ```sql
@@ -148,12 +190,16 @@ and waits for a yes before each write.
    services for the `service_name` of the row. For zero or one service, go to
    step 4. For two or more services, delete each of them with the steps of
    [runbook 2](#2-orphaned-render-service), "Delete".
-4. Run the fleet command `delete` for the organization. It deletes the service
-   of the row through the adapter and sets the row `deleted`.
-5. Check: the row is `deleted`, and the Render Dashboard does not list its
-   service.
-6. Run the fleet command `request` for the organization. The row goes back to
-   `requested`.
+4. Run `fleet.ts delete --organization <organization ID>`. Check the row and
+   the service that it prints, then answer `yes`. It deletes the service of the
+   row through the adapter and sets the row `deleted`. A row without a service
+   ID only becomes `deleted`.
+5. Check: `fleet.ts status --organization <organization ID>` shows the row
+   `deleted`, and the Render Dashboard does not list its service.
+6. Run `fleet.ts request --organization <organization ID>` through the WorkOS
+   launcher of the environment, and answer `yes`. The command reads the
+   organization in WorkOS first and refuses an organization that WorkOS does
+   not have. The row goes back to `requested`.
 7. Check: the log has three `Tenant provisioning record:` lines for the
    organization: `"state":"creating"`, then `"state":"deploying"` with a
    `serviceId`, then `"state":"live"` with an `internalUrl`. In the recorded
@@ -162,8 +208,8 @@ and waits for a yes before each write.
 8. If the same reason comes back, stop. Do not repeat the repair, and tell the
    owner.
 
-Until SO-09 is on `main`, there is no supported repair. Correct the cause,
-leave the row `failed`, and do not change the row with SQL.
+Do not change a row with SQL: each fleet statement names the state that it
+starts from, and SQL by hand does not.
 
 ## 2. Orphaned Render service
 
@@ -181,7 +227,7 @@ An orphan costs about 7 USD a month while it runs on `0.5c-512mb`
 ([plan section 8](self-onboarding-plan.md#8-cost-model)). An orphan with the
 name of a tenant is also a risk. The next provision of that tenant takes it as
 its service. Two such services stop the provision with the reason
-`<n> Render services have the name <name>`.
+`<n> services of the platform have the name <name>`.
 
 These services are not orphans:
 
@@ -197,13 +243,14 @@ row became `deleted`.
 
 **Find.**
 
-1. List the tenant services with the fleet command `list`. It filters by
-   `TENANT_NAME_PREFIX`. **Waits for SO-09.** Fallback: in the Render
-   Dashboard, open the workspace Thermus AI and search the services for the
-   prefix. The API read is
-   `GET /v1/services?ownerId=tea-db8i6ceq1p3s73dev9og&type=private_service&limit=100`,
-   one page after the other with the cursor.
-2. List the rows. Fallback: in the Supabase SQL Editor, run this read:
+1. List the tenant services of Render: in the Render Dashboard, open the
+   workspace Thermus AI and search the services for the prefix. The API read
+   is `GET /v1/services?ownerId=tea-db8i6ceq1p3s73dev9og&type=private_service&limit=100`,
+   one page after the other with the cursor. The fleet script has no command
+   for the services of Render: its `list` reads the registry (step 2).
+2. List the rows with `fleet.ts list`. It gives each row of the prefix with
+   its service ID and name, and each row without a service yet. Fallback: in
+   the Supabase SQL Editor, run this read:
 
    ```sql
    SELECT organization_id, state, service_name, render_service_id FROM thermus_admin.tenants;
@@ -267,8 +314,10 @@ the database, so 7 days without use can pause the project.
 - Billing, from Slice 3. The Stripe webhook route and the daily reconciliation
   cannot apply a status. Stripe sends a failed webhook again, and the
   reconciliation corrects each status within a day after the resume.
-- The daily sweeps: the idle suspension, the organization sweep, and the daily
-  summary. **Waits for SO-09 and SO-10.**
+- The daily sweeps. The fleet summary gives no line but
+  `Tenant fleet summary stopped:`, and the organization sweep of a Monday
+  deletes nothing and gives `Organization sweep stopped:`. **Waits for
+  SO-10:** the idle suspension.
 
 The tenant services keep running, and they keep their cost. The sign-in and
 the pages that need no storage keep working.
@@ -296,7 +345,7 @@ the pages that need no storage keep working.
   call reaches its tenant.
 - In an organization with a saved destination, open Audit logs. The page
   shows the settings, and **Test** passes.
-- **Waits for SO-09:** the next daily summary line comes.
+- The next daily summary line `Tenant fleet summary:` comes at the next tick.
 
 Write the time of the pause and its effects in the operator record. D-8 asks
 to examine the Supabase plan again at the first paying customer
@@ -304,31 +353,38 @@ to examine the Supabase plan again at the first paying customer
 
 ## 4. Deletion of a tenant
 
-**Waits for SO-09.** The order is that of SO-09: first the WorkOS
-organization, then the tenant. SO-09 adds this order and the registry rows to
-the [account deletion](hosted-account-deletion.md) runbook.
+The order: first the WorkOS organization, then the tenant. The
+[account deletion](hosted-account-deletion.md#delete-the-tenant-of-a-removed-organization)
+runbook gives this order and the registry rows.
 
 1. Remove the WorkOS organization under the existing procedure of
    [account deletion](hosted-account-deletion.md). Then no member has access
    when the tenant goes.
-2. Run the fleet command `delete` with the organization ID. It prints the
-   organization, the service, and the row. Check them, then answer yes. The
-   command deletes the Render service through the adapter and sets the row
-   `deleted`.
-3. Check: the Render Dashboard does not list the service, and the row is
-   `deleted`.
+2. Run `fleet.ts delete --organization <organization ID>`. It prints the row,
+   the service ID, and the service name. Check them, then answer `yes`.
+   The command deletes the Render service through the adapter, then sets the
+   row `deleted` from the state that it read.
+3. Check: `fleet.ts status --organization <organization ID>` shows the row
+   `deleted`, and the Render Dashboard does not list the service. A service
+   that Render no longer has counts as deleted, so a repeat of step 2 is safe.
 4. Write the IDs and the result in the private record of the deletion.
 
 If step 2 does not happen, the weekly organization sweep of the control plane
-deletes the tenant. Before the delete, the sweep reads the organization by its
-ID, and it deletes only after a `404`, because the WorkOS lists lag for some
-seconds. Then the row is `deleted`, and the log has one line for the tenant.
+deletes the tenant. It runs on Mondays at the daily tick of
+`TENANT_SWEEP_HOUR_UTC` (default 04:00 UTC). It compares the rows that are not
+`deleted` with the complete WorkOS organization list; a failed page deletes
+nothing and gives `Organization sweep stopped:`. It reads each organization
+that the list leaves out by its ID, and it deletes only after a `404`, because
+the WorkOS lists lag for some seconds. Then the row is `deleted`, and the log
+has one `Tenant removal record:` line for the tenant. A row that the
+provisioner works on (`creating` or `deploying`) waits for the next sweep.
 
 The row stays in the registry in state `deleted`, because the runtime role has
-no `DELETE` grant. A `deleted` row holds no place under `FREE_TENANT_LIMIT`.
-A later request for the same organization keeps the `deleted` row. Only the
-registry operation of the repair of [runbook 1](#1-failed-provision) brings it
-back.
+no `DELETE` grant. It keeps its service ID and name for the record, and its
+internal address goes. A `deleted` row holds no place under `FREE_TENANT_LIMIT`.
+A later request of signup or of the gateway for the same organization keeps
+the `deleted` row. Only the fleet command `request`, the repair of
+[runbook 1](#1-failed-provision), brings it back.
 
 ## 5. Rotations and the monthly pruning
 
@@ -351,9 +407,9 @@ the user of the control plane
 
 | Key | Used by | Where it lives |
 | --- | --- | --- |
-| Control plane key | The provisioner. **Waits for SO-10:** the resume of the gateway. **Waits for SO-09:** the sweeps and the daily summary. | The Render secret variable `RENDER_API_KEY` of the production service. |
+| Control plane key | The provisioner, the organization sweep, and the daily summary. **Waits for SO-10:** the resume of the gateway. | The Render secret variable `RENDER_API_KEY` of the production service. |
 | Release key | The deploy job of [`hosted-image.yml`](../../.github/workflows/hosted-image.yml) ([Hosted release](../../README.md#hosted-release)). | The GitHub repository secret `RENDER_API_KEY`, or the GitHub environment that SO-12 can add. |
-| Fleet key | The fleet script. **Waits for SO-09.** Today also the probes and the Render interface gate. | The git-ignored `.env.local` of the main checkout. |
+| Fleet key | The fleet script, the probes, and the Render interface gate. It is the key of the owner's Render user. | The variable `RENDER_API_KEY` in the git-ignored `.env.local` of the main checkout. |
 
 The Render documentation gives no expiry date for a key. Rotate a key when it
 is exposed, or when a person with access to it leaves. The owner sets a
@@ -380,8 +436,9 @@ places before step 5.
    - Control plane: the deploy is `live`, and the start line
      `The tenant provisioner runs:` is in the log. Then wait for the next
      Render call: a `Tenant provisioning record:` line with
-     `"state":"deploying"` or `"state":"live"`, or **Waits for SO-09:** the
-     next daily summary line with memory values. A wrong key gives
+     `"state":"deploying"` or `"state":"live"`, or the next
+     `Tenant fleet summary:` line with `memory` values and an empty
+     `unavailable` list. A wrong key gives
      `Render answered 401` in a `Tenant provisioning retry:` line or a
      `Tenant provisioning failed:` line.
    - Release: dispatch the workflow on `main` with a digest that GHCR has and
@@ -393,8 +450,12 @@ places before step 5.
      With a wrong key, the job stops with `answered 401`. Before a tenant
      exists, the next release dispatch is the check. The job reads the service
      before it deploys, so a wrong key stops the job before any change.
-   - Fleet: run the fleet command `list`. **Waits for SO-09.** Before SO-09,
-     run the next probe or interface gate that reads Render.
+   - Fleet: run `fleet.ts status --organization <organization ID>` for a
+     tenant with a service. It reads the newest deploy and the internal address
+     on Render with the key; a wrong key gives `unavailable (Render answered
+     401...)`. The command `list` reads only the registry, so it is no check of
+     the key. Without a tenant, run the next probe or interface gate that reads
+     Render.
 5. Revoke the old key: in **Account Settings**, **API Keys**, open the menu
    (**•••**) of the old key, click **Revoke**, and confirm. A revoke takes
    effect at once.
@@ -402,9 +463,9 @@ places before step 5.
 
 ### 5.2 Gateway key pair
 
-**Waits for SO-09** (the fleet upgrade that deploys the tenants in batches of
-three). The order is add, switch, remove, with several accepted public keys
-(answer 3 of the SO-11 ticket, from SO-09).
+The fleet command `upgrade` of SO-09 deploys the tenants in batches of three.
+The order is add, switch, remove, with several accepted public keys (answer 3
+of the SO-11 ticket, from SO-09).
 
 - `GATEWAY_SIGNING_KEY` is the private key. It lives in a Render secret
   variable of the production service.
@@ -435,7 +496,10 @@ three). The order is add, switch, remove, with several accepted public keys
 The fleet script has no command for a variable. Change a variable of a
 service in the Render Dashboard (the service, then **Environment**), or with
 the API call `PUT /v1/services/<service ID>/env-vars/GATEWAY_PUBLIC_KEY`. Then
-deploy with the fleet command `upgrade` and the current digest of the tenant.
+deploy with `fleet.ts upgrade` and the current digest of the tenant:
+`fleet.ts list` shows the digest of each row. A deploy reads the variables of
+the service at its start, and the deploy with `imageUrl` keeps the image when
+the digest is the current one.
 
 1. Make the new key pair on the Mac of the operator, in a new private folder
    outside the repository:
@@ -452,13 +516,16 @@ deploy with the fleet command `upgrade` and the current digest of the tenant.
    service to the old public key, a comma, and the new public key. Deploy the
    control plane. Check: the deploy is `live`, the start has no error about
    `GATEWAY_PUBLIC_KEY`, and an MCP call works.
-3. Add on each tenant. List the tenant services with the fleet command
-   `list`. Set `GATEWAY_PUBLIC_KEY` of each one to the same two keys, also of
-   a suspended tenant: its resume deploy reads the new value. Deploy the live
-   tenants in batches of three with the fleet command `upgrade`. Check: each
-   deploy reaches `live`; the upgrade stops at the first deploy that does not.
-   Then read `GATEWAY_PUBLIC_KEY` of each tenant service again: each one has
-   both keys.
+3. Add on each tenant. List the tenants with `fleet.ts list`. Set
+   `GATEWAY_PUBLIC_KEY` of each one to the same two keys, also of a suspended
+   tenant: its resume deploy reads the new value. Deploy the live tenants in
+   batches of three:
+   `fleet.ts upgrade --all --image ghcr.io/tomer-mayara/thermus-hosted@<current digest>`,
+   and answer `yes`. For a tenant on another digest, run
+   `fleet.ts upgrade --organization <organization ID> --image ghcr.io/tomer-mayara/thermus-hosted@<its digest>`.
+   Check: each deploy reaches `live`; the upgrade stops after the first batch
+   with a deploy that does not, and the later batches do not start. Then read
+   `GATEWAY_PUBLIC_KEY` of each tenant service again: each one has both keys.
 4. Switch. Set `GATEWAY_SIGNING_KEY` of the production service to the new
    private key. Deploy the control plane. Check: the deploy is `live`, the
    start passes its check, and MCP calls work. A tenant without the new key
@@ -469,8 +536,8 @@ deploy with the fleet command `upgrade` and the current digest of the tenant.
    60 s after the new instance is live.
 6. Remove on each tenant. Set `GATEWAY_PUBLIC_KEY` of each tenant service to
    the new public key only. Deploy the live tenants in batches of three with
-   the fleet command `upgrade`. Check: each deploy reaches `live`, and MCP
-   calls work.
+   `fleet.ts upgrade --all --image ghcr.io/tomer-mayara/thermus-hosted@<current digest>`,
+   as in step 3. Check: each deploy reaches `live`, and MCP calls work.
 7. Remove on the control plane. Set `GATEWAY_PUBLIC_KEY` of the production
    service to the new public key only, and deploy. Check: the deploy is
    `live`, and MCP calls work. List the tenants again: a tenant that the
@@ -581,9 +648,10 @@ keep running.
 5. Check: the credential keeps the ID `rgc-dbg1h0142hec73da9ra0`. A service
    uses the new token only after its next deploy
    ([Render API](https://api-docs.render.com/reference/update-registry-credential)).
-   Deploy one service that uses the credential: a tenant with the fleet command
-   `upgrade` and its current digest (**Waits for SO-09**), or the control plane
-   from step 5 of the SO-12 order. Check that the deploy reaches `live`. Before
+   Deploy one service that uses the credential: a tenant with
+   `fleet.ts upgrade --organization <organization ID> --image ghcr.io/tomer-mayara/thermus-hosted@<its digest>`,
+   or the control plane from step 5 of the SO-12 order. Check that the deploy
+   reaches `live`. Before
    such a service exists, the next tenant create of the SO-12 rehearsal is the
    check.
 6. Delete the old token on GitHub, in **Tokens (classic)**.
@@ -606,8 +674,13 @@ month:
    version. A tenant row without `image_digest` runs an image that only Render
    shows: read the image of its live deploy in the Render Dashboard, and keep
    that digest too.
-3. Check: list the versions again. Each digest to keep is still there.
-   **Waits for SO-09:** the next fleet upgrade or resume deploy reaches `live`.
+3. Check: list the versions again. Each digest to keep is still there. The
+   next fleet upgrade or resume deploy reaches `live`. `fleet.ts list` gives
+   the digest of each row. A tenant whose upgrade stopped can have an image
+   setting with the digest of the failed deploy
+   ([SO-09 record](self-onboarding-s1.md#so-09-fleet-script-and-organization-sweep)): keep that
+   digest until `fleet.ts upgrade` has deployed the recorded digest to it
+   again.
    If you deleted a version that a service needs, restore it within 30 days on
    the package page, or with
    `gh api --method POST /user/packages/container/thermus-hosted/versions/<version ID>/restore`.
@@ -742,8 +815,8 @@ The query uses `where`, and no aggregation
 | Monitor | Match | Meaning |
 | --- | --- | --- |
 | Tenant restart | Each line that contains `MCP gateway tenant restart: `. | A live tenant answered `HTTP 502` or reset the connection during a call. With `phase` `before-answer`, the client got "Server restarted. Try again in a minute.". With `during-answer`, the gateway ended the answer stream. This is the alert on the first restart outside a deploy (SO-01e). A restart during a fleet upgrade also gives a line: compare its time with the upgrade. |
-| Tenant memory at 80 % | **Waits for SO-09.** The memory line of the daily summary, with a value at or above 80 % of the limit of the plan: 410 MiB for `0.5c-512mb`, and 1,638 MiB for `1c-2g`. | A tenant came near its memory limit. On `0.5c-512mb`, five 9 MiB calls peaked at 379 MiB, 74 % of the limit, and ten calls restarted the container (SO-01e). |
-| Fleet summary | **Waits for SO-09.** Each daily summary line. | One email a day with the counts and the cost by state and plan, the memberships with only the default role, the restarts outside a deploy, and the memory values. This is the fleet alert of D-9. |
+| Tenant memory at 80 % | The daily summary line, when its `highestMemoryShare` is 0.8 or more: a live tenant had a memory point at or above 80 % of the memory limit that Render gives for its plan, about 410 MiB of the 536,870,900 bytes of `0.5c-512mb`, and about 1,638 MiB of the 2 GiB of `1c-2g`. | A tenant came near its memory limit. On `0.5c-512mb`, five 9 MiB calls peaked at 379 MiB, 74 % of the limit, and ten calls restarted the container (SO-01e). |
+| Fleet summary | Each line that contains `Tenant fleet summary: `. | One email a day with the counts and the cost by state and plan, the memberships with only the default role, the restarts outside a deploy, and the memory values ([the summary fields](#the-summary-fields)). This is the fleet alert of D-9. |
 
 The queries, in the advanced query language (APL). In them, `<dataset>` is the
 dataset of the log path, and `message` is the field that holds the log line.
@@ -757,13 +830,27 @@ has color codes, so the queries match the text after it with `contains`.
 
 ```kusto
 ['<dataset>']
-| where message contains "<prefix of the daily summary line of SO-09>"
+| where message contains "Tenant fleet summary: "
 ```
 
-**Waits for SO-09:** SO-09 gives the prefix and the fields of the daily
-summary line. Then the memory monitor adds a `where` clause on the memory
-value and the plan of each live tenant: at or above 410 MiB on `0.5c-512mb`,
-or at or above 1,638 MiB on `1c-2g`.
+The memory monitor reads the JSON after the prefix. `peakShare` divides the
+peak of each live tenant by the memory limit that Render gives for its plan,
+so 0.8 is 410 MiB on `0.5c-512mb` and 1,638 MiB on `1c-2g`:
+
+```kusto
+['<dataset>']
+| where message contains "Tenant fleet summary: "
+| extend summary = parse_json(substring(message, indexof(message, "Tenant fleet summary: ") + 22))
+| where todouble(summary.highestMemoryShare) >= 0.8
+```
+
+To see the tenant, expand the list:
+`| mv-expand tenant = summary.memory | where todouble(tenant.peakShare) >= 0.8`.
+A tenant without a limit series has a `peakShare` of `null`: compare its
+`peakBytes` with 429,496,720 for `0.5c-512mb` (80 % of 536,870,900) or about
+1,717,986,918 for `1c-2g` (80 % of 2 GiB).
+Keep the prefix `Tenant fleet summary: ` stable: the match monitors use it with
+`contains`.
 
 **When a monitor fires.**
 
@@ -775,13 +862,16 @@ or at or above 1,638 MiB on `1c-2g`.
 - Tenant memory at 80 %: no action at once. If it comes again for a tenant,
   tell the owner: a page or a load needs more memory than the Slice 1 runs
   measured.
-- Fleet summary: read it. Compare the cost with
+- Fleet summary: read it. Compare `monthlyUsd` and `byState` with
   [plan section 8](self-onboarding-plan.md#8-cost-model). Use
-  [runbook 1](#1-failed-provision) for each `failed` tenant. A membership with
-  only the default role is a billed seat in WorkOS
-  ([plan section 7](self-onboarding-plan.md#7-risks-and-limits)): tell the
-  owner. A day without this email means that the control plane, its daily
-  sweep, or the log path stopped: examine them.
+  [runbook 1](#1-failed-provision) for each `failed` item of `byState`. A
+  membership of `defaultRoleMembershipList` is a billed seat in WorkOS without
+  product access ([plan section 7](self-onboarding-plan.md#7-risks-and-limits)):
+  tell the owner. For `restarts` above 0, do what the Tenant restart monitor
+  says for each tenant of `restartList`. Each text of `unavailable` names a read
+  that failed: look for the same text in the next summary. A day without this
+  email, or a `Tenant fleet summary stopped:` line, means that the control
+  plane, its registry, its daily sweep, or the log path stopped: examine them.
 
 ### 7.4 Owner steps for the alerts
 
@@ -799,8 +889,9 @@ Do them in this order:
 3. Make the email notifier ([7.3](#73-axiom-monitors)).
 4. After the production control plane runs with `MCP_TENANTS_ENABLED` on
    (step 6 of the SO-12 order), make the monitor Tenant restart.
-5. After SO-09 is in production, make the monitors Tenant memory at 80 % and
-   Fleet summary.
+5. After SO-09 is in production with `MCP_TENANTS_ENABLED` on, make the
+   monitors Tenant memory at 80 % and Fleet summary. The tenant sweeps run
+   only with the switch on.
 6. For each monitor, run its query over the last 7 days in the preview. Check
    that it shows the matching lines, or no line yet.
 
@@ -816,7 +907,11 @@ SO-01b, SO-01c, SO-01e, SO-02, SO-03, and SO-06 of the
 [database setup](admin-s2-01a-database-setup.md); the
 [account deletion](hosted-account-deletion.md) runbook;
 [Hosted release](../../README.md#hosted-release); the source files that the
-sections link, among them the gateway lines of SO-05. External pages,
+sections link, among them the gateway lines of SO-05. SO-09 then changed the
+fleet parts from its source: the fleet script
+([`script/fleet/`](../../script/fleet/)), the tenant sweeps and the summary
+line ([`src/tenancy/tenants/`](../../src/tenancy/tenants/)), and its section of
+the Slice 1 record. External pages,
 read on 28 October 2026: Render
 [notifications](https://render.com/docs/notifications),
 [log streams](https://render.com/docs/log-streams),
