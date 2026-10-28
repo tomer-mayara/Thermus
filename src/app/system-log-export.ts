@@ -20,7 +20,7 @@ const EXPORT_SUCCESS = 0;
  */
 export async function startSystemLogExport(environment: Environment, output: SystemLogOutput): Promise<void> {
   const settings = controlPlaneExportSettingsOf(environment);
-  if (settings !== undefined) output.startExport(await openSystemLogExport(settings, (failure) => output.reportExportFailure(failure)));
+  if (settings !== undefined) output.startExport(await openSystemLogExport(settings, output.reportExportFailure.bind(output)));
 }
 
 function controlPlaneExportSettingsOf(environment: Environment): SystemLogExportSettings | undefined {
@@ -41,7 +41,7 @@ export async function openSystemLogExport(settings: SystemLogExportSettings, rep
   const exporter = new OTLPLogExporter({ url: settings.endpoint, headers: exportHeadersOf(settings), timeoutMillis: EXPORT_TIMEOUT_MS });
   const processor = new BatchLogRecordProcessor({ ...BATCH, exporter: reportingFailures(exporter, reportFailure) });
   const provider = new LoggerProvider({ resource: resourceFromAttributes(resourceAttributesOf(settings)), processors: [processor] });
-  return { sink: new OtelSystemLogSink(provider.getLogger('thermus-system-log')), close: () => provider.shutdown() };
+  return { sink: new OtelSystemLogSink(provider.getLogger('thermus-system-log')), close: provider.shutdown.bind(provider) };
 }
 
 /** The resource of each record: the service, and the instance when Render names it. */
@@ -58,7 +58,7 @@ export function exportHeadersOf({ token, dataset }: SystemLogExportSettings): Re
 
 // The exporter gives each failed export, after its bounded retries, to the report, and the batch is dropped. The
 // batch ends first, so that a failed report cannot hold the processor.
-function reportingFailures(exporter: LogRecordExporter, reportFailure: FailureReport): LogRecordExporter {
+export function reportingFailures(exporter: LogRecordExporter, reportFailure: FailureReport): LogRecordExporter {
   return {
     export: (records, done) => exporter.export(records, (result) => {
       done(result);

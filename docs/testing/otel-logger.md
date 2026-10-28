@@ -151,7 +151,8 @@ The tests of the export:
 - `test/unit/app/system-log-output.test.ts` and
   `test/unit/app/system-log-export.test.ts`: both sinks, a failed export sink,
   the failure line once a minute and its cause, the stop bound with mock
-  timers, the resource, and the headers.
+  timers, the resource, the headers, and the end of a failed batch before its
+  report.
 - `test/integration/logging/system/system-log-export.test.ts`: the composition
   with the real SDK against the loopback receiver: the records, the headers,
   the resource, the drop after `500`, the bounded retries after `503`, and the

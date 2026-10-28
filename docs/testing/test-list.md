@@ -29,7 +29,8 @@ gives the contract and the commands.
   sink and a throwing standard error, the failure line at most once a minute
   with the count of the failures without a line, the cause of each kind of
   failure without its message, the close once, the stop bound of 5 s with mock
-  timers, a failed stop, the resource attributes, and the headers.
+  timers, a failed stop, the resource attributes, the headers, and the end of a
+  failed batch before its report.
 - `test/unit/config/system-log-export-config.test.ts`: no settings, all three,
   no dataset, `RENDER_INSTANCE_ID`, the endpoint without the token, the token
   without the endpoint, a refused endpoint, token, or dataset, and the longest
