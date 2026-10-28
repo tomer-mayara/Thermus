@@ -9,9 +9,14 @@ import { PgTenantFleetStore } from '../../src/tenancy/tenants/pg-tenant-fleet-st
 import { PgTenantProvisioningStore } from '../../src/tenancy/tenants/pg-tenant-provisioning-store.ts';
 import { PgTenantRegistryStore } from '../../src/tenancy/tenants/pg-tenant-registry-store.ts';
 import type { TenantPlatform } from '../../src/tenancy/tenants/tenant-platform.ts';
-import { registrySettingsOf, renderSettingsOf, workosSettingsOf } from './fleet-settings.ts';
+import { freePlanOf, registrySettingsOf, renderSettingsOf, workosSettingsOf } from './fleet-settings.ts';
 
 type Environment = Readonly<Record<string, string | undefined>>;
+
+/** A setting group that a command needs besides the registry. */
+export type SettingNeed = 'render' | 'workos' | 'plan';
+
+const NEED_CHECKS: Readonly<Record<SettingNeed, (environment: Environment) => unknown>> = { render: renderSettingsOf, workos: workosSettingsOf, plan: freePlanOf };
 
 // Each WorkOS call of a command waits at most 10 s, with no retry of the SDK: the operator runs the command again.
 const WORKOS_TIMEOUT_MS = 10_000;
@@ -31,6 +36,12 @@ export class FleetContext {
 
   constructor(environment: Environment) {
     this.environment = environment;
+  }
+
+  /** Checks the registry settings and each needed group before the first call, so a refused setting stops at once. */
+  async check(needs: readonly SettingNeed[]): Promise<void> {
+    await registrySettingsOf(this.environment);
+    for (const need of needs) NEED_CHECKS[need](this.environment);
   }
 
   async stores(): Promise<FleetStores> {

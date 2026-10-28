@@ -1,8 +1,9 @@
 // The read commands of the fleet script: list, status, and summary. They change nothing, so they ask for no yes.
+import { PRODUCTION_SERVICE_ID } from '../../src/tenancy/providers/render/render-tenant-platform.ts';
 import { FleetSummary, fleetSummaryLine } from '../../src/tenancy/tenants/fleet-summary.ts';
 import type { FleetIo } from './fleet-confirm.ts';
 import type { FleetContext } from './fleet-context.ts';
-import { existingRow, FleetStepError, rowLine, rowsOfPrefix, shortDigest } from './fleet-rows.ts';
+import { counted, existingRow, FleetStepError, rowLine, rowsOfPrefix, shortDigest } from './fleet-rows.ts';
 import { freePlanOf } from './fleet-settings.ts';
 
 export interface CommandParts {
@@ -14,8 +15,9 @@ export interface CommandParts {
 
 /** list: one line for each row of the prefix, from the registry alone. */
 export async function listTenants({ context, io, prefix }: CommandParts): Promise<void> {
-  const { rows, otherPrefix } = await rowsOfPrefix((await context.stores()).fleet, prefix);
-  io.line(`Tenants of the prefix ${prefix}: ${rows.length} rows.${otherPrefix === 0 ? '' : ` ${otherPrefix} rows of another prefix are not shown.`}`);
+  const { rows, otherPrefix, production } = await rowsOfPrefix((await context.stores()).fleet, prefix);
+  io.line(`Tenants of the prefix ${prefix}: ${counted(rows.length, 'row', 'rows')}.${otherPrefix === 0 ? '' : ` ${counted(otherPrefix, 'row', 'rows')} of another prefix not shown.`}`);
+  if (production > 0) io.line(`${counted(production, 'row names', 'rows name')} the production service ${PRODUCTION_SERVICE_ID}: a fault of the registry. No command reads or changes such a row; tell the owner.`);
   for (const row of rows) io.line(rowLine(row));
 }
 

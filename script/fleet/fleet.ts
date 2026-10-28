@@ -7,7 +7,7 @@
 // error or a refused setting, before any write.
 import { parseArgs } from 'node:util';
 import { processIo } from './fleet-confirm.ts';
-import { FleetContext } from './fleet-context.ts';
+import { FleetContext, type SettingNeed } from './fleet-context.ts';
 import { deleteTenant } from './fleet-delete.ts';
 import { resumeTenant, suspendTenant } from './fleet-power.ts';
 import { fleetSummary, listTenants, tenantStatus, type CommandParts } from './fleet-reads.ts';
@@ -41,9 +41,18 @@ Settings from the environment:
   FREE_TENANT_LIMIT                       The cap of a request; default 25 (request).
 `;
 
-type Command = (parts: CommandParts) => Promise<void>;
+// The settings that a command needs besides the registry; each is checked before the first call of the command. Only
+// the help needs no setting at all.
+interface Command {
+  readonly needs: readonly SettingNeed[] | 'nothing';
+  run(parts: CommandParts): Promise<void>;
+}
 
 const ORGANIZATION = /^org_[A-Za-z0-9]{1,64}$/;
+
+function command(needs: Command['needs'], run: (parts: CommandParts) => Promise<void>): Command {
+  return { needs, run };
+}
 
 function organizationOf(values: { readonly organization?: string }): string {
   const organizationId = values.organization;
@@ -63,28 +72,28 @@ function commandOf(argv: readonly string[]): Command {
     options: { organization: { type: 'string' }, image: { type: 'string' }, all: { type: 'boolean' }, 'batch-size': { type: 'string' }, help: { type: 'boolean', short: 'h' } },
   });
   const [name, ...rest] = positionals;
-  if (values.help === true) return async ({ io }) => { io.line(USAGE); };
+  if (values.help === true) return command('nothing', async ({ io }) => { io.line(USAGE); });
   if (name === undefined) throw new FleetUsageError(USAGE);
   if (rest.length > 0) throw new FleetUsageError(`Unexpected arguments: ${rest.join(' ')}`);
   const commands: Readonly<Record<string, () => Command>> = {
-    list: () => listTenants,
-    summary: () => fleetSummary,
-    status: () => { const organizationId = organizationOf(values); return (parts) => tenantStatus(parts, organizationId); },
-    request: () => { const organizationId = organizationOf(values); return (parts) => requestTenant(parts, organizationId); },
-    suspend: () => { const organizationId = organizationOf(values); return (parts) => suspendTenant(parts, organizationId); },
-    resume: () => { const organizationId = organizationOf(values); return (parts) => resumeTenant(parts, organizationId); },
-    delete: () => { const organizationId = organizationOf(values); return (parts) => deleteTenant(parts, organizationId); },
+    list: () => command([], listTenants),
+    summary: () => command(['render', 'workos', 'plan'], fleetSummary),
+    status: () => { const organizationId = organizationOf(values); return command(['render'], (parts) => tenantStatus(parts, organizationId)); },
+    request: () => { const organizationId = organizationOf(values); return command(['workos'], (parts) => requestTenant(parts, organizationId)); },
+    suspend: () => { const organizationId = organizationOf(values); return command(['render'], (parts) => suspendTenant(parts, organizationId)); },
+    resume: () => { const organizationId = organizationOf(values); return command(['render'], (parts) => resumeTenant(parts, organizationId)); },
+    delete: () => { const organizationId = organizationOf(values); return command(['render'], (parts) => deleteTenant(parts, organizationId)); },
     upgrade: () => {
       if (values.image === undefined) throw new FleetUsageError('upgrade needs --image <reference@sha256:...>.');
       if ((values.all === true) === (values.organization !== undefined)) throw new FleetUsageError('upgrade needs exactly one of --organization <id> and --all.');
       const target = values.all === true ? 'all' as const : { organizationId: organizationOf(values) };
       const request = { image: values.image, target, batchSize: batchSizeOf(values['batch-size']) };
-      return (parts) => upgradeTenants(parts, request);
+      return command(['render'], (parts) => upgradeTenants(parts, request));
     },
   };
-  const command = commands[name];
-  if (command === undefined) throw new FleetUsageError(`Unknown command ${name}.\n\n${USAGE}`);
-  return command();
+  const chosen = commands[name];
+  if (chosen === undefined) throw new FleetUsageError(`Unknown command ${name}.\n\n${USAGE}`);
+  return chosen();
 }
 
 async function main(argv: readonly string[]): Promise<number> {
@@ -98,8 +107,10 @@ async function main(argv: readonly string[]): Promise<number> {
   process.on('SIGTERM', () => stop('SIGTERM'));
   const context = new FleetContext(process.env);
   try {
-    const command = commandOf(argv);
-    await command({ context, io: processIo, prefix: namePrefixOf(process.env), signal: controller.signal });
+    const chosen = commandOf(argv);
+    const prefix = namePrefixOf(process.env);
+    if (chosen.needs !== 'nothing') await context.check(chosen.needs);
+    await chosen.run({ context, io: processIo, prefix, signal: controller.signal });
     return 0;
   } catch (error) {
     process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);

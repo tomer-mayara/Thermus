@@ -10,7 +10,7 @@ import type { DeployStart } from '../../src/tenancy/tenants/tenant-platform.ts';
 import { confirmed } from './fleet-confirm.ts';
 import { newDeployOf, newestDeployId } from './fleet-deploys.ts';
 import type { CommandParts } from './fleet-reads.ts';
-import { existingRow, FleetStepError, rowsOfPrefix, shortDigest } from './fleet-rows.ts';
+import { counted, existingRow, FleetStepError, rowsOfPrefix, shortDigest } from './fleet-rows.ts';
 import { FleetUsageError } from './fleet-settings.ts';
 
 export const MAX_BATCH = 3;
@@ -30,9 +30,9 @@ export async function upgradeTenants(parts: CommandParts, request: UpgradeReques
   const digest = request.image.slice(request.image.lastIndexOf('@') + 1);
   const batches = batchesOf(live, request.batchSize);
   const plan = [
-    `Upgrade ${live.length} live tenants of the prefix ${parts.prefix} to ${request.image}, in ${batches.length} batches of at most ${request.batchSize}:`,
+    `Upgrade ${counted(live.length, 'live tenant', 'live tenants')} of the prefix ${parts.prefix} to ${request.image}, in ${counted(batches.length, 'batch', 'batches')} of at most ${request.batchSize}:`,
     ...batches.flatMap((batch, index) => batch.map((row) => `  batch ${index + 1}: ${row.organizationId} ${row.serviceId} ${shortDigest(row.imageDigest)} -> ${shortDigest(digest)}`)),
-    ...(suspended.length === 0 ? [] : [`Left as they are: ${suspended.length} suspended tenants (${suspended.join(', ')}). A resume deploys the image of their service.`]),
+    ...(suspended.length === 0 ? [] : [`Left as they are: ${counted(suspended.length, 'suspended tenant', 'suspended tenants')} (${suspended.join(', ')}). A resume deploys the image of the service settings.`]),
     'Each deploy also sets the image of its service. The upgrade stops after the first batch with a deploy that does not reach live.',
   ];
   if (live.length === 0) {
@@ -65,10 +65,10 @@ async function runBatches(parts: CommandParts, batches: readonly (readonly LiveR
     upgraded += results.filter((result) => result.ok).length;
     if (!results.every((result) => result.ok)) {
       const left = batches.slice(index + 1).flat().length;
-      throw new FleetStepError(`The upgrade stopped after batch ${index + 1}: ${upgraded} tenants run ${shortDigest(digest)}, and ${left} tenants of later batches did not start.`);
+      throw new FleetStepError(`The upgrade stopped after batch ${index + 1}: ${counted(upgraded, 'tenant runs', 'tenants run')} ${shortDigest(digest)}, and ${counted(left, 'tenant', 'tenants')} of later batches did not start.`);
     }
   }
-  parts.io.line(`Done: ${upgraded} tenants run ${digest}, and the registry records it.`);
+  parts.io.line(`Done: ${counted(upgraded, 'tenant runs', 'tenants run')} ${digest}, and the registry records it.`);
 }
 
 // The deploy call of one tenant now, and the wait for its deploy later, so the deploys of a batch run at the same time.
