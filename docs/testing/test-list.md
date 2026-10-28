@@ -959,8 +959,11 @@ The [FS-02 record](../implementation/fs-02.md) keeps its validation results.
   grants access or runs a denied tool.
 - The hosted live gate adds two Staging cases. They use a TEST ONLY agreement,
   a real browser, Connect PKCE, and an MCP SDK client. They check new activation,
-  exact acceptance fields, User-only access, the default agent and Codex guide
-  selection with the configured endpoint, the actual token workspace,
+  exact acceptance fields, and first Admin access. The new organization opens
+  Quick start; the case checks its trusted Acme Labs header and selected session
+  organization, then follows Open Connect setup before the existing native MCP
+  flow. It checks the default agent and Codex guide selection with the configured
+  endpoint, the actual token workspace,
   browser-B/token-A isolation, revoked A refusal, and continued B access.
   The SDK uses the gate's loopback HTTP listener behind its HTTPS front.
   The fetched public reference page is `https://example.com/`.

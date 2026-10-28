@@ -44,6 +44,7 @@
       "test/acceptance/auth/hosted-quick-start-browser.runtime.ts",
       "test/integration/hosted-admin/account-routes-quick-start.test.ts",
       "test/integration/auth/workos-signup-routes.test.ts",
+      "test/acceptance/auth/hosted-live/signup-server.ts",
       "test/unit/html/quick-start-page.test.ts",
       "test/unit/html/quick-start-content.test.ts",
       "test/unit/html/quick-start-copy.test.ts",
