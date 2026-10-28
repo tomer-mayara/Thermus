@@ -30,14 +30,14 @@ export class AdminShellBrowser {
     const banner = this.page.getByRole('banner');
     assert.equal(await banner.getByText(organizationName, { exact: true }).isVisible(), true);
     assert.equal(await banner.locator('.workspace-context a').count(), 0);
-    assert.deepEqual(await banner.getByRole('navigation', { name: 'Workspace', exact: true }).getByRole('link').allTextContents(), ['Connect', 'Switch Workspace', 'Members', 'Audit Log']);
+    assert.deepEqual(await banner.getByRole('navigation', { name: 'Workspace', exact: true }).getByRole('link').allTextContents(), ['Quick start', 'Connect', 'Switch Workspace', 'Members', 'Audit Log']);
     await this.checkReflow('Long workspace and member values must fit');
     const bounds = await skipLink.boundingBox();
     assert.ok(bounds, 'The focused skip link must be visible');
     assert.ok(bounds.x >= 0 && bounds.y >= 0 && bounds.x + bounds.width <= this.options.width);
     await this.page.keyboard.press('Enter');
     assert.equal(await this.page.getByRole('main').evaluate(element => element.matches(':focus')), true, 'Skip to content must move focus into main');
-    await this.checkTargets('link', ['Connect', 'Switch Workspace', 'Members', 'Audit Log']);
+    await this.checkTargets('link', ['Quick start', 'Connect', 'Switch Workspace', 'Members', 'Audit Log']);
     const invitation = this.page.locator('details.member-invitation');
     assert.equal(await invitation.getAttribute('open'), null);
     assert.equal(await invitation.getByRole('button', { name: 'Send invitation', exact: true }).isVisible(), false);
@@ -129,7 +129,7 @@ export class AdminShellBrowser {
     const navigation = this.page.getByRole('banner').getByRole('navigation', { name: 'Workspace', exact: true });
     await navigation.waitFor();
     await this.page.locator('html').evaluate(element => element.ownerDocument.fonts.ready);
-    const labels = admin ? ['Connect', 'Switch Workspace', 'Members', 'Audit Log'] : ['Connect', 'Switch Workspace'];
+    const labels = admin ? ['Quick start', 'Connect', 'Switch Workspace', 'Members', 'Audit Log'] : ['Connect', 'Switch Workspace'];
     assert.equal(await this.page.getByRole('navigation', { name: 'Workspace', exact: true }).count(), 1);
     assert.equal(await this.page.getByRole('main').getByRole('navigation').count(), 0);
     assert.deepEqual(await navigation.getByRole('link').allTextContents(), labels);
@@ -139,7 +139,7 @@ export class AdminShellBrowser {
       if (view === null) throw new Error('The navigation has no browser window');
       const style = view.getComputedStyle(link);
       return { size: style.fontSize, background: style.backgroundColor, border: style.borderBottomColor, borderWidth: style.borderBottomWidth };
-    })), labels.map((_, index) => ({ size: '15px', background: 'rgba(0, 0, 0, 0)', border: index === 0 ? 'rgb(232, 85, 42)' : 'rgba(0, 0, 0, 0)', borderWidth: '2px' })));
+    })), labels.map(label => ({ size: '15px', background: 'rgba(0, 0, 0, 0)', border: label === 'Connect' ? 'rgb(232, 85, 42)' : 'rgba(0, 0, 0, 0)', borderWidth: '2px' })));
     await this.checkTargets('link', labels);
     for (const name of labels) {
       const link = navigation.getByRole('link', { name, exact: true });

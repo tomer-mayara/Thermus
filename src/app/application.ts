@@ -169,6 +169,7 @@ export function composeHostedApplication(config: RouteConfig, parts: HostedProvi
   const administration = new OrganizationAdministration({ directory: parts.organizations, records: account.changeRecords, billing: account.billing, removalStore: loggingStorage?.removalStore });
   const routes = new HostedAccountRoutes({
     publicBaseUrl: config.publicBaseUrl,
+    mcpResourceUrl: config.mcpResourceUrl,
     session: parts.session,
     accessResolver: parts.accessResolver,
     organizations: administration,

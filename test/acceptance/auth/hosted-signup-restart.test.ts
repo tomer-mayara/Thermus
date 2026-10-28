@@ -23,7 +23,7 @@ test('Given a retained activation, when the application restarts with signup off
   const marker = structuredClone(site.signupFake.organizations[0]);
   const organizationId = String(marker.id);
   assert.deepEqual(site.world.rolesOf(user, organizationId), ['admin']);
-  assert.equal(activated.location?.pathname, '/');
+  assert.equal(activated.location?.pathname, '/quick-start');
   assert.equal((JSON.parse((await browser.open('session')).body) as { organizationId: string }).organizationId, organizationId);
   site.world.memberships = [...site.world.memberships, { userId: user.id, organizationId: 'org_OTHER', roles: ['user'], status: 'active' }];
   const createdToken = await site.world.connectToken(user, { org_id: organizationId });

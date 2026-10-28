@@ -63,6 +63,7 @@ of the server. It uses these server paths, relative to the base path:
 | `login` | The Sign in link opens it. The server starts the AuthKit sign-in. |
 | `logout` | The Sign Out button posts a form with the `csrf_token` field. The server checks the origin and the token, clears the session cookie, and sends the browser to the WorkOS logout URL. |
 | `organizations` | The organization page of the server: onboarding guidance or the organization selection. |
+| `quick-start` | The server-owned setup guide for a current Admin of the selected organization. The server checks the session, current product access, and Admin role before it renders the guide. |
 
 The profile and the organization ID that the portal shows are display data.
 They never select a tenant or give access. Each protected request uses the
@@ -78,16 +79,44 @@ approve the connection, and fetch a page. The client's verified Connect token
 sets the MCP workspace through its `org_id`. A browser workspace change does
 not change that token or move an existing client connection.
 
-The signed-in header uses compact underline links in this order: Connect,
-Switch Workspace, Members, Audit Log. Members and Audit Log appear only when
-the current product access response includes the exact `admin` role. The current
-page link has `aria-current="page"`. The links wrap on narrow screens and keep
+The signed-in Admin header uses compact underline links in this order: Quick
+start, Connect, Switch Workspace, Members, Audit Log. Quick start, Members, and
+Audit Log appear only when the current product access response includes the
+exact `admin` role. The current page link has `aria-current="page"`.
+The links wrap on narrow screens and keep
 48px targets and visible keyboard focus. The protected routes still check access
 independently. Members keeps the trusted workspace name above the same menu.
 The organization picker keeps that menu with Switch Workspace active. It reads
 current access only to decide whether to show Admin links. A failed lookup or
 missing current access leaves the picker available with Connect and Switch
 Workspace. Roles in another workspace cannot show Admin links.
+
+## Admin Quick start
+
+After successful organization creation and selection, the first Admin opens
+Quick start with the new organization's name. Later sign-ins and normal
+workspace choices keep the Connect destination. Quick start remains the first
+Admin menu item after the first visit.
+
+The page gives three steps: restrict direct Internet access in the agents and
+connect Thermus, configure audit logs, and invite users. It links to the
+existing Connect, Audit Log, and Members pages. Provider guidance explains that
+web, shell, cloud, and connector controls have different scopes. Thermus does
+not enforce those external settings or show setup completion. Identity-provider
+enrollment is marked Planned and has no configuration action.
+
+Copy guide as Markdown copies the full approved
+[guide](design/admin-quick-start/guide.md), including provider details when
+closed, with the current organization name and trusted absolute portal and MCP
+URLs. The copy contains no credentials, session values, member list, invitation
+links, or log records. A status region reports Copied only after the clipboard
+write succeeds. When a write fails or the clipboard is unavailable, the page
+shows selectable Markdown for manual copy.
+
+The server resolves the selected organization from the authorized session and
+checks current Admin access on every request. Navigation visibility gives no
+access. A User, a stale Admin, or an Admin of another workspace cannot read the
+selected organization's Admin guide by opening its URL directly.
 
 ## MCP setup guides
 

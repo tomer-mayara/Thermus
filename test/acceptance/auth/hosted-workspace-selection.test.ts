@@ -39,6 +39,7 @@ for (const config of [hostedRootConfig, hostedConfig]) {
       assert.equal(document.querySelectorAll('nav[aria-label="Workspace"]').length, 1);
       const links = [...navigation.querySelectorAll('a')];
       assert.deepEqual(links.map(link => [link.textContent, link.getAttribute('href')]), [
+        ...(admin ? [['Quick start', new URL('quick-start', base).pathname]] : []),
         ['Connect', base.pathname], ['Switch Workspace', new URL('organizations', base).pathname],
         ...(admin ? [['Members', new URL('members', base).pathname], ['Audit Log', new URL('logging', base).pathname]] : []),
       ]);

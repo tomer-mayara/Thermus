@@ -60,6 +60,7 @@ describe('Members through the hosted HTTP server', () => {
       assert.equal(answer.status, current === 'Members' ? 200 : 503);
       const links = [...document.querySelectorAll('header nav[aria-label="Workspace"] a')];
       assert.deepEqual(links.map(link => [link.textContent, link.getAttribute('href')]), [
+        ['Quick start', '/team/quick-start'],
         ['Connect', '/team/'], ['Switch Workspace', '/team/organizations'], ['Members', '/team/members'], ['Audit Log', '/team/logging'],
       ]);
       assert.deepEqual(links.filter(link => link.hasAttribute('aria-current')).map(link => [link.textContent, link.getAttribute('aria-current')]), [[current, 'page']]);

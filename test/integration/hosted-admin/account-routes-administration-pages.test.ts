@@ -126,7 +126,7 @@ describe('HostedAccountRoutes combined Members page', () => {
     const document = parseHTML(body).document;
     assert.equal(document.querySelector('header .workspace-name')?.textContent, organizationName);
     assert.equal(document.querySelector('.workspace-context a'), null);
-    assert.deepEqual([...document.querySelectorAll('header nav a')].map(link => link.textContent), ['Connect', 'Switch Workspace', 'Members', 'Audit Log']);
+    assert.deepEqual([...document.querySelectorAll('header nav a')].map(link => link.textContent), ['Quick start', 'Connect', 'Switch Workspace', 'Members', 'Audit Log']);
     assert.equal(document.querySelectorAll('header script').length, 0);
     assert.doesNotMatch(body, /Forged|<script>/);
     assert.deepEqual(organizations.administrationCalls.map(({ operation, request }) => [operation, request]), [['memberOverview', 'org-a'], ['invitationOverview', 'org-a']]);

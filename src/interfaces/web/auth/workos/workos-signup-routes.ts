@@ -32,7 +32,7 @@ export class WorkOSSignupRoutes {
   private readonly origin: string;
   private readonly path: string;
   private readonly destination: URL;
-  private readonly portal: URL;
+  private readonly quickStartDestination: URL;
   private readonly login: string;
   private readonly clock: () => number;
   private readonly attempts = new Map<string, { until: number; count: number }>();
@@ -47,7 +47,7 @@ export class WorkOSSignupRoutes {
     if (!base.pathname.endsWith('/')) base.pathname += '/';
     this.origin = base.origin;
     this.path = new URL('signup', base).pathname;
-    this.portal = base;
+    this.quickStartDestination = new URL('quick-start', base);
     this.destination = new URL('organizations', base);
     this.destination.searchParams.set('return_to', base.pathname);
     const login = new URL('login', base);
@@ -141,7 +141,7 @@ export class WorkOSSignupRoutes {
   private async openOrganization(request: Request, state: SignedInBrowserSession, organizationId: string, run: RequestOperation): Promise<Response> {
     const selected = await run(() => state.selectOrganization(organizationId));
     request.signal.throwIfAborted();
-    if (selected.status === 'switched') return seeOther(this.portal.href, selected.cookies);
+    if (selected.status === 'switched') return seeOther(this.quickStartDestination.href, selected.cookies);
     const status = selected.status === 'signed-out' ? 401 : 403;
     return withCookies(signupFailurePage(status, 'Your organization could not be opened. Sign in again to continue.'), selected.cookies);
   }

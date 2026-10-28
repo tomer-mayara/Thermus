@@ -45,6 +45,7 @@ export function serve(setup: Setup) {
   const operation = setup.withOperation === false ? undefined : operations.operation;
   const routes = new HostedAccountRoutes({
     publicBaseUrl: setup.publicBaseUrl ?? publicBaseUrl,
+    mcpResourceUrl: 'https://mcp.thermus.example/configured-mcp',
     session,
     accessResolver: resolver,
     organizations,

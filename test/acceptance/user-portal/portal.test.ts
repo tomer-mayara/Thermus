@@ -221,7 +221,7 @@ for (const role of ['admin', 'user']) {
     const navigation = document.querySelector('header nav[aria-label="Workspace"]');
     assert.ok(navigation);
     assert.deepEqual([...navigation.querySelectorAll('a')].map(link => link.textContent), role === 'admin'
-      ? ['Connect', 'Switch Workspace', 'Members', 'Audit Log'] : ['Connect', 'Switch Workspace']);
+      ? ['Quick start', 'Connect', 'Switch Workspace', 'Members', 'Audit Log'] : ['Connect', 'Switch Workspace']);
     assert.equal(document.querySelectorAll('nav[aria-label="Workspace"]').length, 1);
     assert.equal(document.querySelector('main nav[aria-label="Workspace"]'), null);
     assert.equal(navigation.querySelector('a[aria-current="page"]')?.textContent, 'Connect');

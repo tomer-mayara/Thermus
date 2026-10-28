@@ -30,7 +30,10 @@ for (const role of ['admin', 'user'] as const) {
     const creation = formLabelled(formsIn(creationPage.body), 'Create organization');
     const created = await owner.submit({ ...creation, fields: { ...creation.fields, organization_name: 'Journey Labs', agreement: 'accepted' } });
     assert.equal(created.status, 303, created.body);
-    assert.equal(created.location?.href, site.publicBaseUrl);
+    assert.equal(created.location?.href, new URL('quick-start', site.publicBaseUrl).href);
+    const quickStart = await owner.follow(created);
+    assert.equal(quickStart.status, 200, quickStart.body);
+    assert.match(quickStart.body, /Quick start|Journey Labs/);
     const ownerAccess = await owner.open('portal/access');
     assert.equal(ownerAccess.status, 200, ownerAccess.body);
     const organizationId = JSON.parse(ownerAccess.body).organizationId;

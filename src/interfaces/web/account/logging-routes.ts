@@ -22,11 +22,11 @@ const unavailable: LoggingNotice = { title: 'Audit logs unavailable', message: '
 // Current access is resolved before this boundary. The tenant and Admin permission come only from that decision.
 export class LoggingRoutes {
   private readonly origin: string;
-  private readonly paths: { readonly product: string; readonly members: string; readonly organizations: string; readonly logging: string; readonly save: string; readonly test: string };
+  private readonly paths: { readonly product: string; readonly members: string; readonly organizations: string; readonly quickStart: string; readonly logging: string; readonly save: string; readonly test: string };
   constructor(private readonly options: LoggingRoutesOptions) {
     this.origin = new URL(options.publicBaseUrl).origin;
     const path = (relative: string) => new URL(relative, options.publicBaseUrl).pathname;
-    this.paths = { product: path(''), members: path('members'), organizations: options.organizationsPage, logging: path('logging'), save: path('logging/save'), test: path('logging/test') };
+    this.paths = { product: path(''), members: path('members'), organizations: options.organizationsPage, quickStart: path('quick-start'), logging: path('logging'), save: path('logging/save'), test: path('logging/test') };
   }
 
   handlerFor(path: string): AdministrationHandler | undefined {

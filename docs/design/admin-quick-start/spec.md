@@ -1,6 +1,8 @@
 # Admin Quick start
 
-Status: proposed design. This document does not add product behavior.
+Status: approved for implementation by the owner on 28 October 2026.
+Implementation and current-candidate review are in progress. This approval
+sets the product scope; it is not approval of the final implementation candidate.
 Provider links reviewed: 28 October 2026.
 
 ## Purpose
@@ -29,11 +31,13 @@ It does not enforce agent network restrictions or prove that setup is complete.
 - Quick start is the first menu item for Admins. Non-admins retain their current navigation.
 - Return an access notice when the selected organization has no current Admin access.
 
-Today, successful activation opens the portal root. The page then shows Connect.
+Before this implementation, successful activation opens the portal root and
+shows Connect. The approved change opens Quick start after the new organization
+is selected.
 See [signup redirect](../../../src/interfaces/web/auth/workos/workos-signup-routes.ts)
 and [portal navigation](../../../src/interfaces/user-portal/portal.ts).
-The current [administration layout](../../../src/interfaces/web/account/members-page-layout.ts)
-has Members and Audit Log, but no Quick start item.
+The [administration layout](../../../src/interfaces/web/account/members-page-layout.ts)
+shares the Admin navigation.
 
 ## Page layout
 
@@ -53,7 +57,7 @@ Thermus cannot observe whether external controls are correct or logs arrived.
 Use keyboard-operable disclosures and visible focus styles.
 On narrow screens, stack actions and provider rows without horizontal page scrolling.
 
-Proposed visual references:
+Approved visual references:
 [desktop mockup](mockup-desktop.png), [mobile mockup](mockup-mobile.png), and
 [expanded provider details](mockup-provider-details.png).
 These images illustrate this specification; they are not working product pages.
@@ -159,7 +163,7 @@ adapter is not a customer identity-provider configuration feature.
 
 ## Markdown copy contract
 
-[guide.md](guide.md) is the proposed exact copy template. The page and copy action
+[guide.md](guide.md) is the approved exact copy template. The page and copy action
 must use the same canonical content so collapsed details are never omitted.
 The UI may present the canonical text as summaries, tables, and disclosures.
 Do not maintain a separate shorter guide for clipboard output.
@@ -199,10 +203,15 @@ Do not claim success for a denied or unavailable clipboard operation.
 
 ## Delivery boundary
 
-This change request produces this specification, the copy template, and mockups.
-It adds no source code, executable tests, configuration, or external changes.
-Implementation will require acceptance-first BDD and focused TDD under the
-repository rules, plus the checks selected from the final implementation candidate.
+The approved implementation adds the protected Quick start page, its full
+Markdown copy action, the Admin navigation item, and the new-organization
+landing destination. It includes acceptance-first BDD, focused TDD, browser
+checks, and the checks selected from the complete implementation candidate.
+
+The work does not change provider settings, deploy the application, enforce
+external network policy, or add identity-provider enrollment. Legal documents
+and the existing audit help keep their approved content. Final review and any
+required independent human approval must cover the completed candidate.
 
 ## Design review
 
@@ -214,5 +223,6 @@ with the sample organization name substituted. Browser stubs verified clipboard
 success and denial; native host clipboard permission was not established.
 No production test suite applies to these documents and mockups. Habit-hooks was
 explicitly invoked for this specification and the guide; both were outside its
-configured file scope, so it scanned no files. This review covers the proposed
-design and does not approve a product implementation.
+configured file scope, so it scanned no files. This review covers the design.
+The owner's later implementation approval does not make these prototype checks
+evidence for the product implementation.

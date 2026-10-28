@@ -130,7 +130,7 @@ export class AdministrationRoutes {
     }, (overview) => membersPage({
       ...overview, subject: scope.actor.user.subject, csrfToken: scope.csrfToken,
       actions: { send: this.paths.send, resend: this.paths.resend, revoke: this.paths.revoke, remove: this.paths.remove },
-      navigation: { product: this.paths.product, members: this.paths.members, organizations: this.organizationsPage, logging: this.paths.logging },
+      navigation: { product: this.paths.product, members: this.paths.members, organizations: this.organizationsPage, logging: this.paths.logging, quickStart: new URL('quick-start', this.publicOrigin + this.paths.product).pathname },
     }));
   }
 

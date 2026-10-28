@@ -18,7 +18,7 @@ export interface MembersPageForm {
   readonly subject: string;
   readonly csrfToken: string;
   readonly actions: { readonly send: string; readonly resend: string; readonly revoke: string; readonly remove: string };
-  readonly navigation: { readonly product: string; readonly members: string; readonly organizations: string; readonly logging?: string };
+  readonly navigation: { readonly product: string; readonly members: string; readonly organizations: string; readonly logging?: string; readonly quickStart?: string };
 }
 
 const ROLE_LABELS: ReadonlyMap<string, string> = new Map([['user', 'User'], ['admin', 'Admin']]);

@@ -35,7 +35,7 @@ for (const [label, decision, admin] of decisions) {
     const navigation = parseHTML(body).document.querySelector('header nav[aria-label="Workspace"]');
     assert.ok(navigation);
     assert.deepEqual([...navigation.querySelectorAll('a')].map(link => link.textContent), admin
-      ? ['Connect', 'Switch Workspace', 'Members', 'Audit Log'] : ['Connect', 'Switch Workspace']);
+      ? ['Quick start', 'Connect', 'Switch Workspace', 'Members', 'Audit Log'] : ['Connect', 'Switch Workspace']);
     assert.equal(navigation.querySelector('[aria-current="page"]')?.textContent, 'Switch Workspace');
     assert.deepEqual(resolver.calls, [ann]);
     assert.deepEqual(operations.calls, []);

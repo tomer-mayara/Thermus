@@ -1,5 +1,48 @@
 # Test inventory
 
+## Admin Quick start
+
+The [approved specification](../design/admin-quick-start/spec.md) defines the
+Admin guide, its access rules, and the new-organization landing. These tests
+specify that behavior. Inventory presence is not a passing result; the pull
+request records the complete-candidate runs.
+
+- `test/acceptance/auth/hosted-quick-start.test.ts` opens the composed hosted
+  application through HTTP with provider doubles. It checks the current
+  selected organization, configured MCP URL, Admin menu, workspace switches,
+  lost access, User denial, and a missing selected workspace.
+- `test/integration/hosted-admin/account-routes-quick-start.test.ts` checks
+  escaped trusted names, ignored organization query hints, current subject and
+  workspace checks before a name lookup, separate portal and MCP hosts,
+  unavailable names and access, safe provider failure, cancellation, `HEAD`,
+  and refused mutation methods.
+- `test/unit/html/quick-start-page.test.ts` checks the complete Markdown,
+  provider details, organization substitution, escaping, configured links,
+  and scoped page assets with their Content Security Policy hashes.
+  `quick-start-copy.test.ts` checks successful, denied, and unavailable
+  clipboard writes with the page script in a VM. `quick-start-content.test.ts`
+  checks Markdown names that contain syntax or entities and configured URLs
+  that contain parentheses.
+- `test/acceptance/auth/hosted-quick-start-browser.runtime.ts` uses Chromium
+  with JavaScript on and off at 320px, 390px, and 1024px. It checks navigation,
+  keyboard use, reflow, the full selectable manual guide, and successful copy
+  and fallback behavior. Its driver is
+  `test/support/drivers/browser/quick-start-browser.ts`. It uses the local
+  hosted site and provider doubles, with no live provider credentials.
+- Existing signup acceptance and route integration tests check that creation
+  selects the new organization and opens Quick start. Existing portal and
+  workspace navigation tests check Quick start first for current Admin access
+  and preserve other users' menu and the normal Connect destination.
+
+The ordinary suite selects the `.test.ts` cases after a build, with portal
+tests run from source. The browser runtime needs its own command, Playwright
+Chromium, OpenSSL, and built portal assets:
+
+```sh
+npm run build:user-portal && npm run build
+node --test dist/test/acceptance/auth/hosted-quick-start-browser.runtime.js
+```
+
 ## Current SO-05 inventory scope
 
 SO-05 of the [self on-boarding plan](../implementation/self-onboarding-plan.md#slice-2-free-tier-end-to-end)

@@ -197,7 +197,7 @@ test('Given creation succeeds but its browser organization switch fails, when si
   assert.equal(page.status, 200, page.body);
   assert.match(page.body, /Continue/);
   assert.equal(replay.status, 303, replay.body);
-  assert.equal(replay.location?.pathname, '/');
+  assert.equal(replay.location?.pathname, '/quick-start');
   const access = await restarted.browser.open('portal/access');
   assert.equal(access.status, 200, access.body);
   assert.equal((JSON.parse(access.body) as { organizationId: string }).organizationId, saved[0].id);

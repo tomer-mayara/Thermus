@@ -157,9 +157,9 @@ for (const roles of [['admin'], ['user', 'admin'], ['user'], ['Admin'], ['supera
     assert.ok(navigation);
     const links = [...navigation.querySelectorAll('a')];
     assert.deepEqual(links.map((link) => link.getAttribute('href')), roles.includes('admin')
-      ? ['./', 'organizations', 'members', 'logging'] : ['./', 'organizations']);
+      ? ['quick-start', './', 'organizations', 'members', 'logging'] : ['./', 'organizations']);
     assert.deepEqual(links.map(link => link.textContent), roles.includes('admin')
-      ? ['Connect', 'Switch Workspace', 'Members', 'Audit Log'] : ['Connect', 'Switch Workspace']);
+      ? ['Quick start', 'Connect', 'Switch Workspace', 'Members', 'Audit Log'] : ['Connect', 'Switch Workspace']);
     assert.deepEqual(links.filter(link => link.hasAttribute('aria-current')).map(link => link.textContent), ['Connect']);
     for (const link of links) assert.equal(link.getAttribute('tabindex'), null);
   });

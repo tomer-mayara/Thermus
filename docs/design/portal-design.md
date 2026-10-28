@@ -48,9 +48,10 @@ browser-versus-MCP workspace explanation in a native Details disclosure below
 the MCP setup steps. Start it closed. Use small gray text and wrap long IDs on
 narrow screens. Keep the profile, Sign Out, endpoint, and setup steps visible.
 For current product access, show compact underline links in the header, in this
-order: Connect, Switch Workspace, Members, Audit Log. Show Members and Audit Log
-only when the current access response includes the exact `admin` role. The
-protected routes check current Admin authority independently. Keep the
+order for Admins: Quick start, Connect, Switch Workspace, Members, Audit Log.
+Show Quick start, Members, and Audit Log only when the current access response
+includes the exact `admin` role. Other users keep Connect and Switch Workspace.
+The protected routes check current Admin authority independently. Keep the
 no-access message and Start free access recovery action visible.
 
 Signup creates a named organization after identity sign-in. Show an editable
@@ -68,8 +69,9 @@ require reading or scrolling before activation. Keep the agreement outside
 the disclosures. Give closed and failure states usable recovery actions.
 
 After confirmed creation, select the new organization through a current
-membership check and open its MCP guide. Display its persisted name. The
-selected browser organization and guide organization must match. The portal
+membership check and open Quick start. Display its persisted name. The
+selected browser organization and guide organization must match. Later sign-ins
+and normal workspace choices keep their Connect destination. The portal
 reads the name from the current active membership; an absent or blank name
 shows unavailable access rather than a guessed workspace name. A failed
 switch offers safe recovery and must not repeat the first-Admin grant.
@@ -86,8 +88,9 @@ define the work; this selection changes no release or provider approval.
 
 Keep the dark Thermus palette, logo, and local IBM Plex fonts. Use a 32px Plex
 Serif title and Plex Sans labels. On Members, keep the trusted selected workspace
-name above the menu. Connect, Switch Workspace, Members, and Audit Log are ordinary page links, with
-`aria-current="page"` on the current link. “Tabs” describes their appearance;
+name above the menu. Quick start, Connect, Switch Workspace, Members, and Audit Log
+are ordinary page links, with `aria-current="page"` on the current link.
+“Tabs” describes their appearance;
 do not add an ARIA tab widget or sidebar. Audit logs shares shell styling only.
 Scope Members body styles to Members; preserve the Audit body, controls, script,
 and current context without a name lookup. Regenerate CSP hashes when embedded
@@ -149,7 +152,8 @@ destination exactly. Keep the existing POST route, CSRF protection, access
 checks, escaped organization names, and non-cacheable responses.
 
 Keep the compact header menu on the picker, with Switch Workspace marked as
-the current page. Show Members and Audit Log only for the exact current `admin`
+the current page. Put Quick start first for Admins. Show Quick start, Members,
+and Audit Log only for the exact current `admin`
 role with product access in the selected workspace. An Admin membership in
 another workspace gives no menu links here. Without a selected workspace, or
 when its access is denied, stale, or unavailable, keep the picker usable with
@@ -158,6 +162,20 @@ Connect and Switch Workspace. The display lookup gives no selection authority.
 The implemented [desktop](portal-screenshots/organizations-desktop.png) and
 [mobile](portal-screenshots/organizations-mobile.png) previews use the built
 portal assets and a sample personal workspace.
+
+## Admin Quick start
+
+The owner approved [Admin Quick start](admin-quick-start/spec.md) for
+implementation on 28 October 2026. Use the existing workspace header and the
+Admin navigation. Keep all three numbered setup steps and their primary links
+visible. Only the provider-controls table needs a disclosure.
+
+The server must check current Admin access to the selected organization and
+show its trusted name. The copied Markdown uses the full approved
+[guide](admin-quick-start/guide.md), including closed provider details, with the
+current organization and trusted portal and MCP URLs. Report Copied only after
+a successful write. A failed write shows selectable text for manual copy.
+Keep identity-provider enrollment marked Planned with no configuration action.
 
 ## AI agent quick guide
 
