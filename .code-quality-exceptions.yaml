@@ -209,3 +209,28 @@ exceptions:
     bound: 53.5
     reason: One canonical content owner keeps the approved setup prose and provider links with full Markdown assembly, trusted URL validation and Markdown escaping so the page and copied guide cannot drift. File MI is 54.0 and the largest function has six paths in URL validation. The complete copied guide matches the approved paragraphs after line-wrap normalization. Per-section files or per-guard wrappers would spread the same content and link-safety contract without reducing its decisions.
     expires: 2026-12-27
+  - path: src/tenancy/providers/render/render-metrics.ts
+    metric: mi
+    bound: 61
+    reason: One reader keeps the memory and memory-limit reads of the Render metrics API and the paged event read of the restarts, with the retry rule of the other reads and a strict decoding of each answer (bytes only, a series by service label, at most 10 event pages). Its largest function has seven paths. Fifteen unit cases with a stub of fetch check the requests, each answer kind, the page limit, and the window, and the manual SO-09 steps ran the real reads on this code. The Render adapter is unchanged since its manual and live runs, and the ticket has no Render create left for another live run, so no split was made.
+    expires: 2026-12-28
+  - path: src/accounts/providers/workos/workos-organization-inventory.ts
+    metric: mi
+    bound: 65.5
+    reason: One adapter keeps the three reads of the organization inventory over the pinned WorkOS SDK with one completeness rule (a failed or repeated page, or more than 100 pages, makes the whole read unavailable), the 404 rule of the read by ID, and the default-role rule of the hosted role mapping. Its largest function has five paths. Eight unit cases with the WorkOS fake check each rule, and the manual SO-09 steps ran the reads against WorkOS Staging on this code. A split of the page rule from its three reads would put the one guarantee that a partial list never looks complete into two files.
+    expires: 2026-12-28
+  - path: src/tenancy/tenants/pg-tenant-fleet-store.ts
+    metric: mi
+    bound: 69.5
+    reason: One small SQL adapter keeps the six fleet statements of the tenants table, each with the state that it starts from, the revive transaction under the registry lock and the cap, and the decoding of a fleet row. Its largest function has three paths. Nine unit cases check each statement and outcome, and real PostgreSQL cases check the sweep, the revive inside the cap, and the start states. A split of the statements from their outcome mapping would hide the rule that no change overwrites another writer.
+    expires: 2026-12-28
+  - path: src/tenancy/tenants/fleet-summary.ts
+    metric: mi
+    bound: 71.5
+    reason: One reader makes the record of the daily summary line, the contract of the SO-11 monitors - the count and cost by state and plan, the default-role memberships, and the memory and restarts of the live tenants - with one entry for each read that fails, so a gap never looks like a zero. Its largest function has five paths. Eight unit and four acceptance cases check each field and each gap. A measured split of the record types and the line into their own module lowered this file from 71.8 to 68.0, because the commented types left it, so the split was not kept.
+    expires: 2026-12-28
+  - path: src/tenancy/tenants/organization-sweep.ts
+    metric: mi
+    bound: 75
+    reason: One step keeps the delete authority of the weekly sweep in one ordered flow - a complete registry read, a complete organization list, the in-flight rule, the read by ID, the removal, and one operator line for each outcome. Its largest function has five paths. Eleven unit, six acceptance, and one real PostgreSQL case check each branch. A split would spread the order that makes a failed list or read delete nothing.
+    expires: 2026-12-28
