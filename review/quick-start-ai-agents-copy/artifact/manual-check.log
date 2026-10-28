@@ -1,0 +1,7 @@
+{
+  "heading": "Turn off direct internet access to AI Agents",
+  "firstParagraph": "Select the correct organization in each provider before changing its controls. Turn off direct web access to AI Agents, then connect Thermus for search and page retrieval. Keep Thermus and required agent services allowed. Thermus does not enforce these external network settings.",
+  "separateConnectActionCount": 0,
+  "embeddedMarkdownMatchesCanonicalIgnoringOuterWhitespace": true,
+  "inlineScriptSyntax": "valid"
+}

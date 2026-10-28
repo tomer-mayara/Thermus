@@ -1,0 +1,185 @@
+{
+  "base": "cc2ed669d6821525e23c6ff3d6ddcdc6339862bd",
+  "worktreeHead": "cc2ed669d6821525e23c6ff3d6ddcdc6339862bd",
+  "primaryHead": "cc2ed669d6821525e23c6ff3d6ddcdc6339862bd",
+  "isolatedChangedPaths": [
+    "docs/design/admin-quick-start/guide.md",
+    "src/interfaces/web/account/quick-start-content.ts"
+  ],
+  "primaryChangedPaths": [
+    ".pr-impact.json",
+    "docs/design/admin-quick-start/guide.md",
+    "src/interfaces/web/account/quick-start-content.ts"
+  ],
+  "fileComparison": {
+    "src/interfaces/web/account/quick-start-content.ts": {
+      "testedSha256": "d9a8a31f3b2a0571fdc9a5ede688ecc9e024c28ba55c926f8557267549ab062b",
+      "primarySha256": "d9a8a31f3b2a0571fdc9a5ede688ecc9e024c28ba55c926f8557267549ab062b",
+      "unchangedDuringGates": true
+    },
+    "docs/design/admin-quick-start/guide.md": {
+      "testedSha256": "471961466f506f87864502fca20ef2ac67e1c8e5219aaafe82ab59c881a582e9",
+      "primarySha256": "471961466f506f87864502fca20ef2ac67e1c8e5219aaafe82ab59c881a582e9",
+      "unchangedDuringGates": true
+    },
+    ".dockerignore": {
+      "testedSha256": "c29e5191cd32d2a17e3805b2dee00dac1b7d907276f7dab7f38b089cd5dd2399",
+      "primarySha256": "c29e5191cd32d2a17e3805b2dee00dac1b7d907276f7dab7f38b089cd5dd2399",
+      "unchangedDuringGates": true
+    },
+    "Dockerfile": {
+      "testedSha256": "c355b19762b6851f13ba3fece7aad40885224265bc6b1a5b1c7787139eac9d0b",
+      "primarySha256": "c355b19762b6851f13ba3fece7aad40885224265bc6b1a5b1c7787139eac9d0b",
+      "unchangedDuringGates": true
+    },
+    "Dockerfile.hosted": {
+      "testedSha256": "62aa39a803d30cd2c73bd0fe6ebba963f1e7ea3006ef88493875e3dd9acba21d",
+      "primarySha256": "62aa39a803d30cd2c73bd0fe6ebba963f1e7ea3006ef88493875e3dd9acba21d",
+      "unchangedDuringGates": true
+    },
+    "Dockerfile.hosted.dockerignore": {
+      "testedSha256": "27b9ce47817d3491f0ba242bd3cacb64e2d483274dd58a143c5d0a5df58d4154",
+      "primarySha256": "27b9ce47817d3491f0ba242bd3cacb64e2d483274dd58a143c5d0a5df58d4154",
+      "unchangedDuringGates": true
+    },
+    "package.json": {
+      "testedSha256": "30df853cac48bd00c4230334979e2049d5ac75c1f02ac947e00c8e829013da78",
+      "primarySha256": "30df853cac48bd00c4230334979e2049d5ac75c1f02ac947e00c8e829013da78",
+      "unchangedDuringGates": true
+    },
+    "pnpm-lock.yaml": {
+      "testedSha256": "d6b158024ccab02bd6ba42a66bbc8b3ad1121e04f32273fe13081b5dac67ba12",
+      "primarySha256": "d6b158024ccab02bd6ba42a66bbc8b3ad1121e04f32273fe13081b5dac67ba12",
+      "unchangedDuringGates": true
+    },
+    "tsconfig.api-surface.json": {
+      "testedSha256": "b6316cf01d322784bf8ba062a237ec262d678b92dcc5199442fd72e5d35a8bcc",
+      "primarySha256": "b6316cf01d322784bf8ba062a237ec262d678b92dcc5199442fd72e5d35a8bcc",
+      "unchangedDuringGates": true
+    },
+    "tsconfig.build.json": {
+      "testedSha256": "2828096c054d8cdcfde171bcf20111defdf7a49db72366f9ba90cecd42d9c25d",
+      "primarySha256": "2828096c054d8cdcfde171bcf20111defdf7a49db72366f9ba90cecd42d9c25d",
+      "unchangedDuringGates": true
+    },
+    "tsconfig.json": {
+      "testedSha256": "741ff6a9c52cb7e5f5b83baab80e409e0f397f615fac936ea1574e3d6e5b3a1d",
+      "primarySha256": "741ff6a9c52cb7e5f5b83baab80e409e0f397f615fac936ea1574e3d6e5b3a1d",
+      "unchangedDuringGates": true
+    },
+    "tsconfig.user-portal.json": {
+      "testedSha256": "ff88cab7e263425ac947460c76076bc70dda74f511cfce8a4f82d141ab730689",
+      "primarySha256": "ff88cab7e263425ac947460c76076bc70dda74f511cfce8a4f82d141ab730689",
+      "unchangedDuringGates": true
+    }
+  },
+  "allComparedPrimaryFilesMatch": true,
+  "allComparedFilesUnchangedDuringGates": true,
+  "gates": [
+    {
+      "name": "01-self-hosted-container",
+      "command": [
+        "npm",
+        "run",
+        "test:container"
+      ],
+      "started": "2026-10-28T23:13:55.154Z",
+      "completed": "2026-10-28T23:15:45.521Z",
+      "exitCode": 0,
+      "signal": null,
+      "node": "v24.20.0",
+      "cwd": "/Users/tomermayara/.codex/worktrees/quick-start-copy-native/Thermus",
+      "summaries": [
+        "\u2139 tests 11",
+        "\u2139 suites 1",
+        "\u2139 pass 11",
+        "\u2139 fail 0",
+        "\u2139 cancelled 0",
+        "\u2139 skipped 0",
+        "\u2139 todo 0",
+        "\u2139 duration_ms 106841.293083"
+      ]
+    },
+    {
+      "name": "02-build-hosted",
+      "command": [
+        "npm",
+        "run",
+        "build:hosted"
+      ],
+      "started": "2026-10-28T23:16:44.056Z",
+      "completed": "2026-10-28T23:19:25.840Z",
+      "exitCode": 0,
+      "signal": null,
+      "node": "v24.20.0",
+      "cwd": "/Users/tomermayara/.codex/worktrees/quick-start-copy-native/Thermus",
+      "summaries": [
+        "\u2139 tests 3693",
+        "\u2139 suites 173",
+        "\u2139 pass 3693",
+        "\u2139 fail 0",
+        "\u2139 cancelled 0",
+        "\u2139 skipped 0",
+        "\u2139 todo 0",
+        "\u2139 duration_ms 64758.908041",
+        "\u2139 tests 39",
+        "\u2139 suites 0",
+        "\u2139 pass 39",
+        "\u2139 fail 0",
+        "\u2139 cancelled 0",
+        "\u2139 skipped 0",
+        "\u2139 todo 0",
+        "\u2139 duration_ms 315.27975",
+        "\u2139 tests 21",
+        "\u2139 suites 0",
+        "\u2139 pass 21",
+        "\u2139 fail 0",
+        "\u2139 cancelled 0",
+        "\u2139 skipped 0",
+        "\u2139 todo 0",
+        "\u2139 duration_ms 209.247125",
+        "\u2139 tests 1219",
+        "\u2139 suites 60",
+        "\u2139 pass 1219",
+        "\u2139 fail 0",
+        "\u2139 cancelled 0",
+        "\u2139 skipped 0",
+        "\u2139 todo 0",
+        "\u2139 duration_ms 21699.896917",
+        "\u2139 tests 189",
+        "\u2139 suites 8",
+        "\u2139 pass 189",
+        "\u2139 fail 0",
+        "\u2139 cancelled 0",
+        "\u2139 skipped 0",
+        "\u2139 todo 0",
+        "\u2139 duration_ms 27194.257167",
+        "\u2139 tests 13",
+        "\u2139 suites 2",
+        "\u2139 pass 13",
+        "\u2139 fail 0",
+        "\u2139 cancelled 0",
+        "\u2139 skipped 0",
+        "\u2139 todo 0",
+        "\u2139 duration_ms 38426.227042"
+      ]
+    }
+  ],
+  "note": "At final comparison, every recorded source, guide, package, and configuration file matches the tested native overlay. The only additional changed primary path is .pr-impact.json, the manager classification declaration.",
+  "reportSha256": {
+    "01-self-hosted-container.log": "d26761430eb77457f76cc6a2338174a2cc1f60f882ec4e7cbb2acf5f93a976c1",
+    "01-self-hosted-container.json": "d57a26a4295e8d70a8ca0563f8dce72946b6b7b92b5c4b7676e9a426d4a34338",
+    "02-build-hosted.log": "c3e121ea83000f9163bac2a62eebc6c41c1d5f8790c1d5dbf71c91c3617c0e83",
+    "02-build-hosted.json": "7eed92210d9e4a42722d9d886c16d93af89db3d50b022bbf312c8bcb5797a00e",
+    "run-native-environment-gate.cjs": "f9e15a6d2d1716c6ccb7b1f5ea50f6c74fa06a0a415f20e3336519ab48810af7",
+    "native-original-overlay.patch": "e21a565e25f38351bd5ba41b7b7678323bbe4695632de2e7665d9b67216eb69c"
+  },
+  "dependencySymlinkRemoved": true,
+  "nonRuntimeImpactDeclaration": {
+    "path": ".pr-impact.json",
+    "baseSha256": "ae27a03ac32c8e3e185382cfd8a0bbcb79a1924958da307f1af2f09da7ed603b",
+    "primarySha256": "67352cc43dd5fb0e5ba7178938c011cd82bc5090f52decf5fe0cb7ee59e17cfa",
+    "diffSha256": "3def7f877bc448b7d6bf38cf9f4d4747062a2a207087616eac7f6f03742e5c13",
+    "disposition": "Additional manager classification evidence; excluded from tested runtime overlay as instructed"
+  }
+}

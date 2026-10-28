@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "classification": {
+    "container": false,
+    "external": false,
+    "contract": false,
+    "deployment": false,
+    "crossCutting": false,
+    "component": false,
+    "internalInterface": false,
+    "sensitiveBehavior": false,
+    "dependencyRisk": false,
+    "policy": false,
+    "uncertain": false
+  },
+  "architecture": {
+    "modelUpdated": false,
+    "summary": "Clarify the first Quick start heading and direct-web-access sentence by naming AI Agents. The shared content supplies both the Admin page and copied Markdown; the canonical Markdown guide uses the same wording. This is copy only: routes, authorization, provider controls, callable contracts, dependencies, composition and deployment do not change. The component registry prose and all 20 views remain accurate and unchanged.",
+    "views": [
+      "Context",
+      "C4 containers: hosted edition",
+      "Containers and source owners",
+      "Selected C4 components: hosted authentication in the Node server",
+      "Scenario: hosted default sign-in landing",
+      "Scenario: hosted member read",
+      "Ownership",
+      "Behavior and resource ownership"
+    ],
+    "evidence": [
+      "src/interfaces/web/account/quick-start-content.ts",
+      "src/interfaces/web/account/quick-start-page.ts",
+      "test/unit/html/quick-start-content.test.ts",
+      "test/unit/html/quick-start-page.test.ts",
+      "test/acceptance/auth/hosted-quick-start.test.ts",
+      "test/acceptance/auth/hosted-quick-start-browser.runtime.ts",
+      "docs/design/admin-quick-start/guide.md",
+      "architecture/components.md"
+    ]
+  },
+  "base": "cc2ed669d6821525e23c6ff3d6ddcdc6339862bd",
+  "head": "0445dfa6e566bf99155a6bf8f4e65c7619b3c322"
+}

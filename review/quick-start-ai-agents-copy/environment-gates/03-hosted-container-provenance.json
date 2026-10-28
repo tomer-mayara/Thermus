@@ -1,0 +1,22 @@
+{
+  "base": "cc2ed669d6821525e23c6ff3d6ddcdc6339862bd",
+  "checkout": "/Users/tomermayara/.codex/worktrees/quick-start-copy-image/Thermus",
+  "primaryBranch": "codex/quick-start-ai-agents-copy",
+  "overlaySha256": "e21a565e25f38351bd5ba41b7b7678323bbe4695632de2e7665d9b67216eb69c",
+  "fileHashes": {
+    "src/interfaces/web/account/quick-start-content.ts": "d9a8a31f3b2a0571fdc9a5ede688ecc9e024c28ba55c926f8557267549ab062b",
+    "docs/design/admin-quick-start/guide.md": "471961466f506f87864502fca20ef2ac67e1c8e5219aaafe82ab59c881a582e9"
+  },
+  "configHashes": {
+    "package.json": "30df853cac48bd00c4230334979e2049d5ac75c1f02ac947e00c8e829013da78",
+    "pnpm-lock.yaml": "d6b158024ccab02bd6ba42a66bbc8b3ad1121e04f32273fe13081b5dac67ba12",
+    ".npmrc": "7151cf397def0c2cb0ab65643701d27d335a72c90f775675b5f826bc7005818a",
+    "Dockerfile.hosted": "62aa39a803d30cd2c73bd0fe6ebba963f1e7ea3006ef88493875e3dd9acba21d",
+    "Dockerfile.hosted.dockerignore": "27b9ce47817d3491f0ba242bd3cacb64e2d483274dd58a143c5d0a5df58d4154",
+    ".pr-impact.json": "ae27a03ac32c8e3e185382cfd8a0bbcb79a1924958da307f1af2f09da7ed603b"
+  },
+  "node": "v24.20.0",
+  "renderer": "/Users/tomermayara/.codex/worktrees/3e6e/Thermus/.cache/lightpanda/1.0.0/lightpanda",
+  "scope": "Only final Linux AMD64 hosted image gate. Source+guide frozen; manager impact metadata may change without runtime change. No live auth/helper changes.",
+  "created": "2026-10-28T23:13:27.006Z"
+}

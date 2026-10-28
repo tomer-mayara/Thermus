@@ -1,0 +1,30 @@
+(node:67029) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ Given a current Admin, when Quick start opens with another organization in its query, then the selected organization owns the guide and configured MCP URL (35.979917ms)
+✔ Given memberships in two workspaces, when the Admin switches to a User workspace and back, then Quick start follows current authority (18.012708ms)
+✔ Given a User, when Quick start is requested, then access is denied (1.822916ms)
+✔ Given no selected workspace, when Quick start is requested, then access is denied (1.282208ms)
+(node:67030) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ Given organization text with Markdown syntax, entities, and line breaks, when the copied Markdown is rendered, then it remains one plain heading with the original single-line text (17.115667ms)
+✔ Given configured URLs under a path with parentheses, when the copied guide is rendered, then internal links remain complete absolute configured destinations (4.880125ms)
+(node:67031) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ Given clipboard success, when the Admin copies, then success is reported only after a completed write and other outcomes show selected manual text (41.639459ms)
+✔ Given clipboard denied, when the Admin copies, then success is reported only after a completed write and other outcomes show selected manual text (4.970667ms)
+✔ Given clipboard unavailable, when the Admin copies, then success is reported only after a completed write and other outcomes show selected manual text (5.235708ms)
+(node:67032) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ Given an Admin guide, when it renders, then all provider links and setup instructions are included in selectable complete Markdown (39.691459ms)
+✔ Given arbitrary organization text, when rendered or copied, then HTML and Markdown preserve it as text without injected elements or sections (2.922417ms)
+✔ Given audit setup guidance, when the Admin reads the setup sequence, then switch effects, recovery, and delivery limits are visible outside disclosures and the copy field (1.89375ms)
+✔ Given page assets and copy behavior, when CSP is returned, then local fonts/logo and exact script and scoped style hashes are allowed without inline escape hatches (1.18975ms)
+✔ Given configured absolute URLs with unsafe protocols or credentials, when guide rendering is requested, then it refuses active or credential-bearing destinations (0.2265ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 630.411875

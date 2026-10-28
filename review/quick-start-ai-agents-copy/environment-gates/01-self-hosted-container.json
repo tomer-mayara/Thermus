@@ -1,0 +1,24 @@
+{
+  "name": "01-self-hosted-container",
+  "command": [
+    "npm",
+    "run",
+    "test:container"
+  ],
+  "started": "2026-10-28T23:13:55.154Z",
+  "completed": "2026-10-28T23:15:45.521Z",
+  "exitCode": 0,
+  "signal": null,
+  "node": "v24.20.0",
+  "cwd": "/Users/tomermayara/.codex/worktrees/quick-start-copy-native/Thermus",
+  "summaries": [
+    "ℹ tests 11",
+    "ℹ suites 1",
+    "ℹ pass 11",
+    "ℹ fail 0",
+    "ℹ cancelled 0",
+    "ℹ skipped 0",
+    "ℹ todo 0",
+    "ℹ duration_ms 106841.293083"
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "head": "0445dfa6e566bf99155a6bf8f4e65c7619b3c322",
+  "base": "cc2ed669d6821525e23c6ff3d6ddcdc6339862bd",
+  "pr": "https://github.com/tomer-mayara/Thermus/pull/291",
+  "createdAt": "2026-10-28T23:26:04Z",
+  "body": "## Description\n\nMake the first Admin Quick start heading **Turn off direct internet access to AI Agents**. Its paragraph now says **Turn off direct web access to AI Agents, then connect Thermus for search and page retrieval.** Shared content updates the page and copied Markdown together; the canonical guide matches it.\n\n## Review\n\n**T0 Auto merge expected** — copy-only change in an internal web module; final committed-candidate classification is pending.\n\nArchitecture facts: none expected. Routes, authorization, provider controls, public declarations, dependencies, and all 20 registry views are unchanged. `.pr-impact.json` records all flags as false and `modelUpdated: false`. No diagram or L4 detail is needed. The generated metric record preserves the base analysis.\n\nMerge status: **blocked** while the final Linux AMD64 image gate and committed-candidate review finish. Required human approval: none expected for T0.\n\nCompleted: 5,685 Node + 60 portal tests, typecheck, portal build, 14 focused cases, 2 browser cases, 11 self-hosted container cases, native hosted build, and verified unit + integration coverage. Hosted-live is N/A because authentication, WorkOS operations, and live tests are unchanged. The separate HTML mockup was updated outside the repository candidate.\n\n---\nCandidate: [0445dfa6](https://github.com/tomer-mayara/Thermus/commit/0445dfa6e566bf99155a6bf8f4e65c7619b3c322). Supporting comments are being prepared.",
+  "validationComment": 6483373202,
+  "qualityComment": 6483373541
+}

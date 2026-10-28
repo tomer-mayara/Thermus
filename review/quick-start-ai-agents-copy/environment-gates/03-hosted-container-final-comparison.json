@@ -1,0 +1,136 @@
+{
+  "base": "cc2ed669d6821525e23c6ff3d6ddcdc6339862bd",
+  "primaryHeadAtReport": "0445dfa6e566bf99155a6bf8f4e65c7619b3c322",
+  "primaryGitStatus": "",
+  "sourceComparison": {
+    "src/interfaces/web/account/quick-start-content.ts": {
+      "expected": "d9a8a31f3b2a0571fdc9a5ede688ecc9e024c28ba55c926f8557267549ab062b",
+      "current": "d9a8a31f3b2a0571fdc9a5ede688ecc9e024c28ba55c926f8557267549ab062b",
+      "matches": true
+    },
+    "docs/design/admin-quick-start/guide.md": {
+      "expected": "471961466f506f87864502fca20ef2ac67e1c8e5219aaafe82ab59c881a582e9",
+      "current": "471961466f506f87864502fca20ef2ac67e1c8e5219aaafe82ab59c881a582e9",
+      "matches": true
+    }
+  },
+  "configComparison": {
+    "package.json": {
+      "expected": "30df853cac48bd00c4230334979e2049d5ac75c1f02ac947e00c8e829013da78",
+      "current": "30df853cac48bd00c4230334979e2049d5ac75c1f02ac947e00c8e829013da78",
+      "matches": true,
+      "nonruntimeMetadata": false
+    },
+    "pnpm-lock.yaml": {
+      "expected": "d6b158024ccab02bd6ba42a66bbc8b3ad1121e04f32273fe13081b5dac67ba12",
+      "current": "d6b158024ccab02bd6ba42a66bbc8b3ad1121e04f32273fe13081b5dac67ba12",
+      "matches": true,
+      "nonruntimeMetadata": false
+    },
+    ".npmrc": {
+      "expected": "7151cf397def0c2cb0ab65643701d27d335a72c90f775675b5f826bc7005818a",
+      "current": "7151cf397def0c2cb0ab65643701d27d335a72c90f775675b5f826bc7005818a",
+      "matches": true,
+      "nonruntimeMetadata": false
+    },
+    "Dockerfile.hosted": {
+      "expected": "62aa39a803d30cd2c73bd0fe6ebba963f1e7ea3006ef88493875e3dd9acba21d",
+      "current": "62aa39a803d30cd2c73bd0fe6ebba963f1e7ea3006ef88493875e3dd9acba21d",
+      "matches": true,
+      "nonruntimeMetadata": false
+    },
+    "Dockerfile.hosted.dockerignore": {
+      "expected": "27b9ce47817d3491f0ba242bd3cacb64e2d483274dd58a143c5d0a5df58d4154",
+      "current": "27b9ce47817d3491f0ba242bd3cacb64e2d483274dd58a143c5d0a5df58d4154",
+      "matches": true,
+      "nonruntimeMetadata": false
+    },
+    ".pr-impact.json": {
+      "expected": "ae27a03ac32c8e3e185382cfd8a0bbcb79a1924958da307f1af2f09da7ed603b",
+      "current": "67352cc43dd5fb0e5ba7178938c011cd82bc5090f52decf5fe0cb7ee59e17cfa",
+      "matches": false,
+      "nonruntimeMetadata": true
+    }
+  },
+  "runtimeDelta": [
+    "src/interfaces/web/account/quick-start-content.ts"
+  ],
+  "impactMetadataDifferenceRetained": "03-candidate-metadata.patch",
+  "testedCommand": {
+    "name": "03-hosted-container",
+    "command": [
+      "npm",
+      "run",
+      "test:container:hosted"
+    ],
+    "started": "2026-10-28T23:13:27.051Z",
+    "completed": "2026-10-28T23:26:35.128Z",
+    "exitCode": 0,
+    "signal": null,
+    "node": "v24.20.0",
+    "summaries": [
+      "ℹ tests 7",
+      "ℹ suites 0",
+      "ℹ pass 7",
+      "ℹ fail 0",
+      "ℹ cancelled 0",
+      "ℹ skipped 0",
+      "ℹ todo 0",
+      "ℹ duration_ms 786143.649917"
+    ]
+  },
+  "innerSummaries": [
+    "#24 412.4 ℹ tests 3693",
+    "#24 412.4 ℹ suites 173",
+    "#24 412.4 ℹ pass 3693",
+    "#24 412.4 ℹ fail 0",
+    "#24 412.4 ℹ cancelled 0",
+    "#24 412.4 ℹ skipped 0",
+    "#24 412.4 ℹ todo 0",
+    "#24 412.4 ℹ duration_ms 391271.158986",
+    "#24 414.7 ℹ tests 39",
+    "#24 414.7 ℹ suites 0",
+    "#24 414.7 ℹ pass 39",
+    "#24 414.7 ℹ fail 0",
+    "#24 414.7 ℹ cancelled 0",
+    "#24 414.7 ℹ skipped 0",
+    "#24 414.7 ℹ todo 0",
+    "#24 414.7 ℹ duration_ms 1979.919892",
+    "#24 417.3 ℹ tests 21",
+    "#24 417.3 ℹ suites 0",
+    "#24 417.3 ℹ pass 21",
+    "#24 417.3 ℹ fail 0",
+    "#24 417.3 ℹ cancelled 0",
+    "#24 417.3 ℹ skipped 0",
+    "#24 417.3 ℹ todo 0",
+    "#24 417.3 ℹ duration_ms 2078.823614",
+    "#24 534.9 ℹ tests 1219",
+    "#24 534.9 ℹ suites 60",
+    "#24 534.9 ℹ pass 1219",
+    "#24 534.9 ℹ fail 0",
+    "#24 534.9 ℹ cancelled 0",
+    "#24 534.9 ℹ skipped 0",
+    "#24 534.9 ℹ todo 0",
+    "#24 534.9 ℹ duration_ms 112185.165499",
+    "#24 647.1 ℹ tests 189",
+    "#24 647.1 ℹ suites 8",
+    "#24 647.1 ℹ pass 189",
+    "#24 647.1 ℹ fail 0",
+    "#24 647.1 ℹ cancelled 0",
+    "#24 647.1 ℹ skipped 0",
+    "#24 647.1 ℹ todo 0",
+    "#24 647.1 ℹ duration_ms 111768.082321",
+    "#24 723.2 ℹ tests 13",
+    "#24 723.2 ℹ suites 2",
+    "#24 723.2 ℹ pass 13",
+    "#24 723.2 ℹ fail 0",
+    "#24 723.2 ℹ cancelled 0",
+    "#24 723.2 ℹ skipped 0",
+    "#24 723.2 ℹ todo 0",
+    "#24 723.2 ℹ duration_ms 75715.380337"
+  ],
+  "gateLabel": "thermus.hosted-image-gate=347cb72a9651",
+  "finalImageManifest": "sha256:a4c8d6d488aa1db523296c46920c5e932131c3f95b1f6a6c250a92a7ffe30352",
+  "scope": "Only actual AMD64 hosted-image gate; no hosted-live because auth, WorkOS and helpers unchanged",
+  "comparedAt": "2026-10-28T23:27:18.782Z"
+}

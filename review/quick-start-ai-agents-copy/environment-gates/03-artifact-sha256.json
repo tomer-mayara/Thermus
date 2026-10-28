@@ -1,0 +1,10 @@
+{
+  "03-candidate-metadata.patch": "3def7f877bc448b7d6bf38cf9f4d4747062a2a207087616eac7f6f03742e5c13",
+  "03-hosted-container-build-progress.log": "6ccccf5da4a091518df6ad22598de69ae6f3336df65b1aa009f34369c41f85a4",
+  "03-hosted-container-final-comparison.json": "ce17f0097cb7c9d92be8f524f1fa9c6a6f75909dd42eae9943c08150765b94ab",
+  "03-hosted-container-provenance.json": "dbe326085ab36cd7110bf8d4f65f22f9e38c749385b1e476c734819be84def3a",
+  "03-hosted-container-summary.md": "6cc9f3e5ec8142b87c840d669d30a273a254e4b8fbf14c96cf35e74116134573",
+  "03-hosted-container.json": "c2d6e994a67a0ebed1a5303dccfc4405e10dae875db0a2632a36d895bf676542",
+  "03-hosted-container.log": "4d444954c4f51d41c56b1246e54545d7dd562752ef168404e147df36ae281bb1",
+  "03-image-overlay.patch": "e21a565e25f38351bd5ba41b7b7678323bbe4695632de2e7665d9b67216eb69c"
+}

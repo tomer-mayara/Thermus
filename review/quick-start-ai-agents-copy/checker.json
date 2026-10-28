@@ -1,0 +1,65 @@
+{
+  "tier": "T0",
+  "tierName": "T0 Auto merge",
+  "eligibility": "eligible",
+  "blockers": [],
+  "candidate": "0445dfa6e566bf99155a6bf8f4e65c7619b3c322",
+  "mergeBase": "cc2ed669d6821525e23c6ff3d6ddcdc6339862bd",
+  "architecture": {
+    "policy": "facts",
+    "facts": [],
+    "summary": "T0: no architecture fact"
+  },
+  "reasons": [],
+  "questions": [],
+  "changedPaths": [
+    {
+      "status": "M",
+      "path": ".pr-impact.json"
+    },
+    {
+      "status": "M",
+      "path": "docs/design/admin-quick-start/guide.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/metrics/2026-10-28-cc2ed669.json"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/web/account/quick-start-content.ts"
+    }
+  ],
+  "lineCounts": {
+    "production": 4,
+    "productionLimit": 400,
+    "total": 19,
+    "totalLimit": 1500
+  },
+  "tests": {
+    "added": 0,
+    "removed": 0,
+    "skippedOrTodo": []
+  },
+  "mi": [
+    "changed: src/interfaces/web/account/quick-start-content.ts: 53.95041254701023 to 53.95041254701023"
+  ],
+  "crap": [],
+  "metrics": [
+    "Delta: goal miss",
+    "Review: passed",
+    "CRAP: passed",
+    "Architecture: passed",
+    "0 findings on unchanged files, reason unchanged by this PR"
+  ],
+  "factsToDeclare": [],
+  "declaredFacts": [],
+  "surfaceDifferences": [],
+  "informational": [
+    "53 public modules, 0 snapshots changed"
+  ],
+  "notes": [
+    "Local eligibility is preliminary. The manager or Delamain session must verify current local checks, holds, and required independent human approval."
+  ],
+  "label": "gh pr edit <n> --repo tomer-mayara/Thermus --add-label 'T0 Auto merge' --remove-label 'T2 Need architect' --remove-label 'T1 Team review'"
+}
