@@ -112,11 +112,11 @@ test('Given two services with the name of the row, when the loop searches, then 
   await runUntil(() => stateOf(organization)() === 'failed');
 
   assert.deepEqual(platform.calls, [`find ${name}`]);
-  assert.equal(store.row(organization).failureReason, `2 Render services have the name ${name}`);
-  assert.deepEqual(errors(), [`ERROR Tenant provisioning failed: ${JSON.stringify({ organizationId: organization, serviceName: name, reason: `2 Render services have the name ${name}` })}`]);
+  assert.equal(store.row(organization).failureReason, `2 services of the platform have the name ${name}`);
+  assert.deepEqual(errors(), [`ERROR Tenant provisioning failed: ${JSON.stringify({ organizationId: organization, serviceName: name, reason: `2 services of the platform have the name ${name}` })}`]);
 });
 
-test('Given a create that Render refuses, when the loop creates, then the row fails at once with the reason and one report', async () => {
+test('Given a create that the platform refuses, when the loop creates, then the row fails at once with the reason and one report', async () => {
   const { platform, store, runUntil, stateOf, errors } = provisionerWith();
   platform.creations.push({ status: 'refused', reason: 'Render answered 402: payment information required' });
   store.request(organization);
@@ -124,7 +124,7 @@ test('Given a create that Render refuses, when the loop creates, then the row fa
   await runUntil(() => stateOf(organization)() === 'failed');
 
   assert.deepEqual(platform.calls, [`find ${name}`, `create ${name}`]);
-  assert.equal(store.row(organization).failureReason, 'Render refused the create: Render answered 402: payment information required');
+  assert.equal(store.row(organization).failureReason, 'The platform refused the create: Render answered 402: payment information required');
   assert.equal(errors().length, 1);
 });
 
@@ -143,7 +143,7 @@ test('Given a create without a clear answer, when the loop tries again after 30 
 });
 
 test('Given a rate-limited create, when the loop waits for the Retry-After time, then the next attempt searches and creates one service', async () => {
-  const { platform, store, clock, runUntil, stateOf } = provisionerWith();
+  const { platform, store, clock, log, runUntil, stateOf } = provisionerWith();
   platform.creations.push({ status: 'rate-limited', retryAfterMs: 120_000 });
   store.request(organization);
 
@@ -152,6 +152,7 @@ test('Given a rate-limited create, when the loop waits for the Retry-After time,
   assert.deepEqual(platform.calls.slice(0, 4), [`find ${name}`, `create ${name}`, `find ${name}`, `create ${name}`]);
   assert.equal(clock.waits[0], 120_000);
   assert.equal(platform.services.length, 1);
+  assert.match(log.lines.find((line) => line.includes('retry')) ?? '', /"reason":"The platform limits the creates for 120 s"/);
 });
 
 test('Given a rate limit above one hour, when the loop waits, then it waits one hour', async () => {
@@ -173,7 +174,7 @@ test('Given creates without a clear answer three times, when no service appears,
 
   assert.deepEqual(platform.calls, [`find ${name}`, `create ${name}`, `find ${name}`, `create ${name}`, `find ${name}`, `create ${name}`]);
   assert.deepEqual(clock.waits.slice(0, 2), [30_000, 30_000]);
-  assert.equal(store.row(organization).failureReason, 'No Render service after 3 attempts. The last attempt: the create got no clear answer (Render answered 503)');
+  assert.equal(store.row(organization).failureReason, 'No tenant service after 3 attempts. The last attempt: the create got no clear answer (Render answered 503)');
   assert.equal(errors().length, 1);
 });
 
@@ -231,7 +232,7 @@ test('Given a deploying row whose service is gone, when the loop polls, then the
 
   await runUntil(() => stateOf(organization)() === 'failed');
 
-  assert.equal(store.row(organization).failureReason, 'The Render service srv-gone no longer exists');
+  assert.equal(store.row(organization).failureReason, 'The tenant service srv-gone no longer exists');
 });
 
 test('Given a deploying row after a resume, when the loop claims it, then it watches the newest deploy and sets live without a create', async () => {
@@ -245,14 +246,14 @@ test('Given a deploying row after a resume, when the loop claims it, then it wat
   assert.match(log.lines[0] ?? '', /"state":"deploying".*"resumed":true/);
 });
 
-test('Given a deploying row without a service ID, when the loop claims it, then the row fails without a Render call', async () => {
+test('Given a deploying row without a service ID, when the loop claims it, then the row fails without a platform call', async () => {
   const { platform, store, runUntil, stateOf } = provisionerWith();
   store.put({ organizationId: organization, state: 'deploying', serviceName: name });
 
   await runUntil(() => stateOf(organization)() === 'failed');
 
   assert.deepEqual(platform.calls, []);
-  assert.equal(store.row(organization).failureReason, 'The deploying row has no Render service ID');
+  assert.equal(store.row(organization).failureReason, 'The deploying row has no tenant service ID');
 });
 
 test('Given no row to work on, when the loop runs, then it reads the registry every 5 s and calls no platform operation', async () => {
@@ -310,7 +311,7 @@ test('Given a failure that the registry cannot record, when the loop tries again
 
   assert.deepEqual(errors(), [
     `ERROR Tenant provisioning could not write the row of organization ${organization}. It tries again in 60 s.`,
-    `ERROR Tenant provisioning failed: ${JSON.stringify({ organizationId: organization, serviceName: name, reason: `2 Render services have the name ${name}` })}`,
+    `ERROR Tenant provisioning failed: ${JSON.stringify({ organizationId: organization, serviceName: name, reason: `2 services of the platform have the name ${name}` })}`,
   ]);
 });
 

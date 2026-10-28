@@ -15,7 +15,7 @@ export type ProgressPlatform = Pick<TenantPlatform, 'newestDeploy' | 'internalAd
  */
 export async function deployProgressOf(platform: ProgressPlatform, serviceId: string, signal: AbortSignal): Promise<DeployProgressRead> {
   const read = await platform.newestDeploy(serviceId, signal);
-  if (read.status === 'gone') return { status: 'failed', reason: `The Render service ${serviceId} no longer exists` };
+  if (read.status === 'gone') return { status: 'failed', reason: `The tenant service ${serviceId} no longer exists` };
   if (read.status === 'none') return pending('no deploy yet');
   if (read.status === 'unavailable') return pending(`the deploy list is unavailable (${read.reason})`);
   const { deploy } = read;
