@@ -465,8 +465,9 @@ not reach `live` (27 October 2026). The fleet script has six commands: list and
 status, request, upgrade, suspend and resume, delete, and summary
 (27 October 2026). New tenants use `TENANT_IMAGE`. One image, one release path.
 GHCR keeps every digest that the control plane or a tenant runs, and the last
-ten release digests; a monthly runbook step deletes the older ones
-(27 October 2026).
+ten release digests; a monthly
+[runbook step](tenant-fleet-runbooks.md#55-monthly-ghcr-pruning) deletes the
+older ones (27 October 2026).
 
 ### 4.3 Data model
 
@@ -877,8 +878,9 @@ nothing. The Render API key of a dedicated user lives in the GitHub secret
 store, an owner step. The control plane service switches to the image at
 step 5 of the SO-12 order. GHCR keeps every digest that the control plane or
 a tenant runs, as the registry shows, and the last ten release digests; a
-monthly runbook step deletes the older ones. The workflow of SO-01b becomes
-this path. Size M. Depends on SO-01b.
+monthly [runbook step](tenant-fleet-runbooks.md#55-monthly-ghcr-pruning)
+deletes the older ones. The workflow of SO-01b becomes this path. Size M.
+Depends on SO-01b.
 
 **SO-03 Tenant role, signed context, and capacity.** The `identity` module that
 signs and verifies the access context. `THERMUS_ROLE=tenant` composes
@@ -1005,10 +1007,13 @@ and status, request, upgrade, suspend and resume, delete, and summary. An
 upgrade runs in batches of three and stops at the first deploy that does not
 reach `live`; a deploy that reaches `live` counts as healthy. The delete
 command deletes the Render service through the adapter and sets the row
-`deleted`. Repair is a runbook step: delete, then request. The key rotation is
-a runbook over settings updates: add the new public key to each tenant and
-deploy in batches, switch the control plane to the new private key, then remove
-the old key. The script and the orphan runbook filter by `TENANT_NAME_PREFIX`.
+`deleted`. Repair is a [runbook step](tenant-fleet-runbooks.md#1-failed-provision):
+delete, then request. The key rotation is a
+[runbook](tenant-fleet-runbooks.md#52-gateway-key-pair) over settings updates:
+add the new public key to each tenant and deploy in batches, switch the control
+plane to the new private key, then remove the old key. The script and the
+[orphan runbook](tenant-fleet-runbooks.md#2-orphaned-render-service) filter by
+`TENANT_NAME_PREFIX`.
 Each command prints what it will do and asks before a write. The daily summary
 is one log line of the daily sweep inside the control plane: the counts and the
 cost by state and plan, the restarts outside a deploy, and the memory values
@@ -1045,7 +1050,8 @@ token of the registry credential `ghcr-thermus-hosted-read` gets a rotation
 entry with its expiry date. The gateway key rotation adds, switches, and
 removes public keys (SO-09). The search limit is a runbook entry, not an
 alert: a Brave API key or a dedicated outbound IP is the later option.
-Size S.
+Since 28 October 2026, the runbooks and the alerts are in
+[Tenant fleet runbooks](tenant-fleet-runbooks.md). Size S.
 
 **SO-12 Free-tier release.** The deployment proof of the approved removal
 bundle from the Slice 2.5 release checkpoint; the marketing **Start free** link
@@ -1144,21 +1150,21 @@ consider a smaller instance for it. Size S. Depends on SO-12.
 | --- | --- | --- |
 | Memory on the free instance | 631 MiB peak recorded for one render against 512 MB. SO-01e measured the 9 MiB page: on `0.5c-512mb`, five calls at a time peaked at 379 MiB with no restart, and ten restarted the container; on `1c-2g`, ten needed 709 MiB. A restart ends every active call with a failure. | Accepted in D-2. D-15 sets 5 calls at a time for a free tenant and 10 for a team tenant (27 October 2026). Render restarts the container, but it reported no event for these restarts ([SO-01e](self-onboarding-s1.md#recommendation-for-d-15)). So the alerts are Axiom monitors on the restart line of the gateway and on the memory line at or above 80 % of the limit (27 October 2026). |
 | Render API rate limits | 20 creates an hour for each Render user, and 10 updates, deploys, suspends, and resumes a minute for each service ([SO-01c](self-onboarding-s1.md#so-01c-render-private-service-lifecycle)). | A dedicated user for the control plane. The provisioner is a queue. Suspend only after 14 idle days, so resumes are rare. Ask Render for a higher limit before a launch campaign. |
-| PostgreSQL on Supabase Free | Pauses after 7 idle days; a pause stops provisioning, billing, and the audit export. | Accepted in D-8. The daily reconciliation keeps the project active. A runbook resumes it. Revisit at the first paying customer. |
+| PostgreSQL on Supabase Free | Pauses after 7 idle days; a pause stops provisioning, billing, and the audit export. | Accepted in D-8. The daily reconciliation keeps the project active. A [runbook](tenant-fleet-runbooks.md#3-paused-supabase-project) resumes it. Revisit at the first paying customer. |
 | Cost of free tenants | 7 USD a month for each live free tenant. Signup needs only a verified email. | `FREE_TENANT_LIMIT`, idle suspension from creation, deletion of dead organizations, the admission limits, the global switch. |
 | Gateway on the request path | Every MCP call crosses one more hop. The control plane is one instance with process-local state: the signup counters, the registry copy, the provisioner, the sweeps. | The proxy is light. A second instance needs a shared claim for the loops; not planned. Keep `1c-2g` until SO-16. |
 | Shared search limit | The public Brave website answered `HTTP 429` to 10 searches at the same time from the shared outbound addresses of a region ([SO-01e](self-onboarding-s1.md#findings)). | The gateway allows 5 searches at a time across all tenants (27 October 2026). A Brave API key or a dedicated outbound IP is a later option. |
 | Member limit | Native acceptance cannot be refused. An organization keeps the members it added while it paid. Member removal and its verification merged on 26 October 2026 (PRs #251 to #257); the removal release itself is still pending in the S2.5-02 ledger. | The limit counts pending invitations. Pending invitations above the limit are revoked at a downgrade. The invariant on joining paths holds. The kept members are accepted in D-5. |
 | Billed count | WorkOS counts every active membership, also a membership with only the default role, which gives no product access. | Default-role memberships do not exist in normal use; the fleet summary reports one. |
-| Image pull at each deploy | Render pulls the large hosted image at every tenant deploy. | Measure in SO-01c. GHCR keeps every digest that runs and the last ten release digests for a rollback; a monthly runbook step deletes the older ones (27 October 2026). |
+| Image pull at each deploy | Render pulls the large hosted image at every tenant deploy. | Measure in SO-01c. GHCR keeps every digest that runs and the last ten release digests for a rollback; a monthly [runbook step](tenant-fleet-runbooks.md#55-monthly-ghcr-pruning) deletes the older ones (27 October 2026). |
 | Legal | Paid fees are outside the approved Terms. The published price must match Stripe. | SO-14 before any customer reaches Checkout. |
 | WorkOS metadata is full | 10 of 10 keys used. | All tier and tenant facts live in PostgreSQL. |
-| Credentials in the control plane | The Render API key can change every service of the workspace. The Stripe key can create charges. | Render secret variables, a dedicated Render user, a Stripe restricted key, rotation runbooks, and no credential in any tenant. The adapter refuses a write for a service that the registry does not own, and always for the production service; the GitHub token of the registry credential has a rotation entry with its expiry date (27 October 2026). |
+| Credentials in the control plane | The Render API key can change every service of the workspace. The Stripe key can create charges. | Render secret variables, a dedicated Render user, a Stripe restricted key, [rotation runbooks](tenant-fleet-runbooks.md#5-rotations-and-the-monthly-pruning), and no credential in any tenant. The adapter refuses a write for a service that the registry does not own, and always for the production service; the GitHub token of the registry credential has a [rotation entry](tenant-fleet-runbooks.md#54-github-token-of-the-registry-credential) with its expiry date (27 October 2026). |
 | Webhook order and duplicates | Stripe can deliver an event twice and out of order. | Event ID table with the applied mark; read the subscription from Stripe on each event; daily reconciliation. |
 | Private network is plain HTTP | Render does not encrypt traffic between services. | Accepted: every service on that network is Thermus; the forwarded bearer token is short-lived, and the context is signed. |
 | Audit relay | Relayed events add one private call for each tool call; a failed relay loses the event. | Bounded best effort, as today's capture; the control plane keeps the queue across tenant deploys and suspensions. |
-| Logs on Hobby | 7 days of logs, no log forwarding. | Accepted in D-9. The daily summary and the runbooks record what matters. The control plane writes the restart, memory, and daily summary lines to its production logging destination, Axiom, where monitors email the owner (27 October 2026). |
-| Owner-only steps | WorkOS dashboard settings including the Stripe add-on, Render plan changes, legal approval, the open release holds, and decision records need the owner. | Section 5 and the runbooks name each step. |
+| Logs on Hobby | 7 days of logs, no log forwarding. | Accepted in D-9. The daily summary and the [runbooks](tenant-fleet-runbooks.md) record what matters. The control plane writes the restart, memory, and daily summary lines to its production logging destination, Axiom, where [monitors](tenant-fleet-runbooks.md#73-axiom-monitors) email the owner (27 October 2026). |
+| Owner-only steps | WorkOS dashboard settings including the Stripe add-on, Render plan changes, legal approval, the open release holds, and decision records need the owner. | Section 5 and the [runbooks](tenant-fleet-runbooks.md) name each step. |
 
 ## 8. Cost model
 
