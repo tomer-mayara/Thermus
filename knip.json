@@ -4,6 +4,7 @@
       "entry": [
         "docker/verify-hosted-runtime.mjs",
         "script/fetch-url/fetch-url.ts",
+        "script/fleet/fleet.ts",
         "script/search/search.ts",
         "script/code-quality/ast-metrics-install.ts",
         "script/code-quality/ast-metrics-delta.ts",

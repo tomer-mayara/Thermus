@@ -8,7 +8,7 @@ import { loadTenantNamePrefix } from '../../src/runtime/config/mcp-tenants-confi
 type Environment = Readonly<Record<string, string | undefined>>;
 
 // My Workspace of the owner's Render user holds no Thermus service, so the script never uses it.
-export const MY_WORKSPACE_ID = 'tea-d3mlbrvdiees73ca4rdg';
+const MY_WORKSPACE_ID = 'tea-d3mlbrvdiees73ca4rdg';
 const OWNER_ID = /^tea-[a-z0-9]{1,64}$/;
 
 /** A usage error or a refused setting: the script stops before any call, with exit code 2. */
