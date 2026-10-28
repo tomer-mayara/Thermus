@@ -1,4 +1,5 @@
 import { renderConnectionGuide } from './connection-guide.ts';
+import { productAccess, type ProductAccess } from './product-access.ts';
 import { productFlow } from './product-flow.ts';
 
 // The server owns the browser session: it signs in, keeps the sealed HttpOnly cookie, and signs out. The portal only
@@ -16,14 +17,6 @@ interface SessionView {
   readonly email: string;
   readonly name?: string;
   readonly csrfToken: string;
-}
-
-interface ProductAccess {
-  readonly organizationId: string;
-  readonly organizationName: string;
-  readonly roles: readonly string[];
-  readonly plan: 'free';
-  readonly mcpUrl: string;
 }
 
 // The paths are relative, so the portal works under any public base path of the server.
@@ -79,15 +72,6 @@ async function showProductAccess(container: HTMLElement, fetch: PortalFetch): Pr
   status.append(link);
 }
 
-function productAccess(body: unknown): ProductAccess {
-  const { organizationId, organizationName, roles, plan, mcpUrl } = (body ?? {}) as Partial<Record<keyof ProductAccess, unknown>>;
-  if (typeof organizationId !== 'string' || typeof organizationName !== 'string' || organizationName.trim() === ''
-    || !Array.isArray(roles) || plan !== 'free' || typeof mcpUrl !== 'string') throw new Error('The product access answer is not valid');
-  const endpoint = new URL(mcpUrl);
-  if (!['http:', 'https:'].includes(endpoint.protocol) || endpoint.username || endpoint.password) throw new Error('The MCP endpoint is not valid');
-  return { organizationId, organizationName, roles: roles.map(String), plan, mcpUrl };
-}
-
 function showWorkspaceNavigation(container: HTMLElement, roles: readonly string[]): void {
   const navigation = container.ownerDocument.createElement('nav');
   navigation.className = 'workspace-navigation';
@@ -107,9 +91,13 @@ function showConnection(container: HTMLElement, access: ProductAccess): void {
   const workspace = document.createElement('p');
   workspace.className = 'workspace-name';
   workspace.textContent = `Workspace: ${access.organizationName}`;
-  const plan = document.createElement('p');
-  plan.textContent = 'Free access. No card is required and there is no automatic charge.';
-  section.append(heading, workspace, plan, renderConnectionGuide(document, access.mcpUrl));
+  section.append(heading, workspace);
+  if (access.plan === 'free') {
+    const plan = document.createElement('p');
+    plan.textContent = 'Free access. No card is required and there is no automatic charge.';
+    section.append(plan);
+  }
+  section.append(renderConnectionGuide(document, access.mcpUrl));
   container.querySelector('.auth-container')?.append(section);
 }
 

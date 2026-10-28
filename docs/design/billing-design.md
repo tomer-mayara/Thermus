@@ -19,6 +19,17 @@ members**, counting each unique active membership with `product:access` once,
 including Admin alone. The internal `activeUserSeats` and `activeUserSeatCount`
 names remain for compatibility; this count is not a bill.
 
+Since SO-08 (27 October 2026), a free organization has the member limit 5 of
+the [tiers record](../../architecture/decisions/2026-10-26-tiers-and-billing.md)
+and [plan section 4.4](../implementation/self-onboarding-plan.md#44-tier-rules):
+its active memberships with product access and its pending invitations stay at
+or under 5. A pending invitation reserves its seat, because the acceptance
+happens in AuthKit. An invitation beyond the limit gets `limit-reached` and the
+words "This free workspace has 5 of 5 seats. Upgrade to Team to add more
+members.", without a link. Members shows "N of 5 seats used", and the portal
+JSON gives `plan` and `memberLimit`. The limit bills nothing: `BillingFree`
+still gives 0 billed seats.
+
 The AUTH-10/AUTH-11 options below retain the earlier three-role proposal and
 User-seat terminology. They are pending paid-product decisions, not current
 customer access rules. Reconcile them with the two-role model before paid work.
@@ -60,8 +71,12 @@ operation gives a `BillingState`.
 | `updateSeats(organizationId, seatCount)` | Gets a complete current membership count from its caller; the current member overview counts active product members. The count is never a change to add or subtract, so the same count again has no further effect. Gives the confirmed state after the update. |
 
 `BillingState` has `organizationId`, `plan`, and `billedSeats`, the number of
-seats that are billed. The only plan now is `free`. AUTH-11 adds the paid
-states that the approved rules need.
+seats that are billed. The plan is `free` or `team` (SO-08). A `free` state
+also has `memberLimit`: the most seats of the organization, where each active
+membership with product access and each pending invitation holds one seat. A
+`team` state has no member limit. `BillingFree` gives only `free`. SO-13 adds the
+`team` states of a paid subscription and the other paid states that the
+approved rules need.
 
 Each implementation obeys these rules:
 
@@ -93,7 +108,23 @@ is the production caller of `Billing`:
 - The billing page, `GET <base>billing`, calls `billingState()`.
   `billingState()` calls `stateOf` only after a current membership read gives
   the actor `billing:manage` (Admin) in the selected organization. Else the page gets `403`, and
-  `Billing` gets no call.
+  `Billing` gets no call. A team state shows its plan and billed seats without
+  the free-plan statement.
+- An invitation send, `sendInvitation()`, calls `stateOf` after the checks of
+  the actor and the role and the read of the pending invitations, when the
+  same invitation is not already pending. For a free state, it counts the
+  seats from complete reads of the active member facts and the pending
+  invitations, and it refuses an invitation at `memberLimit` with
+  `limit-reached`, without a directory write. The check and the send of one
+  organization run one at a time in the process; the hosted control plane
+  runs one instance. A failed page or billing read fails the send without a
+  directory write.
+- The members page calls `invitationOverview()`, which calls `stateOf` after
+  the authority check and gives the seats used and the limit of a free state.
+- The portal answer, `GET <base>portal/access`, gets a read of `stateOf` for
+  the selected organization from the composition, after the product access
+  check. Its JSON has `plan`, and `memberLimit` for a free plan. This read needs
+  product access, not `billing:manage`: the plan gives no billing detail.
 
 S1-01 removes `changeGrant()` and its post-write `updateSeats()` call. The
 `Billing.updateSeats()` contract remains, but no customer membership route now
@@ -115,9 +146,9 @@ implementation, and it adds the billing changes that the approved rules need.
 `src/accounts/billing/billing-free.ts` contains `BillingFree`. It obeys the interface
 rules and these rules:
 
-- Each organization is on the free plan, with 0 billed seats, from its
-  creation. There is no checkout, payment method, invoice, charge, credit,
-  refund, renewal, or cancellation.
+- Each organization is on the free plan, with the member limit 5 and 0
+  billed seats, from its creation. There is no checkout, payment method,
+  invoice, charge, credit, refund, renewal, or cancellation.
 - `updateSeats` checks the count and changes nothing.
 - `BillingFree` keeps no state and makes no external call. It needs no
   storage, settings, or provider account.
@@ -127,7 +158,8 @@ Seat-update examples describe `BillingFree`, not a current customer grant route.
 
 | Case | Example | Result |
 | --- | --- | --- |
-| First purchase | An operator creates `org-a`. Its Super Admin opens the billing page, which reads the billing state through `OrganizationAdministration.billingState()`. | `stateOf("org-a")` gives `{ organizationId: "org-a", plan: "free", billedSeats: 0 }`. There is nothing to buy. MCP access depends only on the User grant. |
+| First purchase | An operator creates `org-a`. Its Super Admin opens the billing page, which reads the billing state through `OrganizationAdministration.billingState()`. | `stateOf("org-a")` gives `{ organizationId: "org-a", plan: "free", memberLimit: 5, billedSeats: 0 }`. There is nothing to buy. MCP access depends only on the User grant. |
+| Member limit | `org-a` has 4 active members with product access and 1 pending invitation, and an Admin invites. | The invitation gets `limit-reached`, and nothing is sent. The members keep their access. |
 | Added seat | A caller gives the complete count 5 for `org-a`. | `updateSeats("org-a", 5)` gives the free state with 0 billed seats. There is no charge. |
 | Removed seats | The count goes from 5 to 4, and then to 0. | Each update gives the free state. There is no credit. The last removal ends nothing. |
 | Proration and cancellation | Seats change during a month, or a Super Admin wants to stop paying. | There is nothing to prorate or cancel. |

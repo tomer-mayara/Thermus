@@ -21,7 +21,7 @@ import type { GoogleOnboardingSettings } from '../accounts/providers/workos/work
 import type { WorkOSSettings } from '../accounts/providers/workos/workos-settings.ts';
 import type { WorkOSOrganizations } from '../accounts/providers/workos/workos-organizations.ts';
 import type { SignupDocuments } from '../accounts/organizations/signup-activation.ts';
-import { portalAccessOperation, PRODUCT_ACCESS } from '../interfaces/web/account/portal-access.ts';
+import { portalAccessOperation, PRODUCT_ACCESS, type PortalReads } from '../interfaces/web/account/portal-access.ts';
 import { MCPServer, type RequestServerBuilder } from '../interfaces/mcp/mcp-server.ts';
 
 type Environment = Readonly<Record<string, string | undefined>>;
@@ -50,6 +50,8 @@ export interface WorkOSApplicationParts {
   readonly onboarding?: GoogleOnboardingSettings;
   // Explicit composition supplies its own documents. Production selects the approved organization removal bundle at startup.
   readonly signup?: { readonly enabled: boolean; readonly documents?: SignupDocuments };
+  // Explicit composition can supply the billing of its organizations. Production uses BillingFree.
+  readonly billing?: Billing;
 }
 
 // No retry and a short timeout: each WorkOS call runs during a browser or MCP request.
@@ -113,19 +115,32 @@ export async function composeWorkOSApplication(config: RouteConfig, connection: 
     const storage = loggingStorage;
     loggingStorage = { ...storage, close: () => { snapshots.close(); return storage.close(); } };
   }
-  const { BillingFree } = await import('../accounts/billing/billing-free.ts');
-  const billing = new BillingFree();
+  const billing = await billingOf(parts);
   const providerParts = await workosProviderParts(config, connection, { ...parts, buildServer, billing });
   const application = composeHostedApplication(config, providerParts, {
     reportFailure: accountFailureReporter(parts.logger),
     changeRecords: accountChangeRecorder(parts.logger),
     audit,
     billing,
-    operation: portalAccessOperation(config.publicBaseUrl, config.mcpResourceUrl, (user, organizationId) => providerParts.organizations.activeOrganizationName(user, organizationId)),
+    operation: portalAccessOperation(config.publicBaseUrl, config.mcpResourceUrl, portalReads(providerParts.organizations, billing)),
     signupUrl: new URL('signup', config.publicBaseUrl).href,
   }, loggingStorage);
   owned.move();
   return application;
+}
+
+// The portal reads the name of the active organization of the member and the billing state of that organization.
+function portalReads(organizations: WorkOSOrganizations, billing: Billing): PortalReads {
+  return {
+    organizationNameOf: (user, organizationId) => organizations.activeOrganizationName(user, organizationId),
+    billingOf: (organizationId) => billing.stateOf(organizationId),
+  };
+}
+
+async function billingOf(parts: WorkOSApplicationParts): Promise<Billing> {
+  if (parts.billing !== undefined) return parts.billing;
+  const { BillingFree } = await import('../accounts/billing/billing-free.ts');
+  return new BillingFree();
 }
 
 async function workosProviderParts(config: RouteConfig, connection: WorkOSConnection, parts: WorkOSApplicationParts & { readonly billing: Billing }): Promise<HostedProviderParts & { readonly organizations: WorkOSOrganizations }> {

@@ -64,7 +64,7 @@ test('Given a signed-out visitor, when the product flow is read, then each reque
 });
 
 test('Given a signed-in user with User access, when the portal opens, then it shows the server profile and the product access of the current organization, and Sign Out posts the session form token to the sign-out route', async () => {
-  const { document } = await openPortal({ session: ada, productAccess: { organizationId: 'org_01ACME', organizationName: 'Acme Labs', roles: ['admin', 'user'], plan: 'free', mcpUrl: 'https://thermus.example/mcp' } });
+  const { document } = await openPortal({ session: ada, productAccess: { organizationId: 'org_01ACME', organizationName: 'Acme Labs', roles: ['admin', 'user'], plan: 'free', memberLimit: 5, mcpUrl: 'https://thermus.example/mcp' } });
   assert.match(document.body.textContent ?? '', /Welcome, Ada Lovelace!.*Email: ada@example.com.*Name: Ada Lovelace/s);
   assert.match(document.body.textContent ?? '', /You have product access in organization org_01ACME\. Roles: admin, user\./);
   const form = document.querySelector('form');
@@ -85,14 +85,14 @@ test('Given a signed-in user whose current grants do not include User, when the 
 
 test('Given HTML in the profile fields of the server, when the portal shows the profile, then those fields remain text', async () => {
   const name = '<img src=x onerror="alert(1)">';
-  const { document } = await openPortal({ session: { ...ada, name, email: '<b>ada@example.com</b>' }, productAccess: { organizationId: '<script>alert(1)</script>', organizationName: 'Acme Labs', roles: ['<i>user</i>'], plan: 'free', mcpUrl: 'https://thermus.example/mcp' } });
+  const { document } = await openPortal({ session: { ...ada, name, email: '<b>ada@example.com</b>' }, productAccess: { organizationId: '<script>alert(1)</script>', organizationName: 'Acme Labs', roles: ['<i>user</i>'], plan: 'free', memberLimit: 5, mcpUrl: 'https://thermus.example/mcp' } });
   assert.equal(document.querySelector('img:not([src="/assets/thermus-logo.svg"]), script, b, i'), null, 'Server values must not create HTML elements');
   assert.ok(document.body.textContent?.includes(name));
   assert.ok(document.body.textContent?.includes('<b>ada@example.com</b>'));
 });
 
 test('Given product access, when the portal opens, then it keeps setup visible and puts technical access details in a closed disclosure below the steps', async () => {
-  const { document } = await openPortal({ session: ada, productAccess: { organizationId: 'org_01ACME', organizationName: 'Acme Labs', roles: ['user'], plan: 'free', mcpUrl: 'https://thermus.example/mcp' } });
+  const { document } = await openPortal({ session: ada, productAccess: { organizationId: 'org_01ACME', organizationName: 'Acme Labs', roles: ['user'], plan: 'free', memberLimit: 5, mcpUrl: 'https://thermus.example/mcp' } });
   const text = document.body.textContent ?? '';
   assert.equal(document.querySelector('.workspace-name')?.textContent, 'Workspace: Acme Labs');
   assert.equal(document.querySelector('.workspace-name')?.closest('details'), null);
@@ -110,6 +110,15 @@ test('Given product access, when the portal opens, then it keeps setup visible a
   assert.equal(document.querySelector('a[href="organizations"]')?.textContent, 'Switch Workspace');
 });
 
+test('Given product access on the team plan, when the portal opens, then it accepts the plan and shows the workspace and its connection guide without the free access line', async () => {
+  const { document } = await openPortal({ session: ada, productAccess: { organizationId: 'org_01ACME', organizationName: 'Acme Labs', roles: ['admin'], plan: 'team', mcpUrl: 'https://thermus.example/mcp' } });
+  const text = document.body.textContent ?? '';
+  assert.equal(document.querySelector('.workspace-name')?.textContent, 'Workspace: Acme Labs');
+  assert.match(text, /claude mcp add.*Sign in.*workspace.*Approve.*fetch/s);
+  assert.match(text, /You have product access in organization org_01ACME\. Roles: admin\./);
+  assert.doesNotMatch(text, /Free access|Failed to load/);
+});
+
 test('Given no product access, when the portal opens, then signup recovery remains visible', async () => {
   const { document } = await openPortal({ session: ada });
   assert.equal(document.querySelector('a[href="signup"]')?.textContent, 'Start free access');
@@ -121,7 +130,7 @@ test('Given no product access, when the portal opens, then signup recovery remai
 
 test('Given product access at a custom endpoint, when the portal opens, then Claude Code is selected with the endpoint from the server', async () => {
   const mcpUrl = 'https://gateway.example/team/thermus/mcp';
-  const { document } = await openPortal({ session: ada, productAccess: { organizationId: 'org_custom', organizationName: 'Acme Labs', roles: ['user'], plan: 'free', mcpUrl } });
+  const { document } = await openPortal({ session: ada, productAccess: { organizationId: 'org_custom', organizationName: 'Acme Labs', roles: ['user'], plan: 'free', memberLimit: 5, mcpUrl } });
   const select = document.querySelector<HTMLSelectElement>('#ai-agent');
   assert.ok(select, 'The guide has a native AI agent selector');
   assert.equal(document.querySelector('label[for="ai-agent"]')?.textContent, 'Your AI agent');
@@ -144,7 +153,7 @@ const clientGuides = [
 for (const [method, value, expected, guideUrl] of clientGuides) {
   test(`Given product access, when the user selects ${value}, then its quick guide uses the configured endpoint without another request`, async () => {
     const mcpUrl = 'https://gateway.example/team/thermus/mcp';
-    const { document, requests } = await openPortal({ session: ada, productAccess: { organizationId: 'org_custom', organizationName: 'Acme Labs', roles: ['user'], plan: 'free', mcpUrl } });
+    const { document, requests } = await openPortal({ session: ada, productAccess: { organizationId: 'org_custom', organizationName: 'Acme Labs', roles: ['user'], plan: 'free', memberLimit: 5, mcpUrl } });
     const select = document.querySelector<HTMLSelectElement>('#ai-agent');
     const view = document.defaultView;
     assert.ok(select);
@@ -173,7 +182,7 @@ for (const [method, value, expected, guideUrl] of clientGuides) {
 
 test('Given a signed-in user at a custom endpoint, when they choose Desktop and Web Apps and return to CLI, then each setup method offers its own apps without another request', async () => {
   const mcpUrl = 'https://gateway.example/team/thermus/mcp';
-  const { document, requests } = await openPortal({ session: ada, productAccess: { organizationId: 'org_custom', organizationName: 'Acme Labs', roles: ['user'], plan: 'free', mcpUrl } });
+  const { document, requests } = await openPortal({ session: ada, productAccess: { organizationId: 'org_custom', organizationName: 'Acme Labs', roles: ['user'], plan: 'free', memberLimit: 5, mcpUrl } });
   const view = document.defaultView;
   assert.ok(view);
   const methods = document.querySelector('fieldset');
@@ -207,7 +216,7 @@ test('Given a signed-in user at a custom endpoint, when they choose Desktop and 
 for (const role of ['admin', 'user']) {
   test(`Given a current ${role}, when the portal opens, then workspace navigation matches the current server role and legal links need no invited-member agreement`, async () => {
     const { document, requests } = await openPortal({ session: { ...ada, roles: ['admin'] }, productAccess: {
-      organizationId: 'org_01ACME', organizationName: 'Acme Labs', roles: [role], plan: 'free', mcpUrl: 'https://thermus.example/mcp',
+      organizationId: 'org_01ACME', organizationName: 'Acme Labs', roles: [role], plan: 'free', memberLimit: 5, mcpUrl: 'https://thermus.example/mcp',
     } });
     const navigation = document.querySelector('header nav[aria-label="Workspace"]');
     assert.ok(navigation);

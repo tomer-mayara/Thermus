@@ -4,6 +4,7 @@ import '../../support/processes/use-hosted-portal-fixture.ts';
 import { describe, test, type TestContext } from 'node:test';
 import { accountChangeRecorder, accountFailureReporter, createApplication } from '../../../src/app/application.ts';
 import { OperatorLogSpy } from '../../support/doubles/application/operator-log-spy.ts';
+import { TeamBillingStub } from '../../support/doubles/billing/team-billing-stub.ts';
 import { BrowserSessionStore } from '../../support/doubles/auth/browser-session-store.ts';
 import { recordLines, rolesOf, shownPage, submitOnPage } from '../../support/dsl/hosted-administration.ts';
 import { formLabelled, formsIn, HostedBrowser } from '../../support/drivers/browser/hosted-browser.ts';
@@ -12,9 +13,12 @@ import { administrationMembers, userOf } from '../../support/fixtures/hosted-mem
 import { hostedFetchSettings, hostedStartupLine, hostedStorageUnavailableLine, workOSSettingsFor } from '../../support/fixtures/hosted-placeholder.ts';
 import { openOrganizationSite } from '../../support/in-process/hosted-organization-site.ts';
 
+// Acme has 6 active product members, above the 5 seats of a free organization, so these invitation cases use the team
+// plan, which has no member limit.
 function open(t: TestContext, logger = new OperatorLogSpy()) {
   const site = openOrganizationSite(t, {
     reportFailure: accountFailureReporter(logger),
+    billing: new TeamBillingStub(),
     memberships: administrationMembers,
     mcpUsers: ['user-sam', 'user-cy', 'user-una'].map((subject) => userOf(subject, 'org-a')),
   });
@@ -67,7 +71,7 @@ describe('Hosted invitation management with the real composition, routes, servic
 
   test('Given the change recorder of the hosted edition, when an Admin sends and resends an invitation, then the operator log gets one info line with each record, and no line holds the form token, the session cookie, or an invitation token', async (t) => {
     const logger = new OperatorLogSpy();
-    const site = openOrganizationSite(t, { reportFailure: accountFailureReporter(logger), memberships: administrationMembers, changeRecords: accountChangeRecorder(logger) });
+    const site = openOrganizationSite(t, { reportFailure: accountFailureReporter(logger), billing: new TeamBillingStub(), memberships: administrationMembers, changeRecords: accountChangeRecorder(logger) });
     const eve = site.browserOf(userOf('user-eve', 'org-a'));
     const token = formsIn((await eve.open('members')).body)[0]?.fields.csrf_token ?? '';
 

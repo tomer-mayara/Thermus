@@ -206,7 +206,8 @@ collaborators; it does not reverse the source dependency from provider
 implementations to neutral contracts.
 The session/access arrow denotes BrowserSession and AccessResolver; the
 verification/access arrow denotes IdentityVerifier and AccessResolver. The
-directory and billing arrows use OrganizationDirectory and Billing.
+directory and billing arrows use OrganizationDirectory and Billing; the plan
+read of web is a Billing read that app supplies to the portal request.
 
 ```mermaid
 %%{init: {"flowchart": {"wrappingWidth": 130, "nodeSpacing": 20, "rankSpacing": 35}}}%%
@@ -217,8 +218,8 @@ flowchart TB
     account_web["web · TypeScript<br/>Accounts and sign-in"]
     account_mcp["mcp · TypeScript<br/>Verify request access"]
     account_identity["identity · TypeScript<br/>Trusted access contracts"]
-    account_org["organizations · TypeScript<br/>Roles, invites and checked removal"]
-    account_billing["billing · TypeScript<br/>Free plan and seats"]
+    account_org["organizations · TypeScript<br/>Roles, invites, seat limit and checked removal"]
+    account_billing["billing · TypeScript<br/>Plans, member limit and seats"]
     account_workos["workos · TypeScript / SDK<br/>Access, sessions and directory"]
   end
   hosted_workos["External: WorkOS<br/>Identity and organizations"]
@@ -228,6 +229,7 @@ flowchart TB
   account_web -->|session / access| account_workos
   account_mcp -->|verification / access| account_workos
   account_web -->|administration| account_org
+  account_web -->|plan read| account_billing
   account_org -->|directory calls| account_workos
   account_org -->|billing calls| account_billing
   account_workos -->|trusted access records| account_identity
@@ -235,7 +237,18 @@ flowchart TB
 ```
 
 [Hosted composition](../src/app/hosted-workos-application.ts) shares a WorkOS
-SDK client, key-set resolver, and directory and selects `BillingFree`.
+SDK client, key-set resolver, and directory and selects `BillingFree`, unless an
+explicit composition supplies another `Billing`. Since SO-08,
+[OrganizationAdministration](../src/accounts/organizations/organization-administration.ts)
+reads the plan at each invitation send that is not a repeat and in the
+invitation overview. On a free plan, its
+[member limit](../src/accounts/organizations/member-limit.ts) counts the seats
+from complete reads of the active member facts and the pending invitations,
+refuses a send at the limit with `limit-reached`, and runs the check and the
+send of one organization one at a time in the process. The
+[portal request](../src/interfaces/web/account/portal-access.ts) gets the plan,
+and the member limit of a free plan, from the supplied billing read after its
+product access check.
 [WorkOSAuthProvider](../src/accounts/providers/workos/workos-auth-provider.ts)
 implements identity-owned verifier/resolver contracts;
 [WorkOSOrganizations](../src/accounts/providers/workos/workos-organizations.ts)
@@ -1075,7 +1088,8 @@ Scope: GET `/members` in the hosted Node server. The WorkOS adapter participant
 groups the session, access resolver, and shared directory; each return follows
 the request through that adapter. A signed-in session alone does not authorize
 the read. Organization administration checks current Admin authority before
-reading the overview. This groups remote reads, not a remote transaction.
+reading the overview. This groups remote reads, not a remote transaction. The
+billing participant is the in-process `Billing` of the composition.
 
 ```mermaid
 %%{init: {"sequence": {"wrap": true, "actorMargin": 20, "width": 140}}}%%
@@ -1084,6 +1098,7 @@ sequenceDiagram
   participant Routes as web / account routes
   participant Provider as workos / auth and directory
   participant Admin as organizations / admin rules
+  participant Billing as billing / plan
   participant Remote as WorkOS service
   Browser->>Routes: GET /members with Cookie
   Routes->>Provider: Authenticate cookie
@@ -1131,7 +1146,16 @@ sequenceDiagram
           Provider->>Remote: Invitation pages (condensed)
           Remote-->>Provider: Invitation data
           Provider-->>Admin: Safe invitation fields
-          Admin-->>Routes: Complete invitation overview
+          Admin->>Billing: Read the plan
+          Billing-->>Admin: Plan, with the member limit of a free plan
+          opt Free plan
+            Admin->>Provider: Read complete active member fact pages
+            Provider->>Remote: Membership and catalog reads (condensed)
+            Remote-->>Provider: Member facts
+            Provider-->>Admin: Status and grants
+            Note over Admin: Seats: product members + pending invitations
+          end
+          Admin-->>Routes: Complete invitation overview, with seats on a free plan
           Routes-->>Browser: Combined Members HTML with cookie effects
         end
       end
@@ -1187,7 +1211,11 @@ grants give no access; invalid role catalogs fail closed. Browser sessions repor
 `mfaCompleted: false`, including retained cookies on read, refresh, and selection.
 The member overview counts each active product-authorized membership once,
 including Admin alone, and labels the count Active product members. These access
-changes add no provider, process, datastore, or component boundary.
+changes add no provider, process, datastore, or component boundary. On a free
+plan, the invitation overview also gives the seats: the active memberships with
+product access and the pending invitations, from complete reads. The page shows
+"N of 5 seats used" in the Active members card; a failed read fails the whole
+page, so no partial seat count shows (SO-08).
 
 The portal uses the current access response to show Connect and Switch Workspace,
 plus Members and Audit Log for the exact `admin` role. Connect and the admin pages
@@ -1199,7 +1227,9 @@ usable. Its selection POST still checks current membership and session authority
 Without an explicit safe return path, a successful choice opens Connect at the
 public base path.
 Invitation POST routes retain origin, CSRF, selected-organization, current-role,
-and pending-target checks. A failure after a directory write starts raises the
+and pending-target checks. A send beyond the member limit of a free plan gets
+`409` with "This free workspace has 5 of 5 seats. Upgrade to Team to add more
+members.", without a link, and its record and audit event keep `limit-reached`. A failure after a directory write starts raises the
 neutral `UnconfirmedChangeError` and keeps an unknown change record. The route
 returns a fixed notice with a read-only Check status link. It does not repeat the
 write, show its private cause, or claim that a pending read proves email delivery.
@@ -1335,8 +1365,8 @@ surface and the narrower file-context restrictions.
 | --- | --- | --- |
 | `app` — [`src/app/`](../src/app/), plus [`src/index.ts`](../src/index.ts) | Select hosted or self-hosted operation and the role of the hosted image; construct providers, routes, tools, logs, and shared services; own startup, shutdown, capacity, portal loading, the tenant composition and its routes, and hidden terminal input. | Entrypoint and application lifecycle; documented [tool composition](../src/app/fetch-tool.ts). Other components do not import app. |
 | `identity` — [`src/accounts/identity/`](../src/accounts/identity/) | Define authenticated users, grants, immutable request contexts, permission checks, verification, browser sessions and profile controls, and local administration roles. Sign and verify the signed access context of a tenant with `jose`, and give the access of a verified context. | [Access context](../src/accounts/identity/access-context.ts), verifier, browser-session, browser-session-controls, local-user-administration, and [signed-access-context](../src/accounts/identity/signed-access-context.ts) contracts. The signer, the verifier, and the context resolver are for app. No provider or UI implementation belongs here. |
-| `organizations` — [`src/accounts/organizations/`](../src/accounts/organizations/) | Customer roles, administration rules, member/invitation overviews, directory reads and native invitations, durable removal coordination and last-Admin checks, signup activation, seat calculations, and privileged change recording. | Directory, administration, overview, customer-role, change-record, removal-store, and signup-activation modules. Administration exposes removal requests/results and close. Directory-read and removal helpers remain private. |
-| `billing` — [`src/accounts/billing/`](../src/accounts/billing/) | Report plan state and accept seat updates. `BillingFree` is the current implementation. | [Billing roles](../src/accounts/billing/billing.ts); app selects the implementation. |
+| `organizations` — [`src/accounts/organizations/`](../src/accounts/organizations/) | Customer roles, administration rules, member/invitation overviews, directory reads and native invitations, the member limit of a plan at invitation send, durable removal coordination and last-Admin checks, signup activation, seat calculations, and privileged change recording. | Directory, administration, overview, customer-role, change-record, removal-store, and signup-activation modules. Administration exposes removal requests/results and close. Directory-read, member-limit, and removal helpers remain private. |
+| `billing` — [`src/accounts/billing/`](../src/accounts/billing/) | Report plan state, `free` with its member limit or `team`, and accept seat updates. `BillingFree` is the current implementation. | [Billing roles](../src/accounts/billing/billing.ts); app selects the implementation. |
 | `workos` — [`src/accounts/providers/workos/`](../src/accounts/providers/workos/) | Hosted token/access verification, sessions, organization operations, signup/onboarding, settings, cookies, and signup-document validation. `WorkOSTokenVerifier` is the Connect token check alone, for a tenant. | App constructs provider/SDK objects. Web uses neutral supplied session, signup, and account roles; its WorkOS auth area still uses provider cookie and document-validation helpers. |
 | `better-auth` — [`src/accounts/providers/better-auth/`](../src/accounts/providers/better-auth/) | Local authentication, access resolution, user/client administration, installation storage, data-directory lock, and cleanup. | Provider, runtime-opening, and administration-opening modules for app; storage and lock mechanics remain private. |
 | `mcp` — [`src/interfaces/mcp/`](../src/interfaces/mcp/) | Adapt protocol requests to trusted access contexts and supplied tool operations. Own schemas, metadata, protocol errors, request lifetimes, and completion presentation. A request can carry its own scope: the access resolver and the tool server of an admitted tenant request. | Server/tool composition modules, protected-resource endpoint, and client-visible schema modules. SDK adaptation stays inside this owner. |
@@ -1481,9 +1511,15 @@ The following limits affect architectural decisions today:
   freshly authorizes each attempt. Queue pressure, expiry, failure, and restart
   can lose events; retries can duplicate receipt. Thermus
   stores no audit history and promises no durable destination storage.
-- [BillingFree](../src/accounts/billing/billing-free.ts) returns a free plan and
-  zero billed seats, including after seat updates. The billing role is a seam,
-  but there is no paid-plan implementation or durable seat billing here.
+- [BillingFree](../src/accounts/billing/billing-free.ts) returns a free plan with
+  the member limit 5 and zero billed seats, including after seat updates. The
+  billing role is a seam, but there is no paid-plan implementation or durable
+  seat billing here.
+- The [member limit](../src/accounts/organizations/member-limit.ts) runs the
+  sends of one organization one at a time in one process, because the hosted
+  control plane runs one instance. Two instances, for example in a deploy
+  overlap, do not share the queue. The application cannot refuse a native
+  acceptance in AuthKit, so a pending invitation reserves its seat at send time.
 - The [Brave adapter](../src/pipelines/providers/search-engine/search-engine-brave-http.ts)
   validates specific HTML selectors and no-results text. Upstream page changes
   can reject search responses; the separate

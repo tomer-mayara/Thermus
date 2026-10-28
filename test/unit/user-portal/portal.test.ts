@@ -29,7 +29,7 @@ const signedIn = async () => Response.json(session);
 test('Given named product access, when the guide opens, then it displays the name as text while retaining the selected organization ID', async () => {
   const organizationName = '<img src=x onerror="alert(1)">';
   const { document, options } = portal({ session: signedIn, 'portal/access': async () => Response.json({
-    organizationId: 'org_01A', organizationName, roles: ['admin'], plan: 'free', mcpUrl: 'https://thermus.example/mcp',
+    organizationId: 'org_01A', organizationName, roles: ['admin'], plan: 'free', memberLimit: 5, mcpUrl: 'https://thermus.example/mcp',
   }) });
   await initializePortal(options);
   assert.equal(document.querySelector('.workspace-name')?.textContent, `Workspace: ${organizationName}`);
@@ -83,7 +83,7 @@ test('Given a signed-in session, when the product access request fails, then the
 });
 
 test('Given the portal, when it reads the session and the product access, then it sends only same-origin JSON reads with the relative paths of the server', async () => {
-  const { options, requests } = portal({ session: signedIn, 'portal/access': async () => Response.json({ organizationId: 'org_01A', organizationName: 'Acme Labs', roles: ['user'], plan: 'free', mcpUrl: 'https://thermus.example/mcp' }) });
+  const { options, requests } = portal({ session: signedIn, 'portal/access': async () => Response.json({ organizationId: 'org_01A', organizationName: 'Acme Labs', roles: ['user'], plan: 'free', memberLimit: 5, mcpUrl: 'https://thermus.example/mcp' }) });
   await initializePortal(options);
   assert.deepEqual(requests.map(({ path, init }) => [path, init.method ?? 'GET', init.credentials, init.body]), [
     ['session', 'GET', 'same-origin', undefined],
@@ -93,10 +93,29 @@ test('Given the portal, when it reads the session and the product access, then i
 
 for (const mcpUrl of ['javascript:alert(1)', '<img src=x>', undefined]) {
   test(`Given an invalid MCP endpoint ${mcpUrl}, when access loads, then the portal shows a safe error`, async () => {
-    const { document, options } = portal({ session: signedIn, 'portal/access': async () => Response.json({ organizationId: 'org_a', organizationName: 'Acme Labs', roles: ['user'], plan: 'free', mcpUrl }) });
+    const { document, options } = portal({ session: signedIn, 'portal/access': async () => Response.json({ organizationId: 'org_a', organizationName: 'Acme Labs', roles: ['user'], plan: 'free', memberLimit: 5, mcpUrl }) });
     await initializePortal(options);
     assert.match(document.body.textContent ?? '', /Failed to load your session/);
     assert.equal(document.querySelector('a[href^="javascript:"]'), null);
+  });
+}
+
+for (const plan of [{ plan: 'free', memberLimit: 5 }, { plan: 'team' }]) {
+  test(`Given product access on the ${plan.plan} plan, when access loads, then the portal accepts the plan and shows the connection guide`, async () => {
+    const { document, options } = portal({ session: signedIn, 'portal/access': async () => Response.json({ organizationId: 'org_a', organizationName: 'Acme Labs', roles: ['user'], ...plan, mcpUrl: 'https://thermus.example/mcp' }) });
+    await initializePortal(options);
+    assert.ok(document.querySelector('.connection-guide'));
+    assert.doesNotMatch(document.body.textContent ?? '', /Failed to load your session/);
+    assert.equal(/Free access\. No card is required/.test(document.body.textContent ?? ''), plan.plan === 'free');
+  });
+}
+
+for (const answer of [{ plan: 'free' }, { plan: 'free', memberLimit: 0 }, { plan: 'free', memberLimit: 2.5 }, { plan: 'free', memberLimit: '5' }, { plan: 'paid' }, {}]) {
+  test(`Given a plan answer ${JSON.stringify(answer)}, when access loads, then the portal reads the member limit of a free plan as a whole number of 1 or more and refuses another plan with the safe error`, async () => {
+    const { document, options } = portal({ session: signedIn, 'portal/access': async () => Response.json({ organizationId: 'org_a', organizationName: 'Acme Labs', roles: ['user'], ...answer, mcpUrl: 'https://thermus.example/mcp' }) });
+    await initializePortal(options);
+    assert.match(document.body.textContent ?? '', /Failed to load your session/);
+    assert.equal(document.querySelector('.connection-guide'), null);
   });
 }
 
@@ -130,7 +149,7 @@ test('Given a session failure, when the error appears, then the brand header and
 for (const roles of [['admin'], ['user', 'admin'], ['user'], ['Admin'], ['superadmin'], []]) {
   test(`Given current roles ${roles}, when navigation renders under a public base path, then only the exact admin role shows Members and Audit Log`, async () => {
     const { document, options } = portal({ session: signedIn, 'portal/access': async () => Response.json({
-      organizationId: 'org_01A', organizationName: 'Acme Labs', roles, plan: 'free', mcpUrl: 'https://thermus.example/team/mcp',
+      organizationId: 'org_01A', organizationName: 'Acme Labs', roles, plan: 'free', memberLimit: 5, mcpUrl: 'https://thermus.example/team/mcp',
     }) });
     Object.defineProperty(document, 'baseURI', { value: 'https://thermus.example/team/' });
     await initializePortal(options);

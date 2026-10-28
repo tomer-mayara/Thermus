@@ -13,6 +13,7 @@ import {
   type InvitationSendRequest,
 } from '../../../src/accounts/organizations/organization-administration.ts';
 import { BillingRecorder } from '../../support/doubles/billing/billing-recorder.ts';
+import { TeamBillingStub } from '../../support/doubles/billing/team-billing-stub.ts';
 import { fakeClientId, type FakeAnswer } from '../../support/doubles/workos/workos-fake-api.ts';
 import { WorkOSFake, type FakeInvitation, type FakeMembership, type FakeUser } from '../../support/doubles/workos/workos-fake.ts';
 
@@ -46,7 +47,8 @@ const gus = person('gus');
 const pia = person('pia');
 
 // Acme has six active product members: Sam, Dan, Cal, Ada, Bea, and Hal.
-// Eve is inactive; Gus has the default role. Globex has Bea and Pia as Users.
+// Eve is inactive; Gus has the default role. Globex has Bea and Pia as Users. Six members are above the 5 seats of a free
+// organization, so these cases use the team plan, which has no member limit.
 const memberships: readonly FakeMembership[] = [
   { userId: sam.id, organizationId: acme, roles: ['admin'] },
   { userId: dan.id, organizationId: acme, roles: ['admin'] },
@@ -82,7 +84,7 @@ async function openSite(t: TestContext) {
   const organizations = new WorkOSOrganizations({ authority, memberships: workosMembershipReads(workos), userManagement: workos.userManagement, authorization: workos.authorization });
   const provider = new WorkOSAuthProvider({ authority, authkitIssuer: settings.authkitIssuer, mcpResourceUrl: world.mcpResourceUrl, keySet: authkitKeySet, grants: organizations });
   const records: ChangeRecord[] = [];
-  const billing = new BillingRecorder();
+  const billing = new BillingRecorder(new TeamBillingStub());
   const service = new OrganizationAdministration({ directory: organizations, records: { record: (entry) => records.push(entry) }, billing, clock: () => new Date(recordTime) });
   return { world, organizations, provider, service, records, billing };
 }

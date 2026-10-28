@@ -4,7 +4,7 @@ import type { BillingState } from '../../../src/accounts/billing/billing.ts';
 import { accountRequest, ann, assertPage, publicOrigin } from './fixtures/account-routes-fixtures.ts';
 import { serveAdministration, sessionCookies } from './fixtures/administration-routes-fixtures.ts';
 
-const freeState: BillingState = { organizationId: 'org-a', plan: 'free', billedSeats: 0 };
+const freeState: BillingState = { organizationId: 'org-a', plan: 'free', memberLimit: 5, billedSeats: 0 };
 const freePage = [
   '<h1>Billing</h1>',
   '<p>Plan: Free</p>',
@@ -44,6 +44,16 @@ describe('HostedAccountRoutes billing page', () => {
       assert.deepEqual(organizations.administrationCalls, []);
     });
   }
+
+  test('Given allowed access and a team billing state, when the billing page opens, then it shows the team plan and its billed seats without the free-plan statement and without a form', async () => {
+    const { routes } = serveAdministration({ billing: { organizationId: 'org-a', plan: 'team', billedSeats: 3 } });
+
+    const response = await routes.handle(accountRequest('/billing', 'session=ann'));
+    const body = await response.clone().text();
+
+    await assertPage(response, { status: 200, text: /<title>Billing<\/title>/, cookies: sessionCookies });
+    assert.deepEqual(mainOf(body), ['<h1>Billing</h1>', '<p>Plan: Team</p>', '<p>Billed seats: 3</p>']);
+  });
 
   test('Given a service that denies the actor, when the billing page opens, then it gets the 403 access denial with a link to the organization page and the session cookies, and no billing state', async () => {
     const { routes } = serveAdministration({ billing: 'denied' });

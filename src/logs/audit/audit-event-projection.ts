@@ -2,7 +2,7 @@ import type { AdministrationChange, AuditContext, AuditEvent, DestinationChange,
 import { AUDIT_CAPTURE_LIMITS, auditActorName, captureAuditResult, redactAuditText, redactAuditUrl } from './audit-content.ts';
 
 const toolStatuses = new Set(['success', 'access_denied', 'fetch_failed', 'processing_failed', 'cancelled', 'busy', 'search_failed', 'withheld']);
-const changeOutcomes = new Set(['applied', 'unchanged', 'denied', 'stale', 'not-pending', 'address-in-use', 'unsupported', 'failed', 'unknown', 'last-admin', 'busy', 'unavailable']);
+const changeOutcomes = new Set(['applied', 'unchanged', 'denied', 'stale', 'not-pending', 'address-in-use', 'limit-reached', 'unsupported', 'failed', 'unknown', 'last-admin', 'busy', 'unavailable']);
 const destinationOutcomes = new Set(['saved', 'unchanged', 'invalid', 'conflict', 'unavailable', 'unconfirmed', 'tested', 'unsaved', 'cancelled', 'busy', 'denied', 'stale']);
 
 function metadata(value: unknown): value is string {

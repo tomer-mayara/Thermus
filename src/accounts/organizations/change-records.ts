@@ -1,8 +1,9 @@
 import type { AuthenticatedUser } from '../identity/access-context.ts';
 
 // 'unchanged': the same invitation is already pending, so no change was necessary. 'address-in-use': the
-// directory sent no invitation, because the address belongs to a member or has a pending invitation.
-export type ChangeResult = 'applied' | 'unchanged' | 'denied' | 'stale' | 'not-pending' | 'address-in-use' | 'unsupported';
+// directory sent no invitation, because the address belongs to a member or has a pending invitation. 'limit-reached':
+// no invitation was sent, because the seats of the plan are all used.
+export type ChangeResult = 'applied' | 'unchanged' | 'denied' | 'stale' | 'not-pending' | 'address-in-use' | 'limit-reached' | 'unsupported';
 
 // 'failed' means no directory write started. 'unknown' means completion is unconfirmed;
 // removal can also have an uncertain admission or final receipt, without a known provider effect.

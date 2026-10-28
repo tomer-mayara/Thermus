@@ -28,6 +28,13 @@ test('Given an email target and role, when administration changes, then the name
   assert.deepEqual(events, [{ timestamp: context.timestamp, organizationId: 'org-a', actor: { authority: 'workos', subject: 'user-a' }, eventName: 'organization.changed', action: 'invite', target: { email: 'new@example.com' }, role: 'user', outcome: 'denied' }]);
 });
 
+test('Given an invitation refused at the member limit, when administration changes, then the event carries the outcome limit-reached', () => {
+  const events: AuditEvent[] = [];
+  const audit = new AuditLog({ writeAuditEvent: (event) => { events.push(event); } });
+  audit.administrationChanged({ ...context, action: 'invite', target: { email: 'new@example.com' }, role: 'user', outcome: 'limit-reached' });
+  assert.deepEqual(events, [{ timestamp: context.timestamp, organizationId: 'org-a', actor: { authority: 'workos', subject: 'user-a' }, eventName: 'organization.changed', action: 'invite', target: { email: 'new@example.com' }, role: 'user', outcome: 'limit-reached' }]);
+});
+
 test('Given a sink that throws, when an explicit audit event is recorded, then the completed action can continue', () => {
   const audit = new AuditLog({ writeAuditEvent: () => { throw new Error('private sink detail'); } });
   assert.doesNotThrow(() => audit.toolCompleted({ ...context, operationId: 'operation-a', tool: 'search', status: 'success', durationMs: 3, input: { query: 'public query', reason: 'public reason' }, result: 'public result' }));

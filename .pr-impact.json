@@ -6,37 +6,45 @@
     "contract": true,
     "deployment": false,
     "crossCutting": false,
-    "component": false,
+    "component": true,
     "internalInterface": true,
-    "sensitiveBehavior": false,
+    "sensitiveBehavior": true,
     "dependencyRisk": false,
     "policy": false,
     "uncertain": false
   },
   "architecture": {
-    "modelUpdated": false,
-    "summary": "The organization picker defaults to Connect at the normalized public base path after selection, while explicit safe return destinations retain their value. This changes the documented browser navigation default. The web owner adds an optional current-access lookup through the existing AccessResolver for picker menu visibility. Only a context bound to the session user and selected workspace, with product access and an exact nonempty admin grant, shows Members and Audit Log. Denial, mismatch, or lookup failure leaves the picker usable with Connect and Switch Workspace; cancellation propagates. Identity admission, selection POST authorization, CSRF and origin checks, session cookie order, and MCP isolation retain their rules. Public declarations, component owners, import edges, external integrations, containers, and deployment are unchanged. Registry prose records the new runtime use; all 17 diagrams remain accurate.",
+    "modelUpdated": true,
+    "summary": "SO-08 gives BillingState a plan, free with memberLimit 5 or team without a limit, and enforces the 5 seats of a free organization in OrganizationAdministration.sendInvitation(): the active members with product access and the pending invitations, from complete reads, refused at the limit with limit-reached, and one send of an organization at a time in the process. The change record, the audit event, and a 409 notice without a link carry the refusal; Members shows N of 5 seats used; the portal JSON gives plan and memberLimit, and the portal accepts team. Components, dependency edges, public modules, containers, and deployment stay the same. The registry draws the plan read of the portal request and the plan and member-fact reads of the member read.",
     "views": [
-      "Context",
       "C4 containers: hosted edition",
       "Selected C4 components: hosted authentication in the Node server",
+      "Selected C4 components: tenant role in the hosted image",
+      "Selected C4 components: hosted membership removal in the Node server",
       "Collaboration overview",
-      "Scenario: hosted default sign-in landing",
       "Scenario: hosted member read",
-      "Deployment view",
       "Ownership",
-      "Behavior and resource ownership"
+      "Behavior and resource ownership",
+      "Design choices and current soft spots"
     ],
     "evidence": [
-      "src/interfaces/web/account/account-routes.ts",
-      "src/interfaces/web/account/organization-selection-page.ts",
-      "src/interfaces/web/account/organization-selection-style.ts",
-      "test/acceptance/auth/hosted-workspace-selection.test.ts",
-      "test/integration/hosted-admin/account-routes-workspace-navigation.test.ts",
-      "test/integration/auth/workos-provider-organizations.test.ts",
-      "test/acceptance/auth/hosted-member-removal-browser.runtime.ts",
+      "src/accounts/billing/billing.ts",
+      "src/accounts/billing/billing-free.ts",
+      "src/accounts/organizations/member-limit.ts",
+      "src/accounts/organizations/organization-administration.ts",
+      "src/accounts/organizations/administration-overviews.ts",
+      "src/accounts/organizations/change-records.ts",
+      "src/logs/audit/audit-event-projection.ts",
+      "src/interfaces/web/account/portal-access.ts",
+      "src/interfaces/web/account/administration-pages.ts",
+      "src/interfaces/user-portal/product-access.ts",
+      "src/app/hosted-workos-application.ts",
+      "test/acceptance/auth/hosted-free-member-limit.test.ts",
+      "test/acceptance/auth/hosted-workos-member-limit.test.ts",
+      "test/unit/organizations/organization-administration-member-limit.test.ts",
+      "test/acceptance/auth/hosted-live/administration-server.ts",
       "architecture/components.md",
-      "docs/design/authentication-design.md"
+      "docs/api-surface/src/accounts/billing/billing.d.ts"
     ]
   }
 }

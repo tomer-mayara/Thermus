@@ -18,8 +18,8 @@ async function fixture(t: TestContext) {
   const seats: number[] = [];
   const directory = new WorkOSOrganizations({ authority: 'workos:client_test', memberships: workosMembershipReads(workos), userManagement: workos.userManagement, authorization: workos.authorization });
   const policy = new WorkOSGoogleOnboarding({ organizationId, authority: 'workos:client_test', workos, settings, directory,
-    records: { record: (entry) => records.push(entry) }, billing: { stateOf: async () => ({ organizationId, plan: 'free', billedSeats: 0 }), updateSeats: async (_id, count) => {
-      seats.push(count); return { organizationId, plan: 'free', billedSeats: 0 };
+    records: { record: (entry) => records.push(entry) }, billing: { stateOf: async () => ({ organizationId, plan: 'free', memberLimit: 5, billedSeats: 0 }), updateSeats: async (_id, count) => {
+      seats.push(count); return { organizationId, plan: 'free', memberLimit: 5, billedSeats: 0 };
     } },
   });
   const exchange = (who: FakeUser = user) => workos.userManagement.authenticateWithCode({ clientId: settings.clientId, code: world.codeFor(who), session: { sealSession: true, cookiePassword: settings.cookiePassword } });

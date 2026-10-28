@@ -63,6 +63,7 @@ const REFUSAL_NOTICES: Readonly<Record<Exclude<ChangeResult, 'applied' | 'unchan
   stale: 'changeStale',
   'not-pending': 'invitationNotPending',
   'address-in-use': 'invitationAddressInUse',
+  'limit-reached': 'invitationLimitReached',
   unsupported: 'changeUnsupported',
 };
 

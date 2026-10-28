@@ -26,6 +26,18 @@ describe('HostedAccountRoutes combined Members page', () => {
     assert.deepEqual(organizations.administrationCalls.map(({ operation }) => operation), ['memberOverview', 'invitationOverview']);
   });
 
+  test('Given a free workspace with seats in the invitation overview, when Members opens, then the active members card shows N of 5 seats used after the product member count, beside the unchanged pending list; without seats, the page has no seat line', async () => {
+    const free = serveAdministration({ ...current, invitations: { ...acmeInvitations, seats: { used: 3, limit: 5 } } });
+    const team = serveAdministration(current);
+
+    const [freeBody, teamBody] = await Promise.all([free, team].map(async ({ routes }) => (await routes.handle(accountRequest('/members', 'session=ann'))).text()));
+    const card = parseHTML(freeBody).document.querySelector('section[aria-labelledby="active-heading"]');
+
+    assert.deepEqual([...(card?.children ?? [])].filter((child) => child.classList.contains('list-note')).map((note) => note.textContent), ['Active product members: 1', '3 of 5 seats used']);
+    assert.equal(parseHTML(freeBody).document.querySelector('details.pending-invitations summary')?.textContent, 'Pending invitations · 2');
+    assert.doesNotMatch(teamBody, /seats used/);
+  });
+
   for (const count of [0, 2]) {
     test(`Given a complete overview with ${count} pending invitations and a terminal entry, when Members opens, then its native disclosure counts pending entries and starts ${count === 0 ? 'closed' : 'open'}`, async () => {
       const invitations = count === 0 ? acmeInvitations.invitations.filter(entry => entry.state !== 'pending') : acmeInvitations.invitations;

@@ -4,7 +4,8 @@ import { readInvitationOverview, readMemberOverview, type InvitationChange, type
 import { ChangeRecording, type ChangeEntry, type ChangeRecorder, type ChangeResult } from './change-records.ts';
 import { managedRole, managedRoles, managesBilling } from './customer-roles.ts';
 import { invitationsOf } from './directory-reads.ts';
-import type { AssignableRole, InvitationRequest, OrganizationDirectory, OrganizationMembership } from './organization-directory.ts';
+import { limitReached, MemberLimit } from './member-limit.ts';
+import type { AssignableRole, InvitationRequest, OrganizationDirectory, OrganizationInvitation, OrganizationMembership } from './organization-directory.ts';
 import { MembershipRemoval } from './membership-removal.ts';
 import type { MemberRemovalRequest, RemovalOperationStore, RemovalResult } from './removal-operation-store.ts';
 
@@ -53,12 +54,13 @@ const UPDATE_RESULTS: ReadonlySet<ChangeResult> = new Set(['applied', 'not-pendi
 
 // Customer organization work: the onboarding, listing, and selection of the organizations of the signed-in user, and
 // invitations, removal, and product member counts. Each operation checks current actor and target state for its organization.
-// Each invitation change and removal keeps a record. Billing reads require the current billing permission. The external operator
-// sets up organizations and their Admins outside this service.
+// Each invitation change and removal keeps a record. Billing reads require the current billing permission; the member limit of
+// the plan applies to each Admin who invites. The external operator sets up organizations and their Admins outside this service.
 export class OrganizationAdministration {
   private readonly directory: OrganizationDirectory;
   private readonly changes: ChangeRecording;
   private readonly billing: Billing;
+  private readonly limit: MemberLimit;
   private readonly removals: MembershipRemoval;
 
   constructor(options: OrganizationAdministrationOptions) {
@@ -66,6 +68,7 @@ export class OrganizationAdministration {
     const clock = options.clock ?? (() => new Date());
     this.changes = new ChangeRecording(options.records, clock);
     this.billing = options.billing;
+    this.limit = new MemberLimit(options.directory, options.billing);
     this.removals = new MembershipRemoval(options.directory, options.removalStore, clock);
   }
 
@@ -103,9 +106,13 @@ export class OrganizationAdministration {
     return typeof managed === 'string' ? managed : readMemberOverview(this.directory, organizationId, managed.organizationName);
   }
 
+  // The seats come from the same complete invitation read, so that the page shows them beside the pending invitations.
   async invitationOverview(actor: Actor, organizationId: string): Promise<InvitationOverview | AdministrationRefusal> {
     const managed = await this.managedBy(actor, organizationId);
-    return typeof managed === 'string' ? managed : readInvitationOverview(this.directory, organizationId, managed.roles);
+    if (typeof managed === 'string') return managed;
+    const overview = await readInvitationOverview(this.directory, organizationId, managed.roles);
+    const seats = await this.limit.usageOf(organizationId, overview.invitations);
+    return seats === undefined ? overview : Object.freeze({ ...overview, seats });
   }
 
   async billingState(actor: Actor, organizationId: string): Promise<BillingState | AdministrationRefusal> {
@@ -113,18 +120,21 @@ export class OrganizationAdministration {
     return managesBilling(memberships, organizationId) ? this.billing.stateOf(organizationId) : 'denied';
   }
 
-  // An invitation gives the role that it names. Admin includes product access. The directory owns the acceptance.
+  // An invitation gives the role that it names. Admin includes product access. The directory owns the acceptance, so a
+  // pending invitation holds a seat, and the check and the send of each invitation of an organization run alone.
   async sendInvitation(actor: Actor, request: InvitationSendRequest): Promise<ChangeResult> {
     const entry: ChangeEntry = { actor: actor.user, organizationId: request.organizationId, target: { email: request.email }, action: 'invite', role: request.role };
-    return this.changes.run(entry, async () => {
+    return this.limit.serialize(request.organizationId, () => this.changes.run(entry, async () => {
       const managed = await this.managedBy(actor, request.organizationId);
       if (typeof managed === 'string') return managed;
       const role = managedRole(managed.roles, request.role);
       if (role === undefined) return 'denied';
       const invitation = { organizationId: request.organizationId, email: request.email, role };
-      if (await this.isPending(invitation)) return 'unchanged';
+      const pending = await invitationsOf(this.directory, request.organizationId, ['pending']);
+      if (isPendingFor(pending, invitation)) return 'unchanged';
+      if (limitReached(await this.limit.usageOf(request.organizationId, pending))) return 'limit-reached';
       return async () => explicitResult(await this.directory.sendInvitation(invitation), SEND_RESULTS);
-    });
+    }));
   }
 
   async resendInvitation(actor: Actor, request: InvitationChangeRequest): Promise<ChangeResult> {
@@ -151,14 +161,6 @@ export class OrganizationAdministration {
     });
   }
 
-  // A pending invitation to the same address for the same role makes another send unnecessary, also as a retry after
-  // an unknown outcome. Providers compare addresses without letter case.
-  private async isPending(request: InvitationRequest): Promise<boolean> {
-    const pending = await invitationsOf(this.directory, request.organizationId, ['pending']);
-    const address = request.email.toLowerCase();
-    return pending.some((invitation) => invitation.role === request.role && invitation.email.toLowerCase() === address);
-  }
-
   // The current organization name and roles that the actor manages, from one read of its own memberships.
   // The organization comes from the request; a selected organization of a session authorizes nothing.
   private async managedBy(actor: Actor, organizationId: string): Promise<ManagedOrganization | AdministrationRefusal> {
@@ -169,6 +171,13 @@ export class OrganizationAdministration {
     if (typeof organizationName !== 'string' || organizationName.trim() === '') throw new Error('The directory gave no organization name for the authorized membership');
     return { organizationName, roles };
   }
+}
+
+// A pending invitation to the same address for the same role makes another send unnecessary, also as a retry after an
+// unknown outcome. Providers compare addresses without letter case.
+function isPendingFor(pending: readonly OrganizationInvitation[], request: InvitationRequest): boolean {
+  const address = request.email.toLowerCase();
+  return pending.some((invitation) => invitation.role === request.role && invitation.email.toLowerCase() === address);
 }
 
 function isAuthorized(membership: OrganizationMembership): boolean {

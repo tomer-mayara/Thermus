@@ -6,7 +6,7 @@ import type { Page } from 'playwright';
 import { WorkOSOrganizations, workosMembershipReads } from '../../../../src/accounts/providers/workos/workos-organizations.ts';
 import { workosAuthority } from '../../../../src/accounts/providers/workos/workos-settings.ts';
 import type { ChangeRecord } from '../../../../src/accounts/organizations/change-records.ts';
-import { labelsOf, seatsIn } from '../../../support/dsl/hosted-administration.ts';
+import { labelsOf, seatsIn, seatUsageIn } from '../../../support/dsl/hosted-administration.ts';
 import { formLabelled, formsIn, type PageForm } from '../../../support/drivers/browser/hosted-browser.ts';
 import { once, type LiveRun } from '../../../support/hosted-live/live-run.ts';
 import { rolesOf } from '../../../support/hosted-live/operator-runbook.ts';
@@ -35,20 +35,23 @@ interface MembershipState {
 const signInOptions = { timeout: 240_000 };
 const recordPrefix = 'INFO Account change record: ';
 const addressInUse = /This email address already belongs to a member of the organization, or it has a pending invitation\. Nothing changed\./;
+// The refusal of an invitation beyond the 5 seats of a free workspace, in the words of the owner of 27 October 2026.
+const limitReached = /<p>This free workspace has 5 of 5 seats\. Upgrade to Team to add more members\.<\/p>/;
 const invitationActions: ReadonlySet<string> = new Set(['invite', 'resend-invitation', 'revoke-invitation']);
 
 function stateOf(membership: OrganizationMembership): MembershipState {
   return { status: membership.status, roles: rolesOf(membership), updatedAt: membership.updatedAt };
 }
 
-// A page that fails names the last operator reports of the server. A report names the path and the failure, never a
-// credential.
+// A page or a refusal that fails names the last operator reports of the server. A report names the path and the
+// failure, never a credential.
+async function lastOperatorReports(run: LiveRun): Promise<string> {
+  return (await run.site()).log.lines.filter((line) => line.startsWith('ERROR ')).slice(-3).join('\n');
+}
+
 async function shownPage(run: LiveRun, page: Page, path: string): Promise<ShownPage> {
   const answer = await serverGet(page, path);
-  if (answer.status !== 200) {
-    const reports = (await run.site()).log.lines.filter((line) => line.startsWith('ERROR ')).slice(-3);
-    assert.fail(`GET /${path} gave ${answer.status}. The last operator reports:\n${reports.join('\n')}`);
-  }
+  if (answer.status !== 200) assert.fail(`GET /${path} gave ${answer.status}. The last operator reports:\n${await lastOperatorReports(run)}`);
   return { body: answer.body, forms: formsIn(answer.body) };
 }
 
@@ -92,8 +95,8 @@ async function organizationState(run: LiveRun, organizationId: string) {
   };
 }
 
-function assertAdministrationRefusal(answer: ServerAnswer): void {
-  assert.equal(answer.status, 403, answer.body);
+async function assertAdministrationRefusal(run: LiveRun, answer: ServerAnswer): Promise<void> {
+  if (answer.status !== 403) assert.fail(`The refusal gave ${answer.status}. The last operator reports:\n${await lastOperatorReports(run)}`);
   assert.doesNotMatch(answer.body, /<form/);
 }
 
@@ -185,7 +188,7 @@ export function describeAdministrationServerCases(run: LiveRun): void {
   });
 
   describe(`Hosted live gate (AUTH-08W): invitations of organization C at ${localOrigin}/ with WorkOS and AuthKit`, () => {
-    test('Given the administrator of C, when it invites an identity without a membership as User and an identity whose inactive membership had User and Admin as Admin, repeats the User invitation, invites the pending address as Admin and an active member, resends the User invitation, and sends and revokes a third invitation, then the sends, the repeat, the resend, and the revoke get 303, the other two sends get 409 address in use, WorkOS has one invitation to each address and the pending membership of the Admin invitation has only admin, Members shows only pending invitations with current actions, each change has its record, and no page or log line holds an invitation token or link', signInOptions, async (t) => {
+    test('Given the administrator of C, a free workspace with 3 seats, when it invites an identity without a membership as User, repeats that invitation, invites the pending address as Admin and an active member, resends the User invitation, sends a third invitation to reach 5 of 5 seats, invites an identity whose inactive membership had User and Admin as Admin, revokes the third invitation, and sends the Admin invitation again, then the sends, the repeat, the resend, the revoke, and the second Admin send get 303, the address conflicts get 409 address in use, the Admin send at 5 of 5 gets 409 limit-reached without a WorkOS write, Members shows 5 of 5 seats used, WorkOS has one invitation to each address and the pending membership of the Admin invitation has only admin, Members shows only pending invitations with current actions, each change has its record, and no page or log line holds an invitation token or link', signInOptions, async (t) => {
       const { organizationC, users, memberships } = await run.administrationFixtures();
       const actor = users['c-administrator'];
       const [inviteeUser, inviteeAdmin, inviteeRevoked] = [users['c-invitee-user'], users['c-invitee-admin'], users['c-invitee-revoked']];
@@ -193,13 +196,16 @@ export function describeAdministrationServerCases(run: LiveRun): void {
       const first = await shownPage(run, page, 'members');
       const invite = (role: 'User' | 'Admin', email: string) => submit(page, formLabelled(first.forms, 'Send invitation'), { email, role: role.toLowerCase() });
 
-      const sent = [await invite('User', inviteeUser.email), await invite('Admin', inviteeAdmin.email), await invite('User', inviteeUser.email)];
+      const sent = [await invite('User', inviteeUser.email), await invite('User', inviteeUser.email)];
       const refused = [await invite('Admin', inviteeUser.email), await invite('User', actor.email)];
       const pending = await shownPage(run, page, 'members');
       const resent = await submit(page, formLabelled(pending.forms, `Resend the invitation to ${inviteeUser.email}`));
       const third = await invite('User', inviteeRevoked.email);
       assertSeeOther(third, 'members');
+      const full = await shownPage(run, page, 'members');
+      const beyondLimit = await invite('Admin', inviteeAdmin.email);
       const revoked = await submitFrom(page, 'members', `Revoke the invitation to ${inviteeRevoked.email}`);
+      const admin = await invite('Admin', inviteeAdmin.email);
       const after = await shownPage(run, page, 'members');
       const invitations = await invitationsInWorkOS(organizationC.id);
       const idOf = (invitee: LiveUser) => invitations.find(({ email }) => email === invitee.email)?.id ?? 'absent';
@@ -208,29 +214,33 @@ export function describeAdministrationServerCases(run: LiveRun): void {
       const credentials = await credentialsOf(invitations);
       const log = (await run.site()).log.lines;
       const pendingChanges = [inviteeUser, inviteeAdmin].flatMap(({ email }) => [`Resend the invitation to ${email}`, `Revoke the invitation to ${email}`]);
-      t.diagnostic(`sends ${JSON.stringify(sent.map(({ status }) => status))}; refused sends ${JSON.stringify(refused.map(({ status }) => status))}; resend ${resent.status}; third send ${third.status}; revoke ${revoked.status}`);
+      t.diagnostic(`sends ${JSON.stringify(sent.map(({ status }) => status))}; refused sends ${JSON.stringify(refused.map(({ status }) => status))}; resend ${resent.status}; third send ${third.status}; send beyond the limit ${beyondLimit.status}; revoke ${revoked.status}; Admin send ${admin.status}; seats ${seatUsageIn(full.body)}, then ${seatUsageIn(after.body)}`);
       t.diagnostic(`WorkOS invitations: ${JSON.stringify(invitations.map(({ roleSlug, state }) => `${String(roleSlug)} ${state}`))}; membership of the Admin invitee: ${adminInvitee.status} ${JSON.stringify(adminInvitee.roles)}`);
 
-      for (const answer of [...sent, resent, revoked]) assertSeeOther(answer, 'members');
+      for (const answer of [...sent, resent, revoked, admin]) assertSeeOther(answer, 'members');
       for (const answer of refused) assertNotice(answer, 409, addressInUse);
-      assert.ok(pendingInvitationsIn(pending.body).some(entry => entry.email === inviteeUser.email && entry.role === 'User'), 'The invitations page does not show the pending User invitation.');
-      assert.ok(pendingInvitationsIn(pending.body).some(entry => entry.email === inviteeAdmin.email && entry.role === 'Admin'), 'The invitations page does not show the pending Admin invitation.');
-      assert.ok(pendingChanges.every((label) => labelsOf(pending.forms).includes(label)), `A pending invitation has no resend or revoke form: ${JSON.stringify(labelsOf(pending.forms))}`);
+      assertNotice(beyondLimit, 409, limitReached);
+      assert.doesNotMatch(beyondLimit.body, /<a\b/);
+      assert.deepEqual([seatUsageIn(full.body), seatUsageIn(after.body)], ['5 of 5 seats used', '5 of 5 seats used']);
+      assert.ok(pendingInvitationsIn(after.body).some(entry => entry.email === inviteeUser.email && entry.role === 'User'), 'Members does not show the pending User invitation.');
+      assert.ok(pendingInvitationsIn(after.body).some(entry => entry.email === inviteeAdmin.email && entry.role === 'Admin'), 'Members does not show the pending Admin invitation.');
+      assert.ok(pendingChanges.every((label) => labelsOf(after.forms).includes(label)), `A pending invitation has no resend or revoke form: ${JSON.stringify(labelsOf(after.forms))}`);
       assert.deepEqual([inviteeUser, inviteeAdmin, inviteeRevoked].map(({ email }) => invitations.filter((invitation) => invitation.email === email).length), [1, 1, 1]);
       assert.deepEqual([adminInvitee.status, adminInvitee.roles], ['pending', ['admin']]);
       assert.ok(!pendingInvitationsIn(after.body).some(entry => entry.email === inviteeRevoked.email), 'Members still shows the revoked invitation.');
       assert.ok(labelsOf(after.forms).every((label) => !label.endsWith(inviteeRevoked.email)), 'The revoked invitation has a change form.');
       assert.deepEqual(records, [
         `invite user for ${inviteeUser.email}: applied`,
-        `invite admin for ${inviteeAdmin.email}: applied`,
         `invite user for ${inviteeUser.email}: unchanged`,
         `invite admin for ${inviteeUser.email}: address-in-use`,
         `invite user for ${actor.email}: address-in-use`,
         `resend-invitation user for ${idOf(inviteeUser)}: applied`,
         `invite user for ${inviteeRevoked.email}: applied`,
+        `invite admin for ${inviteeAdmin.email}: limit-reached`,
         `revoke-invitation user for ${idOf(inviteeRevoked)}: applied`,
+        `invite admin for ${inviteeAdmin.email}: applied`,
       ]);
-      assert.ok(!holdsAny([first.body, pending.body, after.body, ...log], credentials), 'An invitation token or link reached a page or the operator log.');
+      assert.ok(!holdsAny([first.body, pending.body, full.body, after.body, ...log], credentials), 'An invitation token or link reached a page or the operator log.');
     });
 
     test('Given a User in C and a pending invitation, when the User opens administration and submits valid send, resend, and revoke forms, then each request is refused without a form and WorkOS memberships and invitations stay unchanged', signInOptions, async () => {
@@ -242,11 +252,11 @@ export function describeAdministrationServerCases(run: LiveRun): void {
       const session = await sessionJson(page);
       assert.equal(session.mfaCompleted, false);
       assert.equal((await serverGet(page, 'portal/access')).status, 200);
-      for (const path of ['members', 'invitations', 'billing']) assertAdministrationRefusal(await serverGet(page, path));
+      for (const path of ['members', 'invitations', 'billing']) await assertAdministrationRefusal(run, await serverGet(page, path));
       const fields = { csrf_token: String(session.csrfToken), organization_id: organizationC.id };
-      assertAdministrationRefusal(await serverPost(page, 'invitations/send', { fields: { ...fields, email: users['c-invitee-revoked'].email, role: 'admin' } }));
+      await assertAdministrationRefusal(run, await serverPost(page, 'invitations/send', { fields: { ...fields, email: users['c-invitee-revoked'].email, role: 'admin' } }));
       for (const path of ['invitations/resend', 'invitations/revoke']) {
-        assertAdministrationRefusal(await serverPost(page, path, { fields: { ...fields, invitation_id: pending.id } }));
+        await assertAdministrationRefusal(run, await serverPost(page, path, { fields: { ...fields, invitation_id: pending.id } }));
       }
       assert.deepEqual(await organizationState(run, organizationC.id), before, 'A refused User request changed WorkOS data.');
       assert.deepEqual((await changeRecordsOf(users['c-target'])).map(({ outcome }) => outcome), ['denied', 'denied', 'denied']);
@@ -280,12 +290,12 @@ export function describeAdministrationServerCases(run: LiveRun): void {
       }
       assert.deepEqual([userMembership.status, userMembership.roles], ['active', ['user']]);
       assert.equal(userPortal.status, 200, userPortal.body);
-      assert.deepEqual(JSON.parse(userPortal.body), { organizationId: organizationC.id, organizationName: organizationC.name, roles: ['user'], plan: 'free', mcpUrl: mcpResource });
+      assert.deepEqual(JSON.parse(userPortal.body), { organizationId: organizationC.id, organizationName: organizationC.name, roles: ['user'], plan: 'free', memberLimit: 5, mcpUrl: mcpResource });
       assert.deepEqual([adminMembership.status, adminMembership.roles], ['active', ['admin']]);
       assert.equal(adminPortal.status, 200, adminPortal.body);
-      assert.deepEqual(JSON.parse(adminPortal.body), { organizationId: organizationC.id, organizationName: organizationC.name, roles: ['admin'], plan: 'free', mcpUrl: mcpResource });
+      assert.deepEqual(JSON.parse(adminPortal.body), { organizationId: organizationC.id, organizationName: organizationC.name, roles: ['admin'], plan: 'free', memberLimit: 5, mcpUrl: mcpResource });
       assert.equal(adminMembers.status, 200, 'The Admin invitee cannot open the members page.');
-      for (const path of ['members', 'invitations', 'billing']) assertAdministrationRefusal(await serverGet(userVisit.page, path));
+      for (const path of ['members', 'invitations', 'billing']) await assertAdministrationRefusal(run, await serverGet(userVisit.page, path));
       assert.ok(!membersPage.body.includes(`${inviteeUser.email}: User invitation`), 'Members still shows the accepted User invitation.');
       assert.ok(!membersPage.body.includes(`${inviteeAdmin.email}: Admin invitation`), 'Members still shows the accepted Admin invitation.');
       assert.equal(seatCount(membersPage), seats);
