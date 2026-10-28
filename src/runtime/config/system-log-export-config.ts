@@ -29,8 +29,7 @@ const DATASET_NAME = /^[A-Za-z0-9-]{1,128}$/;
  */
 export function loadSystemLogExportSettings(environment: Environment): SystemLogExportSettings | undefined {
   const [endpoint, token, dataset, instanceId] = NAMES.map((name) => environment[name] || '');
-  // All three are empty.
-  if (`${endpoint}${token}${dataset}` === '') return undefined;
+  if ([endpoint, token, dataset].every((value) => value === '')) return undefined;
   return Object.freeze({
     endpoint: endpointOf(endpoint),
     token: tokenOf(token),
@@ -57,7 +56,6 @@ function datasetOf(value: string): string {
   return value;
 }
 
-// An empty value gives no field.
 function optional<Name extends 'dataset' | 'instanceId'>(name: Name, value: string): Partial<Record<Name, string>> {
   return value === '' ? {} : { [name]: value } as Partial<Record<Name, string>>;
 }
