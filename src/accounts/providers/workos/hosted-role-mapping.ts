@@ -20,6 +20,11 @@ const MAPPED_ROLE_PERMISSIONS: ReadonlyMap<string, readonly string[]> = new Map(
   ['admin', ['product:access', 'user-grants:manage', 'admin-grants:manage', 'billing:manage']],
 ]);
 
+/** True for a role of the hosted mapping, user or admin: the only roles that give an application permission. */
+export function isMappedRole(slug: string): boolean {
+  return MAPPED_ROLE_PERMISSIONS.has(slug);
+}
+
 // One grant for each role of a membership, with the application permissions of that role in its organization. Each
 // role of the organization must follow the mapping, also a role that this membership does not have.
 export function grantsOfRoles(membershipRoles: readonly { readonly slug: string }[], organizationRoles: readonly RoleRecord[], organizationId: string): readonly RoleGrant[] {

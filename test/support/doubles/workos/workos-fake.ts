@@ -6,6 +6,7 @@ import { SigningKey } from './jwt-signing-key.ts';
 import { cookiePassword, fakeApiKey, fakeClientId, WorkOSFakeApi, workosClientFor, type FakeAnswer } from './workos-fake-api.ts';
 import { answerDirectoryRoutes, changeMembership, currentStatus, effectiveRoles, grantState, indexOfUser, membershipIdAt, type DirectoryView } from './workos-fake-directory.ts';
 import { WorkOSFakeInvitations, type InvitationView } from './workos-fake-invitations.ts';
+import { answerOrganizationRoutes, type OrganizationView } from './workos-fake-organizations.ts';
 import { WorkOSFakeSessions, type SessionView } from './workos-fake-sessions.ts';
 import { organizationJson as organizationShape } from './workos-fake-wire.ts';
 
@@ -43,7 +44,7 @@ export type MembershipStatus = NonNullable<FakeMembership['status']>;
 // and AuthKit-signed Connect tokens. The membership at index i of memberships has the ID om_i. The fake knows the
 // organizations of start() and of organizationNames. The answers follow what WorkOS staging showed; the design document
 // gives these findings.
-export class WorkOSFake implements DirectoryView, InvitationView, SessionView {
+export class WorkOSFake implements DirectoryView, OrganizationView, InvitationView, SessionView {
   readonly fake: WorkOSFakeApi;
   readonly browserKey: SigningKey;
   readonly authkitKey: SigningKey;
@@ -73,6 +74,15 @@ export class WorkOSFake implements DirectoryView, InvitationView, SessionView {
   laterMembershipPageOutage: FakeAnswer | undefined;
   invitationOutage: FakeAnswer | undefined;
   refreshOutage: FakeAnswer | undefined;
+  // The organization list: the most organizations on one page, and answers, such as a 500, for each page or only the
+  // pages after the first.
+  organizationPageSize = 100;
+  organizationListOutage: FakeAnswer | undefined;
+  laterOrganizationPageOutage: FakeAnswer | undefined;
+  // The organizations that WorkOS no longer has: the list leaves them out, and a read by ID answers 404.
+  readonly removedOrganizationIds = new Set<string>();
+  // The organizations that the list leaves out while a read by ID still finds them: the lag of the lists after a delete.
+  readonly unlistedOrganizationIds = new Set<string>();
   readonly deletedMembershipIds = new Set<string>();
   #memberships: readonly FakeMembership[] = [];
   // The number of changes of the roles or the status of each membership, by index. The update times come from them.
@@ -91,6 +101,7 @@ export class WorkOSFake implements DirectoryView, InvitationView, SessionView {
       redirectUri: new URL('callback', parts.publicBaseUrl).href, cookiePassword,
     });
     answerDirectoryRoutes(this.fake, this, parts.organizations);
+    answerOrganizationRoutes(this.fake, this, parts.organizations);
     this.#sessions = new WorkOSFakeSessions(this);
     this.#invitationRoutes = new WorkOSFakeInvitations(this);
   }
