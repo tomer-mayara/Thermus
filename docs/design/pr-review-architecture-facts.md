@@ -164,10 +164,12 @@ owner accepts the regenerated files one time. This is rare and visible.
 ## The security list (D1)
 
 The list keeps as T1 the files whose behavior is a guarantee even when their
-declarations do not change. It has 18 entries, 16 files and 2 folders, that
-cover 45 source files. On 2026-10-24 it had 13 entries that covered 33 source
-files; on 2026-10-27, SO-03 added the five files that admit a tenant request.
-The earlier list had 28 entries that covered 101 source files.
+declarations do not change. It has 23 entries, 21 files and 2 folders, that
+cover 52 source files. On 2026-10-24 it had 13 entries that covered 33 source
+files; on 2026-10-27, SO-03 added the five files that admit a tenant request,
+and SO-05 the five admission files of the MCP gateway and the audit relay
+route, by the manager's decision. The earlier list had 28 entries that covered
+101 source files.
 
 | Path | Guarantee |
 | --- | --- |
@@ -184,6 +186,11 @@ The earlier list had 28 entries that covered 101 source files.
 | `src/accounts/identity/access-context-claims.ts` | Admission of a tenant request: the claims of the context and the hash of the bearer token |
 | `src/accounts/identity/context-access-resolver.ts` | Access of a tenant request: only the signed grants |
 | `src/app/tenant-requests.ts` | The `403` of a tenant before MCP handling |
+| `src/interfaces/mcp/mcp-gateway.ts` | The forward step of the control plane decides by the row of the organization |
+| `src/interfaces/mcp/mcp-gateway-forward.ts` | The signed access context of each forward |
+| `src/interfaces/mcp/mcp-gateway-headers.ts` | No cookie, client context, or hop-by-hop header reaches a tenant |
+| `src/interfaces/web/internal/audit-relay-route.ts` | The audit relay: only the internal host, and one capture for each operation ID |
+| `src/interfaces/web/internal/audit-relay-check.ts` | The audit relay: the organization and the user of the event |
 | `src/accounts/providers/workos/session-cookies.ts` | Cookie sealing |
 | `src/accounts/providers/workos/workos-signup.ts` | One-time grant authority |
 | `src/runtime/http/client-address.ts` | Trusted proxy address |
