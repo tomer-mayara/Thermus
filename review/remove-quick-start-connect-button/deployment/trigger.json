@@ -1,0 +1,13 @@
+{
+  "commit": {
+    "createdAt": "2026-10-28T22:06:55Z",
+    "id": "cc2ed669d6821525e23c6ff3d6ddcdc6339862bd",
+    "message": "Remove duplicate Connect action from Admin quick start (#290)"
+  },
+  "createdAt": "2026-10-28T22:07:26.836416Z",
+  "id": "dep-dbh747gn74is73blrsp0",
+  "startedAt": "2026-10-28T22:07:26.804412Z",
+  "status": "build_in_progress",
+  "trigger": "api",
+  "updatedAt": "2026-10-28T22:07:26.836416Z"
+}

@@ -1,0 +1,36 @@
+{
+  "candidate": "3e5931a080c88e0331cdd27cc036b37efbd8d80c",
+  "merged": "cc2ed669d6821525e23c6ff3d6ddcdc6339862bd",
+  "service": "srv-db8mnqg473hc739d529g",
+  "deploy": "dep-dbh747gn74is73blrsp0",
+  "status": "live",
+  "liveAt": "2026-10-28T22:11:00.065678Z",
+  "publicSmoke": "passed",
+  "mcp": {
+    "url": "https://example.com",
+    "isError": false,
+    "textBlocks": 1,
+    "nonemptyText": true
+  },
+  "browser": {
+    "connectLoaded": true,
+    "consoleErrors": 0,
+    "quickStart": "Access denied for the current browser session; positive Admin production rendering was unavailable"
+  },
+  "runtimeLogs": {
+    "start": "2026-10-28T22:11:00Z",
+    "end": "2026-10-28T22:12:45.225401817Z",
+    "levels": [
+      "error",
+      "fatal"
+    ],
+    "count": 0,
+    "hasMore": false
+  },
+  "githubImageWorkflow": {
+    "run": 40777427070,
+    "url": "https://github.com/tomer-mayara/Thermus/actions/runs/40777427070",
+    "status": "failure before runner start",
+    "reason": "Recent account payments failed or spending limit needs to be increased; current production remains the Git-backed Render build"
+  }
+}

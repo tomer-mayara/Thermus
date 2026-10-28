@@ -1,0 +1,10 @@
+{
+  "candidate": "3e5931a080c88e0331cdd27cc036b37efbd8d80c",
+  "base": "7e9cc19a2f4d82620e745273660e35a8f1a151f3",
+  "bodyMatches": true,
+  "validationMatches": true,
+  "qualityMatches": true,
+  "commentCount": 2,
+  "stage": "pre-release",
+  "evidenceCommit": "12f6257598b3fc6eeab380b8a8ca1b72c42446db"
+}

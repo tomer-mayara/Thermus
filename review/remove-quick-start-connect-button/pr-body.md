@@ -12,9 +12,11 @@ Architecture facts (checker, candidate `3e5931a0` vs main `7e9cc19a`):
 
 Why (from `.pr-impact.json`): all classification flags are false and `modelUpdated` is false. Removing one redundant page link changes no route, access rule, public callable contract, component responsibility, dependency, or deployment. The registry prose and all 20 Mermaid views still describe the system. No comparison drawing or L4 detail is needed. The generated metric record preserves the merge-base analysis.
 
-Merge status: **eligible**. Blockers and required decisions: none. Required human approval: **none for T0**. The manager reviewed the complete candidate and retained findings; the checker alone does not establish completed release checks.
+Merge status: **merged** as [cc2ed669](https://github.com/tomer-mayara/Thermus/commit/cc2ed669d6821525e23c6ff3d6ddcdc6339862bd). Blockers and required decisions: none. Required human approval: **none for T0**. The manager reviewed the complete candidate and retained findings; the checker alone does not establish completed release checks.
 
 Validation covers the ordinary suite, type checks, portal build, focused browser checks, container and hosted builds, and the live signup/removal flow. Full results, retries, coverage provenance, and quality dispositions are in the maintained comments below.
+
+Production: **live** on that revision; health and functional smoke checks passed. [Deployment evidence](./deployment/README.md).
 
 ---
 Candidate: [3e5931a0](https://github.com/tomer-mayara/Thermus/commit/3e5931a080c88e0331cdd27cc036b37efbd8d80c) · [Validation](https://github.com/tomer-mayara/Thermus/pull/290#issuecomment-6481693931) · [Quality review](https://github.com/tomer-mayara/Thermus/pull/290#issuecomment-6481694261)

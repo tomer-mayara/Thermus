@@ -31,3 +31,5 @@ Production architecture is unchanged; no comparison drawing or diagram render is
 </details>
 
 Precommit reports and [initial PR draft](./publication-initial.json) retain their original identities as history; final evidence above supersedes their pending status. No prior approval is reused or claimed as human approval of this increment.
+
+Release follow-through: PR 290 merged once as `cc2ed669d6821525e23c6ff3d6ddcdc6339862bd`. Its tree matches the reviewed candidate. The exact merge is now live on Render with passing smoke checks; the validation worktree is archived and primary checkout is clean. No new source change, review de-escalation, production access change, or deployment retry occurred. [Deployment evidence](./deployment/README.md).

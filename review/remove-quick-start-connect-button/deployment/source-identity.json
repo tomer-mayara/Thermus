@@ -1,0 +1,11 @@
+{
+  "candidate": "3e5931a080c88e0331cdd27cc036b37efbd8d80c",
+  "merged": "cc2ed669d6821525e23c6ff3d6ddcdc6339862bd",
+  "candidateTree": "a9d110c5c1094c4962d6ea980ffe8655ad5f394b",
+  "mergedTree": "a9d110c5c1094c4962d6ea980ffe8655ad5f394b",
+  "clean": true,
+  "files": {
+    "src/interfaces/web/account/quick-start-page.ts": "33c751acbe410d99cd9dc24f33f9cf6d5fca49b98a907da2d4bca5c764bbafc3",
+    "test/acceptance/auth/hosted-live/signup-server.ts": "2c728d0af6ff3511a745934ea7a0389e69b9a03ef123b757b3d08a249b7d85fa"
+  }
+}
