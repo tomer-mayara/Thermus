@@ -1,0 +1,15 @@
+{
+  "originalBase": "7e9cc19a2f4d82620e745273660e35a8f1a151f3",
+  "originalOverlaySha256": "94c0ad18f61ef6c9c1b0720fada5e7bf2d19691aa8a83c07061a9c6306fd3161",
+  "inventoryPath": "docs/testing/test-list.md",
+  "inventorySha256": "035fd7be1e9b1400015dc25a2d7a84f019a37537bbdfea38ad086b625279d94f",
+  "inventoryMatchesPrimary": true,
+  "primaryHead": "3e5931a080c88e0331cdd27cc036b37efbd8d80c",
+  "generatedMetricRecord": {
+    "path": "docs/metrics/2026-10-28-7e9cc19a.json",
+    "sha256": "f55ab4f1828e40d4a5a2ff72b59dd0dee08e065401851dd2dfe03f96529e8bf5",
+    "gateInput": false
+  },
+  "scope": "Documentation-only correction copied after isolated live gate completed; original four-file gate overlay retained. Executable source/helper/impact/spec hashes still match.",
+  "created": "2026-10-28T21:57:03.990Z"
+}

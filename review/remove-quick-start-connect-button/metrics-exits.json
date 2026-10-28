@@ -1,0 +1,12 @@
+[
+  {
+    "name": "process",
+    "exitCode": 1,
+    "signal": null
+  },
+  {
+    "name": "crap",
+    "exitCode": 0,
+    "signal": null
+  }
+]

@@ -1,0 +1,12 @@
+(node:65696) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ Given an organization Admin with JavaScript on, when Quick start is used by keyboard at narrow and wide widths, then expanded instructions fit and copy has a truthful outcome (1887.862958ms)
+✔ Given an organization Admin with JavaScript off, when Quick start is used by keyboard at narrow and wide widths, then expanded instructions fit and copy has a truthful outcome (1015.452333ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3582.744667

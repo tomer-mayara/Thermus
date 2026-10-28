@@ -1,0 +1,15 @@
+{
+  "base": "7e9cc19a2f4d82620e745273660e35a8f1a151f3",
+  "primaryBranch": "codex/remove-quick-start-connect-button",
+  "overlaySha256": "94c0ad18f61ef6c9c1b0720fada5e7bf2d19691aa8a83c07061a9c6306fd3161",
+  "fileHashes": {
+    ".pr-impact.json": "ae27a03ac32c8e3e185382cfd8a0bbcb79a1924958da307f1af2f09da7ed603b",
+    "docs/design/admin-quick-start/spec.md": "ffd5d644d7b732e6e63999d47c2f690b0746cbf2799e4170c2690eba93dd1c40",
+    "src/interfaces/web/account/quick-start-page.ts": "33c751acbe410d99cd9dc24f33f9cf6d5fca49b98a907da2d4bca5c764bbafc3",
+    "test/acceptance/auth/hosted-live/signup-server.ts": "2c728d0af6ff3511a745934ea7a0389e69b9a03ef123b757b3d08a249b7d85fa"
+  },
+  "sourceFrozen": true,
+  "created": "2026-10-28T21:39:26.958Z",
+  "checkout": "/Users/tomermayara/.codex/worktrees/quick-start-button-validation/Thermus",
+  "node": "v24.20.0"
+}

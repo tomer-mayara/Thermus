@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "classification": {
+    "container": false,
+    "external": false,
+    "contract": false,
+    "deployment": false,
+    "crossCutting": false,
+    "component": false,
+    "internalInterface": false,
+    "sensitiveBehavior": false,
+    "dependencyRisk": false,
+    "policy": false,
+    "uncertain": false
+  },
+  "architecture": {
+    "modelUpdated": false,
+    "summary": "Remove the redundant Open Connect setup action from the first Quick start section. The existing Connect navigation and copied Markdown destination remain. Only a private renderer argument is removed; the public page contract, route, authorization, composition, dependencies and deployment do not change. The live signup proof follows the existing Workspace Connect link. All 20 component-registry views and their prose are unchanged.",
+    "views": [
+      "Context",
+      "C4 containers: hosted edition",
+      "Containers and source owners",
+      "Selected C4 components: hosted authentication in the Node server",
+      "Scenario: hosted default sign-in landing",
+      "Scenario: hosted member read",
+      "Ownership",
+      "Behavior and resource ownership"
+    ],
+    "evidence": [
+      "src/interfaces/web/account/quick-start-page.ts",
+      "src/interfaces/web/account/members-page-layout.ts",
+      "src/interfaces/web/account/quick-start-content.ts",
+      "test/acceptance/auth/hosted-live/signup-server.ts",
+      "test/acceptance/auth/hosted-quick-start.test.ts",
+      "test/acceptance/auth/hosted-quick-start-browser.runtime.ts",
+      "test/unit/html/quick-start-page.test.ts",
+      "docs/design/admin-quick-start/spec.md",
+      "architecture/components.md"
+    ]
+  },
+  "base": "7e9cc19a2f4d82620e745273660e35a8f1a151f3",
+  "head": "3e5931a080c88e0331cdd27cc036b37efbd8d80c"
+}

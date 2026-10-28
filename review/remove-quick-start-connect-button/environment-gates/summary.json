@@ -1,0 +1,181 @@
+{
+  "base": "7e9cc19a2f4d82620e745273660e35a8f1a151f3",
+  "primaryHeadAtReport": "3e5931a080c88e0331cdd27cc036b37efbd8d80c",
+  "originalFourFileOverlay": {
+    "base": "7e9cc19a2f4d82620e745273660e35a8f1a151f3",
+    "primaryBranch": "codex/remove-quick-start-connect-button",
+    "overlaySha256": "94c0ad18f61ef6c9c1b0720fada5e7bf2d19691aa8a83c07061a9c6306fd3161",
+    "fileHashes": {
+      ".pr-impact.json": "ae27a03ac32c8e3e185382cfd8a0bbcb79a1924958da307f1af2f09da7ed603b",
+      "docs/design/admin-quick-start/spec.md": "ffd5d644d7b732e6e63999d47c2f690b0746cbf2799e4170c2690eba93dd1c40",
+      "src/interfaces/web/account/quick-start-page.ts": "33c751acbe410d99cd9dc24f33f9cf6d5fca49b98a907da2d4bca5c764bbafc3",
+      "test/acceptance/auth/hosted-live/signup-server.ts": "2c728d0af6ff3511a745934ea7a0389e69b9a03ef123b757b3d08a249b7d85fa"
+    },
+    "sourceFrozen": true,
+    "created": "2026-10-28T21:39:26.958Z",
+    "checkout": "/Users/tomermayara/.codex/worktrees/quick-start-button-validation/Thermus",
+    "node": "v24.20.0"
+  },
+  "documentationSupplement": {
+    "originalBase": "7e9cc19a2f4d82620e745273660e35a8f1a151f3",
+    "originalOverlaySha256": "94c0ad18f61ef6c9c1b0720fada5e7bf2d19691aa8a83c07061a9c6306fd3161",
+    "inventoryPath": "docs/testing/test-list.md",
+    "inventorySha256": "035fd7be1e9b1400015dc25a2d7a84f019a37537bbdfea38ad086b625279d94f",
+    "inventoryMatchesPrimary": true,
+    "primaryHead": "3e5931a080c88e0331cdd27cc036b37efbd8d80c",
+    "generatedMetricRecord": {
+      "path": "docs/metrics/2026-10-28-7e9cc19a.json",
+      "sha256": "f55ab4f1828e40d4a5a2ff72b59dd0dee08e065401851dd2dfe03f96529e8bf5",
+      "gateInput": false
+    },
+    "scope": "Documentation-only correction copied after isolated live gate completed; original four-file gate overlay retained. Executable source/helper/impact/spec hashes still match.",
+    "created": "2026-10-28T21:57:03.990Z"
+  },
+  "frozenFilesStillMatchPrimary": true,
+  "reports": [
+    {
+      "name": "01-self-hosted-container",
+      "command": [
+        "npm",
+        "run",
+        "test:container"
+      ],
+      "started": "2026-10-28T21:39:27.028Z",
+      "completed": "2026-10-28T21:41:49.182Z",
+      "exitCode": 0,
+      "signal": null,
+      "node": "v24.20.0",
+      "summaries": [
+        "ℹ tests 11",
+        "ℹ suites 1",
+        "ℹ pass 11",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ duration_ms 139835.671209"
+      ]
+    },
+    {
+      "name": "02-build-hosted",
+      "command": [
+        "npm",
+        "run",
+        "build:hosted"
+      ],
+      "started": "2026-10-28T21:41:52.633Z",
+      "completed": "2026-10-28T21:44:39.223Z",
+      "exitCode": 0,
+      "signal": null,
+      "node": "v24.20.0",
+      "summaries": [
+        "ℹ tests 3693",
+        "ℹ suites 173",
+        "ℹ pass 3693",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ duration_ms 64195.110667",
+        "ℹ tests 39",
+        "ℹ suites 0",
+        "ℹ pass 39",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ duration_ms 390.953375",
+        "ℹ tests 21",
+        "ℹ suites 0",
+        "ℹ pass 21",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ duration_ms 356.595125",
+        "ℹ tests 1219",
+        "ℹ suites 60",
+        "ℹ pass 1219",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ duration_ms 21925.520834",
+        "ℹ tests 189",
+        "ℹ suites 8",
+        "ℹ pass 189",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ duration_ms 29142.645209",
+        "ℹ tests 13",
+        "ℹ suites 2",
+        "ℹ pass 13",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ duration_ms 43851.92425"
+      ]
+    },
+    {
+      "name": "03-workos-staging-live",
+      "command": [
+        "npm",
+        "run",
+        "test:hosted-live"
+      ],
+      "started": "2026-10-28T21:44:51.599Z",
+      "completed": "2026-10-28T21:56:08.590Z",
+      "exitCode": 0,
+      "signal": null,
+      "node": "v24.20.0",
+      "summaries": [
+        "ℹ tests 29",
+        "ℹ suites 8",
+        "ℹ pass 29",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ duration_ms 672822.117125"
+      ]
+    },
+    {
+      "name": "04-hosted-container",
+      "command": [
+        "npm",
+        "run",
+        "test:container:hosted"
+      ],
+      "started": "2026-10-28T21:51:41.520Z",
+      "completed": "2026-10-28T22:04:05.019Z",
+      "exitCode": 0,
+      "signal": null,
+      "node": "v24.20.0",
+      "summaries": [
+        "ℹ tests 7",
+        "ℹ suites 0",
+        "ℹ pass 7",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ duration_ms 741269.114708"
+      ]
+    }
+  ],
+  "attempts": "One attempt per selected gate; no failures, retries, weakened timeouts or skipped assertions",
+  "executionOrder": "Self-hosted container then hosted offline build then full selected staging live; manager subsequently authorized hosted AMD64 gate in free primary checkout while live continued isolated. No overlapping builds in one checkout; Docker names/ports/labels isolated.",
+  "node": "v24.20.0",
+  "lightpanda": "1.0.0",
+  "stagingLauncher": "/Users/tomermayara/.config/thermus/with-workos-staging.cjs",
+  "isolatedCheckout": "/Users/tomermayara/.codex/worktrees/quick-start-button-validation/Thermus",
+  "primaryCheckout": "/Users/tomermayara/.codex/worktrees/3e6e/Thermus",
+  "created": "2026-10-28T22:05:05.808Z",
+  "primaryCandidate": "3e5931a080c88e0331cdd27cc036b37efbd8d80c",
+  "primaryGitStatus": "clean",
+  "temporaryIsolatedDependencySymlink": "removed",
+  "finalIdentityVerifiedAt": "2026-10-28T22:05:35.951Z"
+}

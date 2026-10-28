@@ -1,0 +1,18 @@
+{
+  "01-self-hosted-container.json": "4b8e10ebcb64851a863abea4e11213aa83ab7601b4972f446d14d7d405061116",
+  "01-self-hosted-container.log": "ff36a66d13406b936245e5ec2f15fe7571e97547c9f44c1d23eb072578729442",
+  "02-build-hosted.json": "721840a80c2d7b1d49e955fca81eb08c05faa1a407f7a8b289c7fbedda66421f",
+  "02-build-hosted.log": "55b219d2e63e8f79a2589fa20cf842e5f7fe78fcf429356042654c9526fd3b66",
+  "03-workos-staging-live.json": "ccb39054bff22dc90a37c4b3feee0af399ce10bdea88f165f4db2d7e20ac9fa3",
+  "03-workos-staging-live.log": "1ff693a1f75636449a8eb413898b1474ba9e8106860aa3fcb26947808b25b60c",
+  "04-hosted-container-build-progress.log": "36610d0fce16b6d6476c5344ee0b00c64e3ae5866d3b06996a0e8eac79bfc418",
+  "04-hosted-container-provenance.json": "d841ddc773564f9b027f1b08cbe8ba28e0619f2c3725d884b78996a324a792cf",
+  "04-hosted-container.json": "684243ce93eaa42cb3b3695e25046d32163cd0c6ffdb07c93719f1356c5dd562",
+  "04-hosted-container.log": "3419144e9dd148d4cf3f4717bf28fd62dfae35bf809bbf9eae8fb2ac77a2d3b5",
+  "candidate-provenance.json": "28617b67a32edc0d6b38c0dfe4afa8afd5473310b94521312bf37a77141875ab",
+  "documentation-supplement.json": "3efb5643e8e6d7b9dd12324a55320e05495b193dc63d09f1a9eb0b7f26531247",
+  "documentation-supplement.patch": "576cccde95473e86c86c0dd1572fbbb3732e47cc532dc1f2b1832db735a5e4ae",
+  "overlay.patch": "94c0ad18f61ef6c9c1b0720fada5e7bf2d19691aa8a83c07061a9c6306fd3161",
+  "summary.json": "c416bb549bd918f15d21446b8ecd9a36d119adf822fdda494db31c623fb9c2f0",
+  "summary.md": "fe2bf3d84b535c5cdd20f8dc5444afc6f752535fb78fcbf7764cd248ff0756aa"
+}

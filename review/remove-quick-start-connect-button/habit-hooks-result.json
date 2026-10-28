@@ -1,0 +1,6 @@
+{
+  "head": "3e5931a080c88e0331cdd27cc036b37efbd8d80c",
+  "command": "habit-hooks --branch origin/main --no-snooze",
+  "exitCode": 0,
+  "signal": null
+}

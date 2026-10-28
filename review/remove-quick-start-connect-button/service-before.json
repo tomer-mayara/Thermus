@@ -1,0 +1,59 @@
+{
+  "autoDeploy": "no",
+  "autoDeployTrigger": "off",
+  "branch": "main",
+  "createdAt": "2026-10-16T00:12:26.508806Z",
+  "dashboardUrl": "https://dashboard.render.com/web/srv-db8mnqg473hc739d529g",
+  "environmentId": "evm-db8mnqavcj2c73cmoib0",
+  "id": "srv-db8mnqg473hc739d529g",
+  "name": "Thermus",
+  "notifyOnFail": "default",
+  "ownerId": "tea-db8i6ceq1p3s73dev9og",
+  "repo": "https://github.com/tomer-mayara/Thermus",
+  "rootDir": "",
+  "serviceDetails": {
+    "buildPlan": "starter",
+    "cache": {
+      "profile": "no-cache"
+    },
+    "env": "docker",
+    "envSpecificDetails": {
+      "dockerCommand": "",
+      "dockerContext": ".",
+      "dockerfilePath": "./Dockerfile.hosted"
+    },
+    "healthCheckPath": "/healthz",
+    "ipAllowList": [
+      {
+        "cidrBlock": "0.0.0.0/0",
+        "description": "everywhere"
+      }
+    ],
+    "maintenanceMode": {
+      "enabled": false,
+      "uri": ""
+    },
+    "numInstances": 1,
+    "openPorts": [
+      {
+        "port": 8080,
+        "protocol": "TCP"
+      }
+    ],
+    "plan": "1c-2g",
+    "previews": {
+      "generation": "off"
+    },
+    "pullRequestPreviewsEnabled": "no",
+    "region": "oregon",
+    "renderSubdomainPolicy": "disabled",
+    "runtime": "docker",
+    "sshAddress": "srv-db8mnqg473hc739d529g@ssh.oregon.render.com",
+    "url": "https://thermus.onrender.com"
+  },
+  "slug": "thermus",
+  "suspended": "not_suspended",
+  "suspenders": [],
+  "type": "web_service",
+  "updatedAt": "2026-10-28T19:14:54.293533Z"
+}

@@ -1,0 +1,13 @@
+diff --git a/docs/testing/test-list.md b/docs/testing/test-list.md
+index 8a218a99..681b8961 100644
+--- a/docs/testing/test-list.md
++++ b/docs/testing/test-list.md
+@@ -961,7 +961,7 @@ The [FS-02 record](../implementation/fs-02.md) keeps its validation results.
+   a real browser, Connect PKCE, and an MCP SDK client. They check new activation,
+   exact acceptance fields, and first Admin access. The new organization opens
+   Quick start; the case checks its trusted Acme Labs header and selected session
+-  organization, then follows Open Connect setup before the existing native MCP
++  organization, then follows Workspace → Connect before the existing native MCP
+   flow. It checks the default agent and Codex guide selection with the configured
+   endpoint, the actual token workspace,
+   browser-B/token-A isolation, revoked A refusal, and continued B access.

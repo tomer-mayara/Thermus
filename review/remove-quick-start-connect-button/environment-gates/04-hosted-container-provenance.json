@@ -1,0 +1,18 @@
+{
+  "gate": "04-hosted-container",
+  "checkout": "/Users/tomermayara/.codex/worktrees/3e6e/Thermus",
+  "base": "7e9cc19a2f4d82620e745273660e35a8f1a151f3",
+  "originalOverlaySha256": "94c0ad18f61ef6c9c1b0720fada5e7bf2d19691aa8a83c07061a9c6306fd3161",
+  "verifiedFrozenFileHashes": {
+    ".pr-impact.json": "ae27a03ac32c8e3e185382cfd8a0bbcb79a1924958da307f1af2f09da7ed603b",
+    "docs/design/admin-quick-start/spec.md": "ffd5d644d7b732e6e63999d47c2f690b0746cbf2799e4170c2690eba93dd1c40",
+    "src/interfaces/web/account/quick-start-page.ts": "33c751acbe410d99cd9dc24f33f9cf6d5fca49b98a907da2d4bca5c764bbafc3",
+    "test/acceptance/auth/hosted-live/signup-server.ts": "2c728d0af6ff3511a745934ea7a0389e69b9a03ef123b757b3d08a249b7d85fa"
+  },
+  "extraDocs": [
+    "docs/testing/test-list.md",
+    "docs/metrics/2026-10-28-7e9cc19a.json"
+  ],
+  "concurrency": "Manager authorized primary hosted-image build while isolated staging live remains active; image random names/ports/label do not conflict with staging HTTPS24443/24480 or PostgreSQL fixture",
+  "created": "2026-10-28T21:51:41.480Z"
+}

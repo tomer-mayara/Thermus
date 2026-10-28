@@ -1,0 +1,9 @@
+{
+  "head": "3e5931a080c88e0331cdd27cc036b37efbd8d80c",
+  "base": "7e9cc19a2f4d82620e745273660e35a8f1a151f3",
+  "pr": "https://github.com/tomer-mayara/Thermus/pull/290",
+  "body": "## Description\n\nRemove the redundant **Open Connect setup** action from the first Admin Quick start step. Connect remains in the workspace navigation and copied Markdown guide. The live signup check now follows the navigation link; the specification and test inventory match it.\n\n## Review\n\n**T0 Auto merge expected** — private UI rendering change; complete-candidate classification is pending.\n\nArchitecture facts: none expected. Existing routes, authorization, public declarations, component relationships, and all 20 registry diagrams are unchanged. `.pr-impact.json` records all flags as false. No diagram or L4 detail is needed.\n\nMerge status: **blocked** until the Linux AMD64 image gate and final committed-candidate review finish. Required decisions: none identified. Human approval: none expected if T0 is confirmed.\n\nCompleted: 5,685 Node and 60 portal tests; typecheck; portal build; self-hosted container; hosted offline build; 29 live staging tests; focused page/browser checks; verified unit + integration coverage. The generated immutable metric record describes the merge base. Final metrics and retained findings will be linked in the two maintained comments.\n\n---\nCandidate: [3e5931a0](https://github.com/tomer-mayara/Thermus/commit/3e5931a080c88e0331cdd27cc036b37efbd8d80c). Supporting comments are being prepared.",
+  "validationComment": 6481693931,
+  "qualityComment": 6481694261,
+  "recordedAt": "2026-10-28T21:57:29Z"
+}

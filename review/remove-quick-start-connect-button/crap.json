@@ -1,0 +1,106 @@
+{
+  "version": 1,
+  "base": "7e9cc19a2f4d82620e745273660e35a8f1a151f3",
+  "head": "3e5931a080c88e0331cdd27cc036b37efbd8d80c",
+  "rows": [
+    {
+      "file": "src/interfaces/web/account/quick-start-page.ts",
+      "function": "(anonymous)",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:renderAuditStep\",\"name\":\"(anonymous)\",\"start\":2684,\"end\":2722,\"body\":\"721097e548c4eb7ce824f14881e66ea1b27f7700a9a83d8c0f85aa6cd2fb3f18\",\"signature\":\"4bc5ec1cf0fcd1601e809a4d06ac36af5ab874c43bfc3775939556b54b653b63\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/quick-start-page.ts",
+      "function": "(anonymous)",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:renderProvider\",\"name\":\"(anonymous)\",\"start\":2294,\"end\":2413,\"body\":\"3f15a154b478b6b695d6e3eb67be1104f803a0c3cf1e1289f3f15e63e6b051f1\",\"signature\":\"1ac4a700956ac265591f58921a68d26d8201ccf86e593237c5178c8185cca004\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/quick-start-page.ts",
+      "function": "action",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"action\",\"start\":4300,\"end\":4478,\"body\":\"a6c6ea070632fa03ccd35eb3e977a7fafb3ef593008eaca991ba8dae889fb8ad\",\"signature\":\"8576cc8478de0f3df4fcb7cd92a29f5288830c7d83b00bb963ab156cda1a7dae\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/quick-start-page.ts",
+      "function": "quickStartPage",
+      "change": "changed",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"quickStartPage\",\"start\":479,\"end\":1195,\"body\":\"631fd81d5e8449a7413e2d0f9eb6824febefa5581fd3ca8e3af9a0fd88a44555\",\"signature\":\"bffd6206fcca1e23f15048d3d935b491d27e65fd708f1436c32c77661524cbd0\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/quick-start-page.ts",
+      "function": "renderAuditStep",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"renderAuditStep\",\"start\":2547,\"end\":3267,\"body\":\"dc4cdbbf0e666da5d69dd7ced5795571385c4482bb97936ddefd3124e049525d\",\"signature\":\"8811796f3390442241bfe49af10d796394d73f6648577dfc31798c80fcb213ef\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/quick-start-page.ts",
+      "function": "renderHeader",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"renderHeader\",\"start\":1197,\"end\":1666,\"body\":\"b647972a451161b973401eb04b3919dc6ee3f683ca6493f55b0fec110640f14d\",\"signature\":\"fc16ce153fe3709a334abbfda16176d7b9cdafbacae7b51ade0ce1a60187a196\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/quick-start-page.ts",
+      "function": "renderInternetStep",
+      "change": "changed",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"renderInternetStep\",\"start\":1668,\"end\":2175,\"body\":\"264489dc0457030ff71630b09b0cce9b405524fd707ea48dc923d1908178d202\",\"signature\":\"fc16ce153fe3709a334abbfda16176d7b9cdafbacae7b51ade0ce1a60187a196\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/quick-start-page.ts",
+      "function": "renderManualGuide",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"renderManualGuide\",\"start\":3616,\"end\":3971,\"body\":\"0af0cbd9e72ed1df8778342ba035784c524eea37e2c194406b975a5c7d643479\",\"signature\":\"10b9561f94778be2037a34a0fbe56dda21ed4a1af49e35eb436b11f003b39f39\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/quick-start-page.ts",
+      "function": "renderProvider",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"renderProvider\",\"start\":2177,\"end\":2545,\"body\":\"1223c3be0b313669f951d735f266aa0eeb7fa59f0a31c94e60b96b17b1483eff\",\"signature\":\"805cc97205d73756a296ba37c3f3f3a2e19db2ee8a475e0f46a2b98f1917c019\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/quick-start-page.ts",
+      "function": "renderUsersStep",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"renderUsersStep\",\"start\":3269,\"end\":3614,\"body\":\"c6af0ec6f52762d8ef6f05ec4c1655a18358cdcc3260a4e2f09d330ce40e704f\",\"signature\":\"db5f2b0a4dd8a0c2e1c177519898e526fc4c6ab6cdf6f57b56b1ef23732dd250\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/quick-start-page.ts",
+      "function": "step",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"step\",\"start\":3973,\"end\":4298,\"body\":\"734a3cd0d094307555881d7c032cad61fa20190fd60fa1b61977a94ac3cde122\",\"signature\":\"6e90377b9eea2711776b05ba63c47ef59ab73da9317b95e9be2477d18ee08bfd\"}"
+    }
+  ]
+}
