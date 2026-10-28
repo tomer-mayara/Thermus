@@ -5,8 +5,9 @@ import { StreamableHTTPClientTransport } from '@modelcontextprotocol/client';
 import { WorkOSFake, type FakeUser } from '../../support/doubles/workos/workos-fake.ts';
 import { connectMcpClient } from '../../support/drivers/mcp/mcp-sdk-client.ts';
 import { completionRecordsIn } from '../../support/drivers/operator-log.ts';
+import { controlPlaneTenantSettingsOf } from '../../support/fixtures/control-plane-tenants.ts';
 import { hostedFetchSettings, workOSSettings } from '../../support/fixtures/hosted-placeholder.ts';
-import { gatewayKeyPairOf, gatewaySigningSettingsOf, tenantOrganizationId, tenantSettingsOf } from '../../support/fixtures/hosted-tenant.ts';
+import { gatewayKeyPairOf, tenantOrganizationId, tenantSettingsOf } from '../../support/fixtures/hosted-tenant.ts';
 import { freeLoopbackPort } from '../../support/isolation/free-port.ts';
 import { oneLiveTenant, workosFakeRoute } from '../../support/processes/module-paths.ts';
 import { withPreload } from '../../support/processes/server-preloads.ts';
@@ -14,7 +15,7 @@ import { ServerProcess, type ServerSettings } from '../../support/processes/serv
 
 // Both roles of the hosted image as two local processes (SO-05): the control plane with MCP_TENANTS_ENABLED on and the
 // tenant of one organization. They reach each other on loopback only; WorkOS is a local fake, and a preload gives the
-// control plane one live registry row without PostgreSQL. The renderer is the stub of the offline tests, so the tool
+// control plane one live registry row and an idle provisioner without PostgreSQL. The renderer is the stub of the offline tests, so the tool
 // call ends as a fetch failure of the tenant, which is enough to show the forward and the relay.
 
 const user: FakeUser = { id: 'user_01PROCESSES', email: 'processes@example.com', firstName: 'Process' };
@@ -39,7 +40,7 @@ test('Given the control plane and the tenant of organization A as two processes,
   const controlPlaneSettings: ServerSettings = {
     ...hostedFetchSettings, ...workOSSettings, ...routeToFake,
     DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: publicBaseUrl, LISTEN_HOST: '127.0.0.1', LISTEN_PORT: String(controlPlanePort),
-    MCP_TENANTS_ENABLED: 'true', ...gatewaySigningSettingsOf(keys, internalUrl),
+    ...controlPlaneTenantSettingsOf(keys, internalUrl),
     DATABASE_URL: 'postgresql://thermus_logging:placeholder-password@127.0.0.1:9/postgres', LOGGING_DESTINATION_ENCRYPTION_KEY: Buffer.alloc(32, 9).toString('base64'),
     THERMUS_TEST_TENANT_ORGANIZATION: tenantOrganizationId, THERMUS_TEST_TENANT_URL: (await tenant.started()).origin,
   };
