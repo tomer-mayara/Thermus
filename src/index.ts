@@ -5,6 +5,8 @@ import { loadDeploymentConfig, loadListenAddress, type ListenAddress } from './r
 import { startHttpServer } from './runtime/http/server.ts';
 import { ConsoleSystemLogSink } from './logs/system/console-system-log-sink.ts';
 import { HiddenLineInput } from './app/hidden-line-input.ts';
+import { startSystemLogExport } from './app/system-log-export.ts';
+import { SystemLogOutput } from './app/system-log-output.ts';
 
 type Environment = Readonly<Record<string, string | undefined>>;
 
@@ -22,18 +24,25 @@ export interface ServeOptions {
 
 const entry = process.argv[1];
 if (entry !== undefined && import.meta.url === pathToFileURL(entry).href) {
-  process.exitCode = await run(process.argv.slice(2), process.env, new SystemLogger(new ConsoleSystemLogSink()));
+  const standardError = new ConsoleSystemLogSink();
+  // An export failure line goes to standard error only, so that a failed export cannot feed the export.
+  process.exitCode = await run(process.argv.slice(2), process.env, new SystemLogOutput(standardError, new SystemLogger(standardError)));
 }
 
-async function run(args: readonly string[], environment: Environment, logger: SystemLogger): Promise<number> {
+async function run(args: readonly string[], environment: Environment, output: SystemLogOutput): Promise<number> {
+  const logger = new SystemLogger(output);
   if (args.length > 0) return runOperatorCommand(args, environment, logger);
   using deadline = environment.DEPLOYMENT === 'hosted' ? hostedShutdownDeadline(logger) : undefined;
   try {
+    await startSystemLogExport(environment, output);
     await serve(environment, logger, process);
     return 0;
   } catch (error) {
     logger.fatal(error);
     return 1;
+  } finally {
+    // After the HTTP server closed and after a FATAL line, so that the last records reach the export.
+    await output.close();
   }
 }
 

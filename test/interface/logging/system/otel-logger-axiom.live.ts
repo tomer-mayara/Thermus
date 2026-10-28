@@ -4,7 +4,9 @@ import { afterEach, beforeEach, describe, test } from 'node:test';
 import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-http';
 import { BatchLogRecordProcessor, LoggerProvider, type LogRecordExporter } from '@opentelemetry/sdk-logs';
 import { axiomExportHeaders, axiomTestSettings } from '../../../support/in-process/axiom-test-export.ts';
-import { SystemLogger } from '../../../../src/logs/system/system-logger.ts';
+import { openSystemLogExport } from '../../../../src/app/system-log-export.ts';
+import { SystemLogOutput } from '../../../../src/app/system-log-output.ts';
+import { SystemLogger, type SystemLogRecord } from '../../../../src/logs/system/system-logger.ts';
 import { OtelSystemLogSink } from '../../../../src/logs/system/otel-system-log-sink.ts';
 
 describe('OtelSystemLogSink live Axiom OTLP interface', () => {
@@ -56,5 +58,26 @@ describe('OtelSystemLogSink live Axiom OTLP interface', () => {
 
     assert.deepEqual(resultCodes, [0], 'The official exporter must report SUCCESS for the Axiom export.');
     t.diagnostic(`OTLP export succeeded for test event: ${message}`);
+  });
+});
+
+// SO-11a: the production composition of the system log export of the control plane, with the Axiom test settings and
+// the test dataset only. The production dataset system-log never gets a test record: axiomTestSettings() refuses each
+// dataset other than system-log-test.
+describe('System log export of the control plane, live Axiom', () => {
+  test('Given the Axiom test settings and the dataset system-log-test, when the production composition writes one marked INFO record and stops, then the stop ends within its bound with no export failure line', { timeout: 20_000 }, async (t) => {
+    const settings = axiomTestSettings();
+    const standardError: SystemLogRecord[] = [];
+    const failureLines: string[] = [];
+    const output = new SystemLogOutput({ writeSystemLog: (record) => { standardError.push(record); } }, { error: (message) => { failureLines.push(String(message)); } });
+    output.startExport(await openSystemLogExport({ endpoint: settings.endpoint, token: settings.apiKey, dataset: settings.dataset }, (failure) => output.reportExportFailure(failure)));
+    const marker = `thermus-system-log-export-live-${randomUUID()}`;
+
+    new SystemLogger(output).info(marker);
+    await output.close();
+
+    assert.equal(standardError.length, 1);
+    assert.deepEqual(failureLines, [], 'The export to Axiom must end within the stop bound without a failure.');
+    t.diagnostic(`The production composition exported the marked record ${marker} to ${settings.dataset}.`);
   });
 });

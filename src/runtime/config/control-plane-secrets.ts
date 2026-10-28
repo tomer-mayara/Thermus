@@ -1,7 +1,8 @@
 type Environment = Readonly<Record<string, string | undefined>>;
 
 // The secrets of the control plane. A tenant renders untrusted pages, so it must hold none of them (decision D-14).
-// Each Stripe setting counts too, also a later one.
+// Each Stripe setting counts too, also a later one. SYSTEM_LOG_OTLP_TOKEN is the ingest token of the system log export
+// of the control plane (SO-11a); a tenant exports nothing.
 const CONTROL_PLANE_SECRETS = [
   'WORKOS_API_KEY',
   'WORKOS_CLIENT_SECRET',
@@ -10,6 +11,7 @@ const CONTROL_PLANE_SECRETS = [
   'DATABASE_URL',
   'LOGGING_DESTINATION_ENCRYPTION_KEY',
   'RENDER_API_KEY',
+  'SYSTEM_LOG_OTLP_TOKEN',
 ];
 const STRIPE_SETTING = /^STRIPE_/;
 

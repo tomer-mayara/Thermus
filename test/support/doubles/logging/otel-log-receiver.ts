@@ -43,6 +43,8 @@ export interface LogReceiverOptions {
   readonly tls?: { readonly key: Buffer; readonly cert: Buffer };
   // false: the receiver reads each request and never answers, as an endpoint that hangs.
   readonly answers?: boolean;
+  // The receiver answers each request only after this promise settles, so that an export stays in flight.
+  readonly answerAfter?: Promise<unknown>;
 }
 
 export interface LogReceiver {
@@ -79,6 +81,7 @@ export async function startLogReceiver(options: LogReceiverOptions = {}): Promis
       receivedAt: performance.now(),
     });
     if (options.answers === false) return;
+    await options.answerAfter;
     response.writeHead(options.status ?? 200, { 'Content-Type': 'application/json' });
     response.end('{}');
   };

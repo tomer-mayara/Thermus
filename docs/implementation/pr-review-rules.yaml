@@ -365,13 +365,13 @@ dependency_graph:
   file_guards: keep # the eslint import rules in .habit-hooks continue to apply
   known_cycles: []
   allowed_external_imports:
-    # Observed per component; logging additions checked on 2026-10-23; pg moved to sql on 2026-10-27. No inherited parent allowances.
+    # Observed per component; logging additions checked on 2026-10-23; pg moved to sql on 2026-10-27; the OpenTelemetry SDK of app added on 2026-10-28. No inherited parent allowances.
     workos: [ "@workos-inc/node", jose ]
     identity: [ jose ] # SO-03: the signed access context, an EdDSA JWT
     web: [ linkedom, micromark, micromark-extension-gfm ]
     better-auth: [ "@better-auth/mcp", better-auth ]
     config: [ "@modelcontextprotocol/server" ]
-    app: [ "@workos-inc/node", jose, linkedom ]
+    app: [ "@opentelemetry/exporter-logs-otlp-http", "@opentelemetry/resources", "@opentelemetry/sdk-logs", "@workos-inc/node", jose, linkedom ] # SO-11a: the SDK composition of the system log export
     html-processing: [ adblock-rs, agent-input-sanitizer, css-select, css-tree, defuddle, htmlparser2, linkedom, parse5, parse5-htmlparser2-tree-adapter ]
     system-logs: [ "@opentelemetry/api-logs" ]
     sql: [ pg ] # the only owner that imports pg
