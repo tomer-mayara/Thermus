@@ -1,6 +1,8 @@
-import { createServer, type IncomingHttpHeaders } from 'node:http';
+import { createServer, type IncomingHttpHeaders, type IncomingMessage, type ServerResponse } from 'node:http';
+import { createServer as createHttpsServer } from 'node:https';
 import { randomUUID } from 'node:crypto';
 import { once } from 'node:events';
+import type { AddressInfo } from 'node:net';
 import type { TestContext } from 'node:test';
 import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-http';
 import { BatchLogRecordProcessor, LoggerProvider } from '@opentelemetry/sdk-logs';
@@ -11,6 +13,8 @@ interface ReceivedLogExport {
   readonly path: string | undefined;
   readonly headers: IncomingHttpHeaders;
   readonly body: string;
+  // performance.now() of the test process when the whole body arrived.
+  readonly receivedAt: number;
 }
 
 interface ExportedLogRecord {
@@ -20,22 +24,51 @@ interface ExportedLogRecord {
   readonly body: { readonly stringValue: string };
 }
 
+interface ExportedAttribute {
+  readonly key: string;
+  readonly value: { readonly stringValue?: string };
+}
+
+interface ExportBody {
+  readonly resourceLogs: readonly {
+    readonly resource?: { readonly attributes?: readonly ExportedAttribute[] };
+    readonly scopeLogs: readonly { readonly logRecords: readonly ExportedLogRecord[] }[];
+  }[];
+}
+
+export interface LogReceiverOptions {
+  // The status of each answer.
+  readonly status?: number;
+  // A TLS key and certificate in PEM: the receiver then serves https.
+  readonly tls?: { readonly key: Buffer; readonly cert: Buffer };
+  // false: the receiver reads each request and never answers, as an endpoint that hangs.
+  readonly answers?: boolean;
+}
+
+export interface LogReceiver {
+  readonly endpoint: string;
+  readonly port: number;
+  readonly requests: ReceivedLogExport[];
+  close(): Promise<void>;
+}
+
+// The OTLP/HTTP JSON body of the SDK exporter: the log records of each resource and scope.
 export function logRecordsOf(request: ReceivedLogExport): ExportedLogRecord[] {
-  const body: {
-    resourceLogs: { scopeLogs: { logRecords: ExportedLogRecord[] }[] }[];
-  } = JSON.parse(request.body);
+  const body: ExportBody = JSON.parse(request.body);
   return body.resourceLogs.flatMap((resource) => {
     return resource.scopeLogs.flatMap((scope) => scope.logRecords);
   });
 }
 
-export async function startLogReceiver(status = 200, body = '{}'): Promise<{
-  readonly endpoint: string;
-  readonly requests: ReceivedLogExport[];
-  close(): Promise<void>;
-}> {
+// The string attributes of each resource of the request, one record for each resource.
+export function resourceAttributesOf(request: ReceivedLogExport): Record<string, string | undefined>[] {
+  const body: ExportBody = JSON.parse(request.body);
+  return body.resourceLogs.map(({ resource }) => Object.fromEntries((resource?.attributes ?? []).map(({ key, value }) => [key, value.stringValue])));
+}
+
+export async function startLogReceiver(options: LogReceiverOptions = {}): Promise<LogReceiver> {
   const requests: ReceivedLogExport[] = [];
-  const server = createServer(async (request, response) => {
+  const listener = async (request: IncomingMessage, response: ServerResponse): Promise<void> => {
     const chunks: Buffer[] = [];
     for await (const chunk of request) chunks.push(Buffer.from(chunk));
     requests.push({
@@ -43,16 +76,19 @@ export async function startLogReceiver(status = 200, body = '{}'): Promise<{
       path: request.url,
       headers: request.headers,
       body: Buffer.concat(chunks).toString('utf8'),
+      receivedAt: performance.now(),
     });
-    response.writeHead(status, { 'Content-Type': 'application/json' });
-    response.end(body);
-  });
+    if (options.answers === false) return;
+    response.writeHead(options.status ?? 200, { 'Content-Type': 'application/json' });
+    response.end('{}');
+  };
+  const server = options.tls === undefined ? createServer(listener) : createHttpsServer(options.tls, listener);
   server.listen(0, '127.0.0.1');
   await once(server, 'listening');
-  const address = server.address();
-  if (address === null || typeof address === 'string') throw new Error('The log receiver needs a TCP port.');
+  const { port } = server.address() as AddressInfo;
   return {
-    endpoint: `http://127.0.0.1:${address.port}/v1/logs`,
+    endpoint: `${options.tls === undefined ? 'http' : 'https'}://127.0.0.1:${port}/v1/logs`,
+    port,
     requests,
     async close() {
       const closed = once(server, 'close');
@@ -61,6 +97,18 @@ export async function startLogReceiver(status = 200, body = '{}'): Promise<{
       await closed;
     },
   };
+}
+
+// An https endpoint on a loopback port where no server listens, so that the system refuses each connection.
+export async function refusedLogEndpoint(): Promise<{ readonly endpoint: string; readonly port: number }> {
+  const server = createServer();
+  server.listen(0, '127.0.0.1');
+  await once(server, 'listening');
+  const { port } = server.address() as AddressInfo;
+  const closed = once(server, 'close');
+  server.close();
+  await closed;
+  return { endpoint: `https://127.0.0.1:${port}/v1/logs`, port };
 }
 
 export async function createOtlpFixture(t: TestContext, headers?: Record<string, string>): Promise<{
