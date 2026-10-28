@@ -27,7 +27,9 @@ public pages and Brave HTML search results to cleaned Markdown for MCP clients,
 and provides account and connection pages. External clients and websites are
 outside its trust boundary. Local Better Auth belongs inside Thermus. With
 `MCP_TENANTS_ENABLED=true`, the hosted control plane also creates the services
-of its tenants through the Render API.
+of its tenants through the Render API, and its sweeps delete the tenant of a
+removed organization. The operator's fleet script deploys, suspends, resumes,
+and deletes them through the same API.
 
 ```mermaid
 %%{init: {"flowchart": {"wrappingWidth": 260}}}%%
@@ -39,7 +41,7 @@ flowchart TB
   context_workos["External system: WorkOS / AuthKit<br/>Hosted identity and organizations"]
   context_public["External systems: public websites<br/>Includes Brave HTML search"]
   context_collector["External system: customer Audit destination<br/>Collector or compatible OTLP service<br/>Includes direct Axiom"]
-  context_render["External system: Render API<br/>Creates and reads the tenant services"]
+  context_render["External system: Render API<br/>Creates, deploys, and deletes the tenant services"]
   context_customer -->|uses tools through client| context_client
   context_customer -->|opens account and connection pages| context_thermus
   context_operator -->|configures installation / manages local accounts| context_thermus
@@ -69,17 +71,24 @@ to the tenant of its organization with a signed access context, and its route
 `/internal/audit` receives the audit relay of the tenant. With the same switch,
 the provisioner of the server creates each tenant server as a Render private
 service through the Render API (SO-06); Render pulls the image from GHCR by
-digest. The switch is off by default, and no production deployment runs a
-tenant yet.
+digest. The tenant sweeps of the server (SO-09) read the WorkOS organizations,
+delete the tenant of a removed organization, and write the daily fleet summary.
+The switch is off by default, and no production deployment runs a tenant yet.
+The fleet script is an operator command line application on the machine of the
+operator (SO-09): it lists, requests, upgrades, suspends, resumes, and deletes
+tenants with the fleet key, on the same registry, and its writes ask for a yes
+first.
 
 ```mermaid
 %%{init: {"flowchart": {"wrappingWidth": 130, "nodeSpacing": 20, "rankSpacing": 35}}}%%
 flowchart TB
   hosted_user["Person: customer<br/>Tools and access"]
   hosted_client["External: MCP client<br/>Tool calls"]
+  hosted_operator["Person: operator<br/>Tenant fleet"]
   subgraph hosted_system["Software system: Thermus · hosted"]
     hosted_portal["Browser app: portal<br/>JavaScript / HTML / CSS<br/>Accounts and setup"]
     hosted_server["Server container<br/>Node.js / TypeScript<br/>Tools and accounts"]
+    hosted_fleet["Operator CLI: fleet script<br/>Node.js / TypeScript<br/>Tenant commands"]
     hosted_tenant["Tenant server container<br/>Same image · tenant role<br/>MCP of one organization"]
     hosted_renderer["Renderer process<br/>Lightpanda<br/>One page per fetch"]
     hosted_settings[("PostgreSQL datastore<br/>Private settings, removal<br/>intent, tenant registry")]
@@ -91,11 +100,15 @@ flowchart TB
   hosted_user -->|browser| hosted_portal
   hosted_client -->|MCP / HTTP bearer| hosted_server
   hosted_portal -->|account HTTP| hosted_server
+  hosted_operator -->|terminal| hosted_fleet
   hosted_server -->|HTTPS / SDK + JWKS| hosted_workos
   hosted_server -->|pg / verified TLS| hosted_settings
   hosted_server -->|OTLP JSON / HTTPS| hosted_collector
   hosted_server -->|execFile / JSON| hosted_renderer
-  hosted_server -->|HTTPS REST / provisioner| hosted_render
+  hosted_server -->|HTTPS REST / provisioner and sweeps| hosted_render
+  hosted_fleet -->|pg / verified TLS| hosted_settings
+  hosted_fleet -->|HTTPS REST / fleet key| hosted_render
+  hosted_fleet -->|HTTPS / SDK| hosted_workos
   hosted_server -->|MCP + signed context / private HTTP| hosted_tenant
   hosted_tenant -->|audit relay + same context / private HTTP| hosted_server
   hosted_tenant -->|HTTPS / JWKS only| hosted_workos
@@ -147,7 +160,8 @@ roots, responsibilities, and public contracts.
 | Container or artifact | Registry owners that contribute |
 | --- | --- |
 | Both Node server editions | `app`, `config`, `http`, `system-logs`, `mcp`, `web`, `identity`, `execution`, `page-fetch`, `search`, `html-processing`, `website-fetcher`, `search-engine` |
-| Hosted server additions | `organizations`, `billing`, `workos`, `audit-logs` (capture, dispatch, settings, removal intent, Test, and the check of relayed events), `sql` (the bounded SQL runtime), `tenants` (the tenant registry, the provisioner, and the writes of the gateway), `render` (the Render adapter of the provisioner); with `MCP_TENANTS_ENABLED` on, `mcp` (the MCP gateway) and `web` (the relay route `/internal/audit`) |
+| Hosted server additions | `organizations`, `billing`, `workos` (also the organization inventory of the sweeps), `audit-logs` (capture, dispatch, settings, removal intent, Test, and the check of relayed events), `sql` (the bounded SQL runtime), `tenants` (the tenant registry, the provisioner, the writes of the gateway, and the sweeps), `render` (the Render adapter of the provisioner and the sweeps); with `MCP_TENANTS_ENABLED` on, `mcp` (the MCP gateway) and `web` (the relay route `/internal/audit`) |
+| Operator fleet script (`script/fleet/`, outside `src`) | No owner of its own. It composes `tenants` (the fleet statements, the request and revive, the removal, the summary), `render`, `workos` (the inventory), `sql`, `config` (the prefix and cap rules), and the system clock of `app` |
 | Hosted tenant server (same image, `THERMUS_ROLE=tenant`) | `app` (tenant composition and routes), `config` (role and tenant settings), `http`, `system-logs`, `mcp`, `identity` (signed access context and its access), `workos` (Connect token check only), `audit-logs` (relay sink only), `web` (the `product:access` name only), and the tool owners `execution`, `page-fetch`, `search`, `html-processing`, `website-fetcher`, `search-engine` |
 | Local server addition | `better-auth` |
 | Local administration CLI | `app`, `cli`, `config`, `http` (client-address helper), `system-logs`, `identity`, `better-auth` |
@@ -532,49 +546,60 @@ Save validates endpoint syntax and literal addresses. Test uses the sender's
 actual-connection address and TLS checks. No provider SDK enters the
 [store contract](../src/logs/audit/destination-settings-store.ts).
 
-### Selected C4 components: hosted tenant registry and provisioning in the Node server
+### Selected C4 components: hosted tenant registry, provisioning, and sweeps in the Node server
 
 Scope: one hosted Node server container, the control plane of the self
 on-boarding plan. App reads the switch `MCP_TENANTS_ENABLED` through config.
-Only with the switch on, it reads `FREE_TENANT_LIMIT` (else the cap is 25) and
-the tenant settings. It opens the one bounded SQL runtime of the `sql` owner
-and composes the `tenants` owner on it next to the settings and removal adapter
-of audit-logs. With the switch on, app also composes the `render` adapter and
-starts the provisioner loop of `tenants`; it stops the loop at close, before the
-SQL runtime closes. The MCP gateway (SO-05) calls the registry through a port
-that app composes. Thick arrows show composition; solid arrows show runtime
-calls; the dashed arrow is the type-only source dependency of the adapter on the
-`TenantPlatform` contract of `tenants`. PostgreSQL is the existing supporting
-Level 2 container, and the Render API an external system. Signup (SO-07) is a
-planned caller of the request and the lookup and is not in this view.
+Only with the switch on, it reads `FREE_TENANT_LIMIT` (else the cap is 25), the
+tenant settings, and the hour of the tenant sweeps. It opens the one bounded SQL
+runtime of the `sql` owner and composes the `tenants` owner on it next to the
+settings and removal adapter of audit-logs. With the switch on, app also
+composes the `render` adapter with its write guard and the WorkOS organization
+inventory of the `workos` owner on the WorkOS client of the hosted connection,
+and starts the provisioner loop and the tenant sweeps of `tenants`; it stops
+both at close, before the SQL runtime closes. The MCP gateway (SO-05) calls the
+registry through a port that app composes. Thick arrows show composition; solid
+arrows show runtime calls, and their labels name only the calls that this
+container makes; the dashed arrows are the type-only source dependencies of the
+two adapters on the `TenantPlatform` and `OrganizationInventory` contracts of
+`tenants`. PostgreSQL is the existing supporting Level 2 container; the Render
+API and WorkOS are external systems. Signup (SO-07) is a planned caller of the
+request and the lookup and is not in this view; the fleet script is an operator
+container of the [hosted containers view](#c4-containers-hosted-edition).
 
 ```mermaid
-%%{init: {"flowchart": {"wrappingWidth": 180, "nodeSpacing": 40, "rankSpacing": 40, "subGraphTitleMargin": {"top": 10, "bottom": 25}}}}%%
+%%{init: {"flowchart": {"wrappingWidth": 150, "nodeSpacing": 40, "rankSpacing": 40, "subGraphTitleMargin": {"top": 10, "bottom": 25}}}}%%
 flowchart TB
   subgraph tenancy_server["Container: Thermus Node server · hosted control plane"]
     tenancy_config["config · TypeScript<br/>MCP_TENANTS_ENABLED; only when on:<br/>FREE_TENANT_LIMIT, tenant settings"]
-    tenancy_app["app · TypeScript<br/>Opens one SQL runtime; composes<br/>Owns the provisioner loop lifetime"]
+    tenancy_app["app · TypeScript<br/>Opens one SQL runtime; composes<br/>Owns the loop and sweep lifetimes"]
     tenancy_mcp["mcp · TypeScript<br/>MCP gateway<br/>Row of the organization"]
-    tenancy_tenants["tenants · TypeScript<br/>Request inside the cap; lookup copy<br/>Provisioner: one row at a time<br/>Resume once; activity once a minute"]
+    tenancy_tenants["tenants · TypeScript<br/>Request inside the cap; lookup copy<br/>Provisioner: one row at a time<br/>Resume once; activity once a minute<br/>Sweeps: daily summary, weekly org sweep"]
     tenancy_render["render · TypeScript<br/>Render adapter of TenantPlatform<br/>Retry bounds; write guard"]
+    tenancy_workos["workos · TypeScript<br/>WorkOS adapter of OrganizationInventory<br/>Every page, or unavailable"]
     tenancy_audit["audit-logs · TypeScript<br/>Settings and removal adapter"]
     tenancy_sql["sql · TypeScript / pg<br/>Bounded runtime and pool<br/>The only owner of pg"]
     tenancy_app -->|reads settings at start| tenancy_config
-    tenancy_app ==>|composes; starts and stops the loop| tenancy_tenants
+    tenancy_app ==>|composes; starts and stops the loop and the sweeps| tenancy_tenants
     tenancy_app ==>|registry port of the gateway| tenancy_mcp
-    tenancy_app ==>|composes with the write guard| tenancy_render
-    tenancy_app ==>|composes| tenancy_audit
-    tenancy_app ==>|runtime / pool lifetime| tenancy_sql
+    tenancy_app ==> tenancy_render
+    tenancy_app ==> tenancy_workos
+    tenancy_app ==> tenancy_audit
+    tenancy_app ==> tenancy_sql
     tenancy_mcp -->|find, request, resume, activity| tenancy_tenants
-    tenancy_tenants -->|find, create, deploys, address| tenancy_render
-    tenancy_render -.->|implements TenantPlatform| tenancy_tenants
-    tenancy_tenants -->|cap, routes, claim, records, gateway writes| tenancy_sql
-    tenancy_audit -->|settings and removal statements| tenancy_sql
+    tenancy_tenants -->|find, create, deploys, address; delete, memory, restarts| tenancy_render
+    tenancy_render -.->|implements| tenancy_tenants
+    tenancy_tenants -->|organization list, read by ID, default-role memberships| tenancy_workos
+    tenancy_workos -.->|implements| tenancy_tenants
+    tenancy_tenants -->|cap, routes, claim, records, gateway writes; fleet read and removal| tenancy_sql
+    tenancy_audit --> tenancy_sql
   end
   tenancy_db[("L2: PostgreSQL · thermus_admin<br/>tenants, subscriptions, billing_events<br/>Role thermus_logging")]
   tenancy_api["External: Render API<br/>Private services of the tenants"]
+  tenancy_workos_api["External: WorkOS<br/>Organizations and memberships"]
   tenancy_sql -->|SQL / verified TLS| tenancy_db
   tenancy_render -->|HTTPS REST / bearer key| tenancy_api
+  tenancy_workos -->|HTTPS / SDK, API key| tenancy_workos_api
   style tenancy_server fill:#fafafa,stroke:#777777,color:#222222
 ```
 
@@ -629,6 +654,45 @@ writes `last_active_at` at most once a minute for each organization, with the
 time of the last write in memory; the write keeps the state and `updated_at`.
 SO-10 connects the resume operation to the Render API; until then, app supplies
 one that fails, and the row stays suspended.
+
+Since SO-09 the contract has five more operations, each with a closed result
+union: `deployImage` (the Render API deploy with `imageUrl`, an image by digest
+only, sent one time), `suspendService` and `resumeService` (sent one time),
+`memoryUse` (one read of the memory and memory-limit series of all named
+services for a window), and `restartCount` (the `server_failed` and
+`server_restarted` events of a window). The writes pass the same guard. The
+[fleet statements](../src/tenancy/tenants/pg-tenant-fleet-store.ts) read every
+row and change a row only from the state that each statement names: deleted
+from the state that the caller read (the route goes, the service ID stays for
+the record), `live` to `suspended`, `suspended` to `deploying`, the digest of a
+`live` row on its service, and the revive of a `deleted` row to `requested`
+under the registry lock and inside the cap, as a new request
+([`reviveTenant`](../src/tenancy/tenants/tenant-requests.ts)). The
+[removal](../src/tenancy/tenants/tenant-removal.ts) deletes the service on the
+platform first and then marks the row; a failed delete changes no row.
+
+The [tenant sweeps](../src/tenancy/tenants/tenant-sweeps.ts) are one runner
+with one tick a day at `TENANT_SWEEP_HOUR_UTC` (default 4) and an open list of
+steps; app composes the [organization sweep](../src/tenancy/tenants/organization-sweep.ts)
+and the [fleet summary](../src/tenancy/tenants/fleet-summary.ts), and SO-10 adds
+the idle suspension. On Mondays the organization sweep compares the rows that
+are not deleted with the complete list of the
+[`OrganizationInventory`](../src/tenancy/tenants/organization-inventory.ts)
+contract, which the [WorkOS adapter](../src/accounts/providers/workos/workos-organization-inventory.ts)
+implements; a failed page deletes nothing. It reads each left-out organization
+by ID and removes the tenant only when that read says absent (a WorkOS `404`),
+and it leaves a `creating` or `deploying` row for the next sweep. Each day the
+summary writes one line, `Tenant fleet summary: <JSON>`, with the count and the
+cost of each state and plan, the default-role memberships, the restarts that
+Render reports, and the memory of the live tenants; the
+[runbooks](../docs/implementation/tenant-fleet-runbooks.md#the-summary-fields)
+give its fields for the Axiom monitors of SO-11. The fleet script of the
+operator ([`script/fleet/`](../script/fleet/)) composes the same adapter, stores,
+removal, revive, and summary from `src`. In the server, only the sweeps use the
+new parts: the delete, `memoryUse`, and `restartCount` of the contract, and the
+fleet read and the deleted mark of the fleet statements. The deploy, the
+suspend, the resume, their marks, the digest record, and the revive have no
+caller in the server; only the fleet script calls them.
 
 ### Selected C4 components: MCP gateway and audit relay in the Node server
 
@@ -1008,7 +1072,7 @@ flowchart TB
   fetching["Page providers<br/>search-engine / website-fetcher"]
   external_web(["Lightpanda → public web"])
   runtime["Runtime owners<br/>app / config / http / sql / system-logs / audit-logs"]
-  tenancy["Tenant registry and provisioner<br/>tenants / render"]
+  tenancy["Tenant registry, provisioner, sweeps<br/>tenants / render"]
   tenant_server["Tenant server<br/>same image · tenant role"]
   settings_data[("Hosted PostgreSQL<br/>Settings, removal intent, tenants")]
   render_service(["Render API"])
@@ -1032,6 +1096,7 @@ flowchart TB
   tenant_server -->|audit relay| interfaces
   runtime -->|settings + intent + tenants / SQL| settings_data
   tenancy -->|tenant services / HTTPS| render_service
+  tenancy -->|organizations of the sweep| hosted
 ```
 
 App constructs the collaborators and selects one authentication edition. The
@@ -1051,11 +1116,12 @@ store, and saved-destination Test; sql owns the one bounded SQL runtime and pool
 of every hosted store. App composes the tenant registry on that runtime. With
 `MCP_TENANTS_ENABLED=true`, app also starts the provisioner loop of tenants,
 which creates the tenant services through the Render adapter of render, and the
-MCP gateway reads the row of the organization, requests a tenant, resumes a
-suspended one, and records activity through a port that app composes on the
-registry; it forwards the request to the tenant server, and the relay route of
-web takes the audit relay of that tenant. Web calls the service for the trusted
-current tenant and actor. Test sends one synthetic event; the
+tenant sweeps, which read the organizations through the WorkOS inventory of
+workos; the MCP gateway reads the row of the organization, requests a tenant,
+resumes a suspended one, and records activity through a port that app composes
+on the registry; it forwards the request to the tenant server, and the relay
+route of web takes the audit relay of that tenant. Web calls the service for the
+trusted current tenant and actor. Test sends one synthetic event; the
 separate tool and administration capture shares hosted activity-driven snapshots.
 Organizations calls the same SQL adapter through its supplied removal store for
 admission and terminal receipts. This runtime call points from organizations to
@@ -1484,6 +1550,55 @@ skips the search and the create. A stop leaves a `creating` or `deploying` row
 for the next start, which searches by name or reads the newest deploy again.
 An unreadable registry or a failed record logs one error and waits 60 s.
 
+### Scenario: weekly organization sweep
+
+Scope: the Monday tick of the tenant sweeps of the hosted control plane with
+`MCP_TENANTS_ENABLED=true`; the tick comes each day at the hour of
+`TENANT_SWEEP_HOUR_UTC`. App starts the sweeps with the provisioner and
+stops them at close, before the SQL runtime closes. The SQL adapter participant
+is the fleet store of tenants on the shared runtime; the inventory is the WorkOS
+adapter of workos, and the platform is the Render adapter of render.
+
+```mermaid
+%%{init: {"sequence": {"wrap": true, "actorMargin": 16, "width": 110}}}%%
+sequenceDiagram
+  participant App as app / control plane
+  participant Sweep as tenants / organization sweep
+  participant Store as tenants / SQL adapter
+  participant Inv as workos / inventory
+  participant Render as render / adapter
+  participant WorkOS as WorkOS API
+  participant API as Render API
+  App->>Sweep: Start the sweeps
+  Note over Sweep,Store: Monday tick: the organization sweep, then the fleet summary
+  Sweep->>Store: Read every row
+  Sweep->>Inv: List every organization
+  Inv->>WorkOS: GET /organizations, page after page
+  break A page fails, or the registry cannot be read
+    Note over Sweep,Inv: One stop line, and nothing is deleted
+  end
+  loop Each row that is not deleted and whose organization is not listed
+    Note over Sweep,Store: A creating or deploying row waits for the next sweep
+    Sweep->>Inv: Read the organization by ID
+    Inv->>WorkOS: GET /organizations/{id}
+    opt Only when WorkOS answers 404
+      Sweep->>Render: Delete the service of the row
+      Render->>API: DELETE /services/{id}, with the write guard
+      Sweep->>Store: Mark the row deleted, from the state that the sweep read
+      Note over Sweep,Store: One Tenant removal record line
+    end
+  end
+  Note over Sweep,Store: One Organization sweep line with the counts
+  App->>Sweep: Stop at close
+```
+
+A list that lags behind a delete cannot remove a tenant, because the read by ID
+decides; an organization that the read still finds keeps its tenant. A failed
+read keeps the tenant until the next sweep. A failed platform delete changes no
+row and gives one `Tenant removal failed:` line; a row that another writer
+moved is left for the next sweep. The fleet summary of the same tick then
+writes its line; on the other days, the tick runs the summary only.
+
 ## Deployment view
 
 C4 deployment view; scope: source-defined local topology and recorded hosted
@@ -1616,6 +1731,14 @@ writes its system log only to standard error, which Render keeps for 7 days on
 the Hobby plan, so a Render log stream or an export of the system log must
 carry the lines first.
 
+The tenant sweeps of SO-09 run inside the Node server process of the control
+plane, only with the switch on, so the recorded target runs none. The fleet
+script runs on the machine of the operator, with the fleet key of the owner's
+Render user and the registry connection that the operator gives it. Neither
+adds a deployment unit; the
+[SO-09 record](../docs/implementation/self-onboarding-s1.md#so-09-fleet-script-and-organization-sweep)
+gives their manual runs on disposable `thermus-spike-*` services.
+
 ## Ownership
 
 The 23 IDs below are stable logical component names. Each root owns its source
@@ -1633,11 +1756,11 @@ surface and the narrower file-context restrictions.
 
 | Stable ID and source root | Responsibility and main parts | Boundary |
 | --- | --- | --- |
-| `app` — [`src/app/`](../src/app/), plus [`src/index.ts`](../src/index.ts) | Select hosted or self-hosted operation and the role of the hosted image; construct providers, routes, tools, logs, and shared services; own startup, shutdown, capacity, portal loading, the tenant composition and its routes, the gateway composition behind `MCP_TENANTS_ENABLED` with its registry port and the relay route, and hidden terminal input. | Entrypoint and application lifecycle; documented [tool composition](../src/app/fetch-tool.ts). Other components do not import app. |
+| `app` — [`src/app/`](../src/app/), plus [`src/index.ts`](../src/index.ts) | Select hosted or self-hosted operation and the role of the hosted image; construct providers, routes, tools, logs, and shared services; own startup, shutdown, capacity, portal loading, the tenant composition and its routes, the gateway composition behind `MCP_TENANTS_ENABLED` with its registry port and the relay route, the lifetimes of the provisioner loop and the tenant sweeps, and hidden terminal input. | Entrypoint and application lifecycle; documented [tool composition](../src/app/fetch-tool.ts). Other components do not import app; the fleet script uses its system clock. |
 | `identity` — [`src/accounts/identity/`](../src/accounts/identity/) | Define authenticated users, grants, immutable request contexts, permission checks, verification, browser sessions and profile controls, and local administration roles. Sign and verify the signed access context of a tenant with `jose`, check the context of an audit relay without a bearer token, and give the access of a verified context. | [Access context](../src/accounts/identity/access-context.ts), verifier, browser-session, browser-session-controls, local-user-administration, and [signed-access-context](../src/accounts/identity/signed-access-context.ts) contracts. The signer, the verifier, and the context resolver are for app. No provider or UI implementation belongs here. |
 | `organizations` — [`src/accounts/organizations/`](../src/accounts/organizations/) | Customer roles, administration rules, member/invitation overviews, directory reads and native invitations, the member limit of a plan at invitation send, durable removal coordination and last-Admin checks, signup activation, seat calculations, and privileged change recording. | Directory, administration, overview, customer-role, change-record, removal-store, and signup-activation modules. Administration exposes removal requests/results and close. Directory-read, member-limit, and removal helpers remain private. |
 | `billing` — [`src/accounts/billing/`](../src/accounts/billing/) | Report plan state, `free` with its member limit or `team`, and accept seat updates. `BillingFree` is the current implementation. | [Billing roles](../src/accounts/billing/billing.ts); app selects the implementation. |
-| `workos` — [`src/accounts/providers/workos/`](../src/accounts/providers/workos/) | Hosted token/access verification, sessions, organization operations, signup/onboarding, settings, cookies, and signup-document validation. `WorkOSTokenVerifier` is the Connect token check alone, for a tenant. | App constructs provider/SDK objects. Web uses neutral supplied session, signup, and account roles; its WorkOS auth area still uses provider cookie and document-validation helpers. |
+| `workos` — [`src/accounts/providers/workos/`](../src/accounts/providers/workos/) | Hosted token/access verification, sessions, organization operations, signup/onboarding, settings, cookies, and signup-document validation. `WorkOSTokenVerifier` is the Connect token check alone, for a tenant. The [organization inventory](../src/accounts/providers/workos/workos-organization-inventory.ts) gives the sweeps every organization, the read by ID, and the default-role memberships, from complete pages or not at all. | App constructs provider/SDK objects. Web uses neutral supplied session, signup, and account roles; its WorkOS auth area still uses provider cookie and document-validation helpers. The inventory imports only the contract types of tenants. |
 | `better-auth` — [`src/accounts/providers/better-auth/`](../src/accounts/providers/better-auth/) | Local authentication, access resolution, user/client administration, installation storage, data-directory lock, and cleanup. | Provider, runtime-opening, and administration-opening modules for app; storage and lock mechanics remain private. |
 | `mcp` — [`src/interfaces/mcp/`](../src/interfaces/mcp/) | Adapt protocol requests to trusted access contexts and supplied tool operations. Own schemas, metadata, protocol errors, request lifetimes, and completion presentation. A request can carry its own scope: the access resolver and the tool server of an admitted tenant request. With a forward step, MCPServer gives each admitted request to the MCP gateway, which forwards it to the tenant of the organization, answers the other states of the registry, and lets 5 searches run at a time across tenants. | Server/tool composition modules, protected-resource endpoint, and client-visible schema modules. SDK adaptation stays inside this owner. |
 | `web` — [`src/interfaces/web/`](../src/interfaces/web/) | Account/admin/organization-selection routes, portal access, sign-in/out, signup, consent, forms, pages, escaping, and browser request protection; the relay route `/internal/audit` of the private network. `account/`, `auth/`, and `internal/` are private areas of this one owner. | Route constructors for app; shared account-form, page-html, and html-escape modules. Provider-specific browser adapters have narrower access than the whole owner. |
@@ -1652,10 +1775,10 @@ surface and the narrower file-context restrictions.
 | `system-logs` — [`src/logs/system/`](../src/logs/system/) | Format internal engineering diagnostics with caller file and line. Customers cannot access this stream. | SystemLog for callers; concrete SystemLogger/LogLevel with a supplied SystemLogSink. ConsoleSystemLogSink and OtelSystemLogSink own output only. |
 | `audit-logs` — [`src/logs/audit/`](../src/logs/audit/) | Own customer audit event projection, activity snapshots, bounded queue and current-revision dispatch, tenant destination validation and credential protection, atomic settings revisions, saved-destination Tests, and one-shot OTLP requests to the configured Collector or compatible service, including direct Axiom. Its SQL adapter also stores removal intent and terminal receipts on the shared `sql` runtime. The relay sink of a tenant sends its events to the control plane with the bounds of the collector, and the control plane checks each relayed tool completion again before its capture. | AuditLog event methods and AuditEventSink; AuditSnapshots and RevisionBoundAuditSink; AuditCollector; destination-settings service with fresh export authorization and Test outcomes; neutral settings store, private codec, and SQL adapter; implementation of the organizations-owned removal store; OtlpAuditSender with tracked physical settlement. MCP and web share hosted snapshots and bounded dispatch; web reads, saves, and tests settings. |
 | `http` — [`src/runtime/http/`](../src/runtime/http/) | Node listener, HTTP-to-Fetch exchange, trusted client address, request cancellation, connection tracking, and listener drain. | Server for app; client-address and request-cancellation modules for other consumers. Exchange mechanics remain private. |
-| `config` — [`src/runtime/config/`](../src/runtime/config/) | Validate deployment/listen settings, `THERMUS_ROLE` and the tenant settings with the refusal of control-plane secrets, optional hosted logging storage settings, the hosted operation capacity, the switch `MCP_TENANTS_ENABLED`, and, with it on, the free-tenant cap, the provisioning settings, and the gateway settings with the check that `GATEWAY_PUBLIC_KEY` holds the public key of `GATEWAY_SIGNING_KEY`, and read trusted ad rules. Provider settings stay with their provider; a tenant has no provider settings. | Deployment-config and ad-rules-file modules; app selects the logging-storage settings reader, the operation-capacity reader, the switch and provisioning-settings reader, the free-tenant-limit reader, and the gateway-settings reader. |
+| `config` — [`src/runtime/config/`](../src/runtime/config/) | Validate deployment/listen settings, `THERMUS_ROLE` and the tenant settings with the refusal of control-plane secrets, optional hosted logging storage settings, the hosted operation capacity, the switch `MCP_TENANTS_ENABLED`, and, with it on, the free-tenant cap, the provisioning settings, the hour of the tenant sweeps, and the gateway settings with the check that `GATEWAY_PUBLIC_KEY` holds the public key of `GATEWAY_SIGNING_KEY`, and read trusted ad rules. Provider settings stay with their provider; a tenant has no provider settings. | Deployment-config and ad-rules-file modules; app selects the logging-storage settings reader, the operation-capacity reader, the switch and provisioning-settings reader, the free-tenant-limit reader, and the gateway-settings reader. |
 | `sql` — [`src/runtime/sql/`](../src/runtime/sql/) | Own the one bounded SQL runtime of the hosted stores: the `pg` pool with verified TLS, admission of active and pending work, acquisition, operation and statement deadlines, late-work accounting, and bounded close. The only owner that imports `pg`. | [Bounded SQL runtime](../src/runtime/sql/bounded-sql-runtime.ts) for the stores; app opens it and owns its lifetime. |
-| `tenants` — [`src/tenancy/tenants/`](../src/tenancy/tenants/) | Own the tenant registry of the control plane: the tenant request inside the free-tenant cap, the in-memory route lookup with its refresh bounds, the provisioner state machine with its bounds, the resume of a suspended tenant and the activity write of the gateway, and the SQL adapters of the `tenants` table. | [Tenant platform](../src/tenancy/tenants/tenant-platform.ts), the contract that render implements; app composes the request, the lookup, the provisioner, the resume, the activity, and the adapters, and gives the gateway a port. Signup uses the request and the lookup in a later ticket. |
-| `render` — [`src/tenancy/providers/render/`](../src/tenancy/providers/render/) | The Render API adapter of the tenant platform: the search by name, the create of an image-backed private service, the newest deploy, the internal address, and the delete, with the retry bounds, the count of the create limit, and the write guard. It holds the Render API key. | No public module; app composes it with the write guard of the registry. It imports only the contract types of tenants. Another platform would be a sibling owner under `src/tenancy/providers/` behind the same contract; the soft spots below name what moves with it. |
+| `tenants` — [`src/tenancy/tenants/`](../src/tenancy/tenants/) | Own the tenant registry of the control plane: the tenant request inside the free-tenant cap and the revive of a deleted row, the in-memory route lookup with its refresh bounds, the provisioner state machine with its bounds, the resume of a suspended tenant and the activity write of the gateway, the fleet statements and the removal of a tenant, the tenant sweeps (the weekly organization sweep and the daily fleet summary with its cost table), and the SQL adapters of the `tenants` table. | [Tenant platform](../src/tenancy/tenants/tenant-platform.ts), the contract that render implements, and [organization inventory](../src/tenancy/tenants/organization-inventory.ts), the contract that workos implements; app composes the request, the lookup, the provisioner, the resume, the activity, the sweeps, and the adapters, and gives the gateway a port; the fleet script composes the fleet parts. Signup uses the request and the lookup in a later ticket. |
+| `render` — [`src/tenancy/providers/render/`](../src/tenancy/providers/render/) | The Render API adapter of the tenant platform: the search by name, the create of an image-backed private service, the newest deploy, the internal address, the delete, the deploy of an image by digest, the suspend, the resume, and the reads of the memory metrics and the restart events, with the retry bounds, the count of the create limit, and the write guard. It holds the Render API key. | No public module; app composes it with the write guard of the registry. It imports only the contract types of tenants. Another platform would be a sibling owner under `src/tenancy/providers/` behind the same contract; the soft spots below name what moves with it. |
 
 ## Behavior and resource ownership
 
@@ -1744,6 +1867,16 @@ Reads and the delete of the adapter have up to 3 attempts after a `429`, a `5xx`
 or no answer; a create is sent one time in each attempt; a deploy is read every
 5 s for at most 15 minutes. The adapter keeps the Render API key in a private
 field, and no log line holds it.
+
+The tenant sweeps have the same lifetime: app starts them with the provisioner
+when the switch is on, with their own instance of the Render adapter and the
+WorkOS client of the control plane, and the storage close stops both before the
+SQL runtime closes. The runner holds no state between ticks except the time of
+the last tick; each step reads the registry again. The steps of a tick run one
+after the other, and a step that fails reports one line without stopping the
+next one. The fleet script holds one SQL runtime, one adapter, and one WorkOS
+client for one command, and closes the runtime at its end, also after an error
+or a stop signal.
 
 A tenant composes one MCP server, one relay sink, and the hosted tool
 operations with one `OPERATION_CAPACITY` owner. Each admitted request gets its
@@ -1874,29 +2007,53 @@ The following limits affect architectural decisions today:
   ([`src/tenancy/providers/render/`](../src/tenancy/providers/render/)),
   `render` imports only the types of `tenants`, and `tenants` never names
   `render`. A second platform, such as another managed container service, is a
-  new owner under `src/tenancy/providers/<platform>/` that implements the five
-  operations, a settings reader of its credentials in `config`, and one line in
-  the composition; the provisioner, the registry statements, the gateway, and
-  the loop tests stay. Three things outside the adapter still carry the shape of
-  Render and move with it: the registry column `render_service_id` and its
-  `srv-` check and the live-row constraint of the SO-04 migration; the
-  Render-named settings `RENDER_API_KEY`, `RENDER_OWNER_ID`, and
-  `RENDER_REGISTRY_CREDENTIAL_ID`, and the plan values of `TENANT_PLAN_FREE`,
-  which are Render plan names behind the opaque `plan` of the contract; and the
-  internal address, a plain HTTP origin whose column check and design assume a
-  flat private network with name-based DNS. A fourth is wording, not a
-  dependency: six operator-facing reason strings and some comments inside
-  `tenants` say "Render" (for example `Render refused the create`, `The Render
-  service <id> no longer exists`, and `No Render service after 3 attempts`);
-  SO-09, which changes the same loop messages for the fleet commands, makes them
-  platform-neutral ("the platform", "the tenant service"). The unit tests of the
-  loop run on `TenantPlatformFake` (the port), and the acceptance and PostgreSQL
-  cases on `RenderFake` (the protocol), so only the live interface test touches
-  Render (28 October 2026, owner review of PR #283).
+  new owner under `src/tenancy/providers/<platform>/` that implements the ten
+  operations (the five of SO-06 and the deploy, suspend, resume, memory, and
+  restart operations of SO-09), a settings reader of its credentials in
+  `config`, and one line in the composition; the provisioner, the sweeps, the
+  registry statements, the gateway, and the loop tests stay. Three things
+  outside the adapter still carry the shape of Render and move with it: the
+  registry column `render_service_id` and its `srv-` check and the live-row
+  constraint of the SO-04 migration; the Render-named settings `RENDER_API_KEY`,
+  `RENDER_OWNER_ID`, and `RENDER_REGISTRY_CREDENTIAL_ID`, and the plan values of
+  `TENANT_PLAN_FREE`, which are Render plan names behind the opaque `plan` of
+  the contract; and the internal address, a plain HTTP origin whose column check
+  and design assume a flat private network with name-based DNS. Since SO-09 the
+  reasons and comments inside `tenants` say "the platform" and "the tenant
+  service", not Render (owner review of PR #283); the reasons of the adapter
+  keep their Render words. The fleet script names the Render settings and the
+  production service of Thermus AI itself. The unit tests of the loop and the
+  sweeps run on `TenantPlatformFake` (the port), and the acceptance and
+  PostgreSQL cases on `RenderFake` (the protocol), so only the live interface
+  test and the manual fleet steps touch Render.
+- The identity provider of the sweeps is replaceable behind the
+  [`OrganizationInventory`](../src/tenancy/tenants/organization-inventory.ts)
+  contract of `tenants` in the same way: `workos` implements it with type
+  imports only, and `tenants` never names `workos`. The default-role rule of the
+  adapter is the hosted role mapping: a membership without `user` or `admin`
+  gives no product access.
 - The free-tenant cap counts registry rows by state, not by tier, and a tenant
   request keeps an existing row in every state, also `failed` and `deleted`.
-  Slice 3 must decide whether a team tenant holds a free place, and the repair
-  of SO-09 ("delete, then request") needs its own registry operation.
+  Slice 3 must decide whether a team tenant holds a free place. The repair of
+  SO-09 ("delete, then request") uses its own registry operation, the revive of
+  a `deleted` row inside the cap, from the fleet command `request` only.
+- The tenant sweeps tick once a day in one process. A tick that falls while the
+  control plane is down, for example during a deploy, waits until the next day,
+  so the weekly sweep can wait two weeks; the runner keeps no record of a missed
+  tick. A second control plane would run a second sweep. The summary counts the
+  restarts that Render reports, which SO-01e showed to be incomplete, and its
+  memory points are 10 minutes apart, so a short peak can show lower. The cost
+  counts each plan other than `TENANT_PLAN_FREE` as the team plan of D-12 until
+  Slice 3 names it.
+- A failed API deploy with `imageUrl` still sets the image setting of the
+  service (SO-09 record): after a stopped upgrade, a resume of that tenant would
+  deploy the failed digest until the fleet deploys its recorded digest again.
+  The fleet script waits for a deploy with a new ID after a write; the
+  provisioner watch of a resumed `deploying` row reads only the newest deploy,
+  which right after a resume can still be the deploy from before the suspend.
+- `deleted` rows stay in the registry, because the runtime role has no `DELETE`
+  grant; each fleet read and each sweep reads them too. Their count grows with
+  each removed organization.
 - The tenant registry shares the two active and four pending slots of the one
   SQL runtime with the settings and removal adapter, and it exists only when the
   hosted storage settings are valid. The composition keeps its logging name
