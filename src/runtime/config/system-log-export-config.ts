@@ -4,7 +4,7 @@ type Environment = Readonly<Record<string, string | undefined>>;
 
 /** The export of the system log of the control plane to an OTLP/HTTP logs endpoint (plan section 4.1, SO-11a). */
 export interface SystemLogExportSettings {
-  // The https URL of the logs endpoint, for Axiom https://api.axiom.co/v1/logs.
+  // The https URL of the logs endpoint: for Axiom, https://<edge deployment domain>/v1/logs.
   readonly endpoint: string;
   // The bearer token. It is a secret of the control plane, which the tenant role refuses (D-14).
   readonly token: string;
@@ -16,7 +16,7 @@ export interface SystemLogExportSettings {
 
 // The three settings, and the instance name that Render sets.
 const NAMES = ['SYSTEM_LOG_OTLP_ENDPOINT', 'SYSTEM_LOG_OTLP_TOKEN', 'SYSTEM_LOG_AXIOM_DATASET', 'RENDER_INSTANCE_ID'] as const;
-const ENDPOINT_RULE = 'SYSTEM_LOG_OTLP_ENDPOINT must be the https URL of an OTLP/HTTP logs endpoint, such as https://api.axiom.co/v1/logs, without spaces, a username, a password, a query, or a fragment.';
+const ENDPOINT_RULE = 'SYSTEM_LOG_OTLP_ENDPOINT must be the https URL of an OTLP/HTTP logs endpoint, such as https://us-east-1.aws.edge.axiom.co/v1/logs, without spaces, a username, a password, a query, or a fragment.';
 // https, a host without a username or a password, and a path, with no query, fragment, space, or control character.
 const HTTPS_ENDPOINT = /^https:\/\/[^\s\p{Cc}/?#@]+(?:\/[^\s\p{Cc}?#]*)?$/u;
 const SPACE_OR_CONTROL = /[\s\p{Cc}]/u;

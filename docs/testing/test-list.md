@@ -1,5 +1,44 @@
 # Test inventory
 
+## Current SO-11a inventory scope
+
+SO-11a of the [self on-boarding plan](../implementation/self-onboarding-plan.md#slice-2-free-tier-end-to-end)
+exports the system log of the hosted control plane through
+`OtelSystemLogSink` and the OpenTelemetry SDK, in addition to standard error.
+Inventory presence is not a passing result; the pull request records the runs.
+[OTel system logger tests](otel-logger.md#system-log-export-of-the-control-plane)
+gives the contract and the commands.
+
+- `test/acceptance/logging/system/system-log-export.test.ts` has the eight
+  acceptance cases of the ticket. It runs the built control plane in a child
+  process with an https double of the logs endpoint, and outbound access denied
+  except to the loopback port of the double: the records with the bearer token,
+  the dataset, the severity, the caller file and line, and the resource, and the
+  same lines on standard error; a double that answers `500` and a refused
+  connection, with one failure line that the export does not carry; no settings
+  and no connection; the refused settings; the tenant refusal of
+  `SYSTEM_LOG_OTLP_TOKEN`; the flush of the last records at the stop within 5 s;
+  and a stop with status 0 when the endpoint does not answer.
+- `test/integration/logging/system/system-log-export.test.ts` runs the
+  composition with the real SDK against the loopback double: one request with
+  both records, the headers, and the resource; no dataset header without a
+  dataset; the drop after `500`; the bounded retries after `503`; and the queue
+  that drops the 5 newest of 2,565 records while an export is in flight.
+- `test/unit/app/system-log-output.test.ts` and
+  `test/unit/app/system-log-export.test.ts`: both sinks, a throwing export
+  sink and a throwing standard error, the failure line at most once a minute
+  with the count of the failures without a line, the cause of each kind of
+  failure without its message, the close once, the stop bound of 5 s with mock
+  timers, a failed stop, the resource attributes, and the headers.
+- `test/unit/config/system-log-export-config.test.ts`: no settings, all three,
+  no dataset, `RENDER_INSTANCE_ID`, the endpoint without the token, the token
+  without the endpoint, a refused endpoint, token, or dataset, and the longest
+  dataset name; `test/unit/config/hosted-role.test.ts` adds the tenant refusal
+  of `SYSTEM_LOG_OTLP_TOKEN`.
+- `test/interface/logging/system/otel-logger-axiom.live.ts` adds the production
+  composition with the Axiom test settings and the dataset `system-log-test`
+  only. It runs only through `npm run test:interface:axiom`.
+
 ## Current SO-09 inventory scope
 
 SO-09 of the [self on-boarding plan](../implementation/self-onboarding-plan.md#slice-2-free-tier-end-to-end)
@@ -1822,8 +1861,9 @@ cost, or deployment holds.
 [V] Maps each accepted level to an OpenTelemetry severity and preserves the message body
 [V] Exports OTLP log records through the SDK to a loopback receiver with the Axiom headers
 [V] Sends acceptance and interface log records to Axiom's `system-log-test` dataset on every run and checks the exporter result
-[V] Sends one additional test log to `system-log-test` through the separate live interface command
+[V] Sends two additional test logs to `system-log-test` through the separate live interface command: one through the SDK, and one marked record through the production composition of the system log export (SO-11a)
 [V] Lets a synchronous SDK emit failure escape
+[V] Exports the system log of the hosted control plane with the three `SYSTEM_LOG_*` settings, in addition to standard error, within its bounds (SO-11a)
 
 **Renderer network policy**
 

@@ -37,3 +37,10 @@ try {
 } finally {
   await application.close();
 }
+
+// The system log export (SO-11a) loads the OpenTelemetry SDK only when its settings are set. Open and stop one export
+// here, so that the image proves that its production dependencies hold the SDK. No record is written, so the stop
+// sends nothing.
+const { openSystemLogExport } = await import(pathToFileURL(resolve('dist/src/app/system-log-export.js')));
+const systemLogExport = await openSystemLogExport({ endpoint: 'https://logs.example/v1/logs', token: 'image-probe-token' }, (failure) => { throw failure; });
+await systemLogExport.close();

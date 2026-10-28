@@ -12,7 +12,7 @@ const exportSettings: Environment = {
   SYSTEM_LOG_OTLP_TOKEN: 'xaat-private-token-value',
   SYSTEM_LOG_AXIOM_DATASET: 'system-log',
 };
-const endpointRule = 'SYSTEM_LOG_OTLP_ENDPOINT must be the https URL of an OTLP/HTTP logs endpoint, such as https://api.axiom.co/v1/logs, without spaces, a username, a password, a query, or a fragment.';
+const endpointRule = 'SYSTEM_LOG_OTLP_ENDPOINT must be the https URL of an OTLP/HTTP logs endpoint, such as https://us-east-1.aws.edge.axiom.co/v1/logs, without spaces, a username, a password, a query, or a fragment.';
 const tokenRequired = 'SYSTEM_LOG_OTLP_TOKEN is required when SYSTEM_LOG_OTLP_ENDPOINT or SYSTEM_LOG_AXIOM_DATASET is set.';
 const endpointRequired = 'SYSTEM_LOG_OTLP_ENDPOINT is required when SYSTEM_LOG_OTLP_TOKEN or SYSTEM_LOG_AXIOM_DATASET is set.';
 

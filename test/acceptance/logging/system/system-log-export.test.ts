@@ -14,29 +14,18 @@ import { ServerProcess, type ServerSettings } from '../../../support/processes/s
 // addition to standard error. The server runs with outbound access denied, except to the loopback double of the
 // endpoint, which serves https with a test certificate that the server trusts through NODE_EXTRA_CA_CERTS.
 
-const hostedSettings: ServerSettings = {
-  ...hostedFetchSettings,
-  ...workOSSettings,
-  DEPLOYMENT: 'hosted',
-  PUBLIC_BASE_URL: 'https://thermus.example',
-  LISTEN_HOST: '127.0.0.1',
-  LISTEN_PORT: '0',
-};
+const listen = { LISTEN_HOST: '127.0.0.1', LISTEN_PORT: '0' };
+const hostedSettings: ServerSettings = { ...hostedFetchSettings, ...workOSSettings, ...listen, DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://thermus.example' };
 const token = 'system-log-token-of-the-acceptance-test';
 const dataset = 'thermus-acceptance-test';
 const failureLine = 'System log export failed: ';
-
-interface ExportEndpoint {
-  readonly receiver: LogReceiver;
-  readonly settings: ServerSettings;
-}
 
 // The three settings that name the endpoint, and the two settings that let the server reach it in the test.
 function exportSettings(endpoint: string, port: number): ServerSettings {
   return { SYSTEM_LOG_OTLP_ENDPOINT: endpoint, SYSTEM_LOG_OTLP_TOKEN: token, SYSTEM_LOG_AXIOM_DATASET: dataset, THERMUS_TEST_LOOPBACK_PORT: String(port) };
 }
 
-async function httpsEndpoint(t: TestContext, options: LogReceiverOptions = {}): Promise<ExportEndpoint> {
+async function httpsEndpoint(t: TestContext, options: LogReceiverOptions = {}): Promise<{ receiver: LogReceiver; settings: ServerSettings }> {
   const directory = dataDirectory(t);
   const receiver = await startLogReceiver({ ...options, tls: await selfSignedCertificate(directory) });
   t.after(() => receiver.close());
@@ -51,7 +40,7 @@ function failureLines(server: ServerProcess): ConsoleRecord[] {
   return consoleRecordsIn(server.output).filter(({ message }) => message.includes(failureLine));
 }
 
-// The first scheduled export starts at most 2 s after the first line, and its retries end within 5 s.
+// The first scheduled export starts at most 2 s after the first line, and its retries end within 4 s.
 async function untilFailureLine(t: TestContext, server: ServerProcess): Promise<void> {
   const deadline = performance.now() + 20_000;
   while (failureLines(server).length === 0) {
@@ -164,8 +153,7 @@ describe('System log export of the control plane (SO-11a)', () => {
     const server = ServerProcess.launch(t, {
       ...hostedFetchSettings,
       ...tenantSettingsOf(gatewayKeyPairOf().publicKeyPem, 'http://thermus-control-plane:8080'),
-      LISTEN_HOST: '127.0.0.1',
-      LISTEN_PORT: '0',
+      ...listen,
       SYSTEM_LOG_OTLP_TOKEN: value,
     });
 
