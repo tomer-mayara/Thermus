@@ -8,7 +8,7 @@ import type { McpForwardStep } from '../interfaces/mcp/mcp-server.ts';
 import type { RelayContextCheck } from '../interfaces/web/internal/audit-relay-check.ts';
 import { AuditRelayRoute } from '../interfaces/web/internal/audit-relay-route.ts';
 import { DeploymentConfigError } from '../runtime/config/deployment-config.ts';
-import { loadFreeTenantLimit } from '../runtime/config/free-tenant-limit-config.ts';
+import { DEFAULT_FREE_TENANT_LIMIT, loadFreeTenantLimit } from '../runtime/config/free-tenant-limit-config.ts';
 import { loadGatewaySettings, type GatewaySettings } from '../runtime/config/gateway-settings.ts';
 import { loadMcpTenantsEnabled } from '../runtime/config/mcp-tenants-config.ts';
 import { TenantActivity } from '../tenancy/tenants/tenant-activity.ts';
@@ -31,11 +31,11 @@ interface TenantsSettings {
 }
 
 /**
- * The gateway of one start of the control plane: the cap of the tenant registry, read only with the switch on, and the
- * gateway parts on the hosted storage, or none with the switch off.
+ * The gateway of one start of the control plane: the cap of the tenant registry, read only with the switch on (else the
+ * default of 25), and the gateway parts on the hosted storage, or none with the switch off.
  */
 export interface GatewayStart {
-  readonly freeTenantLimit?: number;
+  readonly freeTenantLimit: number;
   partsOn(storage: Pick<HostedLoggingStorage, 'tenants'> | undefined): GatewayParts | undefined;
 }
 
@@ -56,7 +56,7 @@ export interface GatewayRegistry {
 /** The gateway of a start: the settings first, so an invalid setting stops the start before the server listens. */
 export function gatewayStartOf(environment: Readonly<Record<string, string | undefined>>): GatewayStart {
   const settings = tenantsSettingsOf(environment);
-  if (settings === undefined) return { partsOn: () => undefined };
+  if (settings === undefined) return { freeTenantLimit: DEFAULT_FREE_TENANT_LIMIT, partsOn: () => undefined };
   return { freeTenantLimit: settings.freeTenantLimit, partsOn: (storage) => gatewayPartsOf(settings.gateway, storage) };
 }
 

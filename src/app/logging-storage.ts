@@ -4,7 +4,6 @@ import type { TrackedAuditSender } from '../logs/audit/audit-send.ts';
 import type { DestinationTestSender } from '../logs/audit/destination-test.ts';
 import { OtlpAuditSender } from '../logs/audit/otlp-audit-sender.ts';
 import { DestinationSettingsService } from '../logs/audit/destination-settings-service.ts';
-import { DEFAULT_FREE_TENANT_LIMIT } from '../runtime/config/free-tenant-limit-config.ts';
 import { loadLoggingStorageConfig } from '../runtime/config/logging-storage-config.ts';
 import type { SystemLog } from '../logs/system/system-logger.ts';
 import type { DestinationSettingsStore } from '../logs/audit/destination-settings-store.ts';
@@ -28,8 +27,7 @@ export interface HostedLoggingStorage {
   close(): Promise<void>;
 }
 
-// Without MCP_TENANTS_ENABLED, the cap is the default: FREE_TENANT_LIMIT is not read.
-export async function openLoggingStorage(environment: Readonly<Record<string, string | undefined>>, logger: SystemLog, freeTenantLimit: number = DEFAULT_FREE_TENANT_LIMIT): Promise<HostedLoggingStorage | undefined> {
+export async function openLoggingStorage(environment: Readonly<Record<string, string | undefined>>, logger: SystemLog, freeTenantLimit: number): Promise<HostedLoggingStorage | undefined> {
   const config = await loadLoggingStorageConfig(environment);
   if (config.status === 'unavailable') {
     logger.error(`Logging storage is unavailable: ${config.issues.join(' ')}`);
