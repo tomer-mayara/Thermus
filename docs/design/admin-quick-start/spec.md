@@ -48,7 +48,7 @@ Use the existing workspace header and visual style. The page has:
 - Action: **Copy guide as Markdown**.
 - Three numbered sections with visible summaries and instructions.
 - An expandable provider-controls table in step 1.
-- One clear primary action in each section.
+- Primary actions in the Audit logs and Add users sections.
 
 Keep step summaries, instructions, and primary links visible. Only the provider
 table needs a disclosure; do not add a hidden expansion to each step card.
@@ -69,7 +69,8 @@ The prototype copy uses that name and retains the portal and MCP URL placeholder
 Summary: “Use your agents' organization controls to restrict direct web access.
 Then connect Thermus for approved search and page retrieval.”
 
-Primary action: **Open Connect**, linked to the selected organization's portal root.
+Use **Connect** in the workspace navigation to open the connection guide.
+Step 1 has no separate Connect action. The copied Markdown guide keeps its Connect link.
 The detail includes the provider table below and the guide's verification steps.
 Do not add an Internet-access switch to Thermus.
 

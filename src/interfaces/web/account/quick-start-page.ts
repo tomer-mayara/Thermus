@@ -14,7 +14,7 @@ export function quickStartPage(page: QuickStartPage): Response {
   const { navigation, markdown } = quickStartContent(page);
   const content = [
     renderHeader(), '<div class="quick-start-steps">',
-    renderInternetStep(navigation.product), renderAuditStep(navigation.logging), renderUsersStep(navigation.members),
+    renderInternetStep(), renderAuditStep(navigation.logging), renderUsersStep(navigation.members),
     `</div><p class="quick-start-verify">${escapeHtml(quickStartInstructions.internet.verify)} Check that an audit event arrives at your destination.</p>`,
     renderManualGuide(markdown),
   ].join('\n');
@@ -29,10 +29,10 @@ function renderHeader(): string {
 <p id="quick-start-copy-status" class="quick-start-copy-status" role="status" aria-live="polite" aria-atomic="true"></p>`;
 }
 
-function renderInternetStep(connectUrl: string): string {
+function renderInternetStep(): string {
   const { internet } = quickStartInstructions;
   const providers = quickStartProviders.map(renderProvider).join('');
-  return step(1, internet.title, `<p>${escapeHtml(internet.lead)}</p>${action(connectUrl, 'Open Connect setup')}
+  return step(1, internet.title, `<p>${escapeHtml(internet.lead)}</p>
 <details class="quick-start-details"><summary>Agent controls and instructions</summary><p class="quick-start-note">${escapeHtml(internet.scope)}</p><div class="quick-start-providers">${providers}</div><p class="quick-start-note">${escapeHtml(internet.fallback)}</p></details>`);
 }
 

@@ -82,7 +82,7 @@ export function describeSignupServerCases(previous: LiveRun): void {
       await page.getByRole('heading', { name: 'Quick start', exact: true }).waitFor();
       assert.equal(await page.locator('header .workspace-name').innerText(), 'Acme Labs');
       assert.equal((await sessionJson(page)).organizationId, organization.id);
-      await page.getByRole('link', { name: 'Open Connect setup', exact: true }).click();
+      await page.getByRole('navigation', { name: 'Workspace', exact: true }).getByRole('link', { name: 'Connect', exact: true }).click();
       await page.getByRole('heading', { name: 'Connect your MCP client' }).waitFor();
       await page.getByText('Workspace: Acme Labs', { exact: true }).waitFor();
       await page.getByText('Free access. No card is required and there is no automatic charge.', { exact: true }).waitFor();
