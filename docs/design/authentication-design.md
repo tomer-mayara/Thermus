@@ -1263,15 +1263,19 @@ The switch also needs the private hosted storage: without the tenant registry,
 the start stops with `MCP_TENANTS_ENABLED=true needs the tenant registry:
 DATABASE_URL and LOGGING_DESTINATION_ENCRYPTION_KEY must be valid.`.
 
-After it reads the gateway settings and the provisioning settings, and before
-it opens the storage, the start compares the two key settings: the public key
-of `GATEWAY_SIGNING_KEY` must be one of the keys of `GATEWAY_PUBLIC_KEY`,
-compared in DER form. Else the start stops with `GATEWAY_PUBLIC_KEY must
-include the public key of GATEWAY_SIGNING_KEY.`, because each new tenant would
-refuse each context of the gateway. The list can hold more keys. A rotation of
-the signing key has three steps, in this order: add the new public key to
-`GATEWAY_PUBLIC_KEY` of the control plane and of each tenant; set
-`GATEWAY_SIGNING_KEY` to the new private key; remove the old public key.
+The start also compares the two key settings. It does this after it reads the
+gateway settings and the provisioning settings, and before it opens the
+storage. The public key of `GATEWAY_SIGNING_KEY` must be one of the keys of
+`GATEWAY_PUBLIC_KEY`, compared in DER form. Else the start stops with
+`GATEWAY_PUBLIC_KEY must include the public key of GATEWAY_SIGNING_KEY.`,
+because a new tenant cannot verify a context that the gateway signs. The list
+can hold more keys. A rotation of the signing key has three steps, in this
+order:
+
+1. Add the new public key to `GATEWAY_PUBLIC_KEY` of the control plane and of
+   each tenant.
+2. Set `GATEWAY_SIGNING_KEY` to the new private key.
+3. Remove the old public key.
 
 **The gateway.** The [gateway](../../src/interfaces/mcp/mcp-gateway.ts) is the
 forward step of `MCPServer`: it runs after the Origin check, the bearer check,
