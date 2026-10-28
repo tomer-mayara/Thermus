@@ -1,5 +1,5 @@
 import { workOSSettings } from './hosted-placeholder.ts';
-import { gatewayKeyPairOf } from './hosted-tenant.ts';
+import { gatewayKeyPairOf, gatewaySigningSettingsOf, type GatewayKeyPair } from './hosted-tenant.ts';
 
 // The settings of a control plane with MCP_TENANTS_ENABLED=true (plan section 4.1), with placeholder values that pass
 // the startup checks: a fake Render key, workspace, and registry credential, a tenant image by digest, the free plan,
@@ -22,6 +22,13 @@ export const tenantProvisioningSettings: Readonly<Record<string, string>> = {
   GATEWAY_PUBLIC_KEY: gatewayKeys.publicKeyPem,
   CONTROL_PLANE_INTERNAL_URL: 'http://thermus-control-plane:8080',
 };
+
+// The settings that a control plane with MCP_TENANTS_ENABLED=true reads at the start: the provisioning settings above
+// and the gateway settings (SO-05) of one key pair, so GATEWAY_PUBLIC_KEY holds the public key of GATEWAY_SIGNING_KEY.
+// A test that also starts a tenant gives the key pair of that tenant and the address of its control plane.
+export function controlPlaneTenantSettingsOf(keys: GatewayKeyPair = gatewayKeys, controlPlaneInternalUrl = 'http://thermus-control-plane:8080'): Readonly<Record<string, string>> {
+  return { ...tenantProvisioningSettings, GATEWAY_PUBLIC_KEY: keys.publicKeyPem, ...gatewaySigningSettingsOf(keys, controlPlaneInternalUrl) };
+}
 
 // The secrets of the control plane. A tenant renders untrusted pages, so it must get none of them (decision D-14).
 export const controlPlaneSecrets: Readonly<Record<string, string>> = {

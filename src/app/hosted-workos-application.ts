@@ -71,6 +71,7 @@ export async function openWorkOSApplication(config: RouteConfig, logger: SystemL
   const operations = createHostedToolOperations(environment, logger);
   const gateway = (await import('./mcp-gateway-composition.ts')).gatewayStartOf(environment);
   const provisioningSettings = await tenantProvisioningSettingsOf(environment);
+  gateway.requireSigningKeyIn(provisioningSettings?.gatewayPublicKey);
   if (new URL(config.publicBaseUrl).pathname !== '/') throw new Error('The hosted portal requires PUBLIC_BASE_URL with the base path /.');
   const { assertHostedRenderer } = await import('./hosted-renderer-startup.ts');
   await assertHostedRenderer(environment.LIGHTPANDA_BIN);

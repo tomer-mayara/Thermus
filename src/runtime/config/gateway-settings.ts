@@ -1,5 +1,6 @@
 import { createPrivateKey, createPublicKey, type KeyObject } from 'node:crypto';
 import { DeploymentConfigError } from './deployment-config.ts';
+import { ed25519PublicKeysOf } from './gateway-public-keys.ts';
 import { originWithSlashOf } from './setting-origins.ts';
 
 type Environment = Readonly<Record<string, string | undefined>>;
@@ -18,6 +19,7 @@ export interface GatewaySettings {
 }
 
 const KEY_RULE = 'GATEWAY_SIGNING_KEY must be one PEM private key of type Ed25519.';
+const LISTED_KEY_RULE = 'GATEWAY_PUBLIC_KEY must include the public key of GATEWAY_SIGNING_KEY.';
 const INTERNAL_URL_RULE = 'CONTROL_PLANE_INTERNAL_URL must be the http or https origin of the control plane on the private network, such as http://thermus-control-plane:8080, without a path, a username, a password, a query, or a fragment.';
 // Exactly one PEM block with the private key label, as Node writes an Ed25519 key in PKCS #8.
 const PEM_PRIVATE_KEY = /^-----BEGIN PRIVATE KEY-----[A-Za-z0-9+/=\s]+-----END PRIVATE KEY-----$/;
@@ -30,6 +32,20 @@ export function loadGatewaySettings(environment: Environment): GatewaySettings {
     verifyingKey: createPublicKey(signingKey),
     controlPlaneInternalUrl: internalOriginOf(required(environment, 'CONTROL_PLANE_INTERNAL_URL')),
   });
+}
+
+/**
+ * Stops the start unless GATEWAY_PUBLIC_KEY holds the public key of GATEWAY_SIGNING_KEY: each new tenant gets that list
+ * and accepts only a context that a key of the list verifies. The list can hold more keys for a rotation. The keys are
+ * compared in DER form, so other line ends or spaces in the list do not change the result.
+ */
+export function requireSigningKeyIn(settings: Pick<GatewaySettings, 'verifyingKey'>, gatewayPublicKey: string): void {
+  const signing = derOf(settings.verifyingKey);
+  if (!(ed25519PublicKeysOf(gatewayPublicKey) ?? []).some((key) => derOf(key).equals(signing))) throw new DeploymentConfigError(LISTED_KEY_RULE);
+}
+
+function derOf(key: KeyObject): Buffer {
+  return key.export({ type: 'spki', format: 'der' });
 }
 
 function required(environment: Environment, name: string): string {

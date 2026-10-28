@@ -9,7 +9,7 @@ import type { RelayContextCheck } from '../interfaces/web/internal/audit-relay-c
 import { AuditRelayRoute } from '../interfaces/web/internal/audit-relay-route.ts';
 import { DeploymentConfigError } from '../runtime/config/deployment-config.ts';
 import { DEFAULT_FREE_TENANT_LIMIT, loadFreeTenantLimit } from '../runtime/config/free-tenant-limit-config.ts';
-import { loadGatewaySettings, type GatewaySettings } from '../runtime/config/gateway-settings.ts';
+import { loadGatewaySettings, requireSigningKeyIn, type GatewaySettings } from '../runtime/config/gateway-settings.ts';
 import { loadMcpTenantsEnabled } from '../runtime/config/mcp-tenants-config.ts';
 import { TenantActivity } from '../tenancy/tenants/tenant-activity.ts';
 import type { TenantLookup } from '../tenancy/tenants/tenant-lookup.ts';
@@ -32,10 +32,15 @@ interface TenantsSettings {
 
 /**
  * The gateway of one start of the control plane: the cap of the tenant registry, read only with the switch on (else the
- * default of 25), and the gateway parts on the hosted storage, or none with the switch off.
+ * default of 25), the key check, and the gateway parts on the hosted storage, or none with the switch off.
  */
 export interface GatewayStart {
   readonly freeTenantLimit: number;
+  /**
+   * Stops the start unless GATEWAY_PUBLIC_KEY of the provisioning settings, which each new tenant gets, holds the public
+   * key of GATEWAY_SIGNING_KEY. With the switch off, it checks nothing.
+   */
+  requireSigningKeyIn(gatewayPublicKey: string | undefined): void;
   partsOn(storage: Pick<HostedLoggingStorage, 'tenants'> | undefined): GatewayParts | undefined;
 }
 
@@ -56,8 +61,12 @@ export interface GatewayRegistry {
 /** The gateway of a start: the settings first, so an invalid setting stops the start before the server listens. */
 export function gatewayStartOf(environment: Readonly<Record<string, string | undefined>>): GatewayStart {
   const settings = tenantsSettingsOf(environment);
-  if (settings === undefined) return { freeTenantLimit: DEFAULT_FREE_TENANT_LIMIT, partsOn: () => undefined };
-  return { freeTenantLimit: settings.freeTenantLimit, partsOn: (storage) => gatewayPartsOf(settings.gateway, storage) };
+  if (settings === undefined) return { freeTenantLimit: DEFAULT_FREE_TENANT_LIMIT, requireSigningKeyIn: () => undefined, partsOn: () => undefined };
+  return {
+    freeTenantLimit: settings.freeTenantLimit,
+    requireSigningKeyIn: (gatewayPublicKey) => { requireSigningKeyIn(settings.gateway, gatewayPublicKey ?? ''); },
+    partsOn: (storage) => gatewayPartsOf(settings.gateway, storage),
+  };
 }
 
 /**

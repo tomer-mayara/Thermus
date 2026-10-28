@@ -2,12 +2,14 @@ import assert from 'node:assert/strict';
 import { generateKeyPairSync } from 'node:crypto';
 import { describe, test } from 'node:test';
 import { hostedFetchSettings, workOSSettings } from '../../support/fixtures/hosted-placeholder.ts';
-import { gatewayKeyPairOf, gatewaySigningSettingsOf } from '../../support/fixtures/hosted-tenant.ts';
+import { controlPlaneTenantSettingsOf } from '../../support/fixtures/control-plane-tenants.ts';
+import { gatewayKeyPairOf } from '../../support/fixtures/hosted-tenant.ts';
 import { ServerProcess, type ServerSettings } from '../../support/processes/server-process.ts';
 
 // The built server of the control plane with the switch MCP_TENANTS_ENABLED (SO-05) and outbound access denied.
-// FREE_TENANT_LIMIT, GATEWAY_SIGNING_KEY, and CONTROL_PLANE_INTERNAL_URL are read only with the switch on.
-// hosted-startup.test.ts holds the other start cases of the hosted edition.
+// FREE_TENANT_LIMIT, GATEWAY_SIGNING_KEY, and CONTROL_PLANE_INTERNAL_URL are read only with the switch on. Then the start
+// also reads the provisioning settings (SO-06) and compares the two key settings. hosted-startup.test.ts holds the other
+// start cases of the hosted edition, also those of the provisioning settings.
 
 const hostedSettings: ServerSettings = {
   ...hostedFetchSettings,
@@ -16,7 +18,13 @@ const hostedSettings: ServerSettings = {
   LISTEN_HOST: '127.0.0.1',
   LISTEN_PORT: '0',
 };
-const gatewaySettings = gatewaySigningSettingsOf();
+const gatewaySettings = controlPlaneTenantSettingsOf();
+const keyMismatch = /FATAL\S* (?:\[[^\]]*\]: )?GATEWAY_PUBLIC_KEY must include the public key of GATEWAY_SIGNING_KEY\.$/m;
+
+// The base64 line of a PEM key, or the whole value of another setting: the output must not show it.
+function keyLineOf(pem: string): string {
+  return pem.trim().split('\n')[1] ?? pem;
+}
 
 async function assertStopsBeforeListening(server: ServerProcess, message: RegExp): Promise<void> {
   assert.equal(await server.listeningOrExit(), undefined, server.output);
@@ -52,18 +60,31 @@ describe('Hosted control plane with MCP_TENANTS_ENABLED', () => {
       await assertStopsBeforeListening(server, message);
       for (const name of ['GATEWAY_SIGNING_KEY', 'CONTROL_PLANE_INTERNAL_URL']) {
         const value = overrides[name];
-        if (value !== undefined && value !== '') assert.ok(!server.output.includes(value.trim().split('\n')[1] ?? value), server.output);
+        if (value !== undefined && value !== '') assert.ok(!server.output.includes(keyLineOf(value)), server.output);
       }
       assert.ok(!server.output.includes('private-path'), server.output);
       assert.equal(server.attemptedOutboundAccess, false, server.output);
     }
   });
 
-  test('Given MCP_TENANTS_ENABLED=true and valid gateway settings without the private hosted storage, when the server starts, then it stops before it listens, because the gateway needs the tenant registry', { timeout: 60_000 }, async (t) => {
-    const server = ServerProcess.launch(t, { ...hostedSettings, ...workOSSettings, ...gatewaySettings, MCP_TENANTS_ENABLED: 'true' });
+  test('Given MCP_TENANTS_ENABLED=true and a GATEWAY_PUBLIC_KEY without the public key of GATEWAY_SIGNING_KEY, when the server starts, then it stops before it listens with a FATAL line that names the rule and both settings but no key', { timeout: 60_000 }, async (t) => {
+    const otherKey = gatewayKeyPairOf().publicKeyPem;
+    for (const GATEWAY_PUBLIC_KEY of [otherKey, `${otherKey},${gatewayKeyPairOf().publicKeyPem}`]) {
+      const server = ServerProcess.launch(t, { ...hostedSettings, ...workOSSettings, ...gatewaySettings, GATEWAY_PUBLIC_KEY });
+
+      await assertStopsBeforeListening(server, keyMismatch);
+      for (const pem of [...GATEWAY_PUBLIC_KEY.split(','), gatewaySettings.GATEWAY_SIGNING_KEY ?? '']) assert.ok(!server.output.includes(keyLineOf(pem)), server.output);
+      assert.equal(server.attemptedOutboundAccess, false, server.output);
+    }
+  });
+
+  test('Given MCP_TENANTS_ENABLED=true and valid settings, where GATEWAY_PUBLIC_KEY holds another key of a rotation and then the public key of GATEWAY_SIGNING_KEY, without the private hosted storage, when the server starts, then it passes the key check and stops before it listens, because the provisioner and the gateway need the tenant registry', { timeout: 60_000 }, async (t) => {
+    const rotation = `${gatewayKeyPairOf().publicKeyPem},${gatewaySettings.GATEWAY_PUBLIC_KEY ?? ''}`;
+    const server = ServerProcess.launch(t, { ...hostedSettings, ...workOSSettings, ...gatewaySettings, GATEWAY_PUBLIC_KEY: rotation });
 
     await assertStopsBeforeListening(server, /FATAL.*MCP_TENANTS_ENABLED=true needs the tenant registry: DATABASE_URL and LOGGING_DESTINATION_ENCRYPTION_KEY must be valid\./);
-    assert.ok(!server.output.includes(gatewaySettings.GATEWAY_SIGNING_KEY?.split('\n')[1] ?? 'no key'), 'The output shows no part of the signing key');
+    assert.doesNotMatch(server.output, keyMismatch);
+    assert.ok(!server.output.includes(keyLineOf(gatewaySettings.GATEWAY_SIGNING_KEY ?? '')), 'The output shows no part of the signing key');
     assert.equal(server.attemptedOutboundAccess, false, server.output);
   });
 
