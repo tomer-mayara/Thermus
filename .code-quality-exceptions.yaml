@@ -199,3 +199,13 @@ exceptions:
     bound: 59
     reason: Two small calculations own positive bound validation and typed retry eligibility, exponential delay, jitter and Retry-After precedence. They have four and eight paths. State records stay with these limits; a policy hierarchy or per-field modules would add structure without reducing the rules.
     expires: 2026-12-24
+  - path: src/interfaces/web/account/quick-start-page.ts
+    metric: mi
+    bound: 57
+    reason: One page renderer keeps the three setup steps, visible audit limits, complete manual guide, escaped organization text and configured links under the shared administration layout and exact CSP hashes. Focused render helpers improve the main function MI from 63.6 to 71.9 with one path while preserving DOM and CSP bytes; file MI is 57.2. Splitting each section into another file would spread one page contract without a separate rule or lifetime.
+    expires: 2026-12-27
+  - path: src/interfaces/web/account/quick-start-content.ts
+    metric: mi
+    bound: 53.5
+    reason: One canonical content owner keeps the approved setup prose and provider links with full Markdown assembly, trusted URL validation and Markdown escaping so the page and copied guide cannot drift. File MI is 54.0 and the largest function has six paths in URL validation. The complete copied guide matches the approved paragraphs after line-wrap normalization. Per-section files or per-guard wrappers would spread the same content and link-safety contract without reducing its decisions.
+    expires: 2026-12-27

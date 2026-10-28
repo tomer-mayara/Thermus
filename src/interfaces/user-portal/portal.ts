@@ -76,7 +76,7 @@ function showWorkspaceNavigation(container: HTMLElement, roles: readonly string[
   const navigation = container.ownerDocument.createElement('nav');
   navigation.className = 'workspace-navigation';
   navigation.setAttribute('aria-label', 'Workspace');
-  navigation.innerHTML = `<a href="./" aria-current="page">Connect</a><a href="organizations">Switch Workspace</a>
+  navigation.innerHTML = `${roles.includes('admin') ? '<a href="quick-start">Quick start</a>' : ''}<a href="./" aria-current="page">Connect</a><a href="organizations">Switch Workspace</a>
     ${roles.includes('admin') ? '<a href="members">Members</a><a href="logging">Audit Log</a>' : ''}`;
   const header = container.querySelector('.header-content');
   header?.classList.add('workspace-header');

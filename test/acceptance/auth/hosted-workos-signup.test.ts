@@ -97,7 +97,7 @@ describe('Hosted self-service signup with a test legal bundle', () => {
     const answer = await browser.post('signup', { ...form.fields, organization_name: 'Acme Labs', agreement: 'accepted' });
 
     assert.equal(answer.status, 303, answer.body);
-    assert.equal(answer.location?.pathname, '/');
+    assert.equal(answer.location?.pathname, '/quick-start');
     assert.equal(site.signupFake.organizations.length, 1);
     const organization = site.signupFake.organizations[0];
     assert.ok(organization);
@@ -217,7 +217,7 @@ describe('Hosted self-service signup with a test legal bundle', () => {
     const activation = await browser.post('signup', { ...form.fields, organization_name: 'Acme Labs', agreement: 'accepted' });
 
     assert.equal(activation.status, 303, activation.body);
-    assert.equal(activation.location?.pathname, '/');
+    assert.equal(activation.location?.pathname, '/quick-start');
     assert.equal(site.signupFake.organizations.length, 1);
     const organization = site.signupFake.organizations[0];
     assert.ok(organization);
@@ -292,7 +292,7 @@ describe('Hosted self-service signup with a test legal bundle', () => {
     const fields = { ...form.fields, organization_name: 'Acme Labs', agreement: 'accepted' };
     const answer = await browser.post('signup', fields);
     assert.equal(answer.status, 303, answer.body);
-    assert.equal(answer.location?.pathname, '/');
+    assert.equal(answer.location?.pathname, '/quick-start');
     const repeated = await browser.post('signup', fields);
     assert.equal(repeated.status, 303, repeated.body);
     assert.equal(site.signupFake.organizations.length, 1);

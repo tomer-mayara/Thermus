@@ -6,6 +6,7 @@ import type { OrganizationAdministration } from '../../../accounts/organizations
 import { readForm, ReturnDestinations, selectionIn, single } from './account-form.ts';
 import { accessDeniedPage, noOrganizationPage, noticePage, organizationSelectionPage, seeOther } from './account-pages.ts';
 import { AdministrationRoutes, type AdministrationService } from './administration-routes.ts';
+import { quickStartPage } from './quick-start-page.ts';
 import type { BrowserSession, CookieEffects, OrganizationSwitch, SignedInBrowserSession } from '../../../accounts/identity/browser-session.ts';
 
 // The routes check the session and current access, but not the permission of an operation: each operation checks
@@ -23,6 +24,7 @@ export type OrganizationService = Pick<OrganizationAdministration, 'listOrganiza
 
 export interface HostedAccountRoutesOptions {
   readonly publicBaseUrl: string;
+  readonly mcpResourceUrl: string;
   readonly session: BrowserSession;
   readonly accessResolver: AccessResolver;
   readonly organizations: OrganizationService;
@@ -41,7 +43,9 @@ export class HostedAccountRoutes {
   private readonly operation?: AccountOperation;
   private readonly signupUrl?: string;
   private readonly publicOrigin: string;
-  private readonly paths: { readonly organizations: string; readonly selection: string };
+  private readonly publicBaseUrl: string;
+  private readonly mcpResourceUrl: string;
+  private readonly paths: { readonly organizations: string; readonly selection: string; readonly quickStart: string };
   private readonly destinations: ReturnDestinations;
   private readonly administration: AdministrationRoutes;
   private readonly logging: LoggingRoutes;
@@ -54,10 +58,13 @@ export class HostedAccountRoutes {
     this.operation = options.operation;
     this.signupUrl = options.signupUrl;
     const publicBaseUrl = directoryUrl(options.publicBaseUrl);
+    this.publicBaseUrl = publicBaseUrl;
+    this.mcpResourceUrl = options.mcpResourceUrl;
     this.publicOrigin = new URL(publicBaseUrl).origin;
     this.paths = {
       organizations: new URL('organizations', publicBaseUrl).pathname,
       selection: new URL('organizations/select', publicBaseUrl).pathname,
+      quickStart: new URL('quick-start', publicBaseUrl).pathname,
     };
     this.destinations = new ReturnDestinations(publicBaseUrl, new URL(publicBaseUrl).pathname);
     this.logging = new LoggingRoutes({ publicBaseUrl, organizationsPage: this.paths.organizations, service: options.logging, audit: options.audit });
@@ -96,12 +103,24 @@ export class HostedAccountRoutes {
     request.signal.throwIfAborted();
     if (decision.allowed !== true) return accessDeniedPage(this.paths.organizations);
     const context = requireTrustedTenant(frozenCopy(decision.context));
+    if (path === this.paths.quickStart) return this.quickStart(request, session, context);
     const logging = this.logging.handlerFor(path);
     if (logging !== undefined) return logging(request, session, context);
     const administration = this.administration.handlerFor(path);
     if (administration !== undefined) return administration(request, session, context);
     if (this.operation === undefined) return noticePage('notFound');
     return this.operation(request, context);
+  }
+
+  private async quickStart(request: Request, session: SignedInBrowserSession, context: RequestContext): Promise<Response> {
+    const organizationId = context.organizationId;
+    if (organizationId === undefined || !currentAdminAccess(session.user, context)) return accessDeniedPage(this.paths.organizations);
+    if (request.method !== 'GET' && request.method !== 'HEAD') return noticePage('methodNotAllowed', { Allow: 'GET, HEAD' });
+    const organization = await waitForRequest(request.signal, () => this.organizations.authorizeSelection(session.user, organizationId));
+    request.signal.throwIfAborted();
+    if (organization?.organizationId !== organizationId || !organization.organizationName?.trim()) return accessDeniedPage(this.paths.organizations);
+    const response = quickStartPage({ organizationName: organization.organizationName, publicBaseUrl: this.publicBaseUrl, mcpResourceUrl: this.mcpResourceUrl });
+    return request.method === 'HEAD' ? new Response(null, { status: response.status, headers: response.headers }) : response;
   }
 
   // Identity admits the picker. Its optional access read controls menu links only.
@@ -152,7 +171,7 @@ export class HostedAccountRoutes {
 }
 
 function currentAdminAccess(user: AuthenticatedUser, context: RequestContext): boolean {
-  return context.organizationId === user.selectedOrganizationId
+  return user.selectedOrganizationId !== undefined && context.organizationId === user.selectedOrganizationId
     && context.user.selectedOrganizationId === user.selectedOrganizationId
     && context.user.authority === user.authority && context.user.subject === user.subject
     && context.tenantId !== '' && context.permissions.includes('product:access')

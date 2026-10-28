@@ -66,7 +66,7 @@ test('Given an eligible identity, when a named organization is created, then the
   assert.equal(document.querySelectorAll('input').length, 4);
   const accepted = await browser.post('signup', { ...form.fields, organization_name: 'Acme Labs', agreement: 'accepted' });
   assert.equal(accepted.status, 303);
-  assert.equal(accepted.location?.pathname, '/');
+  assert.equal(accepted.location?.pathname, '/quick-start');
   const session = JSON.parse((await browser.open('session')).body) as { organizationId: string };
   const access = JSON.parse((await browser.open('portal/access')).body) as { organizationId: string; organizationName: string };
   assert.equal(session.organizationId, site.signupFake.organizations[0]?.id);

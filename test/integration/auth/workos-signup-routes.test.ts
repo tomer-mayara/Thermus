@@ -61,7 +61,7 @@ test('Given signed-out signup, when opened, then the full escaped notice appears
   assert.equal(world.inspections(), 0);
 });
 
-test('Given signed-in signup and the current agreement, when a valid name is posted, then it switches to the confirmed organization and opens the portal with the latest cookie', async () => {
+test('Given signed-in signup and the current agreement, when a valid name is posted, then it switches to the confirmed organization and opens Quick start with the latest cookie', async () => {
   const world = setup();
   const form = await (await world.routes.handle(new Request('https://thermus.example/signup'))).text();
   assert.match(form, /type="checkbox" name="agreement" value="accepted" required/);
@@ -70,7 +70,7 @@ test('Given signed-in signup and the current agreement, when a valid name is pos
   assert.match(form, /Test &lt;terms&gt;/);
   const answer = await world.routes.handle(post(acceptedForm.replace('Acme+Labs', '+Acme+Labs+')));
   assert.equal(answer.status, 303);
-  assert.equal(answer.headers.get('Location'), 'https://thermus.example/');
+  assert.equal(answer.headers.get('Location'), 'https://thermus.example/quick-start');
   assert.equal(answer.headers.get('Cache-Control'), 'no-store');
   assert.deepEqual(answer.headers.getSetCookie(), ['renewed=session; Secure', 'renewed=selected; Secure']);
   assert.deepEqual(world.names, ['Acme Labs']);
@@ -126,7 +126,7 @@ test('Given a public-base path, when existing access continues or creation succe
   const activation = new Request('https://thermus.example/app/signup', post());
   const answer = await world.routes.handle(activation);
   assert.equal(answer.status, 303);
-  assert.equal(answer.headers.get('Location'), 'https://thermus.example/app/');
+  assert.equal(answer.headers.get('Location'), 'https://thermus.example/app/quick-start');
 });
 
 test('Given unchecked, stale, forged, repeated, missing, or invalid creation fields, when posted, then the route refuses them without activation or switching', async () => {

@@ -21,7 +21,7 @@ export class WorkspaceSelectionBrowser {
 
   async inspectPicker(admin: boolean): Promise<void> {
     const navigation = this.page.getByRole('banner').getByRole('navigation', { name: 'Workspace', exact: true });
-    const labels = admin ? ['Connect', 'Switch Workspace', 'Members', 'Audit Log'] : ['Connect', 'Switch Workspace'];
+    const labels = admin ? ['Quick start', 'Connect', 'Switch Workspace', 'Members', 'Audit Log'] : ['Connect', 'Switch Workspace'];
     assert.deepEqual(await navigation.getByRole('link').allTextContents(), labels);
     assert.deepEqual(await navigation.locator('[aria-current="page"]').allTextContents(), ['Switch Workspace']);
     assert.equal(await this.page.getByRole('navigation', { name: 'Workspace', exact: true }).count(), 1);

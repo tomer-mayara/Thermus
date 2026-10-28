@@ -279,7 +279,8 @@ includes runtime behavior. The dependency rules declare that existing owner pair
 The WorkOS adapter saves the canonical creator/authority record on the named
 organization and confirms active Admin/product access after a new create. The
 signup route uses supplied session controls to select that organization after
-a current-membership check, then opens its MCP guide. A failed switch does not
+a current-membership check, then opens Quick start. Later sign-ins and normal
+workspace choices keep their Connect destination. A failed switch does not
 repeat the grant. Existing records remain replay barriers.
 The web routes use these neutral contracts; WorkOS cookie and document-validation
 helpers remain provider-specific. Composition supplies the portal's allowed
@@ -1408,14 +1409,22 @@ product access and the pending invitations, from complete reads. The page shows
 page, so no partial seat count shows (SO-08).
 
 The portal uses the current access response to show Connect and Switch Workspace,
-plus Members and Audit Log for the exact `admin` role. Connect and the admin pages
-use one compact header menu in that order. Link visibility gives no authority.
+plus Quick start, Members, and Audit Log for the exact `admin` role. Connect and
+the admin pages use one compact header menu: Quick start first for Admins, then
+Connect, Switch Workspace, Members, and Audit Log. Link visibility gives no authority.
 The organization picker uses the same menu with Switch Workspace active. Identity
 still admits it. An optional current-access read controls Admin links for the
 selected workspace only; a denial, mismatch, or lookup outage keeps the picker
 usable. Its selection POST still checks current membership and session authority.
 Without an explicit safe return path, a successful choice opens Connect at the
 public base path.
+The server-owned Quick start route checks the session and current product and
+Admin access for the selected organization before a current-membership read
+provides its name. Query hints cannot select its organization. App supplies the
+configured portal and MCP URLs. The web owner renders the guide and the full
+Markdown copy, with clipboard success or a selectable manual fallback. This
+page links to existing Connect, Audit Log, and Members routes; it adds no
+provider operation, network control, completion state, or enrollment path.
 Invitation POST routes retain origin, CSRF, selected-organization, current-role,
 and pending-target checks. A send beyond the member limit of a free plan gets
 `409` with "This free workspace has 5 of 5 seats. Upgrade to Team to add more

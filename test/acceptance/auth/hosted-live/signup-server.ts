@@ -48,7 +48,7 @@ export function describeSignupServerCases(previous: LiveRun): void {
     await visit.page.getByRole('textbox', { name: 'Organization name', exact: true }).fill('Acme Labs');
     await agreement.check();
     await visit.page.getByRole('button', { name: 'Create organization', exact: true }).click();
-    const destination = new URL('/', localOrigin);
+    const destination = new URL('/quick-start', localOrigin);
     await visit.page.waitForURL(destination.href);
     assert.equal(visit.page.url(), destination.href);
     const organization = await run.workos.organizations.getOrganizationByExternalId(personalExternalId(run.settings.clientId, user.id));
@@ -79,6 +79,10 @@ export function describeSignupServerCases(previous: LiveRun): void {
       assert.equal(memberships[0]?.status, 'active');
       assert.equal(memberships[0]?.directoryManaged, false);
       assert.deepEqual(memberships[0]?.roles?.map(({ slug }) => slug), ['admin']);
+      await page.getByRole('heading', { name: 'Quick start', exact: true }).waitFor();
+      assert.equal(await page.locator('header .workspace-name').innerText(), 'Acme Labs');
+      assert.equal((await sessionJson(page)).organizationId, organization.id);
+      await page.getByRole('link', { name: 'Open Connect setup', exact: true }).click();
       await page.getByRole('heading', { name: 'Connect your MCP client' }).waitFor();
       await page.getByText('Workspace: Acme Labs', { exact: true }).waitFor();
       await page.getByText('Free access. No card is required and there is no automatic charge.', { exact: true }).waitFor();
