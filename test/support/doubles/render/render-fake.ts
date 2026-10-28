@@ -173,23 +173,25 @@ export class RenderFake {
     return index === -1 ? undefined : this.#faults.splice(index, 1)[0]?.fault;
   }
 
+  // The answer of each route; the service ID is the path part after /services/, empty for a route without it.
+  readonly #routes: Readonly<Record<RenderRoute, (request: RenderRequest, id: string) => Answer>> = {
+    'list services': (request) => this.listServices(request.query),
+    'create service': (request) => this.createService(request.body),
+    'read service': (_request, id) => this.readService(id),
+    'list deploys': (request, id) => this.listDeploys(id, request.query),
+    'delete service': (_request, id) => this.deleteService(id),
+    'memory metrics': (request) => this.metrics(request.query, memoryPointsOf),
+    'memory limit metrics': (request) => this.metrics(request.query, memoryLimitPointsOf),
+    'list events': (request, id) => this.listEvents(id, request.query),
+  };
+
   private handle(request: RenderRequest): Answer {
-    const id = /^\/services\/([^/]+)/.exec(request.path)?.[1] ?? '';
-    switch (request.route) {
-      case 'list services': return this.listServices(request.query);
-      case 'create service': return this.createService(request.body);
-      case 'read service': return this.readService(id);
-      case 'list deploys': return this.listDeploys(id, request.query);
-      case 'delete service': return this.deleteService(id);
-      case 'memory metrics': return this.metrics(request.query, (service, window) => service.memory.filter(({ at }) => inWindow(at, window)).map(({ at, bytes }) => ({ timestamp: at, value: bytes })));
-      case 'memory limit metrics': return this.metrics(request.query, (service, window) => service.memoryLimitBytes === undefined ? [] : [{ timestamp: new Date(window.endMs).toISOString(), value: service.memoryLimitBytes }]);
-      case 'list events': return this.listEvents(id, request.query);
-      default: return notFound;
-    }
+    if (request.route === 'unknown') return notFound;
+    return this.#routes[request.route](request, /^\/services\/([^/]+)/.exec(request.path)?.[1] ?? '');
   }
 
   // One series for each named service with points in the window, labelled as SO-01e measured, in bytes.
-  private metrics(query: URLSearchParams, pointsOf: (service: FakeService, window: { readonly startMs: number; readonly endMs: number }) => readonly unknown[]): Answer {
+  private metrics(query: URLSearchParams, pointsOf: (service: FakeService, window: MetricsWindow) => readonly unknown[]): Answer {
     const window = { startMs: Date.parse(query.get('startTime') ?? ''), endMs: Date.parse(query.get('endTime') ?? '') };
     if (!Number.isFinite(window.startMs) || !Number.isFinite(window.endMs)) return { status: 400, body: { message: 'invalid filter parameter' }, headers: metricsLimits };
     const series = query.getAll('resource').flatMap((id) => {
@@ -318,9 +320,24 @@ function routeOf(method: string, path: string): RenderRoute | 'unknown' {
   return read !== undefined && method === 'GET' ? read[1] : 'unknown';
 }
 
-function inWindow(at: string, window: { readonly startMs: number; readonly endMs: number }): boolean {
+interface MetricsWindow {
+  readonly startMs: number;
+  readonly endMs: number;
+}
+
+function inWindow(at: string, window: MetricsWindow): boolean {
   const time = Date.parse(at);
   return time >= window.startMs && time <= window.endMs;
+}
+
+// The memory points of a service in the window.
+function memoryPointsOf(service: FakeService, window: MetricsWindow): readonly unknown[] {
+  return service.memory.filter(({ at }) => inWindow(at, window)).map(({ at, bytes }) => ({ timestamp: at, value: bytes }));
+}
+
+// The memory limit of a service: one point at the end of the window, or none without a limit.
+function memoryLimitPointsOf(service: FakeService, window: MetricsWindow): readonly unknown[] {
+  return service.memoryLimitBytes === undefined ? [] : [{ timestamp: new Date(window.endMs).toISOString(), value: service.memoryLimitBytes }];
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

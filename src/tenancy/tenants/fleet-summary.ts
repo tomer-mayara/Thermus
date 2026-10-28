@@ -57,6 +57,12 @@ export interface FleetSummaryParts {
 
 type LiveRow = FleetRow & { readonly serviceId: string };
 
+// The platform reads of the window: what the reads that answered found, and one entry for each read that did not.
+interface WindowReads<T> {
+  readonly found: readonly T[];
+  readonly unavailable: readonly string[];
+}
+
 /**
  * The fleet summary of the control plane and of the fleet script: the count and the cost of each state and plan (plan
  * section 8), the memberships with only the default role, which WorkOS bills as seats (plan section 7), and the
@@ -76,45 +82,43 @@ export class FleetSummary {
     const rows = fleet.rows.filter((row) => row.state !== 'deleted');
     const live = rows.filter(isLiveService);
     const window = { startMs: atMs - WINDOW_HOURS * HOUR_MS, endMs: atMs };
-    const unavailable: string[] = [];
-    const memory = await this.memoryOf(live, window, signal, unavailable);
-    const restarts = await this.restartsOf(live, window, signal, unavailable);
+    const memory = await this.memoryOf(live, window, signal);
+    const restarts = await this.restartsOf(live, window, signal);
     const seats = await this.parts.inventory.defaultRoleMemberships(signal);
-    if (seats.status === 'unavailable') unavailable.push(`default-role memberships: ${seats.reason}`);
     const byState = costByStateAndPlan(rows, this.parts.freePlan);
     return {
       at: new Date(atMs).toISOString(), windowHours: WINDOW_HOURS, tenants: rows.length,
       monthlyUsd: byState.reduce((total, group) => total + group.monthlyUsd, 0), byState,
       defaultRoleMemberships: seats.status === 'complete' ? seats.memberships.length : null,
       defaultRoleMembershipList: seats.status === 'complete' ? seats.memberships.slice(0, LISTED_LIMIT) : [],
-      restarts: restarts.reduce((total, service) => total + service.restarts, 0), restartList: restarts.filter((service) => service.restarts > 0),
-      highestMemoryShare: highestShareOf(memory), memory, unavailable,
+      restarts: restarts.found.reduce((total, service) => total + service.restarts, 0), restartList: restarts.found.filter((service) => service.restarts > 0),
+      highestMemoryShare: highestShareOf(memory.found), memory: memory.found,
+      unavailable: [...memory.unavailable, ...restarts.unavailable, ...(seats.status === 'unavailable' ? [`default-role memberships: ${seats.reason}`] : [])],
     };
   }
 
-  private async memoryOf(live: readonly LiveRow[], window: TimeWindow, signal: AbortSignal, unavailable: string[]): Promise<readonly ServiceMemory[]> {
-    if (live.length === 0) return [];
+  private async memoryOf(live: readonly LiveRow[], window: TimeWindow, signal: AbortSignal): Promise<WindowReads<ServiceMemory>> {
+    if (live.length === 0) return { found: [], unavailable: [] };
     const read = await this.parts.platform.memoryUse(live.map(({ serviceId }) => serviceId), window, signal);
-    if (read.status === 'unavailable') {
-      unavailable.push(`memory: ${read.reason}`);
-      return [];
-    }
-    return live.flatMap(({ organizationId, serviceId }) => {
+    if (read.status === 'unavailable') return { found: [], unavailable: [`memory: ${read.reason}`] };
+    const found = live.flatMap(({ organizationId, serviceId }) => {
       const use = read.services.get(serviceId);
       if (use === undefined) return [];
       const limitBytes = use.limitBytes ?? null;
       return [{ organizationId, serviceId, peakBytes: use.peakBytes, limitBytes, peakShare: limitBytes === null ? null : Math.round((use.peakBytes / limitBytes) * 1_000) / 1_000 }];
     });
+    return { found, unavailable: [] };
   }
 
-  private async restartsOf(live: readonly LiveRow[], window: TimeWindow, signal: AbortSignal, unavailable: string[]): Promise<readonly ServiceRestarts[]> {
-    const restarts: ServiceRestarts[] = [];
+  private async restartsOf(live: readonly LiveRow[], window: TimeWindow, signal: AbortSignal): Promise<WindowReads<ServiceRestarts>> {
+    const found: ServiceRestarts[] = [];
+    const unavailable: string[] = [];
     for (const { organizationId, serviceId } of live) {
       const read = await this.parts.platform.restartCount(serviceId, window, signal);
-      if (read.status === 'found') restarts.push({ organizationId, serviceId, restarts: read.restarts });
+      if (read.status === 'found') found.push({ organizationId, serviceId, restarts: read.restarts });
       else unavailable.push(`restarts of ${serviceId}: ${read.status === 'gone' ? 'the tenant service no longer exists' : read.reason}`);
     }
-    return restarts;
+    return { found, unavailable };
   }
 }
 
