@@ -1448,6 +1448,15 @@ automatic deploys off, so its diagram does not change; step 5 of the SO-12
 order moves it to the image. GHCR keeps every digest that a service runs and
 the last ten release digests ([Hosted release](../README.md#hosted-release)).
 
+The [tenant fleet runbooks](../docs/implementation/tenant-fleet-runbooks.md)
+(SO-11) give the operator steps for this target: a failed provision, an
+orphaned tenant service, a paused Supabase project, the deletion of a tenant,
+the key rotations, the monthly GHCR pruning, and the alerts. Their Axiom
+monitors need the log lines of the control plane in Axiom. The recorded target
+writes its system log only to standard error, which Render keeps for 7 days on
+the Hobby plan, so a Render log stream or an export of the system log must
+carry the lines first.
+
 ## Ownership
 
 The 23 IDs below are stable logical component names. Each root owns its source
