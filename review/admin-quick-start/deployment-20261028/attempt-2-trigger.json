@@ -1,0 +1,10 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "{\"commit\":{\"createdAt\":\"2026-10-28T18:58:09Z\",\"id\":\"7e9cc19a2f4d82620e745273660e35a8f1a151f3\",\"message\":\"Add Admin Quick start guide after organization creation (#289)\\n\\n* docs: record approved Admin quick start design\\n\\n* Add protected Admin Quick start guide and first navigation tab\\n\\n* Verify the new organization guide in the live signup flow\\n\\n* Record the base metrics for the Quick start review\"},\"createdAt\":\"2026-10-28T19:09:04.28916Z\",\"id\":\"dep-dbh4gk6tlv9c73eqef00\",\"startedAt\":\"2026-10-28T19:09:04.250972Z\",\"status\":\"build_in_progress\",\"trigger\":\"api\",\"updatedAt\":\"2026-10-28T19:09:04.28916Z\"}"
+    }
+  ],
+  "structuredContent": null,
+  "isError": false
+}

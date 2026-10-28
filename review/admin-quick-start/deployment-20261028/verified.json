@@ -1,0 +1,66 @@
+{
+  "merge": "7e9cc19a2f4d82620e745273660e35a8f1a151f3",
+  "candidate": "f5f8cd2e3a2297d73a44fbc2974c6eee5a59d81e",
+  "identicalGitTrees": true,
+  "serviceId": "srv-db8mnqg473hc739d529g",
+  "workspaceId": "tea-db8i6ceq1p3s73dev9og",
+  "origin": "https://app.thermus.ai",
+  "deployment": {
+    "commit": {
+      "createdAt": "2026-10-28T18:58:09Z",
+      "id": "7e9cc19a2f4d82620e745273660e35a8f1a151f3",
+      "message": "Add Admin Quick start guide after organization creation (#289)\n\n* docs: record approved Admin quick start design\n\n* Add protected Admin Quick start guide and first navigation tab\n\n* Verify the new organization guide in the live signup flow\n\n* Record the base metrics for the Quick start review"
+    },
+    "createdAt": "2026-10-28T19:09:04.28916Z",
+    "finishedAt": "2026-10-28T19:14:54.292239Z",
+    "id": "dep-dbh4gk6tlv9c73eqef00",
+    "startedAt": "2026-10-28T19:09:04.250972Z",
+    "status": "live",
+    "trigger": "api",
+    "updatedAt": "2026-10-28T19:14:54.292454Z"
+  },
+  "method": "Existing Git/Docker build, unchanged autoDeploy:no and runtime:docker",
+  "publicSmoke": "passed; public-after.json",
+  "authenticatedBrowser": {
+    "connectLoaded": true,
+    "quickStartRefusedForAvailableNonAdminSession": true,
+    "quickStartAbsentFromNonAdminNavigation": true,
+    "consoleErrorsAfterConnect": 0,
+    "adminPositiveView": "not tested in production: available session has no Admin access",
+    "newOrganizationCreation": "not performed in production; same-tree staging proof retained"
+  },
+  "mcp": {
+    "tool": "getURLAsMarkdown",
+    "url": "https://example.com",
+    "successful": true
+  },
+  "runtimeErrors": {
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"hasMore\":false,\"logs\":[],\"nextEndTime\":\"2026-10-28T19:18:04.044293232Z\",\"nextStartTime\":\"2026-10-28T19:14:54Z\"}"
+      }
+    ],
+    "structuredContent": null,
+    "isError": false
+  },
+  "attempts": [
+    {
+      "id": "dep-dbh4dbei0phs73cq4agg",
+      "status": "build_failed",
+      "reason": "Hosted acceptance relay raw-attempt race; 188/189; previous live revision retained"
+    },
+    {
+      "id": "dep-dbh4gk6tlv9c73eqef00",
+      "status": "live",
+      "hostedAcceptancePasses": 189
+    }
+  ],
+  "githubImageWorkflow": {
+    "id": 40750011844,
+    "status": "failure",
+    "started": false,
+    "reason": "Account payment/spending-limit restriction",
+    "productionRuntimeCutover": false
+  }
+}

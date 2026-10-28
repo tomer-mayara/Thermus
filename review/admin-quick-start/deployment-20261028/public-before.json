@@ -1,0 +1,27 @@
+{
+  "time": "2026-10-28T19:02:04.178Z",
+  "results": [
+    {
+      "path": "/healthz",
+      "status": 200,
+      "body": "ok",
+      "contentType": "text/plain; charset=utf-8",
+      "contentSecurityPolicyPresent": false,
+      "guideHeading": false
+    },
+    {
+      "path": "/",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "contentSecurityPolicyPresent": true,
+      "guideHeading": false
+    },
+    {
+      "path": "/quick-start",
+      "status": 401,
+      "contentType": "text/html; charset=utf-8",
+      "contentSecurityPolicyPresent": true,
+      "guideHeading": false
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+{
+  "mergedPR": {
+    "sha": "7e9cc19a2f4d82620e745273660e35a8f1a151f3",
+    "mergedAt": "2026-10-28T18:58:09Z"
+  },
+  "previousService": {
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"autoDeploy\":\"no\",\"autoDeployTrigger\":\"off\",\"branch\":\"main\",\"createdAt\":\"2026-10-16T00:12:26.508806Z\",\"dashboardUrl\":\"https://dashboard.render.com/web/srv-db8mnqg473hc739d529g\",\"environmentId\":\"evm-db8mnqavcj2c73cmoib0\",\"id\":\"srv-db8mnqg473hc739d529g\",\"name\":\"Thermus\",\"notifyOnFail\":\"default\",\"ownerId\":\"tea-db8i6ceq1p3s73dev9og\",\"repo\":\"https://github.com/tomer-mayara/Thermus\",\"rootDir\":\"\",\"serviceDetails\":{\"buildPlan\":\"starter\",\"cache\":{\"profile\":\"no-cache\"},\"env\":\"docker\",\"envSpecificDetails\":{\"dockerCommand\":\"\",\"dockerContext\":\".\",\"dockerfilePath\":\"./Dockerfile.hosted\"},\"healthCheckPath\":\"/healthz\",\"ipAllowList\":[{\"cidrBlock\":\"0.0.0.0/0\",\"description\":\"everywhere\"}],\"maintenanceMode\":{\"enabled\":false,\"uri\":\"\"},\"numInstances\":1,\"openPorts\":[{\"port\":8080,\"protocol\":\"TCP\"}],\"plan\":\"1c-2g\",\"previews\":{\"generation\":\"off\"},\"pullRequestPreviewsEnabled\":\"no\",\"region\":\"oregon\",\"renderSubdomainPolicy\":\"disabled\",\"runtime\":\"docker\",\"sshAddress\":\"srv-db8mnqg473hc739d529g@ssh.oregon.render.com\",\"url\":\"https://thermus.onrender.com\"},\"slug\":\"thermus\",\"suspended\":\"not_suspended\",\"suspenders\":[],\"type\":\"web_service\",\"updatedAt\":\"2026-10-27T23:12:56.340324Z\"}"
+      }
+    ],
+    "structuredContent": null,
+    "isError": false
+  },
+  "previousDeploys": {
+    "content": [
+      {
+        "type": "text",
+        "text": "[{\"commit\":{\"createdAt\":\"2026-10-27T23:06:59Z\",\"id\":\"89e79754482704534530936c1cef7850394abb6f\",\"message\":\"Fix workspace selection return and retain the compact menu (#281)\"},\"createdAt\":\"2026-10-27T23:09:51.456226Z\",\"finishedAt\":\"2026-10-27T23:12:56.338689Z\",\"id\":\"dep-dbgiufou01pc73c7irl0\",\"startedAt\":\"2026-10-27T23:09:51.425773Z\",\"status\":\"live\",\"trigger\":\"api\",\"updatedAt\":\"2026-10-27T23:13:30.480421Z\"},{\"commit\":{\"createdAt\":\"2026-10-27T21:48:00Z\",\"id\":\"feaddbdec5f9e2cc7bf8e07050a4d5e7aa5e5769\",\"message\":\"Record base metrics for the refreshed workspace picker fix\"},\"createdAt\":\"2026-10-27T22:33:47.55929Z\",\"finishedAt\":\"2026-10-27T22:39:16.519159Z\",\"id\":\"dep-dbgidiou01pc73c6h7ag\",\"startedAt\":\"2026-10-27T22:33:47.527446Z\",\"status\":\"deactivated\",\"trigger\":\"manual\",\"updatedAt\":\"2026-10-27T23:12:56.337802Z\"},{\"commit\":{\"createdAt\":\"2026-10-27T18:10:01Z\",\"id\":\"6e2c6739fab812c330d4b5295bfc2c934b021762\",\"message\":\"Use compact workspace navigation on Connect and admin pages (#277)\\n\\n* Unify workspace navigation across Connect and admin pages\\n\\n* Record base metrics for the navigation review\\n\\n* Record metrics for the updated main base\"},\"createdAt\":\"2026-10-27T20:07:36.838482Z\",\"finishedAt\":\"2026-10-27T20:12:49.581107Z\",\"id\":\"dep-dbgg9267bikc73bgdl4g\",\"startedAt\":\"2026-10-27T20:07:36.802955Z\",\"status\":\"deactivated\",\"trigger\":\"manual\",\"updatedAt\":\"2026-10-27T22:39:16.518309Z\"},{\"commit\":{\"createdAt\":\"2026-10-27T13:40:28Z\",\"id\":\"98dc42f7ccdc3e667e34551e289b1e53f5aa549e\",\"message\":\"Compact pending invitations on Members (UI-04) (#268)\"},\"createdAt\":\"2026-10-27T15:24:14.189612Z\",\"finishedAt\":\"2026-10-27T15:29:38.24939Z\",\"id\":\"dep-dbgc47m7bikc73flu970\",\"startedAt\":\"2026-10-27T15:24:14.155096Z\",\"status\":\"deactivated\",\"trigger\":\"manual\",\"updatedAt\":\"2026-10-27T20:12:49.580247Z\"},{\"commit\":{\"createdAt\":\"2026-10-26T22:02:32Z\",\"id\":\"c42aa8237b06e46df5f8d3914af6f4151f729e1a\",\"message\":\"Add the self on-boarding decision records (#262)\\n\\nDelamain-Ticket: 4707fcf7-fa02-4c97-91f2-ebe4e927ee7d\"},\"createdAt\":\"2026-10-26T23:37:20.883508Z\",\"finishedAt\":\"2026-10-26T23:37:47.893359Z\",\"id\":\"dep-dbfu8c6k1f9s73aonr2g\",\"startedAt\":\"2026-10-26T23:37:20.852975Z\",\"status\":\"deactivated\",\"trigger\":\"api\",\"updatedAt\":\"2026-10-27T15:29:38.248436Z\"}]\n\n cursor: 5JGww7adN6Y4YzZrMWY5czczYW9ucjJn"
+      }
+    ],
+    "structuredContent": null,
+    "isError": false
+  },
+  "trigger": {
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"commit\":{\"createdAt\":\"2026-10-28T18:58:09Z\",\"id\":\"7e9cc19a2f4d82620e745273660e35a8f1a151f3\",\"message\":\"Add Admin Quick start guide after organization creation (#289)\\n\\n* docs: record approved Admin quick start design\\n\\n* Add protected Admin Quick start guide and first navigation tab\\n\\n* Verify the new organization guide in the live signup flow\\n\\n* Record the base metrics for the Quick start review\"},\"createdAt\":\"2026-10-28T19:02:05.959076Z\",\"id\":\"dep-dbh4dbei0phs73cq4agg\",\"startedAt\":\"2026-10-28T19:02:05.912949Z\",\"status\":\"build_in_progress\",\"trigger\":\"api\",\"updatedAt\":\"2026-10-28T19:02:05.959076Z\"}"
+      }
+    ],
+    "structuredContent": null,
+    "isError": false
+  },
+  "progress": {
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"commit\":{\"createdAt\":\"2026-10-28T18:58:09Z\",\"id\":\"7e9cc19a2f4d82620e745273660e35a8f1a151f3\",\"message\":\"Add Admin Quick start guide after organization creation (#289)\\n\\n* docs: record approved Admin quick start design\\n\\n* Add protected Admin Quick start guide and first navigation tab\\n\\n* Verify the new organization guide in the live signup flow\\n\\n* Record the base metrics for the Quick start review\"},\"createdAt\":\"2026-10-28T19:02:05.959076Z\",\"id\":\"dep-dbh4dbei0phs73cq4agg\",\"startedAt\":\"2026-10-28T19:02:05.912949Z\",\"status\":\"build_in_progress\",\"trigger\":\"api\",\"updatedAt\":\"2026-10-28T19:02:05.959076Z\"}"
+      }
+    ],
+    "structuredContent": null,
+    "isError": false
+  },
+  "workflowFailure": {
+    "runId": 40750011844,
+    "jobId": 123033896785,
+    "reason": "The job was not started because recent account payments have failed or your spending limit needs to be increased."
+  },
+  "productionMethod": "Existing Render Git/Docker build; autoDeploy no; no runtime cutover."
+}
