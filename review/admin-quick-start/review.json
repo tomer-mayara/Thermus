@@ -1,0 +1,61 @@
+{
+  "methodologyVersion": "1.1",
+  "baseRef": "origin/main",
+  "baseSha": "feeaad4d5f04212f033366c232180be4bd40da4c",
+  "headSha": "f5f8cd2e3a2297d73a44fbc2974c6eee5a59d81e",
+  "summary": {
+    "filesChanged": 25,
+    "filesAdded": 11,
+    "filesDeleted": 0,
+    "high": 0,
+    "medium": 3,
+    "low": 1,
+    "improvements": 0
+  },
+  "regressions": [
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "maintainability-regression",
+      "file": "src/interfaces/web/account/members-page-layout.ts",
+      "message": "Maintainability index: 80 -\u003e 69 (below 85 is hard to maintain)",
+      "suggestion": "Refactor long or deeply nested functions and reduce responsibilities in this file",
+      "before": 80.3695659257948,
+      "after": 68.69398639898778
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "complexity-regression",
+      "file": "src/interfaces/web/account/members-page-layout.ts",
+      "line": 21,
+      "subject": "membersPageLayout",
+      "message": "Cyclomatic complexity: 8 -\u003e 13 (threshold: 10)",
+      "suggestion": "Extract smaller, well-named functions to reduce decision points",
+      "before": 8,
+      "after": 13
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:max_loc_by_method",
+      "file": "src/interfaces/web/account/quick-start-content.ts",
+      "line": 57,
+      "message": "LOC too high in method quickStartContent(): got 32 (max: 30)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "bugs-regression",
+      "file": "src/interfaces/web/account/members-page-layout.ts",
+      "message": "Estimated bugs (Halstead): 0.16 -\u003e 0.27",
+      "suggestion": "This estimate grows with code volume and complexity; consider simplifying or splitting this file",
+      "before": 0.15833333333333333,
+      "after": 0.2678184319980118
+    }
+  ],
+  "improvements": [],
+  "gate": "passed"
+}

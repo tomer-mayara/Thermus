@@ -1,0 +1,13 @@
+{
+  "name": "02-build-hosted",
+  "command": [
+    "npm",
+    "run",
+    "build:hosted"
+  ],
+  "started": "2026-10-28T16:58:46.793Z",
+  "completed": "2026-10-28T16:58:47.189Z",
+  "exitCode": 1,
+  "signal": null,
+  "summaries": []
+}

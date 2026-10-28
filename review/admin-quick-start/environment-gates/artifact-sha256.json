@@ -1,0 +1,17 @@
+{
+  "01-self-hosted-container.json": "79f90ddb28daea69a391873ed834ef585278f2c2e611d0d8f4ed7b85e68ec4e1",
+  "01-self-hosted-container.log": "0c247610b79c4442cc279660cbcf7a6950397766a196148a1a6dba50d598d8ba",
+  "02-build-hosted.json": "8bd6d9bd025334e49310e721a6ffb6e50a75a39058ba4d25ac1ea60d98a2861c",
+  "02-build-hosted.log": "4070d22a5b90e0de543c2e597b7d3b865f79372c1dc4753e59d9c75d3f2a8374",
+  "02b-build-hosted.json": "12fbf5514a3d6c96961ea6eb107a9346ae799dfde80508befbb97393507ccd45",
+  "02b-build-hosted.log": "5b0f995468bdc60134064d59e3f7c8d1892e5d6d01f7e7820526c0e3162b7913",
+  "03-hosted-container-build-progress.log": "47709d89f4cf816c757a148e0dadc442a35462a05abb513b774117dae622ad82",
+  "03-hosted-container.json": "5c5555c4bf6308f39d991294f033e0f678adda8b86ae78c1e6f637af561171d2",
+  "03-hosted-container.log": "c31bbec62b3b5be70fd380a669aa153406a5b51e74762d291840ece66426c94c",
+  "04-workos-live-overlay.json": "1f62af1b7b0e47661dc8d977fcb89c900b2b24499efa14efe7246f9cd256b535",
+  "04-workos-live-overlay.patch": "6b6ac6efe5da6ec8856ff9dbc2b7b5db435e2e996cd66981af4eb820e95c2e5d",
+  "04-workos-staging-live.json": "cc423f3e35f8f58a5ea84cca2114faa6caf229ce6e698499022414eedcffbfb8",
+  "04-workos-staging-live.log": "8a6a407d62810efed4ecec31c164395bbee5c62a8f9ae0dc5dd5c8b4c49f1241",
+  "summary.json": "7b503adf0cc3cf77dba45b9114311a0cadaec246fc3382d9121e868d95504384",
+  "summary.md": "7b8253392af401862789e5f813452566ca3382369fef38c427d4019a738fba8c"
+}

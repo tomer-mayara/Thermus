@@ -1,0 +1,42 @@
+▶ Members through the hosted HTTP server
+  ✔ Given seven active members and six product members, when the Admin opens Members, then labelled read-only facts keep both counts and trusted self actions distinct (39.161459ms)
+  ✔ Given an invitation read whose later page fails after a pending entry, when Members opens through the public route, then the existing failure has no partial list or count (3.334666ms)
+  ✔ Given an Admin in Acme Labs and unavailable Audit storage, when Members and Audit open through their page links, then one ordered header menu retains workspace context and marks only the current page (9.457875ms)
+  ✔ Given an Admin and invitations in several states, when Members opens, then one page shows current members, You, pending expiry, navigation, and one invitation form (9.682958ms)
+  ✔ Given a Members page, when an Admin invites a User and an Admin and then resends and revokes, then each confirmed change returns to Members without changing active memberships (16.681458ms)
+  ✔ Given an unconfirmed sendInvitation response, when the Admin submits and checks status, then the page gives no retry form and the status read sends no second write (6.732208ms)
+  ✔ Given an unconfirmed resendInvitation response, when the Admin submits and checks status, then the page gives no retry form and the status read sends no second write (3.645833ms)
+  ✔ Given an unconfirmed revokeInvitation response, when the Admin submits and checks status, then the page gives no retry form and the status read sends no second write (3.36775ms)
+✔ Members through the hosted HTTP server (93.386041ms)
+✔ Given an organization Admin with JavaScript on, when Quick start is used by keyboard at narrow and wide widths, then expanded instructions fit and copy has a truthful outcome (4244.649708ms)
+✔ Given an organization Admin with JavaScript off, when Quick start is used by keyboard at narrow and wide widths, then expanded instructions fit and copy has a truthful outcome (979.360708ms)
+✔ Given Acme is selected at /, when the user chooses Acme (selected) without a return destination, then the response opens Connect at the public base and the session uses that workspace (196.890541ms)
+✔ Given Acme is selected at /, when the user chooses Globex without a return destination, then the response opens Connect at the public base and the session uses that workspace (88.929583ms)
+✔ Given org_ACME is selected at /, when the user opens Switch Workspace, then its header menu marks the picker and uses only that workspace's current role (63.612625ms)
+✔ Given org_GLOBEX is selected at /, when the user opens Switch Workspace, then its header menu marks the picker and uses only that workspace's current role (94.603333ms)
+✔ Given no workspace is selected at /, when the user opens Switch Workspace, then its header menu marks the picker and uses only that workspace's current role (89.824042ms)
+✔ Given an explicit safe return destination at /, when the user selects an authorized workspace, then that destination is preserved instead of the default Connect page (143.609083ms)
+✔ Given Acme is selected at /team/, when the user chooses Acme (selected) without a return destination, then the response opens Connect at the public base and the session uses that workspace (63.845417ms)
+✔ Given Acme is selected at /team/, when the user chooses Globex without a return destination, then the response opens Connect at the public base and the session uses that workspace (126.046209ms)
+✔ Given org_ACME is selected at /team/, when the user opens Switch Workspace, then its header menu marks the picker and uses only that workspace's current role (52.024708ms)
+✔ Given org_GLOBEX is selected at /team/, when the user opens Switch Workspace, then its header menu marks the picker and uses only that workspace's current role (95.840708ms)
+✔ Given no workspace is selected at /team/, when the user opens Switch Workspace, then its header menu marks the picker and uses only that workspace's current role (56.762708ms)
+✔ Given an explicit safe return destination at /team/, when the user selects an authorized workspace, then that destination is preserved instead of the default Connect page (132.9035ms)
+✔ Given organization text with Markdown syntax, entities, and line breaks, when the copied Markdown is rendered, then it remains one plain heading with the original single-line text (12.470334ms)
+✔ Given configured URLs under a path with parentheses, when the copied guide is rendered, then internal links remain complete absolute configured destinations (2.788625ms)
+✔ Given clipboard success, when the Admin copies, then success is reported only after a completed write and other outcomes show selected manual text (21.103583ms)
+✔ Given clipboard denied, when the Admin copies, then success is reported only after a completed write and other outcomes show selected manual text (5.2085ms)
+✔ Given clipboard unavailable, when the Admin copies, then success is reported only after a completed write and other outcomes show selected manual text (2.576041ms)
+✔ Given an Admin guide, when it renders, then all provider links and setup instructions are included in selectable complete Markdown (19.404458ms)
+✔ Given arbitrary organization text, when rendered or copied, then HTML and Markdown preserve it as text without injected elements or sections (1.953708ms)
+✔ Given audit setup guidance, when the Admin reads the setup sequence, then switch effects, recovery, and delivery limits are visible outside disclosures and the copy field (1.688958ms)
+✔ Given page assets and copy behavior, when CSP is returned, then local fonts/logo and exact script and scoped style hashes are allowed without inline escape hatches (2.765834ms)
+✔ Given configured absolute URLs with unsafe protocols or credentials, when guide rendering is requested, then it refuses active or credential-bearing destinations (0.219375ms)
+ℹ tests 32
+ℹ suites 1
+ℹ pass 32
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 7932.960584

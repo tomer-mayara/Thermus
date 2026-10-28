@@ -1,0 +1,334 @@
+{
+  "tier": "T2",
+  "tierName": "T2 Need architect",
+  "eligibility": "eligible",
+  "blockers": [],
+  "candidate": "f5f8cd2e3a2297d73a44fbc2974c6eee5a59d81e",
+  "mergeBase": "feeaad4d5f04212f033366c232180be4bd40da4c",
+  "architecture": {
+    "policy": "facts",
+    "facts": [],
+    "summary": "T0: no architecture fact"
+  },
+  "reasons": [
+    {
+      "tier": "T2",
+      "key": "impact.contract",
+      "fact": "Admin Quick start adds GET/HEAD quick-start in the existing web owner. The route requires the session-selected organization, matching current identity and organization, product access, exact Admin role, and a current nonblank organization name from the existing authorizeSelection read. App supplies the configured MCP URL through a new required HostedAccountRoutesOptions member. After successful new-organization activation and checked session selection, signup redirects to Quick start instead of the portal root; later sign-ins and normal workspace selection retain Connect. The page renders the complete setup guide and Markdown copy with trusted configured URLs and safe manual fallback. Current-Admin menus put Quick start first. Existing components, dependencies, providers, stores, and deployment remain unchanged. Registry prose records the guide, navigation, and creation landing; all 20 Mermaid views remain unchanged."
+    },
+    {
+      "tier": "T2",
+      "key": "impact.internalInterface",
+      "fact": "Admin Quick start adds GET/HEAD quick-start in the existing web owner. The route requires the session-selected organization, matching current identity and organization, product access, exact Admin role, and a current nonblank organization name from the existing authorizeSelection read. App supplies the configured MCP URL through a new required HostedAccountRoutesOptions member. After successful new-organization activation and checked session selection, signup redirects to Quick start instead of the portal root; later sign-ins and normal workspace selection retain Connect. The page renders the complete setup guide and Markdown copy with trusted configured URLs and safe manual fallback. Current-Admin menus put Quick start first. Existing components, dependencies, providers, stores, and deployment remain unchanged. Registry prose records the guide, navigation, and creation landing; all 20 Mermaid views remain unchanged."
+    },
+    {
+      "tier": "T1",
+      "key": "read_paths",
+      "fact": ".code-quality-exceptions.yaml"
+    },
+    {
+      "tier": "T1",
+      "key": "ratchet.exceptions",
+      "fact": "src/interfaces/web/account/quick-start-content.ts covered by \"One canonical content owner keeps the approved setup prose and provider links with full Markdown assembly, trusted URL validation and Markdown escaping so the page and copied guide cannot drift. File MI is 54.0 and the largest function has six paths in URL validation. The complete copied guide matches the approved paragraphs after line-wrap normalization. Per-section files or per-guard wrappers would spread the same content and link-safety contract without reducing its decisions.\" until 2026-12-27"
+    },
+    {
+      "tier": "T1",
+      "key": "ratchet.exceptions",
+      "fact": "src/interfaces/web/account/quick-start-page.ts covered by \"One page renderer keeps the three setup steps, visible audit limits, complete manual guide, escaped organization text and configured links under the shared administration layout and exact CSP hashes. Focused render helpers improve the main function MI from 63.6 to 71.9 with one path while preserving DOM and CSP bytes; file MI is 57.2. Splitting each section into another file would spread one page contract without a separate rule or lifetime.\" until 2026-12-27"
+    },
+    {
+      "tier": "T1",
+      "key": "impact.sensitiveBehavior",
+      "fact": "Admin Quick start adds GET/HEAD quick-start in the existing web owner. The route requires the session-selected organization, matching current identity and organization, product access, exact Admin role, and a current nonblank organization name from the existing authorizeSelection read. App supplies the configured MCP URL through a new required HostedAccountRoutesOptions member. After successful new-organization activation and checked session selection, signup redirects to Quick start instead of the portal root; later sign-ins and normal workspace selection retain Connect. The page renders the complete setup guide and Markdown copy with trusted configured URLs and safe manual fallback. Current-Admin menus put Quick start first. Existing components, dependencies, providers, stores, and deployment remain unchanged. Registry prose records the guide, navigation, and creation landing; all 20 Mermaid views remain unchanged."
+    }
+  ],
+  "questions": [],
+  "changedPaths": [
+    {
+      "status": "M",
+      "path": ".code-quality-exceptions.yaml"
+    },
+    {
+      "status": "M",
+      "path": ".pr-impact.json"
+    },
+    {
+      "status": "M",
+      "path": "README.md"
+    },
+    {
+      "status": "M",
+      "path": "architecture/components.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/design/admin-quick-start/guide.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/design/admin-quick-start/mockup-desktop.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/design/admin-quick-start/mockup-mobile.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/design/admin-quick-start/mockup-provider-details.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/design/admin-quick-start/spec.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/design/portal-design.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/metrics/2026-10-27-feeaad4d.json"
+    },
+    {
+      "status": "M",
+      "path": "docs/testing/test-list.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/user-portal.md"
+    },
+    {
+      "status": "M",
+      "path": "src/app/application.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/user-portal/portal.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/web/account/account-routes.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/web/account/administration-pages.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/web/account/administration-routes.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/web/account/logging-routes.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/web/account/members-page-layout.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/web/account/organization-selection-page.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/interfaces/web/account/quick-start-content.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/interfaces/web/account/quick-start-copy.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/interfaces/web/account/quick-start-page.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/interfaces/web/account/quick-start-style.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/web/auth/workos/workos-signup-routes.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/auth/hosted-admin-journey.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/auth/hosted-live/signup-server.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/auth/hosted-members.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/acceptance/auth/hosted-quick-start-browser.runtime.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/acceptance/auth/hosted-quick-start.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/auth/hosted-signup-presentation.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/auth/hosted-signup-recovery.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/auth/hosted-signup-restart.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/auth/hosted-workos-signup.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/auth/hosted-workspace-selection.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/user-portal/portal.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/integration/auth/workos-signup-routes.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/integration/hosted-admin/account-routes-administration-pages.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/integration/hosted-admin/account-routes-quick-start.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/integration/hosted-admin/account-routes-workspace-navigation.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/integration/hosted-admin/fixtures/account-routes-fixtures.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/support/drivers/browser/admin-shell-browser.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/support/drivers/browser/quick-start-browser.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/support/drivers/browser/workspace-selection-browser.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/unit/html/quick-start-content.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/unit/html/quick-start-copy.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/unit/html/quick-start-page.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/unit/user-portal/portal.test.ts"
+    }
+  ],
+  "lineCounts": {
+    "production": 295,
+    "productionLimit": 400,
+    "total": 1279,
+    "totalLimit": 1500
+  },
+  "tests": {
+    "added": 20,
+    "removed": 1,
+    "skippedOrTodo": []
+  },
+  "mi": [
+    "changed: src/app/application.ts: 55.44829031021234 to 55.38463275143598",
+    "changed: src/interfaces/user-portal/portal.ts: 48.760944308877924 to 48.60455929962983",
+    "changed: src/interfaces/web/account/account-routes.ts: 54.03041569685968 to 50.34400283785668",
+    "changed: src/interfaces/web/account/administration-pages.ts: 60.33719717239528 to 60.33719717239528",
+    "changed: src/interfaces/web/account/administration-routes.ts: 51.232309633542094 to 51.17262206513874",
+    "changed: src/interfaces/web/account/logging-routes.ts: 47.90845482720732 to 47.889311839222785",
+    "changed: src/interfaces/web/account/members-page-layout.ts: 80.3695659257948 to 68.69398639898778",
+    "changed: src/interfaces/web/account/organization-selection-page.ts: 65.67616499424597 to 65.30101056915511",
+    "new: src/interfaces/web/account/quick-start-content.ts: 53.95041254701023",
+    "not applicable: src/interfaces/web/account/quick-start-copy.ts: no raw MI in the head snapshot",
+    "new: src/interfaces/web/account/quick-start-page.ts: 57.18060902544582",
+    "not applicable: src/interfaces/web/account/quick-start-style.ts: no raw MI in the head snapshot",
+    "changed: src/interfaces/web/auth/workos/workos-signup-routes.ts: 40.541759185159385 to 40.53467861989658"
+  ],
+  "crap": [
+    "src/interfaces/web/account/members-page-layout.ts: membersPageLayout: 13.0",
+    "src/interfaces/web/account/account-routes.ts: account-routes\\HostedAccountRoutes.quickStart: 8.0",
+    "src/interfaces/web/account/account-routes.ts: currentAdminAccess: 8.0",
+    "src/interfaces/web/auth/workos/workos-signup-routes.ts: workos-signup-routes\\WorkOSSignupRoutes.constructor: 7.0",
+    "src/interfaces/web/account/account-routes.ts: account-routes\\HostedAccountRoutes.tenantOperation: 6.0",
+    "src/interfaces/web/account/quick-start-content.ts: trustedUrl: 6.0",
+    "src/interfaces/user-portal/portal.ts: showWorkspaceNavigation: 3.0",
+    "src/interfaces/web/account/organization-selection-page.ts: organizationSelectionPage: 3.0",
+    "src/interfaces/web/auth/workos/workos-signup-routes.ts: workos-signup-routes\\WorkOSSignupRoutes.openOrganization: 3.0",
+    "src/app/application.ts: (anonymous): 2.0",
+    "src/interfaces/web/account/quick-start-content.ts: quickStartContent: 2.0",
+    "src/app/application.ts: (anonymous): 1.0",
+    "src/app/application.ts: composeHostedApplication: 1.0",
+    "src/interfaces/web/account/account-routes.ts: (anonymous): 1.0",
+    "src/interfaces/web/account/account-routes.ts: account-routes\\HostedAccountRoutes.: 1.0",
+    "src/interfaces/web/account/account-routes.ts: account-routes\\HostedAccountRoutes.: 1.0",
+    "src/interfaces/web/account/account-routes.ts: account-routes\\HostedAccountRoutes.constructor: 1.0",
+    "src/interfaces/web/account/administration-pages.ts: (anonymous): 1.0",
+    "src/interfaces/web/account/administration-routes.ts: administration-routes\\AdministrationRoutes.: 1.0",
+    "src/interfaces/web/account/administration-routes.ts: administration-routes\\AdministrationRoutes.membersPage: 1.0",
+    "src/interfaces/web/account/logging-routes.ts: logging-routes\\LoggingRoutes.: 1.0",
+    "src/interfaces/web/account/logging-routes.ts: logging-routes\\LoggingRoutes.constructor: 1.0",
+    "src/interfaces/web/account/quick-start-content.ts: (anonymous): 1.0",
+    "src/interfaces/web/account/quick-start-content.ts: (anonymous): 1.0",
+    "src/interfaces/web/account/quick-start-content.ts: (anonymous): 1.0",
+    "src/interfaces/web/account/quick-start-content.ts: markdownLink: 1.0",
+    "src/interfaces/web/account/quick-start-content.ts: markdownText: 1.0",
+    "src/interfaces/web/account/quick-start-page.ts: (anonymous): 1.0",
+    "src/interfaces/web/account/quick-start-page.ts: (anonymous): 1.0",
+    "src/interfaces/web/account/quick-start-page.ts: action: 1.0",
+    "src/interfaces/web/account/quick-start-page.ts: quickStartPage: 1.0",
+    "src/interfaces/web/account/quick-start-page.ts: renderAuditStep: 1.0",
+    "src/interfaces/web/account/quick-start-page.ts: renderHeader: 1.0",
+    "src/interfaces/web/account/quick-start-page.ts: renderInternetStep: 1.0",
+    "src/interfaces/web/account/quick-start-page.ts: renderManualGuide: 1.0",
+    "src/interfaces/web/account/quick-start-page.ts: renderProvider: 1.0",
+    "src/interfaces/web/account/quick-start-page.ts: renderUsersStep: 1.0",
+    "src/interfaces/web/account/quick-start-page.ts: step: 1.0",
+    "src/interfaces/web/auth/workos/workos-signup-routes.ts: (anonymous): 1.0",
+    "src/interfaces/web/auth/workos/workos-signup-routes.ts: workos-signup-routes\\WorkOSSignupRoutes.: 1.0",
+    "src/interfaces/web/auth/workos/workos-signup-routes.ts: workos-signup-routes\\WorkOSSignupRoutes.: 1.0"
+  ],
+  "metrics": [
+    "Delta: goal miss",
+    "Review: passed",
+    "CRAP: passed",
+    "Architecture: passed",
+    "0 findings on unchanged files, reason unchanged by this PR"
+  ],
+  "factsToDeclare": [],
+  "declaredFacts": [],
+  "surfaceDifferences": [
+    "src/index.ts (imports changed src/app/application.ts)"
+  ],
+  "informational": [
+    "53 public modules, 0 snapshots changed",
+    "public module touched, declarations unchanged: src/index.ts (imports changed src/app/application.ts)",
+    "ratchet.maintainability_index.existing_file_drop_note_at: src/interfaces/web/account/members-page-layout.ts: 80.3695659257948 to 68.69398639898778"
+  ],
+  "notes": [
+    "Local eligibility is preliminary. The manager or Delamain session must verify current local checks, holds, and required independent human approval."
+  ],
+  "label": "gh pr edit <n> --repo tomer-mayara/Thermus --add-label 'T2 Need architect' --remove-label 'T1 Team review' --remove-label 'T0 Auto merge'"
+}

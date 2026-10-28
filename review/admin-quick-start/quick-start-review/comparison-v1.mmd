@@ -1,0 +1,18 @@
+%%{init: {"theme": "base", "themeVariables": {"background": "#ffffff", "primaryColor": "#f5f5f5", "primaryTextColor": "#17181d", "primaryBorderColor": "#777777", "lineColor": "#777777", "edgeLabelBackground": "#ffffff", "clusterBkg": "#fafafa", "clusterBorder": "#777777", "fontFamily": "Arial, sans-serif", "fontSize": "15px"}, "flowchart": {"htmlLabels": true, "wrappingWidth": 180, "nodeSpacing": 28, "rankSpacing": 38, "curve": "linear"}}}%%
+flowchart TB
+  browser["L2: browser application<br/>Account links and guide display"]
+  subgraph hosted["Container: Thermus Node server · hosted"]
+    app["app · TypeScript<br/>Compose hosted routes<br/>Changed: supplies configured MCP URL"]
+    web["web · TypeScript<br/>Accounts and sign-in<br/>Changed: Admin guide and creation landing"]
+    organizations["organizations · TypeScript<br/>Current membership authority"]
+    workos["workos · TypeScript / SDK<br/>Session, access, and directory"]
+    app ==>|supplies roles and configured URLs| web
+    web -->|current membership read| organizations
+    web -->|session and current access| workos
+    organizations -->|directory reads| workos
+  end
+  remote["External: WorkOS<br/>Identity and organization records"]
+  browser -->|HTTPS account requests| web
+  workos -->|HTTPS / SDK| remote
+  classDef changed fill:#fff4d6,stroke:#ae7700,stroke-width:2px,color:#17181d
+  class app,web changed

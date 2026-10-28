@@ -1,0 +1,157 @@
+── high-complexity (8 issues) ──
+
+High cyclomatic complexity means one function makes too many decisions at once. The count is the symptom; tangled responsibilities are the cause.
+
+**Untangle the decisions:**
+1. Lift guards out first — turn precondition checks into early returns so the happy path stays flat. Much of the count is preconditions wrapped around the real work.
+2. Change the shape of what remains: an `if`/`else` chain switching on one value is often a lookup table or polymorphism in disguise; a nested loop is often a filter/map pipeline.
+3. If the branches are genuinely separate jobs, extract one function per branch, each named for the responsibility it handles.
+
+Useful tip: describe each branch in one sentence. Two branches with the same sentence belong together; a branch you cannot name cleanly wants its own function.
+
+**AVOID**: merging conditions with and/or, or rewriting branches as ternaries, just to lower the score — the decisions remain, only the counter moves. You are done when a first-time reader can hold the whole function in their head.
+
+src/interfaces/web/account/administration-routes.ts:182
+src/interfaces/web/account/logging-routes.ts:34
+src/interfaces/web/account/logging-routes.ts:51
+src/interfaces/web/account/members-page-layout.ts:21
+test/acceptance/auth/hosted-admin-journey.test.ts:13
+test/acceptance/auth/hosted-workos-signup.test.ts:458
+test/acceptance/user-portal/portal.test.ts:183
+test/acceptance/user-portal/portal.test.ts:217
+
+── non-null-assertion (11 issues) ──
+
+A null check — and especially a `!` — is usually covering an underlying design problem, not handling a value that's legitimately sometimes-missing. Before you write one, say out loud what the null actually represents and how it relates to the other objects. That sentence almost always names the real fix.
+
+Two design smells hide behind most null assertions:
+
+- **A circular dependency with no clear owner.** Two objects reference each other, so neither can be built first and one sits briefly null. The fix is to give the dependency a direction: work out which object owns the other (operates on its state, is its exclusive consumer) and have the owner *create* the owned so they're initialised together — or, if it's really an upward event, give the emitter an opaque handler (no-op default) that the owner wires after construction. The mutual reference disappears.
+- **Null standing in for a special case** — "outside the grid", "not found", "not loaded yet". Model that case explicitly: a subclass or a separate class with the same interface — a null object, like a `NullCell` that behaves as a blocked cell — resolved once at the boundary so no caller ever sees null.
+
+Sometimes a null genuinely is unavoidable. Even then `!` is wrong: it swallows the failure at runtime. Replace it with an explicit check — an `if`-guard / early return, or a throw with a clear message — so a broken assumption fails loudly, where it happens.
+
+The only exception: an extremely simple method where the nullable's scope is tiny, a wrong value genuinely cannot cause a silent error, and there's a real performance gain. This should be vanishingly rare — check in with a human before settling for it.
+
+test/integration/hosted-admin/account-routes-administration-pages.test.ts:53
+test/integration/hosted-admin/account-routes-administration-pages.test.ts:67
+test/support/drivers/browser/quick-start-browser.ts:34
+test/support/drivers/browser/quick-start-browser.ts:84
+test/unit/html/quick-start-copy.test.ts:13
+test/unit/html/quick-start-copy.test.ts:16
+test/unit/html/quick-start-copy.test.ts:16
+test/unit/html/quick-start-copy.test.ts:17
+test/unit/html/quick-start-copy.test.ts:18
+test/unit/html/quick-start-page.test.ts:18
+test/unit/html/quick-start-page.test.ts:55
+
+── too-many-parameters (6 issues) ──
+
+High parameter count is a sign of coupling.
+Parameters that travel together across several calls are a missing abstraction.
+
+**Find the missing abstraction:**
+1. Look at the call sites and nearby functions — is there an existing class a group of these parameters belongs to? Search wider than the file that fired: values that keep appearing side by side are the entity, and it is usually one of the domain's own nouns — where that name already exists, it is the answer.
+2. If not, create it — then move behaviour that uses those fields onto it.
+3. If one object owns most of the parameters, it may be the natural home for this function.
+4. Use it at every site it fits, not only the one that fired — a call passing three of its fields is the same concept sitting under the threshold.
+
+Useful tip: rewrite each call site with the signature that feels natural there, and let that shape the final method. 
+
+**AVOID**: A `{ ...everything }` bag that merely renames the list hides the coupling instead of removing it. A `FooProps` or options object named after the function that takes it is the same bag: organised by method rather than by abstraction, so the next function invents another one and the concept stays unnamed. You are done when the entity carries a domain name and no call site still passes its fields loose.
+
+src/app/application.ts:168
+src/interfaces/web/account/administration-routes.ts:205
+src/interfaces/web/account/logging-routes.ts:51
+src/interfaces/web/account/logging-routes.ts:107
+src/interfaces/web/account/logging-routes.ts:113
+src/interfaces/web/auth/workos/workos-signup-routes.ts:141
+
+── non-essential-comment (57 issues) ──
+
+Comments indicate code that is not self-documenting. The smell is the *need* for the comment — the reader could not work out what the code does from the names and structure alone.
+
+Extract complex logic into well-named functions instead of explaining with a comment. A function called `applyDiscountForLoyalCustomers` does not need a header explaining what it does.
+
+Remove comments unless they impact functionality (executable annotations) or explain *why* something non-obvious was chosen (a workaround for a specific library bug, a reference to a spec). Comments that explain *what* the code does are almost always redundant — or worse, drift out of sync with the code and start lying.
+
+Do not delete an `eslint-disable` or shebang on autopilot — those are flagged separately and exempted from this rule.
+
+src/app/application.ts:16
+src/app/application.ts:17
+src/app/application.ts:30
+src/app/application.ts:31
+src/app/application.ts:32
+src/app/application.ts:45
+src/app/application.ts:46
+src/app/application.ts:47
+src/app/application.ts:59
+src/app/application.ts:62
+src/app/application.ts:73
+src/app/application.ts:84
+src/app/application.ts:117
+src/app/application.ts:138
+src/app/application.ts:139
+src/app/application.ts:149
+src/app/application.ts:158
+src/app/application.ts:163
+src/app/application.ts:191
+src/app/application.ts:236
+src/interfaces/user-portal/portal.ts:5
+src/interfaces/user-portal/portal.ts:6
+src/interfaces/user-portal/portal.ts:7
+src/interfaces/user-portal/portal.ts:22
+test/acceptance/auth/hosted-admin-journey.test.ts:56
+test/acceptance/auth/hosted-workos-signup.test.ts:542
+src/interfaces/web/account/account-routes.ts:12
+src/interfaces/web/account/account-routes.ts:13
+src/interfaces/web/account/account-routes.ts:81
+src/interfaces/web/account/account-routes.ts:82
+src/interfaces/web/account/account-routes.ts:100
+src/interfaces/web/account/account-routes.ts:126
+src/interfaces/web/account/account-routes.ts:151
+src/interfaces/web/account/account-routes.ts:152
+src/interfaces/web/account/account-routes.ts:181
+src/interfaces/web/account/account-routes.ts:182
+src/interfaces/web/account/account-routes.ts:183
+src/interfaces/web/account/account-routes.ts:191
+src/interfaces/web/account/account-routes.ts:205
+src/interfaces/web/account/administration-pages.ts:25
+src/interfaces/web/account/administration-pages.ts:41
+src/interfaces/web/account/administration-routes.ts:26
+src/interfaces/web/account/administration-routes.ts:70
+src/interfaces/web/account/administration-routes.ts:71
+src/interfaces/web/account/administration-routes.ts:72
+src/interfaces/web/account/administration-routes.ts:117
+src/interfaces/web/account/administration-routes.ts:179
+src/interfaces/web/account/administration-routes.ts:180
+src/interfaces/web/account/administration-routes.ts:181
+src/interfaces/web/account/administration-routes.ts:213
+src/interfaces/web/account/logging-routes.ts:22
+src/interfaces/web/account/logging-routes.ts:45
+src/interfaces/web/account/logging-routes.ts:127
+src/interfaces/web/account/members-page-layout.ts:14
+src/interfaces/web/auth/workos/workos-signup-routes.ts:20
+src/interfaces/web/auth/workos/workos-signup-routes.ts:21
+src/interfaces/web/auth/workos/workos-signup-routes.ts:90
+
+── oversized-file (8 issues) ──
+
+Files over 200 lines accumulate unrelated concerns. The smell is poor cohesion — a file that asks the reader to hold too many ideas at once — not the raw line count.
+
+First identify the seams: which exports, types, or helper clusters actually belong together? A long file usually splits cleanly along one of: a data type and its operations, a feature pipeline, or one concern per file.
+
+Avoid mechanical splits. Carving the file at line 200 into `foo-1.ts` and `foo-2.ts`, or moving every private helper into a `utils.ts`, satisfies the threshold without making anything clearer — the cohesion problem just hops to a new place.
+
+If the file's structure resists splitting, that is itself the signal: responsibilities are tangled. Look for a missing abstraction (a class, a small module with a focused interface) that would let related pieces move together as a unit.
+
+A concrete technique: write a one-sentence description of what each emerging seam *would* be responsible for. If you cannot, you have not found the seam yet — do not split.
+
+src/app/application.ts
+src/interfaces/web/account/account-routes.ts
+src/interfaces/web/account/administration-routes.ts
+test/acceptance/auth/hosted-signup-recovery.test.ts
+test/acceptance/auth/hosted-workos-signup.test.ts
+test/acceptance/user-portal/portal.test.ts
+test/integration/auth/workos-signup-routes.test.ts
+test/integration/hosted-admin/account-routes-administration-pages.test.ts

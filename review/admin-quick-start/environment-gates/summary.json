@@ -1,0 +1,164 @@
+{
+  "candidate": "e65d35020472dd6ee7fe2f4ec7b5b553441ef48a",
+  "base": "feeaad4d5f04212f033366c232180be4bd40da4c",
+  "checkout": "/Users/tomermayara/.codex/worktrees/quick-start-validation/Thermus",
+  "node": "v24.20.0",
+  "dependencySetup": "node_modules symlink to primary; package and lock inputs unchanged",
+  "renderer": "/Users/tomermayara/.codex/worktrees/3e6e/Thermus/.cache/lightpanda/1.0.0/lightpanda",
+  "liveLauncher": "/Users/tomermayara/.config/thermus/with-workos-staging.cjs",
+  "liveOverlay": {
+    "baseCandidate": "e65d35020472dd6ee7fe2f4ec7b5b553441ef48a",
+    "overlayPath": "test/acceptance/auth/hosted-live/signup-server.ts",
+    "overlaySha256": "785e337655eeb109a963368f1f440e84cefe637ef9512db75578509a8e97c68d",
+    "primaryHeadAtCopy": "e65d35020472dd6ee7fe2f4ec7b5b553441ef48a",
+    "status": "Manager-reviewed test-only helper overlay, pending commit at copy time; production inputs unchanged",
+    "copiedAt": "2026-10-28T17:24:39.940Z"
+  },
+  "primaryHelperStillMatches": true,
+  "productionAndPackageInputsUnchanged": true,
+  "liveJwtRedactions": 0,
+  "reports": [
+    {
+      "name": "01-self-hosted-container",
+      "command": [
+        "npm",
+        "run",
+        "test:container"
+      ],
+      "started": "2026-10-28T16:56:20.116Z",
+      "completed": "2026-10-28T16:58:28.958Z",
+      "exitCode": 0,
+      "signal": null,
+      "summaries": [
+        "ℹ tests 11",
+        "ℹ suites 1",
+        "ℹ pass 11",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ duration_ms 126876.272541"
+      ]
+    },
+    {
+      "name": "02-build-hosted",
+      "command": [
+        "npm",
+        "run",
+        "build:hosted"
+      ],
+      "started": "2026-10-28T16:58:46.793Z",
+      "completed": "2026-10-28T16:58:47.189Z",
+      "exitCode": 1,
+      "signal": null,
+      "summaries": []
+    },
+    {
+      "name": "02b-build-hosted",
+      "command": [
+        "npm",
+        "run",
+        "build:hosted"
+      ],
+      "started": "2026-10-28T16:58:58.090Z",
+      "completed": "2026-10-28T17:01:31.113Z",
+      "exitCode": 0,
+      "signal": null,
+      "summaries": [
+        "ℹ tests 3693",
+        "ℹ suites 173",
+        "ℹ pass 3693",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ duration_ms 56357.514375",
+        "ℹ tests 39",
+        "ℹ suites 0",
+        "ℹ pass 39",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ duration_ms 221.301875",
+        "ℹ tests 21",
+        "ℹ suites 0",
+        "ℹ pass 21",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ duration_ms 201.341",
+        "ℹ tests 1219",
+        "ℹ suites 60",
+        "ℹ pass 1219",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ duration_ms 23530.343875",
+        "ℹ tests 189",
+        "ℹ suites 8",
+        "ℹ pass 189",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ duration_ms 27785.016583",
+        "ℹ tests 13",
+        "ℹ suites 2",
+        "ℹ pass 13",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ duration_ms 39033.423708"
+      ]
+    },
+    {
+      "name": "03-hosted-container",
+      "command": [
+        "npm",
+        "run",
+        "test:container:hosted"
+      ],
+      "started": "2026-10-28T17:01:39.252Z",
+      "completed": "2026-10-28T17:24:24.396Z",
+      "exitCode": 0,
+      "signal": null,
+      "summaries": [
+        "ℹ tests 7",
+        "ℹ suites 0",
+        "ℹ pass 7",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ duration_ms 1363051.038"
+      ]
+    },
+    {
+      "name": "04-workos-staging-live",
+      "command": [
+        "npm",
+        "run",
+        "test:hosted-live"
+      ],
+      "started": "2026-10-28T17:24:40.065Z",
+      "completed": "2026-10-28T17:36:56.225Z",
+      "exitCode": 0,
+      "signal": null,
+      "summaries": [
+        "ℹ tests 29",
+        "ℹ suites 8",
+        "ℹ pass 29",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ duration_ms 733011.252542"
+      ]
+    }
+  ],
+  "completed": "2026-10-28T17:38:29.748Z"
+}

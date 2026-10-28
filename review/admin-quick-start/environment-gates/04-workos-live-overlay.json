@@ -1,0 +1,8 @@
+{
+  "baseCandidate": "e65d35020472dd6ee7fe2f4ec7b5b553441ef48a",
+  "overlayPath": "test/acceptance/auth/hosted-live/signup-server.ts",
+  "overlaySha256": "785e337655eeb109a963368f1f440e84cefe637ef9512db75578509a8e97c68d",
+  "primaryHeadAtCopy": "e65d35020472dd6ee7fe2f4ec7b5b553441ef48a",
+  "status": "Manager-reviewed test-only helper overlay, pending commit at copy time; production inputs unchanged",
+  "copiedAt": "2026-10-28T17:24:39.940Z"
+}

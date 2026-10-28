@@ -1,0 +1,9 @@
+{
+  "candidate": "f5f8cd2e3a2297d73a44fbc2974c6eee5a59d81e",
+  "base": "feeaad4d5f04212f033366c232180be4bd40da4c",
+  "localMermaidByteMatch": true,
+  "mermaidSha256": "12a2552973f535f85557e1446dfa7beb5faec9bf0518e76f448288e197b2fae1",
+  "registryBlocks": 20,
+  "registryBlocksUnchanged": true,
+  "githubReadback": "performed after evidence publication; see PR read-back record"
+}

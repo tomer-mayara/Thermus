@@ -1,0 +1,111 @@
+{
+  "status": "provisional history, superseded by final report for f5f8cd2e3a2297d73a44fbc2974c6eee5a59d81e",
+  "pr": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Action completed."
+      }
+    ],
+    "structuredContent": {
+      "url": "https://github.com/tomer-mayara/Thermus/pull/289",
+      "number": 289,
+      "state": "open",
+      "merged": false,
+      "mergeable": true,
+      "draft": true,
+      "body": "New organization Admins now land on Quick start, which is the first Admin menu item. The guide covers agent internet controls, audit-log setup, and invitations. Admins can copy the complete Markdown guide; a manual fallback works without clipboard access or JavaScript. IdP enrollment remains Planned.\n\nThe page checks current Admin access and uses the selected organization's trusted name plus configured portal and MCP URLs. Later sign-ins and normal workspace selection keep their existing destinations.\n\nReview: preliminary T2 due to the new browser route/creation redirect and required app-to-web configuration member. Independent architect approval of the finished candidate is required. The PR remains Draft while the final ordinary suite, environment gates, metrics, and complete review are in progress.\n\nCandidate: [e65d3502](https://github.com/tomer-mayara/Thermus/commit/e65d35020472dd6ee7fe2f4ec7b5b553441ef48a). [Validation](https://github.com/tomer-mayara/Thermus/pull/289#issuecomment-6474821759) · [Quality review](https://github.com/tomer-mayara/Thermus/pull/289#issuecomment-6474822296).",
+      "title": "Add Admin Quick start guide after organization creation",
+      "base": "main",
+      "base_sha": "feeaad4d5f04212f033366c232180be4bd40da4c",
+      "head": "codex/admin-quick-start",
+      "head_sha": "f5f8cd2e3a2297d73a44fbc2974c6eee5a59d81e",
+      "head_repo_id": 1410584924,
+      "head_repo_full_name": "tomer-mayara/Thermus",
+      "merge_commit_sha": "bd043b09909b7af0f5a797f29aa921fb1b60118f",
+      "user": {
+        "login": "tomer-mayara",
+        "name": "tomer-mayara",
+        "email": null,
+        "avatar_url": "https://avatars.githubusercontent.com/u/48661201?v=4",
+        "id": 48661201
+      },
+      "requested_reviewers": null,
+      "requested_team_reviewers": null,
+      "diff": null,
+      "comments": null,
+      "created_at": "2026-10-28T16:29:52Z",
+      "updated_at": "2026-10-28T17:42:05Z",
+      "closed_at": null,
+      "merged_at": null,
+      "commits": 4,
+      "changed_files": 49,
+      "additions": 3287,
+      "deletions": 100,
+      "display_url": "https://github.com/tomer-mayara/Thermus/pull/289",
+      "display_title": "Add Admin Quick start guide after organization creation"
+    },
+    "isError": false
+  },
+  "comments": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Action completed."
+      }
+    ],
+    "structuredContent": {
+      "comments": [
+        {
+          "url": "https://github.com/tomer-mayara/Thermus/pull/289#issuecomment-6474821759",
+          "body": "## Validation\n\nCandidate validation is in progress. The draft currently contains the approved design; implementation and final evidence will follow here.\n\nThe selected checks are the full ordinary suite, typecheck, portal build, the new Quick start browser acceptance test, applicable container and hosted gates, and the source metrics process. Focused acceptance and unit tests were run red before implementation and are now passing. Full candidate results, retries, and environment limits are pending.\n\nBase: `feeaad4d5f04212f033366c232180be4bd40da4c`. This is preliminary evidence and does not establish merge eligibility.",
+          "user": {
+            "login": "tomer-mayara",
+            "name": "tomer-mayara",
+            "email": null,
+            "avatar_url": "https://avatars.githubusercontent.com/u/48661201?v=4",
+            "id": 48661201
+          },
+          "id": 6474821759,
+          "pull_request_review_id": null,
+          "in_reply_to_id": null,
+          "created_at": null,
+          "updated_at": null,
+          "review": null,
+          "side": null,
+          "line": null,
+          "start_line": null,
+          "path": null,
+          "body_html": "<h2 dir=\"auto\">Validation</h2>\n<p dir=\"auto\">Candidate validation is in progress. The draft currently contains the approved design; implementation and final evidence will follow here.</p>\n<p dir=\"auto\">The selected checks are the full ordinary suite, typecheck, portal build, the new Quick start browser acceptance test, applicable container and hosted gates, and the source metrics process. Focused acceptance and unit tests were run red before implementation and are now passing. Full candidate results, retries, and environment limits are pending.</p>\n<p dir=\"auto\">Base: <code class=\"notranslate\">feeaad4d5f04212f033366c232180be4bd40da4c</code>. This is preliminary evidence and does not establish merge eligibility.</p>"
+        },
+        {
+          "url": "https://github.com/tomer-mayara/Thermus/pull/289#issuecomment-6474822296",
+          "body": "## Quality review\n\nReview is in progress. Quick start must be the first Admin menu item. The page uses the current selected organization and current Admin access. Invitations remain the available enrollment path; IdP enrollment stays Planned.\n\nThe final candidate will include the architecture assessment, declared impact, generated review tier, source metrics, habit-hooks result, and manager review. Required independent human approval is not yet established. Merge remains blocked while these checks are incomplete.\n\nBase: `feeaad4d5f04212f033366c232180be4bd40da4c`.",
+          "user": {
+            "login": "tomer-mayara",
+            "name": "tomer-mayara",
+            "email": null,
+            "avatar_url": "https://avatars.githubusercontent.com/u/48661201?v=4",
+            "id": 48661201
+          },
+          "id": 6474822296,
+          "pull_request_review_id": null,
+          "in_reply_to_id": null,
+          "created_at": null,
+          "updated_at": null,
+          "review": null,
+          "side": null,
+          "line": null,
+          "start_line": null,
+          "path": null,
+          "body_html": "<h2 dir=\"auto\">Quality review</h2>\n<p dir=\"auto\">Review is in progress. Quick start must be the first Admin menu item. The page uses the current selected organization and current Admin access. Invitations remain the available enrollment path; IdP enrollment stays Planned.</p>\n<p dir=\"auto\">The final candidate will include the architecture assessment, declared impact, generated review tier, source metrics, habit-hooks result, and manager review. Required independent human approval is not yet established. Merge remains blocked while these checks are incomplete.</p>\n<p dir=\"auto\">Base: <code class=\"notranslate\">feeaad4d5f04212f033366c232180be4bd40da4c</code>.</p>"
+        }
+      ],
+      "url": "https://github.com/tomer-mayara/Thermus/issues/289",
+      "title": "tomer-mayara/Thermus Issue #289 comments",
+      "display_url": "https://github.com/tomer-mayara/Thermus/issues/289",
+      "display_title": "tomer-mayara/Thermus Issue #289 comments"
+    },
+    "isError": false
+  }
+}
