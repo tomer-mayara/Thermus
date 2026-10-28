@@ -7,10 +7,10 @@ credentials in product forms, outside this chat.
 Organization portal: {{portal_base_url}}
 Thermus MCP endpoint: {{mcp_url}}
 
-## 1. Turn off direct internet access and connect Thermus
+## 1. Turn off direct internet access to AI Agents and connect Thermus
 
 Select the correct organization in each provider before changing its controls.
-Turn off direct web access, then connect Thermus for search and page retrieval.
+Turn off direct web access to AI Agents, then connect Thermus for search and page retrieval.
 Keep Thermus and required agent services allowed. Thermus does not enforce
 these external network settings.
 
