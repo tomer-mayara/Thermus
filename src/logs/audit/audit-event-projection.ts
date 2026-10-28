@@ -1,4 +1,4 @@
-import type { AdministrationChange, AuditContext, AuditEvent, DestinationChange, ToolCompletion, ToolInput } from './audit-log.ts';
+import type { AdministrationChange, AuditContext, AuditEvent, AuditResult, DestinationChange, RelayedToolCompletion, ToolCompletion, ToolInput } from './audit-log.ts';
 import { AUDIT_CAPTURE_LIMITS, auditActorName, captureAuditResult, redactAuditText, redactAuditUrl } from './audit-content.ts';
 
 const toolStatuses = new Set(['success', 'access_denied', 'fetch_failed', 'processing_failed', 'cancelled', 'busy', 'search_failed', 'withheld']);
@@ -58,6 +58,42 @@ export function projectToolCompletion(completion: ToolCompletion): AuditEvent | 
     result: { text: '', originalBytes: Buffer.byteLength(result), capturedBytes: AUDIT_CAPTURE_LIMITS.resultBytes, truncated: false } };
   const projected = { ...event, result: captureAuditResult(result, Buffer.byteLength(JSON.stringify(event))) };
   return Buffer.byteLength(JSON.stringify(projected)) <= AUDIT_CAPTURE_LIMITS.eventBytes ? projected : undefined;
+}
+
+/**
+ * The checked copy of a tool completion that the AuditLog of a tenant projected and relayed (SO-05), or undefined when
+ * it breaks a rule of the projection. A tenant renders untrusted pages, so each field is checked and copied again, and
+ * the input and the result text are redacted again. The result counts of the tenant stay: the original is not here.
+ */
+export function projectRelayedToolCompletion(value: unknown): RelayedToolCompletion | undefined {
+  if (!isRecord(value) || value.eventName !== 'mcp.tool.completed' || !isRecord(value.actor) || !isRecord(value.input)) return undefined;
+  const context = contextOf(value as unknown as AuditContext);
+  const toolInput = inputOf(value as unknown as ToolCompletion);
+  const outcome = relayedOutcomeOf(value);
+  if (context === undefined || toolInput === undefined || outcome === undefined) return undefined;
+  const event: RelayedToolCompletion = { ...context, eventName: 'mcp.tool.completed', ...toolInput, ...outcome };
+  return Buffer.byteLength(JSON.stringify(event)) <= AUDIT_CAPTURE_LIMITS.eventBytes ? event : undefined;
+}
+
+function relayedOutcomeOf(value: Readonly<Record<string, unknown>>): Pick<RelayedToolCompletion, 'operationId' | 'status' | 'durationMs' | 'result'> | undefined {
+  const { operationId, status, durationMs } = value;
+  const result = relayedResultOf(value.result);
+  if (result === undefined || !metadata(operationId) || !toolStatuses.has(status as string)) return undefined;
+  if (typeof durationMs !== 'number' || !Number.isFinite(durationMs) || durationMs < 0) return undefined;
+  return { operationId, status: status as RelayedToolCompletion['status'], durationMs, result };
+}
+
+function relayedResultOf(value: unknown): AuditResult | undefined {
+  if (!isRecord(value) || typeof value.text !== 'string' || typeof value.truncated !== 'boolean') return undefined;
+  const { originalBytes } = value;
+  if (typeof originalBytes !== 'number' || !Number.isSafeInteger(originalBytes) || originalBytes < 0) return undefined;
+  const text = redactAuditText(value.text.toWellFormed());
+  const capturedBytes = Buffer.byteLength(text);
+  return capturedBytes <= AUDIT_CAPTURE_LIMITS.resultBytes ? { text, originalBytes, capturedBytes, truncated: value.truncated } : undefined;
+}
+
+function isRecord(value: unknown): value is Readonly<Record<string, unknown>> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 export function projectAdministrationChange(change: AdministrationChange): AuditEvent | undefined {

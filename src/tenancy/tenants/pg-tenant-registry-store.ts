@@ -1,4 +1,5 @@
 import type { BoundedSqlRuntime } from '../../runtime/sql/bounded-sql-runtime.ts';
+import type { GatewayWrite, ResumeMark, TenantGatewayStore } from './tenant-gateway-store.ts';
 import type { InsertRequestedResult, ReadRoutesResult, RegistryCount, TenantRegistryStore, TenantRoute, TenantState } from './tenant-registry-store.ts';
 
 // This mode conflicts with itself and with every row write, but not with a plain read: concurrent requests take
@@ -8,8 +9,15 @@ const COUNT_ROWS = `SELECT state, count(*)::integer AS rows, bool_or(organizatio
   FROM thermus_admin.tenants GROUP BY state`;
 const INSERT_REQUESTED = "INSERT INTO thermus_admin.tenants (organization_id, state) VALUES ($1, 'requested')";
 const READ_ROUTES = 'SELECT organization_id, state, internal_url FROM thermus_admin.tenants';
+// Each gateway write names the state that it starts from, so concurrent calls, also of another process, move a row
+// one time. The activity write keeps the state and updated_at: it is not a change of the row.
+const MARK_RESUMING = `UPDATE thermus_admin.tenants SET state = 'deploying', updated_at = now()
+  WHERE organization_id = $1 AND state = 'suspended' AND render_service_id IS NOT NULL RETURNING render_service_id`;
+const RESTORE_SUSPENDED = `UPDATE thermus_admin.tenants SET state = 'suspended', updated_at = now()
+  WHERE organization_id = $1 AND state = 'deploying' RETURNING organization_id`;
+const RECORD_ACTIVE = 'UPDATE thermus_admin.tenants SET last_active_at = now() WHERE organization_id = $1 RETURNING organization_id';
 
-export class PgTenantRegistryStore implements TenantRegistryStore {
+export class PgTenantRegistryStore implements TenantRegistryStore, TenantGatewayStore {
   private readonly runtime: BoundedSqlRuntime;
 
   constructor(runtime: BoundedSqlRuntime) { this.runtime = runtime; }
@@ -31,6 +39,28 @@ export class PgTenantRegistryStore implements TenantRegistryStore {
   async readRoutes(): Promise<ReadRoutesResult> {
     const result = await this.runtime.run(async (session) => routesOf(await session.query(READ_ROUTES)));
     return result.status === 'complete' ? { status: 'complete', routes: result.value } : { status: 'unavailable' };
+  }
+
+  // An unconfirmed mark gives no service ID, so no resume goes: it counts as unavailable.
+  async markResuming(organizationId: string): Promise<ResumeMark> {
+    const result = await this.runtime.run(async (session) => session.query(MARK_RESUMING, [organizationId], true));
+    if (result.status !== 'complete') return { status: 'unavailable' };
+    const serviceId = result.value[0]?.render_service_id;
+    return typeof serviceId === 'string' ? { status: 'resuming', serviceId } : { status: 'moved' };
+  }
+
+  restoreSuspended(organizationId: string): Promise<GatewayWrite> {
+    return this.write(RESTORE_SUSPENDED, organizationId);
+  }
+
+  recordActive(organizationId: string): Promise<GatewayWrite> {
+    return this.write(RECORD_ACTIVE, organizationId);
+  }
+
+  private async write(text: string, organizationId: string): Promise<GatewayWrite> {
+    const result = await this.runtime.run(async (session) => (await session.query(text, [organizationId], true)).length > 0);
+    if (result.status !== 'complete') return { status: 'unavailable' };
+    return { status: result.value ? 'recorded' : 'moved' };
   }
 }
 

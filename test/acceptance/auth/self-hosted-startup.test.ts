@@ -189,7 +189,7 @@ describe('Self-hosted server startup with one persistent installation', () => {
   test('Given an unknown command, when the process starts, then it stops with status 2 before it listens and creates no local data', { timeout: 60_000 }, async (t) => {
     const directory = dataDirectory(t);
 
-    const server = ServerProcess.launch(t, selfHostedSettings(directory), ['users', 'promote', 'alice@example.com']);
+    const server = ServerProcess.launch(t, selfHostedSettings(directory), { args: ['users', 'promote', 'alice@example.com'] });
 
     assert.equal(await server.listeningOrExit(), undefined, server.output);
     assert.deepEqual(await server.exited(), { code: 2, signal: null });

@@ -4,6 +4,7 @@ import { AuditSnapshots, type AuditSnapshotsOptions, type RevisionBoundAuditSink
 import type { ToolOperations } from './fetch-tool.ts';
 import type { HostedLoggingStorage } from './logging-storage.ts';
 import type { TenantProvisioningSettings } from '../runtime/config/mcp-tenants-config.ts';
+import type { GatewayParts } from './mcp-gateway-composition.ts';
 import type { WorkOS } from '@workos-inc/node';
 import type { JWTVerifyGetKey } from 'jose';
 import {
@@ -53,6 +54,9 @@ export interface WorkOSApplicationParts {
   readonly signup?: { readonly enabled: boolean; readonly documents?: SignupDocuments };
   // Explicit composition can supply the billing of its organizations. Production uses BillingFree.
   readonly billing?: Billing;
+  // With MCP_TENANTS_ENABLED on: MCPServer forwards each admitted request to the tenant of the organization, and
+  // /internal/audit takes the audit relays of the tenants. Without it, the control plane serves the tools as today.
+  readonly gateway?: GatewayParts;
 }
 
 // No retry and a short timeout: each WorkOS call runs during a browser or MCP request.
@@ -65,9 +69,9 @@ export async function openWorkOSApplication(config: RouteConfig, logger: SystemL
   const connection = await openWorkOSConnection(config, logger, environment);
   const { createHostedToolOperations } = await import('./fetch-tool.ts');
   const operations = createHostedToolOperations(environment, logger);
-  const { loadFreeTenantLimit } = await import('../runtime/config/free-tenant-limit-config.ts');
-  const freeTenantLimit = loadFreeTenantLimit(environment);
+  const gateway = (await import('./mcp-gateway-composition.ts')).gatewayStartOf(environment);
   const provisioningSettings = await tenantProvisioningSettingsOf(environment);
+  gateway.requireSigningKeyIn(provisioningSettings?.gatewayPublicKey);
   if (new URL(config.publicBaseUrl).pathname !== '/') throw new Error('The hosted portal requires PUBLIC_BASE_URL with the base path /.');
   const { assertHostedRenderer } = await import('./hosted-renderer-startup.ts');
   await assertHostedRenderer(environment.LIGHTPANDA_BIN);
@@ -75,12 +79,12 @@ export async function openWorkOSApplication(config: RouteConfig, logger: SystemL
   const portal = await HostedPortal.load(['https://api.workos.com', connection.settings.authkitIssuer]);
   const { openLoggingStorage } = await import('./logging-storage.ts');
   await using resources = new AsyncDisposableStack();
-  const opened = await openLoggingStorage(environment, logger, freeTenantLimit);
+  const opened = await openLoggingStorage(environment, logger, gateway.freeTenantLimit);
   const loggingStorage = provisioningSettings === undefined ? opened : (await import('./tenant-provisioning.ts')).withTenantProvisioning(opened, {
     settings: provisioningSettings, publicBaseUrl: config.publicBaseUrl, authkitIssuer: connection.settings.authkitIssuer, logger,
   });
   if (loggingStorage !== undefined) resources.defer(() => loggingStorage.close());
-  const application = await composeWorkOSApplication(config, connection, { logger, toolOperations: operations, signup, loggingStorage });
+  const application = await composeWorkOSApplication(config, connection, { logger, toolOperations: operations, signup, loggingStorage, gateway: gateway.partsOn(loggingStorage) });
   resources.move();
   return portal.withApplication(application);
 }
@@ -127,7 +131,7 @@ export async function composeWorkOSApplication(config: RouteConfig, connection: 
     loggingStorage = { ...storage, close: () => { snapshots.close(); return storage.close(); } };
   }
   const billing = await billingOf(parts);
-  const providerParts = await workosProviderParts(config, connection, { ...parts, buildServer, billing });
+  const providerParts = await workosProviderParts(config, connection, { ...parts, buildServer, billing, audit });
   const application = composeHostedApplication(config, providerParts, {
     reportFailure: accountFailureReporter(parts.logger),
     changeRecords: accountChangeRecorder(parts.logger),
@@ -154,7 +158,7 @@ async function billingOf(parts: WorkOSApplicationParts): Promise<Billing> {
   return new BillingFree();
 }
 
-async function workosProviderParts(config: RouteConfig, connection: WorkOSConnection, parts: WorkOSApplicationParts & { readonly billing: Billing }): Promise<HostedProviderParts & { readonly organizations: WorkOSOrganizations }> {
+async function workosProviderParts(config: RouteConfig, connection: WorkOSConnection, parts: WorkOSApplicationParts & { readonly billing: Billing; readonly audit: AuditLog }): Promise<HostedProviderParts & { readonly organizations: WorkOSOrganizations }> {
   const { WorkOSOrganizations, workosMembershipReads } = await import('../accounts/providers/workos/workos-organizations.ts');
   const { WorkOSAuthProvider } = await import('../accounts/providers/workos/workos-auth-provider.ts');
   const { WorkOSBrowserSession } = await import('../accounts/providers/workos/workos-browser-session.ts');
@@ -175,6 +179,7 @@ async function workosProviderParts(config: RouteConfig, connection: WorkOSConnec
     ...parts.onboarding, authority, workos, settings, records: accountChangeRecorder(logger), billing: parts.billing, directory: organizations,
   });
   const session = new WorkOSBrowserSession({ workos, settings, authority, ...(onboarding === undefined ? {} : { onboarding }) });
+  const gateway = parts.gateway === undefined ? undefined : (await import('./mcp-gateway-composition.ts')).gatewayRoutesOf(parts.gateway, { authority, audit: parts.audit, logger });
   const server = new MCPServer({
     auth: {
       verifier: provider,
@@ -185,6 +190,7 @@ async function workosProviderParts(config: RouteConfig, connection: WorkOSConnec
       accessDeniedDescription: accessDeniedDescription(config.publicBaseUrl),
     },
     buildServer,
+    forward: gateway?.forward,
     reportFailure: operatorFailureReporter(logger),
   });
   const mcp = new ProtectedResourceEndpoint({ server, mcpResourceUrl: config.mcpResourceUrl, resourceMetadataUrl: config.resourceMetadataUrl, authorizationServer: settings.authkitIssuer });
@@ -201,5 +207,5 @@ async function workosProviderParts(config: RouteConfig, connection: WorkOSConnec
     handles: (path: string) => signupRoutes.handles(path) || sessionRoutes.handles(path),
     handle: (request: Request) => signupRoutes.handles(new URL(request.url).pathname) ? signupRoutes.handle(request) : sessionRoutes.handle(request),
   };
-  return { session, accessResolver: provider, organizations, mcp, browserRoutes };
+  return { session, accessResolver: provider, organizations, mcp, browserRoutes, internalRoutes: gateway?.internalRoutes };
 }

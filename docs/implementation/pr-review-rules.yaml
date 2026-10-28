@@ -114,7 +114,10 @@ protected_paths:
     # is an architecture fact. On 2026-10-24 the list shrank from 28 entries
     # over 101 source files to 13 entries over 33 source files; the
     # sensitiveBehavior flag covers the rest. On 2026-10-27 SO-03 added the five
-    # files that admit a tenant request: 18 entries over 45 source files.
+    # files that admit a tenant request: 18 entries over 45 source files. On
+    # 2026-10-27 SO-05 added the five admission files of the MCP gateway and the
+    # audit relay route, by the manager's decision: 23 entries over 52 source
+    # files.
     paths:
       - src/pipelines/providers/website-fetcher/network-policy.ts # which destinations may be fetched
       - src/pipelines/html-processing/prompt-injection-remover/** # untrusted text that reaches the model
@@ -129,6 +132,11 @@ protected_paths:
       - src/accounts/identity/access-context-claims.ts # its claims and the hash of the bearer token
       - src/accounts/identity/context-access-resolver.ts # the access of a tenant request: the signed grants
       - src/app/tenant-requests.ts # the 403 of a tenant before MCP handling
+      - src/interfaces/mcp/mcp-gateway.ts # the forward step decides by row
+      - src/interfaces/mcp/mcp-gateway-forward.ts # the signed context of each forward
+      - src/interfaces/mcp/mcp-gateway-headers.ts # no cookie, client context, or hop-by-hop header reaches a tenant
+      - src/interfaces/web/internal/audit-relay-route.ts # the internal host and the one capture
+      - src/interfaces/web/internal/audit-relay-check.ts # the organization and user rule of a relay
       - src/accounts/providers/workos/session-cookies.ts # cookie sealing
       - src/accounts/providers/workos/workos-signup.ts # one-time grant authority
       - src/runtime/http/client-address.ts # trusted proxy address
@@ -194,6 +202,7 @@ public_surface:
     http:
       - src/runtime/http/client-address.ts
       - src/runtime/http/request-cancellation.ts
+      - src/runtime/http/bounded-body.ts # the bounded read of a request body that the MCP gateway and the relay route share (SO-05)
     sql:
       - src/runtime/sql/bounded-sql-runtime.ts # the one bounded SQL runtime of the stores; app opens it
     tenants:

@@ -93,3 +93,35 @@ describe('Signed access context', () => {
     assert.throws(() => new AccessContextVerifier({ publicKeys: [], organizationId }), TypeError);
   });
 });
+
+describe('Signed access context of an audit relay', () => {
+  test('Given a relay with the context of a request, when the control plane verifies it without a bearer token, then it gives the user, the organization, and the grants', async () => {
+    const signedAt = new Date();
+
+    const verification = await verifier.verifyRelay(await signer.sign(access, token, signedAt));
+
+    assert.ok(verification.status === 'verified');
+    assert.deepEqual(verification.context, { ...access, expiresAtUnixSeconds: Math.floor(signedAt.getTime() / 1_000) + 120 });
+  });
+
+  test('Given a context that expired at most 30 seconds before the relay arrives, when the control plane verifies it, then it accepts it, because the event can wait 30 seconds in the relay of the tenant', async () => {
+    const expiredWhileWaiting = await signer.sign(access, token, new Date(Date.now() - 145_000));
+
+    assert.equal((await verifier.verifyRelay(expiredWhileWaiting)).status, 'verified');
+    assert.deepEqual(await verifier.verify(expiredWhileWaiting, token), { status: 'refused', reason: 'expired' });
+  });
+
+  const relayRefusals: ReadonlyArray<[string, () => Promise<string | null>, string]> = [
+    ['a context that expired more than 35 seconds before', async () => signer.sign(access, token, new Date(Date.now() - 160_000)), 'expired'],
+    ['a context for another organization', async () => signer.sign({ ...access, organizationId: 'org_01OTHER' }, token), 'organization'],
+    ['the signature of another key pair', async () => new AccessContextSigner(otherGateway.privateKey).sign(access, token), 'signature'],
+    ['a changed body', async () => changedBody(await signer.sign(access, token)), 'signature'],
+    ['no context', async () => null, 'missing'],
+    ['a value that is not a JWT', async () => 'not.a.context', 'malformed'],
+  ];
+  for (const [label, input, reason] of relayRefusals) {
+    test(`Given a relay with ${label}, when the control plane verifies it, then it refuses the context with the reason ${reason}`, async () => {
+      assert.deepEqual(await verifier.verifyRelay(await input()), { status: 'refused', reason });
+    });
+  }
+});

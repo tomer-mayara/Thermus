@@ -31,6 +31,17 @@ export interface McpRequestScope {
   readonly buildServer?: RequestServerBuilder;
 }
 
+// A request that passed the bearer check and the access check: its decided access, its bearer token, and its
+// lifetime, for a step that answers it in place of the local MCP server.
+export interface McpForwardedRequest {
+  readonly context: RequestContext;
+  readonly bearerToken: string;
+  readonly lifetime: McpRequestLifetime;
+}
+
+// Answers an admitted request in place of the local dispatch, such as the gateway to the tenant of the organization.
+export type McpForwardStep = (request: Request, forwarded: McpForwardedRequest) => Promise<Response>;
+
 export interface FailureReport {
   readonly step: 'token-verification' | 'access-resolution';
   readonly cause: unknown;
@@ -67,10 +78,13 @@ export class MCPServer {
   private readonly httpHandler = createMcpHandler(({ authInfo }) => this.serverForRequest(authInfo));
   private readonly http?: { authenticate: BearerGate; resolveAccess: AccessGate };
   private readonly buildServer?: RequestServerBuilder;
+  private readonly forward?: McpForwardStep;
 
   constructor(options?: {
     auth: McpHttpAuthOptions;
     buildServer?: RequestServerBuilder;
+    // With a forward step, each admitted request goes to it, and no local MCP server runs.
+    forward?: McpForwardStep;
     reportFailure: FailureReporter;
   }) {
     if (options !== undefined) {
@@ -80,6 +94,7 @@ export class MCPServer {
         resolveAccess: accessGate(auth, reportFailure),
       };
       this.buildServer = options.buildServer;
+      this.forward = options.forward;
     }
   }
 
@@ -114,6 +129,7 @@ export class MCPServer {
     signal.throwIfAborted();
     if (context instanceof Response) return context;
     const lifetime: McpRequestLifetime = Object.freeze({ signal, track: <T>(task: Promise<T>) => this.track(this.tasks, task) });
+    if (this.forward !== undefined) return this.forward(request, { context, bearerToken: authInfo.token, lifetime });
     return this.dispatchRequest(request, this.newRequestAuthBoundTo(authInfo, { context, lifetime, buildServer: scope?.buildServer }), signal);
   }
 

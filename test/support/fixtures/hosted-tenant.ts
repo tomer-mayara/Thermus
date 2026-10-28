@@ -22,6 +22,12 @@ export function gatewayKeyPairOf(): GatewayKeyPair {
   return { publicKeyPem: publicKey.export({ type: 'spki', format: 'pem' }).toString(), privateKey };
 }
 
+// The gateway settings of a control plane with MCP_TENANTS_ENABLED on (SO-05): the PEM private key of the pair and the
+// origin of the control plane on the private network, which is also the host of its relay route.
+export function gatewaySigningSettingsOf(keys: GatewayKeyPair = gatewayKeyPairOf(), controlPlaneInternalUrl = 'http://thermus-control-plane:8080'): Readonly<Record<string, string>> {
+  return { GATEWAY_SIGNING_KEY: keys.privateKey.export({ type: 'pkcs8', format: 'pem' }).toString(), CONTROL_PLANE_INTERNAL_URL: controlPlaneInternalUrl };
+}
+
 // The tenant settings of plan section 4.1 for the public base URL https://thermus.example/. They hold no WorkOS
 // secret, no database setting, and no Render or Stripe setting.
 export function tenantSettingsOf(publicKeyPem: string, controlPlaneInternalUrl: string): Readonly<Record<string, string>> {

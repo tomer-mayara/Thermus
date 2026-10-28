@@ -159,6 +159,7 @@ test('Given production storage configuration, when the tenant registry requests 
   assert.deepEqual(await storage.tenants.requests.request('org_A'), { status: 'requested' });
   assert.deepEqual(await storage.tenants.requests.request('org_B'), { status: 'full' }, 'The composition applies the supplied FREE_TENANT_LIMIT');
   assert.deepEqual(await storage.tenants.lookup.find('org_A'), { status: 'found', state: 'requested', internalUrl: null });
+  assert.deepEqual(await storage.tenants.gateway.recordActive('org_A'), { status: 'recorded' }, 'The writes of the gateway use the same store');
   assert.equal(await site.settingsConnections(), 1, 'The registry and the settings store share one pool');
   assert.equal((await storage.store.save('org_A', null, { endpoint: 'https://collector.example/v1/logs', auth: 'none', enabled: false, encryptedCredential: null })).status, 'saved');
   await storage.close();

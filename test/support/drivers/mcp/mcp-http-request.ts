@@ -53,6 +53,19 @@ export async function rpcResult(response: Response): Promise<Record<string, unkn
   return message.result;
 }
 
+/** The status, the Retry-After header, and the OAuth error body of an answer that refuses a request before MCP runs. */
+export interface HttpRefusal {
+  readonly status: number;
+  readonly retryAfter: string | null;
+  readonly error: unknown;
+  readonly description: unknown;
+}
+
+export async function httpRefusal(response: Response): Promise<HttpRefusal> {
+  const body = await response.json() as { error?: unknown; error_description?: unknown };
+  return { status: response.status, retryAfter: response.headers.get('Retry-After'), error: body.error, description: body.error_description };
+}
+
 export async function toolJson<T>(response: Response): Promise<T> {
   assert.equal(response.status, 200);
   const result = await rpcResult(response);

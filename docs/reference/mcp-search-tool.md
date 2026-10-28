@@ -168,6 +168,27 @@ record. Refusals before dispatch get no tool completion or stage record.
 Logger or sink failures cannot change the result or repeat the operation.
 Fetch completion fields retain their existing contract.
 
+## Through the MCP gateway
+
+With `MCP_TENANTS_ENABLED=true` (SO-05), the tenant of the organization runs
+each search, and the control plane forwards the request. The answers of the
+gateway for a tenant that is not ready, is resumed, failed, or restarts are
+those of the [fetch tool](mcp-fetch-tool.md#answers-of-the-mcp-gateway); a
+restart before the first answer byte gives the search call
+`Server restarted. Try again in a minute.` with `isError: true`.
+
+All tenants of a Render region send their Brave searches from the same
+outbound addresses, and Brave refused 10 searches at the same time
+([SO-01e](../implementation/self-onboarding-s1.md#findings)). So the gateway
+lets 5 searches run at a time across all tenants. A request takes one place for
+each `tools/call` of `search` that it holds, until its answer stream ends; the
+gateway tells a search from a fetch by the tool name `params.name` of the
+JSON-RPC message that it forwards, and it reads no argument. The sixth search
+gets `Server busy. Try again later.` with `isError: true`, as the capacity of a
+tenant gives it, but no completion record and no audit event: the gateway
+refused it before a tenant ran it, and it writes one system log line. A Brave
+API key or a dedicated outbound IP address stays a later option.
+
 ## Verification
 
 [SEARCH-05](../implementation/search-05.md) records public MCP verification.

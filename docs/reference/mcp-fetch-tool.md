@@ -239,6 +239,33 @@ a free tenant on `0.5c-512mb`, and 10 for a team tenant on `1c-2g`. The next
 call above the capacity of a tenant gets the same busy result and completion
 status `busy`, and the tenant relays that audit event to the control plane.
 
+### Answers of the MCP gateway
+
+With `MCP_TENANTS_ENABLED=true` (SO-05), the control plane forwards each MCP
+request that passes the bearer check and the access check to the tenant of its
+organization, and the tenant runs the tool. A client then sees these answers of
+the gateway itself; the
+[authentication design](../design/authentication-design.md#mcp-gateway-and-audit-relay)
+gives the rules.
+
+| Condition | Answer |
+| --- | --- |
+| The tenant is requested, being created, or deploying; or the organization has no tenant yet, and the gateway requests one | HTTP `503`, `Retry-After: 15`, `error_description` "Your workspace is not ready yet. Try again in 15 seconds." |
+| The tenant was suspended, and the gateway resumes it | HTTP `503`, `Retry-After: 60`, "Your workspace is restarting after a pause. Try again in a minute." |
+| The setup of the tenant failed | HTTP `503`, "Workspace setup failed. We have been notified and will fix it." |
+| The tenant was deleted | HTTP `503`, "Your workspace is not available. Contact Thermus support." |
+| No free tenant place is left | HTTP `503`, "All free workspaces are in use. Try again later." |
+| The tenant registry cannot be read for more than 60 s | HTTP `503`, `Retry-After: 15`, "The service is temporarily unavailable. Try again in 15 seconds." |
+| The tenant restarts before its first answer byte: HTTP `502` or a reset connection | One tool error with `isError: true` and `Server restarted. Try again in a minute.` for the call; no completion record or audit event, because the tool did not end in the tenant |
+| The tenant restarts after its answer started | The gateway ends the answer stream; the client gets no result |
+
+Each `503` has the JSON body
+`{"error":"temporarily_unavailable","error_description":"..."}`, and the MCP
+SDK client reports it as a failed request. These answers write one system log
+line each and no audit event: no tool ran. The bearer challenge, the access
+denials, the `413` of the request-body limit, and the Origin check stay as
+above.
+
 ## Renderer setup report
 
 A renderer setup failure is a renderer process that cannot start. The fetcher

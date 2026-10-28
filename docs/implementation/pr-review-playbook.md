@@ -91,7 +91,7 @@ reasons applies:
 | Read path | `.code-quality-exceptions.yaml`, `.ast-metrics-baseline.yaml`, `.agent/**`. The test gate policy and the metrics review guide count only when the diff removes lines from them. |
 | New third-party code | A component gains an npm package or a Node builtin in `allowed_external_imports` or `allowed_node_builtins`. `package.json` gains or loses a dependency key. `pnpm-workspace.yaml`, `patches/**`, `tsconfig*.json`, `.npmrc`, `.nvmrc`, or `.gitmodules` changes. |
 | Deploy and data | `Dockerfile*`, `.dockerignore`, `compose.yaml`, `docker/**`, `migrations/**`, `.env.example` |
-| Security guarantee | The 18 entries of `protected_paths.security`: files whose behavior is a guarantee even when their declarations stay the same |
+| Security guarantee | The 23 entries of `protected_paths.security`: files whose behavior is a guarantee even when their declarations stay the same |
 | Client contract file | `src/index.ts` and `src/interfaces/mcp/fetch-tool-schema.ts` (`protected_paths.contracts`) |
 | Contract document | `docs/reference/**`. A prose edit cannot be told from a contract edit. |
 | Fewer test cases | The diff removes more test cases than it adds. |

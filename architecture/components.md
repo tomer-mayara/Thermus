@@ -63,13 +63,14 @@ tables wait for Slice 3. The Collector is the configured customer destination,
 including compatible OTLP services such as Axiom; WorkOS includes AuthKit.
 The portal's HTTP arrow covers account requests and server-provided assets.
 The tenant server is the same image with `THERMUS_ROLE=tenant` (SO-03): it
-serves `/healthz` and `/mcp` for one organization and holds no secret. Dotted
-arrows are planned: the gateway that forwards MCP requests with a signed access
-context and the route `/internal/audit` that receives the audit relay come with
-SO-05, so no production deployment runs a tenant yet. With
-`MCP_TENANTS_ENABLED=true`, the provisioner of the server creates each tenant
-server as a Render private service through the Render API (SO-06); Render pulls
-the image from GHCR by digest.
+serves `/healthz` and `/mcp` for one organization and holds no secret. With
+`MCP_TENANTS_ENABLED` on (SO-05), the server forwards each admitted MCP request
+to the tenant of its organization with a signed access context, and its route
+`/internal/audit` receives the audit relay of the tenant. With the same switch,
+the provisioner of the server creates each tenant server as a Render private
+service through the Render API (SO-06); Render pulls the image from GHCR by
+digest. The switch is off by default, and no production deployment runs a
+tenant yet.
 
 ```mermaid
 %%{init: {"flowchart": {"wrappingWidth": 130, "nodeSpacing": 20, "rankSpacing": 35}}}%%
@@ -95,8 +96,8 @@ flowchart TB
   hosted_server -->|OTLP JSON / HTTPS| hosted_collector
   hosted_server -->|execFile / JSON| hosted_renderer
   hosted_server -->|HTTPS REST / provisioner| hosted_render
-  hosted_server -.->|planned SO-05: MCP + signed context / private HTTP| hosted_tenant
-  hosted_tenant -.->|audit relay / private HTTP; route planned| hosted_server
+  hosted_server -->|MCP + signed context / private HTTP| hosted_tenant
+  hosted_tenant -->|audit relay + same context / private HTTP| hosted_server
   hosted_tenant -->|HTTPS / JWKS only| hosted_workos
   hosted_tenant -->|execFile / JSON| hosted_renderer
   hosted_renderer -->|HTTP / HTTPS| hosted_public
@@ -146,7 +147,7 @@ roots, responsibilities, and public contracts.
 | Container or artifact | Registry owners that contribute |
 | --- | --- |
 | Both Node server editions | `app`, `config`, `http`, `system-logs`, `mcp`, `web`, `identity`, `execution`, `page-fetch`, `search`, `html-processing`, `website-fetcher`, `search-engine` |
-| Hosted server additions | `organizations`, `billing`, `workos`, `audit-logs` (capture, dispatch, settings, removal intent, and Test), `sql` (the bounded SQL runtime), `tenants` (the tenant registry and provisioner), `render` (the Render adapter of the provisioner) |
+| Hosted server additions | `organizations`, `billing`, `workos`, `audit-logs` (capture, dispatch, settings, removal intent, Test, and the check of relayed events), `sql` (the bounded SQL runtime), `tenants` (the tenant registry, the provisioner, and the writes of the gateway), `render` (the Render adapter of the provisioner); with `MCP_TENANTS_ENABLED` on, `mcp` (the MCP gateway) and `web` (the relay route `/internal/audit`) |
 | Hosted tenant server (same image, `THERMUS_ROLE=tenant`) | `app` (tenant composition and routes), `config` (role and tenant settings), `http`, `system-logs`, `mcp`, `identity` (signed access context and its access), `workos` (Connect token check only), `audit-logs` (relay sink only), `web` (the `product:access` name only), and the tool owners `execution`, `page-fetch`, `search`, `html-processing`, `website-fetcher`, `search-engine` |
 | Local server addition | `better-auth` |
 | Local administration CLI | `app`, `cli`, `config`, `http` (client-address helper), `system-logs`, `identity`, `better-auth` |
@@ -290,15 +291,16 @@ than a fallback identity. Profile data does not grant access.
 
 Scope: one tenant server container, the hosted image with
 `THERMUS_ROLE=tenant` (SO-03). The control plane is a supporting Level 2
-container: its gateway, which signs the `Thermus-Access` context of each
-request, and its route `/internal/audit` are planned for SO-05 and drawn
-dotted. Thick arrows show composition; solid arrows show runtime calls. The
-tool owners and the renderer keep the tool processing view above.
+container: its MCP gateway, which signs the `Thermus-Access` context of each
+request, and its route `/internal/audit` come with SO-05 and run only with
+`MCP_TENANTS_ENABLED` on; the view below gives them. Thick arrows show
+composition; solid arrows show runtime calls. The tool owners and the renderer
+keep the tool processing view above.
 
 ```mermaid
 %%{init: {"flowchart": {"wrappingWidth": 140, "nodeSpacing": 20, "rankSpacing": 35}}}%%
 flowchart TB
-  tenant_gateway["L2: control plane<br/>Gateway, planned SO-05"]
+  tenant_gateway["L2: control plane<br/>MCP gateway (SO-05)"]
   subgraph tenant_server["Container: tenant server · hosted image, tenant role"]
     tenant_app["app · TypeScript<br/>Tenant composition<br/>/healthz and /mcp; 403 without context"]
     tenant_config["config · TypeScript<br/>Role and tenant settings<br/>Refuse control-plane secrets"]
@@ -308,8 +310,8 @@ flowchart TB
     tenant_audit["audit-logs · TypeScript<br/>Relay sink, collector bounds"]
   end
   tenant_authkit["External: WorkOS AuthKit<br/>Key set"]
-  tenant_route["L2: control plane<br/>/internal/audit, planned SO-05"]
-  tenant_gateway -.->|MCP + Thermus-Access / private HTTP| tenant_app
+  tenant_route["L2: control plane<br/>/internal/audit (SO-05)"]
+  tenant_gateway -->|MCP + Thermus-Access / private HTTP| tenant_app
   tenant_app ==>|reads settings at start| tenant_config
   tenant_app -->|verify context| tenant_identity
   tenant_app -->|admitted request + scope| tenant_mcp
@@ -317,7 +319,7 @@ flowchart TB
   tenant_mcp -->|access of the scope| tenant_identity
   tenant_mcp -->|audit events of the request| tenant_audit
   tenant_workos -->|HTTPS / JWKS| tenant_authkit
-  tenant_audit -.->|POST + same context / private HTTP| tenant_route
+  tenant_audit -->|POST + same context / private HTTP| tenant_route
 ```
 
 [Tenant composition](../src/app/tenant-application.ts) reads no WorkOS secret
@@ -532,36 +534,40 @@ actual-connection address and TLS checks. No provider SDK enters the
 ### Selected C4 components: hosted tenant registry and provisioning in the Node server
 
 Scope: one hosted Node server container, the control plane of the self
-on-boarding plan. App reads `FREE_TENANT_LIMIT` and the switch
-`MCP_TENANTS_ENABLED` through config, opens the one bounded SQL runtime of the
-`sql` owner, and composes the `tenants` owner on it next to the settings and
-removal adapter of audit-logs. With the switch on, app also reads the tenant
-settings, composes the `render` adapter, and starts the provisioner loop of
-`tenants`; it stops the loop at close, before the SQL runtime closes. Thick
-arrows show composition; solid arrows show runtime calls; the dashed arrow is
-the type-only source dependency of the adapter on the `TenantPlatform` contract
-of `tenants`. PostgreSQL is the existing supporting Level 2 container, and the
-Render API an external system. The gateway (SO-05) and signup (SO-07) are
-planned callers of the request and the lookup and are not in this view.
+on-boarding plan. App reads the switch `MCP_TENANTS_ENABLED` through config.
+Only with the switch on, it reads `FREE_TENANT_LIMIT` (else the cap is 25) and
+the tenant settings. It opens the one bounded SQL runtime of the `sql` owner
+and composes the `tenants` owner on it next to the settings and removal adapter
+of audit-logs. With the switch on, app also composes the `render` adapter and
+starts the provisioner loop of `tenants`; it stops the loop at close, before the
+SQL runtime closes. The MCP gateway (SO-05) calls the registry through a port
+that app composes. Thick arrows show composition; solid arrows show runtime
+calls; the dashed arrow is the type-only source dependency of the adapter on the
+`TenantPlatform` contract of `tenants`. PostgreSQL is the existing supporting
+Level 2 container, and the Render API an external system. Signup (SO-07) is a
+planned caller of the request and the lookup and is not in this view.
 
 ```mermaid
 %%{init: {"flowchart": {"wrappingWidth": 180, "nodeSpacing": 40, "rankSpacing": 40, "subGraphTitleMargin": {"top": 10, "bottom": 25}}}}%%
 flowchart TB
   subgraph tenancy_server["Container: Thermus Node server · hosted control plane"]
-    tenancy_config["config · TypeScript<br/>FREE_TENANT_LIMIT; MCP_TENANTS_ENABLED<br/>Tenant settings only when on"]
+    tenancy_config["config · TypeScript<br/>MCP_TENANTS_ENABLED; only when on:<br/>FREE_TENANT_LIMIT, tenant settings"]
     tenancy_app["app · TypeScript<br/>Opens one SQL runtime; composes<br/>Owns the provisioner loop lifetime"]
-    tenancy_tenants["tenants · TypeScript<br/>Request inside the cap; lookup copy<br/>Provisioner: one row at a time"]
+    tenancy_mcp["mcp · TypeScript<br/>MCP gateway<br/>Row of the organization"]
+    tenancy_tenants["tenants · TypeScript<br/>Request inside the cap; lookup copy<br/>Provisioner: one row at a time<br/>Resume once; activity once a minute"]
     tenancy_render["render · TypeScript<br/>Render adapter of TenantPlatform<br/>Retry bounds; write guard"]
     tenancy_audit["audit-logs · TypeScript<br/>Settings and removal adapter"]
     tenancy_sql["sql · TypeScript / pg<br/>Bounded runtime and pool<br/>The only owner of pg"]
     tenancy_app -->|reads settings at start| tenancy_config
     tenancy_app ==>|composes; starts and stops the loop| tenancy_tenants
+    tenancy_app ==>|registry port of the gateway| tenancy_mcp
     tenancy_app ==>|composes with the write guard| tenancy_render
     tenancy_app ==>|composes| tenancy_audit
     tenancy_app ==>|runtime / pool lifetime| tenancy_sql
+    tenancy_mcp -->|find, request, resume, activity| tenancy_tenants
     tenancy_tenants -->|find, create, deploys, address| tenancy_render
     tenancy_render -.->|implements TenantPlatform| tenancy_tenants
-    tenancy_tenants -->|cap, routes, claim, records| tenancy_sql
+    tenancy_tenants -->|cap, routes, claim, records, gateway writes| tenancy_sql
     tenancy_audit -->|settings and removal statements| tenancy_sql
   end
   tenancy_db[("L2: PostgreSQL · thermus_admin<br/>tenants, subscriptions, billing_events<br/>Role thermus_logging")]
@@ -610,6 +616,80 @@ implements it with the calls of the SO-01c probe. The create call carries a
 closed list of tenant variables of plan section 4.1 with `OPERATION_CAPACITY=5`
 and no secret. The adapter refuses a write for a service ID that the registry
 does not own, and always for the production service.
+
+The gateway writes the registry through three narrow statements of the registry
+adapter. [TenantResumes](../src/tenancy/tenants/tenant-resumes.ts) moves a
+`suspended` row with a service ID to `deploying` and sends the one resume call
+through the [resume operation](../src/tenancy/tenants/tenant-resume.ts) only for
+the call that moved it, so concurrent calls of any process send one; a failed
+resume moves the row back from `deploying` to `suspended`. Each statement names
+the state that it starts from. [TenantActivity](../src/tenancy/tenants/tenant-activity.ts)
+writes `last_active_at` at most once a minute for each organization, with the
+time of the last write in memory; the write keeps the state and `updated_at`.
+SO-10 connects the resume operation to the Render API; until then, app supplies
+one that fails, and the row stays suspended.
+
+### Selected C4 components: MCP gateway and audit relay in the Node server
+
+Scope: one hosted Node server container, the control plane with
+`MCP_TENANTS_ENABLED` on (SO-05). The tenant server is a supporting Level 2
+container: the same image in the tenant role, as the tenant role view above
+draws it. PostgreSQL holds the `tenants` table; the customer Audit destination
+is the external Collector of the audit view. Thick arrows show composition;
+solid arrows show runtime calls. The Origin check of app, the bearer and access
+checks of MCPServer with WorkOS, and the SQL runtime of `sql` keep their views
+above and are not drawn here.
+
+```mermaid
+%%{init: {"flowchart": {"wrappingWidth": 150, "nodeSpacing": 20, "rankSpacing": 35}}}%%
+flowchart TB
+  gateway_client["External: MCP client<br/>Connect token"]
+  subgraph gateway_server["Container: Thermus Node server · control plane, MCP_TENANTS_ENABLED on"]
+    gateway_app["app · TypeScript<br/>Switch and gateway settings<br/>Composes ports and routes"]
+    gateway_mcp["mcp · TypeScript<br/>MCPServer checks, then gateway<br/>States, forward, restart, 5 searches"]
+    gateway_identity["identity · TypeScript / jose<br/>Sign the context of a request<br/>Check the context of a relay"]
+    gateway_tenants["tenants · TypeScript<br/>Lookup copy, tenant request<br/>Resume once, activity a minute"]
+    gateway_web["web · TypeScript<br/>/internal/audit on the internal host<br/>Organization, user, one operation ID"]
+    gateway_audit["audit-logs · TypeScript<br/>Check the relayed event again<br/>Capture and export"]
+  end
+  gateway_tenant["L2: tenant server<br/>Same image · tenant role"]
+  gateway_db[("L2: PostgreSQL<br/>tenants table")]
+  gateway_collector["External: customer Audit destination"]
+  gateway_client -->|MCP / HTTPS bearer| gateway_mcp
+  gateway_app ==>|forward step + registry port| gateway_mcp
+  gateway_app ==>|relay route + context check| gateway_web
+  gateway_mcp -->|sign context| gateway_identity
+  gateway_mcp -->|row, request, resume, activity| gateway_tenants
+  gateway_mcp -->|MCP + Thermus-Access / private HTTP| gateway_tenant
+  gateway_tenant -->|POST /internal/audit + same context| gateway_web
+  gateway_web -->|check relay context| gateway_identity
+  gateway_web -->|checked tool completion| gateway_audit
+  gateway_tenants -->|SQL statements| gateway_db
+  gateway_audit -->|OTLP / HTTPS| gateway_collector
+```
+
+[`MCPServer`](../src/interfaces/mcp/mcp-server.ts) keeps the bearer check and
+the access check, then gives each admitted request to its forward step, the
+[gateway](../src/interfaces/mcp/mcp-gateway.ts), in place of the local MCP
+server. The gateway reads the row of the organization through the port that
+[app composes](../src/app/mcp-gateway-composition.ts) on the `tenants` owner, so
+`mcp` imports no registry module. For a live row, it signs a context with
+[`AccessContextSigner`](../src/accounts/identity/access-context-signer.ts),
+removes the hop-by-hop headers, the cookie, and each client context, and
+streams the answer of the tenant back; each other state gets `503`. It reads
+only the id, the method, and the tool name of the JSON-RPC messages that it
+forwards. The [relay route](../src/interfaces/web/internal/audit-relay-route.ts)
+answers only the host of `CONTROL_PLANE_INTERNAL_URL`; its
+[check](../src/interfaces/web/internal/audit-relay-check.ts) verifies the
+context with the public key of `GATEWAY_SIGNING_KEY` for the organization and
+the user of the event. The route drops a repeated operation ID and gives the
+checked event to `AuditLog`, so the capture of today exports it. With the
+switch on, the start stops before the server listens unless `GATEWAY_PUBLIC_KEY`
+of the provisioning settings, which each new tenant gets, holds the public key
+of `GATEWAY_SIGNING_KEY`. With the switch off, app composes neither the forward
+step nor the relay route. The
+[authentication design](../docs/design/authentication-design.md#mcp-gateway-and-audit-relay)
+gives the answers and the rules.
 
 ### Selected C4 components: system and audit logs in the Node server
 
@@ -928,6 +1008,7 @@ flowchart TB
   external_web(["Lightpanda → public web"])
   runtime["Runtime owners<br/>app / config / http / sql / system-logs / audit-logs"]
   tenancy["Tenant registry and provisioner<br/>tenants / render"]
+  tenant_server["Tenant server<br/>same image · tenant role"]
   settings_data[("Hosted PostgreSQL<br/>Settings, removal intent, tenants")]
   render_service(["Render API"])
   clients --> interfaces
@@ -945,6 +1026,9 @@ flowchart TB
   accounts -->|removal store| runtime
   runtime -.->|compose| tenancy
   tenancy -->|registry statements| runtime
+  interfaces -->|gateway: tenant row| tenancy
+  interfaces -->|gateway: MCP + signed context| tenant_server
+  tenant_server -->|audit relay| interfaces
   runtime -->|settings + intent + tenants / SQL| settings_data
   tenancy -->|tenant services / HTTPS| render_service
 ```
@@ -963,11 +1047,14 @@ group, app owns composition and lifetimes, config validates settings, HTTP serve
 the composed handler, and system-logs formats internal engineering diagnostics.
 Audit-logs owns the optional hosted settings service, credential protection,
 store, and saved-destination Test; sql owns the one bounded SQL runtime and pool
-of every hosted store. App composes the tenant registry on that runtime; no
-request adapter calls the registry yet. With `MCP_TENANTS_ENABLED=true`, app
-also starts the provisioner loop of tenants, which creates the tenant services
-through the Render adapter of render. Web calls the service
-for the trusted current tenant and actor. Test sends one synthetic event; the
+of every hosted store. App composes the tenant registry on that runtime. With
+`MCP_TENANTS_ENABLED=true`, app also starts the provisioner loop of tenants,
+which creates the tenant services through the Render adapter of render, and the
+MCP gateway reads the row of the organization, requests a tenant, resumes a
+suspended one, and records activity through a port that app composes on the
+registry; it forwards the request to the tenant server, and the relay route of
+web takes the audit relay of that tenant. Web calls the service for the trusted
+current tenant and actor. Test sends one synthetic event; the
 separate tool and administration capture shares hosted activity-driven snapshots.
 Organizations calls the same SQL adapter through its supplied removal store for
 admission and terminal receipts. This runtime call points from organizations to
@@ -1057,6 +1144,67 @@ cancellation; a disconnected client cannot receive a final response. Ordinary
 failures, invalid inputs, blocked content, and cancellation remain distinct
 inside the pipeline. The MCP-owned fetch wrapper maps withheld content to empty
 Markdown text success. MCP records the safe completion status in its finalizer.
+
+### Scenario: hosted MCP call through the gateway
+
+Scope: one MCP call on the hosted control plane with `MCP_TENANTS_ENABLED` on
+(SO-05). The checks of today run first, so a denial forwards nothing and
+requests no tenant. The tenant server is the same image in the tenant role; it
+runs the call as the scenario above shows. A 2025-era `notifications/cancelled`
+POST and the `GET` stream take the same path as the call.
+
+```mermaid
+%%{init: {"sequence": {"wrap": true, "actorMargin": 20, "width": 140}}}%%
+sequenceDiagram
+  actor Client as MCP client
+  participant MCP as mcp / MCPServer
+  participant Gateway as mcp / gateway
+  participant Registry as tenants / registry port
+  participant Tenant as L2 tenant server
+  participant Relay as web / relay route
+  participant Audit as audit-logs / capture
+  Client->>MCP: POST /mcp with bearer token
+  MCP->>MCP: Bearer check and access check of today
+  alt Invalid token or access denied
+    MCP-->>Client: 401 or 403 of today
+  else Trusted access context
+    MCP->>Gateway: Forward with context, token, and lifetime
+    Gateway->>Registry: Row of the organization from the lookup copy
+    alt Live row
+      Gateway->>Tenant: Same method, path, and body, with a signed Thermus-Access
+      alt Restart before the first answer byte
+        Tenant-->>Gateway: HTTP 502 or a reset connection
+        Gateway-->>Client: Tool error "Server restarted. Try again in a minute."
+      else Answer
+        Tenant-->>Gateway: Status, headers, and first answer byte
+        Gateway->>Registry: Activity, at most one write a minute
+        Gateway-->>Client: Answer stream, chunk by chunk
+        Tenant->>Relay: POST /internal/audit with the same context
+        Relay->>Relay: Internal host, context, organization, user, repeat
+        Relay->>Audit: Checked tool completion, one time
+      end
+    else Suspended row
+      Gateway->>Registry: suspended to deploying, then one resume call
+      Gateway-->>Client: 503, Retry-After 60
+    else No row
+      Gateway->>Registry: Tenant request inside the cap
+      Gateway-->>Client: 503, Retry-After 15, or the capacity message
+    else Requested, creating, deploying, failed, deleted, or no usable copy
+      Gateway-->>Client: 503 with the words of the state
+    end
+  end
+```
+
+The client abort reaches the tenant on two paths: before the tenant answers,
+the gateway aborts its pending fetch; after that, it cancels the answer body of
+the tenant. A restart after the first answer byte ends the answer stream. Each
+refusal writes one system log line and no audit event, and the restart line is
+the operator report. The [gateway](../src/interfaces/mcp/mcp-gateway.ts), its
+[upstream call](../src/interfaces/mcp/mcp-gateway-stream.ts) and
+[answer stream](../src/interfaces/mcp/mcp-gateway-answer-stream.ts), the
+[registry rules](../src/tenancy/tenants/tenant-resumes.ts), and the
+[relay route](../src/interfaces/web/internal/audit-relay-route.ts) provide the
+contracts.
 
 ### Scenario: hosted default sign-in landing
 
@@ -1433,7 +1581,9 @@ private service reaches a web service at `http://<slug>:8080`, the
 `CONTROL_PLANE_INTERNAL_URL` of a tenant, once the private address of a new web
 service accepts connections; the
 [SO-03 record](../docs/implementation/self-onboarding-s1.md#so-03-private-address-of-the-control-plane)
-gives the runs and limits. This map draws no tenant deployment until one exists.
+gives the runs and limits. The gateway and the relay route of SO-05 run only with
+`MCP_TENANTS_ENABLED` on, which is off by default; the recorded target runs with
+it off. This map draws no tenant deployment until one exists.
 
 The hosted release path is source-defined since SO-02 of the self on-boarding
 plan. At each merge to `main`, [`hosted-image.yml`](../.github/workflows/hosted-image.yml)
@@ -1474,14 +1624,14 @@ surface and the narrower file-context restrictions.
 
 | Stable ID and source root | Responsibility and main parts | Boundary |
 | --- | --- | --- |
-| `app` — [`src/app/`](../src/app/), plus [`src/index.ts`](../src/index.ts) | Select hosted or self-hosted operation and the role of the hosted image; construct providers, routes, tools, logs, and shared services; own startup, shutdown, capacity, portal loading, the tenant composition and its routes, and hidden terminal input. | Entrypoint and application lifecycle; documented [tool composition](../src/app/fetch-tool.ts). Other components do not import app. |
-| `identity` — [`src/accounts/identity/`](../src/accounts/identity/) | Define authenticated users, grants, immutable request contexts, permission checks, verification, browser sessions and profile controls, and local administration roles. Sign and verify the signed access context of a tenant with `jose`, and give the access of a verified context. | [Access context](../src/accounts/identity/access-context.ts), verifier, browser-session, browser-session-controls, local-user-administration, and [signed-access-context](../src/accounts/identity/signed-access-context.ts) contracts. The signer, the verifier, and the context resolver are for app. No provider or UI implementation belongs here. |
+| `app` — [`src/app/`](../src/app/), plus [`src/index.ts`](../src/index.ts) | Select hosted or self-hosted operation and the role of the hosted image; construct providers, routes, tools, logs, and shared services; own startup, shutdown, capacity, portal loading, the tenant composition and its routes, the gateway composition behind `MCP_TENANTS_ENABLED` with its registry port and the relay route, and hidden terminal input. | Entrypoint and application lifecycle; documented [tool composition](../src/app/fetch-tool.ts). Other components do not import app. |
+| `identity` — [`src/accounts/identity/`](../src/accounts/identity/) | Define authenticated users, grants, immutable request contexts, permission checks, verification, browser sessions and profile controls, and local administration roles. Sign and verify the signed access context of a tenant with `jose`, check the context of an audit relay without a bearer token, and give the access of a verified context. | [Access context](../src/accounts/identity/access-context.ts), verifier, browser-session, browser-session-controls, local-user-administration, and [signed-access-context](../src/accounts/identity/signed-access-context.ts) contracts. The signer, the verifier, and the context resolver are for app. No provider or UI implementation belongs here. |
 | `organizations` — [`src/accounts/organizations/`](../src/accounts/organizations/) | Customer roles, administration rules, member/invitation overviews, directory reads and native invitations, the member limit of a plan at invitation send, durable removal coordination and last-Admin checks, signup activation, seat calculations, and privileged change recording. | Directory, administration, overview, customer-role, change-record, removal-store, and signup-activation modules. Administration exposes removal requests/results and close. Directory-read, member-limit, and removal helpers remain private. |
 | `billing` — [`src/accounts/billing/`](../src/accounts/billing/) | Report plan state, `free` with its member limit or `team`, and accept seat updates. `BillingFree` is the current implementation. | [Billing roles](../src/accounts/billing/billing.ts); app selects the implementation. |
 | `workos` — [`src/accounts/providers/workos/`](../src/accounts/providers/workos/) | Hosted token/access verification, sessions, organization operations, signup/onboarding, settings, cookies, and signup-document validation. `WorkOSTokenVerifier` is the Connect token check alone, for a tenant. | App constructs provider/SDK objects. Web uses neutral supplied session, signup, and account roles; its WorkOS auth area still uses provider cookie and document-validation helpers. |
 | `better-auth` — [`src/accounts/providers/better-auth/`](../src/accounts/providers/better-auth/) | Local authentication, access resolution, user/client administration, installation storage, data-directory lock, and cleanup. | Provider, runtime-opening, and administration-opening modules for app; storage and lock mechanics remain private. |
-| `mcp` — [`src/interfaces/mcp/`](../src/interfaces/mcp/) | Adapt protocol requests to trusted access contexts and supplied tool operations. Own schemas, metadata, protocol errors, request lifetimes, and completion presentation. A request can carry its own scope: the access resolver and the tool server of an admitted tenant request. | Server/tool composition modules, protected-resource endpoint, and client-visible schema modules. SDK adaptation stays inside this owner. |
-| `web` — [`src/interfaces/web/`](../src/interfaces/web/) | Account/admin/organization-selection routes, portal access, sign-in/out, signup, consent, forms, pages, escaping, and browser request protection. `account/` and `auth/` are private areas of this one owner. | Route constructors for app; shared account-form, page-html, and html-escape modules. Provider-specific browser adapters have narrower access than the whole owner. |
+| `mcp` — [`src/interfaces/mcp/`](../src/interfaces/mcp/) | Adapt protocol requests to trusted access contexts and supplied tool operations. Own schemas, metadata, protocol errors, request lifetimes, and completion presentation. A request can carry its own scope: the access resolver and the tool server of an admitted tenant request. With a forward step, MCPServer gives each admitted request to the MCP gateway, which forwards it to the tenant of the organization, answers the other states of the registry, and lets 5 searches run at a time across tenants. | Server/tool composition modules, protected-resource endpoint, and client-visible schema modules. SDK adaptation stays inside this owner. |
+| `web` — [`src/interfaces/web/`](../src/interfaces/web/) | Account/admin/organization-selection routes, portal access, sign-in/out, signup, consent, forms, pages, escaping, and browser request protection; the relay route `/internal/audit` of the private network. `account/`, `auth/`, and `internal/` are private areas of this one owner. | Route constructors for app; shared account-form, page-html, and html-escape modules. Provider-specific browser adapters have narrower access than the whole owner. |
 | `cli` — [`src/interfaces/cli/`](../src/interfaces/cli/) | Parse local user/client commands, use supplied administration and hidden-input roles, format output and exit status. | [Local command](../src/interfaces/cli/local-auth-command.ts). App opens and closes administration/input resources. |
 | `user-portal` — [`src/interfaces/user-portal/`](../src/interfaces/user-portal/) | Browser portal behavior, connection instructions, styles, and static assets; Vite build configuration and declarations. | Browser HTTP interactions and rendered output. Vite runs in Node; browser modules cannot inherit its server/build access. |
 | `execution` — [`src/pipelines/execution/`](../src/pipelines/execution/) | Operation IDs/context, outgoing/incoming step roles, bounded best-effort records, and pass-through request observation. | Execution-context, pipeline-step, and step-record modules. App constructs the observer. |
@@ -1491,11 +1641,11 @@ surface and the narrower file-context restrictions.
 | `website-fetcher` — [`src/pipelines/providers/website-fetcher/`](../src/pipelines/providers/website-fetcher/) | Render pages with Lightpanda; destination/process policy; safe renderer failures and reports. | Fetcher/result/failure roles, renderer-failure-reports, and documented [network policy](../src/pipelines/providers/website-fetcher/network-policy.ts). App selects Lightpanda. |
 | `search-engine` — [`src/pipelines/providers/search-engine/`](../src/pipelines/providers/search-engine/) | Build Brave search requests, validate the returned origin/document, and fetch through a supplied website fetcher. | [Search engine/document roles](../src/pipelines/providers/search-engine/search-engine.ts). App selects the Brave HTTP adapter. |
 | `system-logs` — [`src/logs/system/`](../src/logs/system/) | Format internal engineering diagnostics with caller file and line. Customers cannot access this stream. | SystemLog for callers; concrete SystemLogger/LogLevel with a supplied SystemLogSink. ConsoleSystemLogSink and OtelSystemLogSink own output only. |
-| `audit-logs` — [`src/logs/audit/`](../src/logs/audit/) | Own customer audit event projection, activity snapshots, bounded queue and current-revision dispatch, tenant destination validation and credential protection, atomic settings revisions, saved-destination Tests, and one-shot OTLP requests to the configured Collector or compatible service, including direct Axiom. Its SQL adapter also stores removal intent and terminal receipts on the shared `sql` runtime. The relay sink of a tenant sends its events to the control plane with the bounds of the collector. | AuditLog event methods and AuditEventSink; AuditSnapshots and RevisionBoundAuditSink; AuditCollector; destination-settings service with fresh export authorization and Test outcomes; neutral settings store, private codec, and SQL adapter; implementation of the organizations-owned removal store; OtlpAuditSender with tracked physical settlement. MCP and web share hosted snapshots and bounded dispatch; web reads, saves, and tests settings. |
+| `audit-logs` — [`src/logs/audit/`](../src/logs/audit/) | Own customer audit event projection, activity snapshots, bounded queue and current-revision dispatch, tenant destination validation and credential protection, atomic settings revisions, saved-destination Tests, and one-shot OTLP requests to the configured Collector or compatible service, including direct Axiom. Its SQL adapter also stores removal intent and terminal receipts on the shared `sql` runtime. The relay sink of a tenant sends its events to the control plane with the bounds of the collector, and the control plane checks each relayed tool completion again before its capture. | AuditLog event methods and AuditEventSink; AuditSnapshots and RevisionBoundAuditSink; AuditCollector; destination-settings service with fresh export authorization and Test outcomes; neutral settings store, private codec, and SQL adapter; implementation of the organizations-owned removal store; OtlpAuditSender with tracked physical settlement. MCP and web share hosted snapshots and bounded dispatch; web reads, saves, and tests settings. |
 | `http` — [`src/runtime/http/`](../src/runtime/http/) | Node listener, HTTP-to-Fetch exchange, trusted client address, request cancellation, connection tracking, and listener drain. | Server for app; client-address and request-cancellation modules for other consumers. Exchange mechanics remain private. |
-| `config` — [`src/runtime/config/`](../src/runtime/config/) | Validate deployment/listen settings, `THERMUS_ROLE` and the tenant settings with the refusal of control-plane secrets, optional hosted logging storage settings, the hosted operation capacity, the free-tenant cap, and the switch `MCP_TENANTS_ENABLED` with the provisioning settings that only the switch reads, and read trusted ad rules. Provider settings stay with their provider; a tenant has no provider settings. | Deployment-config and ad-rules-file modules; app selects the logging-storage settings reader, the operation-capacity reader, and the free-tenant-limit reader. |
+| `config` — [`src/runtime/config/`](../src/runtime/config/) | Validate deployment/listen settings, `THERMUS_ROLE` and the tenant settings with the refusal of control-plane secrets, optional hosted logging storage settings, the hosted operation capacity, the switch `MCP_TENANTS_ENABLED`, and, with it on, the free-tenant cap, the provisioning settings, and the gateway settings with the check that `GATEWAY_PUBLIC_KEY` holds the public key of `GATEWAY_SIGNING_KEY`, and read trusted ad rules. Provider settings stay with their provider; a tenant has no provider settings. | Deployment-config and ad-rules-file modules; app selects the logging-storage settings reader, the operation-capacity reader, the switch and provisioning-settings reader, the free-tenant-limit reader, and the gateway-settings reader. |
 | `sql` — [`src/runtime/sql/`](../src/runtime/sql/) | Own the one bounded SQL runtime of the hosted stores: the `pg` pool with verified TLS, admission of active and pending work, acquisition, operation and statement deadlines, late-work accounting, and bounded close. The only owner that imports `pg`. | [Bounded SQL runtime](../src/runtime/sql/bounded-sql-runtime.ts) for the stores; app opens it and owns its lifetime. |
-| `tenants` — [`src/tenancy/tenants/`](../src/tenancy/tenants/) | Own the tenant registry of the control plane: the tenant request inside the free-tenant cap, the in-memory route lookup with its refresh bounds, the provisioner state machine with its bounds, and the SQL adapters of the `tenants` table. | [Tenant platform](../src/tenancy/tenants/tenant-platform.ts), the contract that render implements; app composes the request, the lookup, the provisioner, and the adapters. The gateway and signup use the request and the lookup in later tickets. |
+| `tenants` — [`src/tenancy/tenants/`](../src/tenancy/tenants/) | Own the tenant registry of the control plane: the tenant request inside the free-tenant cap, the in-memory route lookup with its refresh bounds, the provisioner state machine with its bounds, the resume of a suspended tenant and the activity write of the gateway, and the SQL adapters of the `tenants` table. | [Tenant platform](../src/tenancy/tenants/tenant-platform.ts), the contract that render implements; app composes the request, the lookup, the provisioner, the resume, the activity, and the adapters, and gives the gateway a port. Signup uses the request and the lookup in a later ticket. |
 | `render` — [`src/tenancy/providers/render/`](../src/tenancy/providers/render/) | The Render API adapter of the tenant platform: the search by name, the create of an image-backed private service, the newest deploy, the internal address, and the delete, with the retry bounds, the count of the create limit, and the write guard. It holds the Render API key. | No public module; app composes it with the write guard of the registry. It imports only the contract types of tenants. Another platform would be a sibling owner under `src/tenancy/providers/` behind the same contract; the soft spots below name what moves with it. |
 
 ## Behavior and resource ownership
@@ -1593,6 +1743,20 @@ shared. Close aborts the request signals, closes the MCP server and its tool
 work, then closes the relay sink, which aborts its attempts and drops the
 pending events. The tenant holds no database pool and no WorkOS client.
 
+With `MCP_TENANTS_ENABLED` on, the control plane composes one
+[gateway](../src/interfaces/mcp/mcp-gateway.ts) as the forward step of its
+MCPServer and one [relay route](../src/interfaces/web/internal/audit-relay-route.ts).
+Their state is in memory and has process scope: the 5
+[search places](../src/interfaces/mcp/mcp-gateway-searches.ts) of the
+gateway, the organizations of its failure reports, the time of the last activity
+write of each organization in [TenantActivity](../src/tenancy/tenants/tenant-activity.ts),
+the running resumes of [TenantResumes](../src/tenancy/tenants/tenant-resumes.ts),
+and the accepted operation IDs of the relay route for 160 s, at most 16,384. A
+forwarded answer holds its search places until its stream ends; its end is work
+of the request lifetime, so close aborts the upstream call and waits for it. The
+registry rows, also the move to `deploying`, persist; the in-memory state does
+not survive a restart.
+
 Hosted application close starts MCP cleanup and the administration/storage cleanup
 chain together. It stops removal before hosted composition closes snapshots and
 clears their pending content. The collector then stops admission, clears content
@@ -1658,12 +1822,23 @@ The following limits affect architectural decisions today:
   use a supplied Response-returning handler. A provider change must preserve each browser
   contract, cookie, Origin/CSRF, and return-path protection; a common provider
   interface alone does not cover this work.
-- The tenant role exists in code, but its callers do not: the gateway of the
-  control plane and the route `/internal/audit` come with SO-05. Until then no
-  deployment runs a tenant. The relay is best effort like the capture of today:
-  a refused, failed, slow, or excess relay loses its event. Traffic on the
-  private network is plain HTTP, and a context can repeat within its 2 minutes,
-  but only with its own bearer token and at the tenant of its organization.
+- The gateway and the relay route exist behind `MCP_TENANTS_ENABLED`, which is
+  off by default, so no deployment runs a tenant yet. The resume operation
+  fails until SO-10 connects it to the Render API. The relay is best effort like
+  the capture of today: a refused, failed, slow, or excess relay loses its
+  event, and during a rotation of the signing key the route refuses a relay of
+  the old key. Traffic on the private network is plain HTTP, and a context can
+  repeat within its 2 minutes, but only with its own bearer token and at the
+  tenant of its organization.
+- The search limit, the failure reports, the activity times, and the memory of
+  relayed operation IDs have process scope, as the operation capacity has. A
+  second control plane instance would allow 5 searches in each instance; the
+  plan keeps one instance (section 7).
+- After the first answer byte, the gateway can only end the answer stream of a
+  tenant that fails; a client then sees no result and waits for its own request
+  timeout. A failed resume moves the row back to `suspended` only from
+  `deploying`, so a provisioner that records `live` in between leaves a live row
+  for a suspended service, until the sweep of SO-10.
 - The application-wide hosted capacity bounds this process only, to
   `OPERATION_CAPACITY` calls. It rejects a call above that limit instead of
   queuing work and does not coordinate multiple instances. A deployment change
