@@ -56,12 +56,13 @@ export function exportHeadersOf({ token, dataset }: SystemLogExportSettings): Re
   return dataset === undefined ? authorization : { ...authorization, 'X-Axiom-Dataset': dataset };
 }
 
-// The exporter gives each failed export, after its bounded retries, to the report, and the batch is dropped.
+// The exporter gives each failed export, after its bounded retries, to the report, and the batch is dropped. The
+// batch ends first, so that a failed report cannot hold the processor.
 function reportingFailures(exporter: LogRecordExporter, reportFailure: FailureReport): LogRecordExporter {
   return {
     export: (records, done) => exporter.export(records, (result) => {
-      if (result.code !== EXPORT_SUCCESS) reportFailure(result.error);
       done(result);
+      if (result.code !== EXPORT_SUCCESS) reportFailure(result.error);
     }),
     forceFlush: () => exporter.forceFlush(),
     shutdown: () => exporter.shutdown(),

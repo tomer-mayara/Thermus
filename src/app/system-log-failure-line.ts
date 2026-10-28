@@ -15,15 +15,10 @@ const SDK_FAILURES: ReadonlyMap<string, string> = new Map([
  * counts the failures that had no line of their own, so that a failure stays visible without a flood of lines.
  */
 export class ExportFailureLine {
-  readonly #log: Pick<SystemLog, 'error'>;
-  readonly #now: () => number;
   #lineAt = Number.NEGATIVE_INFINITY;
   #withoutLine = 0;
 
-  constructor(log: Pick<SystemLog, 'error'>, now: () => number) {
-    this.#log = log;
-    this.#now = now;
-  }
+  constructor(private readonly log: Pick<SystemLog, 'error'>, private readonly now: () => number) {}
 
   report(failure: unknown): void {
     this.#write(causeOf(failure));
@@ -35,17 +30,21 @@ export class ExportFailureLine {
   }
 
   #write(cause: string): void {
-    const now = this.#now();
+    const now = this.now();
     // A failure within a minute of the last line gets no line of its own.
     if (now - this.#lineAt < LINE_INTERVAL_MS) {
       this.#withoutLine += 1;
       return;
     }
-    const count = this.#withoutLine === 0 ? '' : ` Failed exports since the last line: ${this.#withoutLine}.`;
+    const count = countOf(this.#withoutLine);
     this.#lineAt = now;
     this.#withoutLine = 0;
-    this.#log.error(`System log export failed: ${cause}. The records of that export are dropped.${count}`);
+    this.log.error(`System log export failed: ${cause}. The records of that export are dropped.${count}`);
   }
+}
+
+function countOf(failures: number): string {
+  return failures === 0 ? '' : ` Failed exports since the last line: ${failures}.`;
 }
 
 // The HTTP status or the error code, never an error message or a body: they can repeat a part of the request.
