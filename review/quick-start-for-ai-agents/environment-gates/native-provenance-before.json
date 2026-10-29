@@ -1,0 +1,40 @@
+{
+  "base": "21458b0d18cc4f9efd3a59f6361a86f1acdc317c",
+  "primary": "/Users/tomermayara/.codex/worktrees/3e6e/Thermus",
+  "isolated": "/Users/tomermayara/.codex/worktrees/quick-start-for-agents-native/Thermus",
+  "overlayFiles": [
+    "src/interfaces/web/account/quick-start-content.ts",
+    "docs/design/admin-quick-start/guide.md"
+  ],
+  "expectedOverlaySha256": {
+    "src/interfaces/web/account/quick-start-content.ts": "e90e4ec93542c04ef770409faa84c54a1f350e57619b8972c5688d30f2e28ab9",
+    "docs/design/admin-quick-start/guide.md": "0c3220c3e928bf32f996711b6fe399c0a1e4c6810ab049b7efe67512a500ea1b"
+  },
+  "overlaySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "sha256": {
+    "src/interfaces/web/account/quick-start-content.ts": "e90e4ec93542c04ef770409faa84c54a1f350e57619b8972c5688d30f2e28ab9",
+    "docs/design/admin-quick-start/guide.md": "0c3220c3e928bf32f996711b6fe399c0a1e4c6810ab049b7efe67512a500ea1b",
+    ".dockerignore": "c29e5191cd32d2a17e3805b2dee00dac1b7d907276f7dab7f38b089cd5dd2399",
+    "Dockerfile": "c355b19762b6851f13ba3fece7aad40885224265bc6b1a5b1c7787139eac9d0b",
+    "Dockerfile.hosted": "62aa39a803d30cd2c73bd0fe6ebba963f1e7ea3006ef88493875e3dd9acba21d",
+    "Dockerfile.hosted.dockerignore": "27b9ce47817d3491f0ba242bd3cacb64e2d483274dd58a143c5d0a5df58d4154",
+    "docs/implementation/test-gate-policy.md": "5722db874cb33a97376526cde8d2122feda69acb2f533ece48c19b9b6409f134",
+    "package.json": "30df853cac48bd00c4230334979e2049d5ac75c1f02ac947e00c8e829013da78",
+    "pnpm-lock.yaml": "d6b158024ccab02bd6ba42a66bbc8b3ad1121e04f32273fe13081b5dac67ba12",
+    "tsconfig.api-surface.json": "b6316cf01d322784bf8ba062a237ec262d678b92dcc5199442fd72e5d35a8bcc",
+    "tsconfig.build.json": "2828096c054d8cdcfde171bcf20111defdf7a49db72366f9ba90cecd42d9c25d",
+    "tsconfig.json": "741ff6a9c52cb7e5f5b83baab80e409e0f397f615fac936ea1574e3d6e5b3a1d",
+    "tsconfig.user-portal.json": "ff88cab7e263425ac947460c76076bc70dda74f511cfce8a4f82d141ab730689"
+  },
+  "node": "/Users/tomermayara/.codex/worktrees/3e6e/Thermus/node_modules/.pnpm/node@runtime+24.20.0/node_modules/node/bin/node",
+  "nodeVersion": "v24.20.0",
+  "lightpanda": "/Users/tomermayara/.codex/worktrees/3e6e/Thermus/.cache/lightpanda/1.0.0/lightpanda",
+  "lightpandaSha256": "955440053a84754dd64c62f970449a56a2b350cdf43ea5f2e809a73047b8173d",
+  "runnerSha256": "f9e15a6d2d1716c6ccb7b1f5ea50f6c74fa06a0a415f20e3336519ab48810af7",
+  "dependencies": "Temporary symlink to exact primary node_modules; no install or lock changes",
+  "environment": "Allowlisted ordinary shell variables only; no credential variables or .env loaded",
+  "sequence": [
+    "npm run test:container",
+    "npm run build:hosted"
+  ]
+}

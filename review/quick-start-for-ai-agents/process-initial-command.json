@@ -1,0 +1,24 @@
+{
+  "name": "process-initial-command",
+  "command": [
+    "pnpm",
+    "exec",
+    "node",
+    "script/code-quality/ast-metrics-process.ts",
+    "--base",
+    "origin/main",
+    "--coverage",
+    "ast-report/quick-start-for-ai-agents/coverage.json",
+    "--out",
+    "ast-report/quick-start-for-ai-agents/process-initial.md",
+    "--json",
+    "ast-report/quick-start-for-ai-agents/process-initial.json"
+  ],
+  "started": "2026-10-28T23:58:42.609Z",
+  "completed": "2026-10-28T23:59:13.969Z",
+  "exitCode": 1,
+  "signal": null,
+  "node": "v24.20.0",
+  "cwd": "/Users/tomermayara/.codex/worktrees/3e6e/Thermus",
+  "summaries": []
+}

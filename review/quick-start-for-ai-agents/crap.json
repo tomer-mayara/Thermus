@@ -1,0 +1,70 @@
+{
+  "version": 1,
+  "base": "21458b0d18cc4f9efd3a59f6361a86f1acdc317c",
+  "head": "8eb8d34519bd9aa0e2541bf3ad79f0ca8ad84ac0",
+  "rows": [
+    {
+      "file": "src/interfaces/web/account/quick-start-content.ts",
+      "function": "trustedUrl",
+      "change": "unchanged",
+      "paths": 6,
+      "share": 1,
+      "crap": 6,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"trustedUrl\",\"start\":6223,\"end\":6539,\"body\":\"5bf2d3084e1277ab063e8664e0fa7ade958cbb56038079584c3dd24700ce1bac\",\"signature\":\"885d29c785dc2574193e242564b5f676cc97527a3ff5c75337199fff453414ea\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/quick-start-content.ts",
+      "function": "quickStartContent",
+      "change": "unchanged",
+      "paths": 2,
+      "share": 1,
+      "crap": 2,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"quickStartContent\",\"start\":4154,\"end\":6221,\"body\":\"629f38774a4d3696962a6787bd99807e3627d539f07e340a7f536c610e0fd192\",\"signature\":\"cc29c01fc2c105b8ac2ccca20053d8610b0db390f39470134b675d46cfef846d\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/quick-start-content.ts",
+      "function": "(anonymous)",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:quickStartContent\",\"name\":\"(anonymous)\",\"start\":4736,\"end\":4850,\"body\":\"94acf2ccb513257af756d27ea3a1e1605064359e83a04bf31fc021b16fc2215d\",\"signature\":\"5b79f1efb5e07b876a943d646e791b5f3220610b82691441d824e9eb07b1afc2\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/quick-start-content.ts",
+      "function": "(anonymous)",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:quickStartContent\",\"name\":\"(anonymous)\",\"start\":5746,\"end\":5786,\"body\":\"15457430ba53a1c41505f947f11599f1ef8b8ccd3e0fdc0a53d53ee79c4dec1b\",\"signature\":\"6fb7b482f6570b1807edd84b80b42a60eb49d479d363fb13017b1bc7e78a2b06\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/quick-start-content.ts",
+      "function": "(anonymous)",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:quickStartContent/ArrowFunction:@4736\",\"name\":\"(anonymous)\",\"start\":4791,\"end\":4833,\"body\":\"e4005b5e7d37db17ffeb6522f88d42779625569db88177dfecd4e39b6e200abe\",\"signature\":\"1ac4a700956ac265591f58921a68d26d8201ccf86e593237c5178c8185cca004\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/quick-start-content.ts",
+      "function": "markdownLink",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"markdownLink\",\"start\":6714,\"end\":6852,\"body\":\"9c2e23598de5f823f2e3422fe5ae2155fd53e20a2f571c2c1a8328159ff90919\",\"signature\":\"c3900e7b3f8dce9c8958fa864de1514358c0c7614b10d286ab8c18395724d0db\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/quick-start-content.ts",
+      "function": "markdownText",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"markdownText\",\"start\":6541,\"end\":6712,\"body\":\"75021d328b232cffc897607b1956c279aa16cafbb0a7062be53f6076c32b5066\",\"signature\":\"92746789691b569879fa6c8bfebf8e79effb6f5e1016450d2ae2c78ddbe6408e\"}"
+    }
+  ]
+}

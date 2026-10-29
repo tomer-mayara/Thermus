@@ -1,0 +1,9 @@
+{
+  "base": "21458b0d18cc4f9efd3a59f6361a86f1acdc317c",
+  "startedWithSourceOverlay": true,
+  "files": {
+    "src/interfaces/web/account/quick-start-content.ts": "e90e4ec93542c04ef770409faa84c54a1f350e57619b8972c5688d30f2e28ab9",
+    "docs/design/admin-quick-start/guide.md": "0c3220c3e928bf32f996711b6fe399c0a1e4c6810ab049b7efe67512a500ea1b"
+  },
+  "note": "Ordinary suite started at base HEAD with the frozen source and guide edits. No source/test/build inputs change during checks. Impact declaration and generated metric record are nonruntime metadata."
+}

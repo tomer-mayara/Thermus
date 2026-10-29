@@ -1,0 +1,8 @@
+{
+  "03-hosted-container-build-progress.log": "02f147954afa5ec8f86a03a5fbabe483c0acc77ce6c1ec64aee06d1acbf568db",
+  "03-hosted-container-failure.md": "37122e45ed93bedbc2dbb221b0ab4af99098bb95dd8b776ed4022862b95259ab",
+  "03-hosted-container-provenance.json": "1d8a41f87d6d8142499dd2c43814529f5942a9dcc7c93e3ee858527c7217a003",
+  "03-hosted-container.json": "8aa97d065b0d639d628bd375b5f83ae354db194e587bbcc7633c8963f3586ecc",
+  "03-hosted-container.log": "d03935ce56443ed23da3fbf77c39bd3129c938548d22acf457714836fb51c587",
+  "03-image-overlay.patch": "cc221ae49bd7f488481dfc0c82c5e7cd1eb93ca103b7bec5dd89265e0f5ebaff"
+}

@@ -1,0 +1,33 @@
+diff --git a/docs/design/admin-quick-start/guide.md b/docs/design/admin-quick-start/guide.md
+index f5fd3aad..f6dea0cd 100644
+--- a/docs/design/admin-quick-start/guide.md
++++ b/docs/design/admin-quick-start/guide.md
+@@ -7,10 +7,10 @@ credentials in product forms, outside this chat.
+ Organization portal: {{portal_base_url}}
+ Thermus MCP endpoint: {{mcp_url}}
+ 
+-## 1. Turn off direct internet access to AI Agents and connect Thermus
++## 1. Turn off direct internet access for AI agents and connect Thermus
+ 
+-Select the correct organization in each provider before changing its controls.
+-Turn off direct web access to AI Agents, then connect Thermus for search and page retrieval.
++Open each AI provider’s admin console, select your organization, and turn off
++direct internet access for its agents. Then connect Thermus for search and page retrieval.
+ Keep Thermus and required agent services allowed. Thermus does not enforce
+ these external network settings.
+ 
+diff --git a/src/interfaces/web/account/quick-start-content.ts b/src/interfaces/web/account/quick-start-content.ts
+index c9eab877..b410eebe 100644
+--- a/src/interfaces/web/account/quick-start-content.ts
++++ b/src/interfaces/web/account/quick-start-content.ts
+@@ -27,8 +27,8 @@ export const quickStartProviders = [
+ 
+ export const quickStartInstructions = {
+   internet: {
+-    title: 'Turn off direct internet access to AI Agents',
+-    lead: 'Select the correct organization in each provider before changing its controls. Turn off direct web access to AI Agents, then connect Thermus for search and page retrieval. Keep Thermus and required agent services allowed. Thermus does not enforce these external network settings.',
++    title: 'Turn off direct internet access for AI agents',
++    lead: 'Open each AI provider’s admin console, select your organization, and turn off direct internet access for its agents. Then connect Thermus for search and page retrieval. Keep Thermus and required agent services allowed. Thermus does not enforce these external network settings.',
+     scope: 'Review native web tools, shell commands, cloud agents, and other connectors separately. A web-search switch does not block shell or cloud traffic. Policies vary by edition and deployment. Prompts alone do not enforce network policy.',
+     fallback: 'ChatGPT / Codex and VS Code / Copilot have guidance fallbacks; no stable organization control URL was verified. Check each policy\'s scope.',
+     connect: 'Follow your client\'s connection and authorization guide.',

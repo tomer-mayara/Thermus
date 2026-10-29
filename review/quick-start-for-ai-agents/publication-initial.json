@@ -1,0 +1,10 @@
+{
+  "time": "2026-10-28T23:48:29.097Z",
+  "candidate": "b0ec502e8a7362bd03d82012b80362f7960c4430",
+  "base": "21458b0d18cc4f9efd3a59f6361a86f1acdc317c",
+  "pr": 292,
+  "body": "## Description\n\nThe first Quick start heading now reads **Turn off direct internet access for AI agents**. Its paragraph tells admins to open each provider’s admin console, select their organization, and turn off direct internet access for its agents, followed by the existing Thermus connection and service-access guidance. The shared page and copied Markdown use this same text; the canonical guide and external HTML mockup match.\n\n## Review\n\nExpected **T0 Auto merge**; the committed-candidate checker is pending. Production architecture and callable contracts are unchanged. The impact declaration has all classification flags false and `modelUpdated: false`.\n\nMerge status: **blocked while required checks are running**. Focused and browser checks passed; the full ordinary suite, type checks, portal build, container/build gates, metrics, habit-hooks, and manager sign-off remain pending. No human review requirement is asserted until the checker completes.\n\n---\nCandidate: [b0ec502e](https://github.com/tomer-mayara/Thermus/commit/b0ec502e8a7362bd03d82012b80362f7960c4430). Trusted base: `21458b0d18cc4f9efd3a59f6361a86f1acdc317c`. Validation and Quality review links will follow.",
+  "validationCommentId": 6483742111,
+  "qualityCommentId": 6483742406,
+  "status": "draft; selected checks running"
+}

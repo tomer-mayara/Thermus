@@ -1,0 +1,15 @@
+{
+  "name": "portal-build",
+  "command": [
+    "npm",
+    "run",
+    "build:user-portal"
+  ],
+  "started": "2026-10-28T23:55:07.785Z",
+  "completed": "2026-10-28T23:55:08.733Z",
+  "exitCode": 0,
+  "signal": null,
+  "node": "v24.20.0",
+  "cwd": "/Users/tomermayara/.codex/worktrees/3e6e/Thermus",
+  "summaries": []
+}

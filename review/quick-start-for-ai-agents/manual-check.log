@@ -1,0 +1,14 @@
+(node:30605) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+{
+  "sharedTitleExact": true,
+  "sharedLeadExact": true,
+  "renderedHeadingExact": true,
+  "renderedLeadExact": true,
+  "copiedHeadingRetainsSuffix": true,
+  "canonicalParagraphExactIgnoringLineWraps": true,
+  "artifactHeadingExact": true,
+  "artifactLeadExact": true,
+  "artifactCopyMatchesCanonicalIgnoringOuterWhitespace": true,
+  "artifactInlineScriptSyntax": "valid"
+}

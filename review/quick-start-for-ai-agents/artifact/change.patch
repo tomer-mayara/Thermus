@@ -1,0 +1,25 @@
+--- ast-report/quick-start-for-ai-agents/artifact/admin-quick-start.before.html	2026-10-28 17:44:14
++++ ast-report/quick-start-for-ai-agents/artifact/admin-quick-start.after.html	2026-10-28 17:44:48
+@@ -73,7 +73,7 @@
+     <div class="tq-notice" role="status" hidden><span></span><button type="button" class="tq-link-button cursor-interaction" aria-label="Dismiss preview notice">Dismiss</button></div>
+     <section class="tq-copy-fallback" hidden aria-label="Copy guide manually"><label for="tq-markdown">Clipboard access is unavailable. Select and copy this guide.</label><textarea id="tq-markdown" readonly></textarea><button type="button" class="tq-button cursor-interaction">Close</button></section>
+     <div class="tq-steps">
+-      <section class="tq-step"><span class="tq-number" aria-hidden="true">1</span><div class="tq-step-body"><h2>Turn off direct internet access to AI Agents</h2><p>Select the correct organization in each provider before changing its controls. Turn off direct web access to AI Agents, then connect Thermus for search and page retrieval. Keep Thermus and required agent services allowed. Thermus does not enforce these external network settings.</p>
++      <section class="tq-step"><span class="tq-number" aria-hidden="true">1</span><div class="tq-step-body"><h2>Turn off direct internet access for AI agents</h2><p>Open each AI provider’s admin console, select your organization, and turn off direct internet access for its agents. Then connect Thermus for search and page retrieval. Keep Thermus and required agent services allowed. Thermus does not enforce these external network settings.</p>
+         <details id="tq-agent-controls"><summary class="cursor-interaction">Agent controls and instructions</summary><div class="tq-providers">
+           <p class="tq-note">Review native web tools, shell commands, cloud agents, and other connectors separately. A web-search switch does not block shell or cloud traffic. Policies vary by edition and deployment.</p>
+           <div class="tq-provider"><strong>Claude web / desktop</strong><div class="tq-provider-links"><a target="_blank" rel="noopener noreferrer" href="https://claude.ai/admin-settings/capabilities">Organization capabilities ↗</a><a target="_blank" rel="noopener noreferrer" href="https://support.claude.com/en/articles/10684626-enable-and-use-web-search">Web search guidance ↗</a></div></div>
+@@ -111,10 +111,10 @@
+ Organization portal: {{portal_base_url}}
+ Thermus MCP endpoint: {{mcp_url}}
+ 
+-## 1. Turn off direct internet access to AI Agents and connect Thermus
++## 1. Turn off direct internet access for AI agents and connect Thermus
+ 
+-Select the correct organization in each provider before changing its controls.
+-Turn off direct web access to AI Agents, then connect Thermus for search and page retrieval.
++Open each AI provider’s admin console, select your organization, and turn off
++direct internet access for its agents. Then connect Thermus for search and page retrieval.
+ Keep Thermus and required agent services allowed. Thermus does not enforce
+ these external network settings.
+ 
