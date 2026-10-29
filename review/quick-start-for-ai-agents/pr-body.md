@@ -22,12 +22,12 @@ URL validation, provider operations, callable contracts, and deployment
 relationships retain their rules. Architecture and all 20 registry views are
 unchanged. The final metadata commit adds only the immutable base metric record.
 
-**Draft; overall merge status blocked.** The first AMD64 image attempt failed
-in an unchanged JWKS error assertion; one authorized unchanged retry is running.
-Final manager input binding confirms 754 frozen inputs. The required image pass
-and final eligibility sign-off remain outstanding. Other selected checks pass. Metrics retain an unchanged MI goal
-miss, with Review/CRAP/Architecture passing and no checker exception reason.
-No human approval is required for eligible T0.
+**Overall merge status: eligible.** All selected checks passed, and the manager
+reviewed the complete candidate. The AMD64 gate passed all seven runtime cases
+on one unchanged retry after an existing timing-test failure; both attempts
+remain in the evidence. Frozen-input comparisons match the final candidate.
+The unchanged MI goal miss has a recorded retained reason; other metric stages
+pass. Blockers and required decisions: none. T0 requires no human approval.
 
 Authorized deployment follows merge through the existing Render Git service.
 Verification will bind the deployed revision, health, and public access; the

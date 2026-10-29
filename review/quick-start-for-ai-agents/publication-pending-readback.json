@@ -1,0 +1,12 @@
+{
+  "time": "2026-10-29T00:12:02.869Z",
+  "phase": "draft; image gate retry running",
+  "candidate": "8eb8d34519bd9aa0e2541bf3ad79f0ca8ad84ac0",
+  "base": "21458b0d18cc4f9efd3a59f6361a86f1acdc317c",
+  "evidence": "b3aaf8f1efca5c3b5391f59982c70d7a985c4b83",
+  "draft": true,
+  "comments": 2,
+  "bodyMatches": true,
+  "validationMatches": true,
+  "qualityMatches": true
+}

@@ -1,0 +1,15 @@
+{
+  "03-artifact-sha256.json": "ec2392c1637f226aa2180022657a9f9684008fe102d4dfaee5370a5936cb1192",
+  "03-candidate-metadata.patch": "6f80d8d2d704178db96e3ade738a68a0d2c05ca8673deb17fb6972c9d0cab7d3",
+  "03-hosted-container-attempt-2-build-progress.log": "ce34f3410baf8fb5cc75c6a26972e3c0e6070eb705a9f5c62c07d26c5c6b464e",
+  "03-hosted-container-attempt-2.json": "bed83bfe3159601f79f12477f0b57a8327cb4050a387144f89b9da68b406bfad",
+  "03-hosted-container-attempt-2.log": "50520b38717d5a80e2244351a5e3b6630d2ac352e3258333a8a6c0205d203f46",
+  "03-hosted-container-build-progress.log": "02f147954afa5ec8f86a03a5fbabe483c0acc77ce6c1ec64aee06d1acbf568db",
+  "03-hosted-container-failure.md": "37122e45ed93bedbc2dbb221b0ab4af99098bb95dd8b776ed4022862b95259ab",
+  "03-hosted-container-final-comparison.json": "f1b4496a11798ff767f6686675f7892384acb8145d1f1b5c900d1fceb96fc485",
+  "03-hosted-container-provenance.json": "1d8a41f87d6d8142499dd2c43814529f5942a9dcc7c93e3ee858527c7217a003",
+  "03-hosted-container-summary.md": "b9b61162e5540b150555d5324de6d781b7265dbedc252677d85b4a6c35ee3e4c",
+  "03-hosted-container.json": "8aa97d065b0d639d628bd375b5f83ae354db194e587bbcc7633c8963f3586ecc",
+  "03-hosted-container.log": "d03935ce56443ed23da3fbf77c39bd3129c938548d22acf457714836fb51c587",
+  "03-image-overlay.patch": "cc221ae49bd7f488481dfc0c82c5e7cd1eb93ca103b7bec5dd89265e0f5ebaff"
+}

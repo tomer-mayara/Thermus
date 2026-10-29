@@ -1,0 +1,23 @@
+{
+  "name": "03-hosted-container-attempt-2",
+  "command": [
+    "npm",
+    "run",
+    "test:container:hosted"
+  ],
+  "started": "2026-10-29T00:01:26.944Z",
+  "completed": "2026-10-29T00:12:41.218Z",
+  "exitCode": 0,
+  "signal": null,
+  "node": "v24.20.0",
+  "summaries": [
+    "ℹ tests 7",
+    "ℹ suites 0",
+    "ℹ pass 7",
+    "ℹ fail 0",
+    "ℹ cancelled 0",
+    "ℹ skipped 0",
+    "ℹ todo 0",
+    "ℹ duration_ms 672180.6965"
+  ]
+}

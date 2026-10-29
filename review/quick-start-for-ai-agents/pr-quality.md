@@ -7,16 +7,17 @@ This is a new increment against main, not a stack or a review-tier de-escalation
 **T0 Auto merge — `T0: no architecture fact`.** The final-head checker reports
 preliminary eligibility `eligible`, blockers `[]`, and no architecture facts,
 tier reasons, policy questions, declared/undeclared facts, or surface differences.
-No human approval is required for eligible T0. **The PR remains Draft and overall
-merge remains blocked by the required AMD64 retry result and final eligibility
-verification.** The first image gate failed; the authorized unchanged full
-retry is running. Local checker eligibility does not replace those checks.
+No human approval is required for eligible T0. **Overall merge is eligible:**
+all selected checks passed and the manager reviewed the complete candidate.
+The first image gate failed; the one authorized unchanged retry passed all
+seven final image cases. Both attempts remain retained. The manager's actual
+checks and review address the preliminary-eligibility note.
 
 The checker's single informational item is **53 public modules, 0 snapshots
 changed**. Disposition: the declared public surface remains stable, matching
 this internal wording increment; no declaration delta is inferred from UI
 strings. Its note that local eligibility is preliminary is honored by the
-visible execution/sign-off hold. See [checker JSON](./checker.json).
+[final manager sign-off](./manager-review.md). See [checker JSON](./checker.json).
 
 Checker stderr records **33 compiler errors in two files outside the listed
 public surface were ignored**. This limits declaration verification to that
@@ -104,7 +105,8 @@ and one fail, stopping later build/runtime proofs. An emulated/shared-load
 timing race is a hypothesis, not a proven root cause. The manager reviewed the
 source and authorized one full unchanged retry only after heavy primary work
 completed. No source, deadline, assertion, or production/configuration input
-was changed. Attempt 2 is running; retain [attempt 1](./environment-gates/attempt-1/03-hosted-container-failure.md)
+was changed. Attempt 2 passed the entire gate, including the same refused-port
+assertion in 12.433833 ms. Retain [attempt 1](./environment-gates/attempt-1/03-hosted-container-failure.md)
 and its full logs. This is a real failed gate, separate from the snapshot
 wrapper's metadata/data-path recovery described in Validation.
 
@@ -113,18 +115,20 @@ matched `b0ec502e`; the isolated checkout was archived. The final commit adds
 only the immutable metric record. The manager's
 [final input binding](./final-input-binding.json) confirms all
 754 frozen inputs unchanged at `8eb8d345`; [initial manager review](./manager-review-initial.md)
-records implementation sign-off and the image hold. Attempt 2's fresh unit/portal
-groups pass (3,693 + 39 + 21) and integration is running. Final eligibility
-sign-off awaits the complete image result. No earlier candidate's passing
-results are substituted for these fresh runs.
+records implementation review and the historical image hold. Attempt 2 passed
+all inner 3,693 + 39 + 21 + 1,219 + 189 + 13 checks and 7 final runtime cases.
+The [image comparison](./environment-gates/03-hosted-container-final-comparison.json)
+confirms the frozen inputs match the final candidate. The
+[final manager sign-off](./manager-review.md) resolves the hold.
+No earlier candidate's results substitute for these fresh runs.
 
 The current production browser is denied guide access and offers one
 already-selected organization; no authority/selection changed and the temporary
 tab was closed. Positive production Admin UI and native clipboard behavior are
 unverified. Exact deployed-revision, health/public access, and fresh local Admin
 screenshots/copy checks define the available verification scope. See the
-[access limit](./browser-access-limit.md). A positive production
-view is not required; verification preserves the current access boundary.
+[access limit](./browser-access-limit.md). Verification preserves
+the current access boundary.
 
 <details>
 <summary>Architecture assessment and pinned provenance</summary>
@@ -145,14 +149,15 @@ guide [before](https://github.com/tomer-mayara/Thermus/blob/21458b0d18cc4f9efd3a
 No component, dependency, public module, callable contract, trust rule, or
 deployment relationship changes. No registry edit, comparison drawing/render,
 L4 detail, or decision record is needed. The immutable base record is metric
-history, not a runtime change. Manager final complete-candidate review remains
-pending; it is not supplied by the independent source review alone.
+history, not a runtime change. The manager reviewed all four changed files,
+source and image input comparisons, screenshots, independent review, and the
+actual final execution reports before signing off.
 
 </details>
 
 Versioned prior report sources: [main](./history/before-final-8eb8d345/pr-body.md),
 [Validation](./history/before-final-8eb8d345/pr-validation.md), and
 [Quality](./history/before-final-8eb8d345/pr-quality.md).
-Keep exactly the same two maintained comments. Record the running image result
-and manager sign-off when available, retain all earlier evidence, and read back
-the final published text. No merge/deployment completion is claimed.
+The same two maintained comments retain the completed review, both image
+attempts, and manager sign-off. Publication is read back before Ready. Merge
+and deployment completion will be recorded after those actions succeed.

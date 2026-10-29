@@ -1,0 +1,13 @@
+diff --git a/.pr-impact.json b/.pr-impact.json
+index 3f7af8f5..bd54da3e 100644
+--- a/.pr-impact.json
++++ b/.pr-impact.json
+@@ -15,7 +15,7 @@
+   },
+   "architecture": {
+     "modelUpdated": false,
+-    "summary": "Clarify the first Quick start heading and direct-web-access sentence by naming AI Agents. The shared content supplies both the Admin page and copied Markdown; the canonical Markdown guide uses the same wording. This is copy only: routes, authorization, provider controls, callable contracts, dependencies, composition and deployment do not change. The component registry prose and all 20 views remain accurate and unchanged.",
++    "summary": "Correct the first Quick start heading to use 'for AI agents' and replace its lead with the approved instructions to open each provider's admin console, select the organization, and restrict internet access for its agents. The shared content supplies both the Admin page and copied Markdown; the canonical guide contains the same wording. Only explanatory copy changes: routes, authorization, configured links, URL validation, provider operations, callable contracts, dependencies, composition and deployment relationships remain unchanged. The component registry prose and all 20 views remain accurate and unchanged.",
+     "views": [
+       "Context",
+       "C4 containers: hosted edition",

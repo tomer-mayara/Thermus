@@ -1,0 +1,129 @@
+{
+  "base": "21458b0d18cc4f9efd3a59f6361a86f1acdc317c",
+  "primaryHeadAtReport": "8eb8d34519bd9aa0e2541bf3ad79f0ca8ad84ac0",
+  "primaryGitStatus": "clean",
+  "sourceGuideHashes": {
+    "src/interfaces/web/account/quick-start-content.ts": "e90e4ec93542c04ef770409faa84c54a1f350e57619b8972c5688d30f2e28ab9",
+    "docs/design/admin-quick-start/guide.md": "0c3220c3e928bf32f996711b6fe399c0a1e4c6810ab049b7efe67512a500ea1b"
+  },
+  "sourceGuideMatch": true,
+  "configComparison": {
+    "package.json": {
+      "original": "30df853cac48bd00c4230334979e2049d5ac75c1f02ac947e00c8e829013da78",
+      "primary": "30df853cac48bd00c4230334979e2049d5ac75c1f02ac947e00c8e829013da78",
+      "matches": true,
+      "nonruntimeMetadata": false
+    },
+    "pnpm-lock.yaml": {
+      "original": "d6b158024ccab02bd6ba42a66bbc8b3ad1121e04f32273fe13081b5dac67ba12",
+      "primary": "d6b158024ccab02bd6ba42a66bbc8b3ad1121e04f32273fe13081b5dac67ba12",
+      "matches": true,
+      "nonruntimeMetadata": false
+    },
+    ".npmrc": {
+      "original": "7151cf397def0c2cb0ab65643701d27d335a72c90f775675b5f826bc7005818a",
+      "primary": "7151cf397def0c2cb0ab65643701d27d335a72c90f775675b5f826bc7005818a",
+      "matches": true,
+      "nonruntimeMetadata": false
+    },
+    "Dockerfile.hosted": {
+      "original": "62aa39a803d30cd2c73bd0fe6ebba963f1e7ea3006ef88493875e3dd9acba21d",
+      "primary": "62aa39a803d30cd2c73bd0fe6ebba963f1e7ea3006ef88493875e3dd9acba21d",
+      "matches": true,
+      "nonruntimeMetadata": false
+    },
+    "Dockerfile.hosted.dockerignore": {
+      "original": "27b9ce47817d3491f0ba242bd3cacb64e2d483274dd58a143c5d0a5df58d4154",
+      "primary": "27b9ce47817d3491f0ba242bd3cacb64e2d483274dd58a143c5d0a5df58d4154",
+      "matches": true,
+      "nonruntimeMetadata": false
+    },
+    ".pr-impact.json": {
+      "original": "67352cc43dd5fb0e5ba7178938c011cd82bc5090f52decf5fe0cb7ee59e17cfa",
+      "primary": "f3f12bed9556fa9ba6c8983e13eaecf1bb0b09e2503010e42c971291bbbd0c32",
+      "matches": false,
+      "nonruntimeMetadata": true
+    }
+  },
+  "runtimeDelta": [
+    "src/interfaces/web/account/quick-start-content.ts"
+  ],
+  "unchangedRefusedPortTest": {
+    "path": "test/integration/auth/workos-provider-verification.test.ts",
+    "sha256": "0c4892f1d8874d4a2b4cffdb6c9a6466120f8ab18e5c3195ea1bd7f0f5eb062c",
+    "timeoutDuration": 100,
+    "expectedErrorName": "TypeError",
+    "attempt1Actual": "JWKSTimeout",
+    "attempt1ElapsedMs": 431.857417,
+    "attempt2Passed": true,
+    "attempt2ElapsedMs": 12.433833
+  },
+  "attempt1": {
+    "name": "03-hosted-container",
+    "command": [
+      "npm",
+      "run",
+      "test:container:hosted"
+    ],
+    "started": "2026-10-28T23:45:37.483Z",
+    "completed": "2026-10-28T23:59:19.755Z",
+    "exitCode": 1,
+    "signal": null,
+    "node": "v24.20.0",
+    "summaries": [
+      "ℹ tests 1",
+      "ℹ suites 0",
+      "ℹ pass 0",
+      "ℹ fail 1",
+      "ℹ cancelled 0",
+      "ℹ skipped 0",
+      "ℹ todo 0",
+      "ℹ duration_ms 819763.428458"
+    ]
+  },
+  "attempt2": {
+    "name": "03-hosted-container-attempt-2",
+    "command": [
+      "npm",
+      "run",
+      "test:container:hosted"
+    ],
+    "started": "2026-10-29T00:01:26.944Z",
+    "completed": "2026-10-29T00:12:41.218Z",
+    "exitCode": 0,
+    "signal": null,
+    "node": "v24.20.0",
+    "summaries": [
+      "ℹ tests 7",
+      "ℹ suites 0",
+      "ℹ pass 7",
+      "ℹ fail 0",
+      "ℹ cancelled 0",
+      "ℹ skipped 0",
+      "ℹ todo 0",
+      "ℹ duration_ms 672180.6965"
+    ]
+  },
+  "finalStatus": "passed on one manager-authorized complete unchanged retry; first failure retained",
+  "finalImageManifest": "sha256:3b93856f7c840093d97f96800fb37122c92aaa3f1249c61a84fd8f2a0a191804",
+  "comparedAt": "2026-10-29T00:13:34.187Z",
+  "finalCandidate": "8eb8d34519bd9aa0e2541bf3ad79f0ca8ad84ac0",
+  "finalCandidateChangedFiles": [
+    ".pr-impact.json",
+    "docs/design/admin-quick-start/guide.md",
+    "docs/metrics/2026-10-28-21458b0d.json",
+    "src/interfaces/web/account/quick-start-content.ts"
+  ],
+  "completeRuntimeTestBuildDelta": [
+    "src/interfaces/web/account/quick-start-content.ts"
+  ],
+  "nonruntimeMetadata": [
+    ".pr-impact.json",
+    "docs/metrics/2026-10-28-21458b0d.json"
+  ],
+  "primaryDependenciesUntouched": true,
+  "ownedDependencySymlink": "removed",
+  "gateContainerCleanup": "no remaining containers with either attempt label",
+  "finalCandidateConfirmedAt": "2026-10-29T00:14:11.964Z",
+  "managedGateCheckout": "archived after manager confirmation; archived_worktree attachment verified"
+}

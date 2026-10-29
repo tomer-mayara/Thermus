@@ -4,12 +4,11 @@ Candidate: [`8eb8d34519bd9aa0e2541bf3ad79f0ca8ad84ac0`](https://github.com/tomer
 Trusted main merge base: [`21458b0d18cc4f9efd3a59f6361a86f1acdc317c`](https://github.com/tomer-mayara/Thermus/commit/21458b0d18cc4f9efd3a59f6361a86f1acdc317c).
 The final commit adds only `docs/metrics/2026-10-28-21458b0d.json` after source
 candidate `b0ec502e8a7362bd03d82012b80362f7960c4430`. Runtime/test/build inputs
-remain frozen. Final manager input comparison passed; eligibility sign-off
-awaits the required image gate.
+remain frozen. Final input comparisons and manager sign-off are complete.
 
-**Draft; overall merge status blocked by the required AMD64 image pass and
-final eligibility verification.** The checker is preliminary and does not turn a
-failed or running required gate into a pass.
+**All selected checks passed; the candidate is eligible for Ready and merge.**
+[Final manager sign-off](./manager-review.md) includes the actual
+image retry outcome, source review, and frozen-input comparisons.
 
 Selection: web source changes select the ordinary suite, typecheck, portal
 build, self-hosted container, hosted offline build, and Linux AMD64 hosted image
@@ -26,7 +25,7 @@ fresh exact-text/reflow evidence. All results below belong to this increment.
 | `npm run test:container` | Pass, exit 0: 11/11; zero failure/cancellation/skip/todo | [JSON](./environment-gates/01-self-hosted-container.json), [log](./environment-gates/01-self-hosted-container.log) |
 | Native `npm run build:hosted` | Pass, exit 0: 3,693 + 39 + 21 + 1,219 + 189 + 13 = 5,174 emitted tests; all pass, no failure/cancellation/skip/todo. Separate groups are not unique scenarios. | [JSON](./environment-gates/02-build-hosted.json), [log](./environment-gates/02-build-hosted.log) |
 | AMD64 `npm run test:container:hosted`, attempt 1 | Fail, exit 1: outer gate 1 test, 0 pass, 1 fail; no cancellation/skip/todo. Inner build stopped before final runtime proofs. | [original JSON](./environment-gates/attempt-1/03-hosted-container.json), [failure record](./environment-gates/attempt-1/03-hosted-container-failure.md), [full build](./environment-gates/attempt-1/03-hosted-container-build-progress.log) |
-| AMD64 full unchanged retry, attempt 2 | Running after manager authorization: fresh 3,693 + 39 + 21 unit/portal tests pass; integration is running. No full image pass claimed. Required before Ready/merge. | Final retry result will join the retained attempt-1 evidence. |
+| AMD64 full unchanged retry, attempt 2 | Pass, exit 0: 7/7 final image cases, zero failures/cancellations/skips/todos; all inner hosted checks also passed | [JSON](./environment-gates/03-hosted-container-attempt-2.json), [log](./environment-gates/03-hosted-container-attempt-2.log), [summary](./environment-gates/03-hosted-container-summary.md) |
 | Unit + integration coverage | Pass, exit 0; verified capture, 241 files and 813 processes | [command](./coverage-command.json), [log](./coverage-command.log), [coverage](./coverage.json) |
 | Final process/review/CRAP | Completed: Delta goal miss; Review/CRAP/Architecture pass. Process exit 1 is the retained unchanged MI goal miss. | [process](./process.json), [command](./process-final-command.json), [CRAP](./crap.json) |
 | Habit-hooks | Pass, exit 0, no findings; snooze `[]` | [command](./habit-hooks-command.json), [log](./habit-hooks-command.log) |
@@ -39,8 +38,7 @@ first unit/portal groups passed 3,693 + 39 + 21. Integration reported 1,218 pass
 and one failure: `workos-provider-verification.test.ts:233–236`, a refused-loopback
 AuthKit JWKS request with a 100ms timeout, expected `TypeError` but returned
 `JWKSTimeout`; the case elapsed about 432ms. Hosted acceptance, renderer, and
-final image runtime proofs were not reached. The final image has no passing
-result yet.
+final image runtime proofs were not reached in that first attempt.
 
 A transport-vs-timeout race under emulated/shared load is a possible explanation,
 not a proven root cause. The copy change does not touch this code. The manager
@@ -48,9 +46,10 @@ read the source and authorized one full unchanged retry after heavy primary
 jobs completed. No source, Dockerfile, assertion, deadline, or environment rule
 was changed to bypass the failure. Original `03*` artifacts and the versioned
 [attempt-1 records](./environment-gates/attempt-1/03-hosted-container.json)
-are retained. Attempt 2 has fresh passing unit/portal groups (3,693 + 39 + 21),
-with integration running; preserve its actual full result and this failure
-history before changing the status.
+are retained. Attempt 2 passed the full unchanged gate: 3,693 + 39 + 21 + 1,219
++ 189 + 13 inner checks and 7 final runtime cases. The exact refused-port case
+passed in 12.433833 ms with the same 100 ms limit. This supports the timing-race
+inference without proving a universal cause. There was no further retry.
 
 ### Provenance and tooling recovery
 
@@ -66,7 +65,9 @@ identity. The final commit differs only by the generated immutable metric
 record. The manager's [final input binding](./final-input-binding.json)
 now confirms all 754 frozen inputs at the final candidate. The
 [initial manager review](./manager-review-initial.md) records
-implementation review and the remaining image hold.
+implementation review and the then-pending image hold. The later
+[final sign-off](./manager-review.md) resolves that hold using the
+[final image comparison](./environment-gates/03-hosted-container-final-comparison.json).
 
 Coverage remains captured at `b0ec502e8a7362bd03d82012b80362f7960c4430`, with
 status `verified`, suites unit + integration, Node 24.20.0, TypeScript 7.0.2,
@@ -111,7 +112,7 @@ hooks do not prove native host permission.
 The existing production browser was denied Quick start access and offered one
 already-selected organization. No role, membership, credential, or selection
 changed; its temporary tab was closed. Positive production Admin UI remains
-unverified and is not a verification requirement. Access remains unchanged. The
+unverified. Access remains unchanged. The
 [access-limit record](./browser-access-limit.md) remains material.
 After eligible merge, authorized existing-Render-Git deployment must bind the
 merged SHA/deployment ID, health, and public access readback. No merge or deploy

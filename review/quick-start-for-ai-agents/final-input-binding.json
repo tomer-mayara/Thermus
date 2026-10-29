@@ -12,5 +12,8 @@
     "docs/metrics/2026-10-28-21458b0d.json"
   ],
   "clean": true,
-  "note": "Original native runs and coverage retain their captured identities. Final metrics and checker bind this complete candidate. Image-gate retry is still pending."
+  "note": "Original run and capture identities are retained. Final image comparison and all selected checks passed on this candidate; the manager reviewed and signed off.",
+  "imageComparison": "environment-gates/03-hosted-container-final-comparison.json",
+  "imageGateAttempt": 2,
+  "imageGatePassed": true
 }
