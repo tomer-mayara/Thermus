@@ -1,0 +1,13 @@
+{
+  "time": "2026-10-29T00:17:51.275Z",
+  "phase": "all checks complete; before Ready",
+  "candidate": "8eb8d34519bd9aa0e2541bf3ad79f0ca8ad84ac0",
+  "base": "21458b0d18cc4f9efd3a59f6361a86f1acdc317c",
+  "evidence": "0319a8d7d15f88c41b0d63b455762c3529487d21",
+  "bodyMatches": true,
+  "validationMatches": true,
+  "qualityMatches": true,
+  "comments": 2,
+  "draft": true,
+  "mergeable": true
+}

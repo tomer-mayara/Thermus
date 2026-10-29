@@ -1,0 +1,18 @@
+{
+  "time": "2026-10-29T00:20:01.481Z",
+  "primary": "/Users/tomermayara/.codex/worktrees/3e6e/Thermus",
+  "worktrees": [
+    {
+      "type": "archived_worktree",
+      "root": "/Users/tomermayara/.codex/worktrees/quick-start-for-agents-native-7905/Thermus"
+    },
+    {
+      "type": "archived_worktree",
+      "root": "/Users/tomermayara/.codex/worktrees/quick-start-for-agents-native/Thermus"
+    },
+    {
+      "type": "archived_worktree",
+      "root": "/Users/tomermayara/.codex/worktrees/quick-start-for-agents-gates/Thermus"
+    }
+  ]
+}

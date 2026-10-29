@@ -1,0 +1,13 @@
+{
+  "commit": {
+    "createdAt": "2026-10-29T00:17:54Z",
+    "id": "b0723a0a03eb2408bd1b8aeda6646a0f7c77f8d1",
+    "message": "Clarify internet access instructions for AI agents (#292)\n\n* Clarify direct internet access for AI agents\n\n* Record base metrics for Quick start wording review"
+  },
+  "createdAt": "2026-10-29T00:18:14.652667Z",
+  "id": "dep-dbh91hmc6qcc73endk40",
+  "startedAt": "2026-10-29T00:18:14.622432Z",
+  "status": "build_in_progress",
+  "trigger": "api",
+  "updatedAt": "2026-10-29T00:18:14.652667Z"
+}

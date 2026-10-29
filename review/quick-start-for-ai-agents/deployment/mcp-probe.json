@@ -1,0 +1,13 @@
+{
+  "time": "2026-10-29T00:22:32.544Z",
+  "url": "https://example.com",
+  "isError": false,
+  "textBlocks": 1,
+  "textCharacters": 957,
+  "expectedPageTitlePresent": false,
+  "reviewedAt": "2026-10-29T00:24:15.851Z",
+  "expectedPageBodyVerified": true,
+  "status": "passed",
+  "requests": 1,
+  "note": "The extra title assertion expected 'Example Domain', but the successful Markdown output has no heading. Inspection verified the example-domain text and IANA reference. No service/tool error or repeat request occurred; the initial title assumption is retained."
+}

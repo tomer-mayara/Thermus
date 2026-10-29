@@ -21,4 +21,4 @@ The source and copied guide use the exact approved wording. The external HTML mo
 
 This branch retains review evidence without changing the product candidate. The manifest records the exact published file hashes. Published comments point to an immutable evidence commit; local report sources use `{{EVIDENCE_BASE}}`.
 
-Deployment follows merge through the existing Render Git service. Verification will bind the exact merged revision and public health/access checks. The current browser cannot access the production Admin guide, so positive UI proof comes from the fresh local Admin tests and screenshots. See the [access limit](browser-access-limit.md). No permission change is required.
+PR #292 is merged and deployed through the existing Render Git service. The exact merged revision is live, and public health/access checks passed. See the [deployment record](deployment/README.md). The current browser cannot access the production Admin guide, so positive UI proof comes from the fresh local Admin tests and screenshots. See the [access limit](browser-access-limit.md). No permission change is required.

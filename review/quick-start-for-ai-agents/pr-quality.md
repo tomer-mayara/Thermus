@@ -7,7 +7,7 @@ This is a new increment against main, not a stack or a review-tier de-escalation
 **T0 Auto merge — `T0: no architecture fact`.** The final-head checker reports
 preliminary eligibility `eligible`, blockers `[]`, and no architecture facts,
 tier reasons, policy questions, declared/undeclared facts, or surface differences.
-No human approval is required for eligible T0. **Overall merge is eligible:**
+No human approval is required for eligible T0. **Pre-merge status was eligible:**
 all selected checks passed and the manager reviewed the complete candidate.
 The first image gate failed; the one authorized unchanged retry passed all
 seven final image cases. Both attempts remain retained. The manager's actual
@@ -159,5 +159,9 @@ Versioned prior report sources: [main](./history/before-final-8eb8d345/pr-body.m
 [Validation](./history/before-final-8eb8d345/pr-validation.md), and
 [Quality](./history/before-final-8eb8d345/pr-quality.md).
 The same two maintained comments retain the completed review, both image
-attempts, and manager sign-off. Publication is read back before Ready. Merge
-and deployment completion will be recorded after those actions succeed.
+attempts, and manager sign-off. Publication was read back before Ready. Merge and deployment outcomes are
+recorded below.
+
+### Merge and release closeout
+
+The reviewed candidate was marked Ready and merged once as `b0723a0a03eb2408bd1b8aeda6646a0f7c77f8d1`. The merged tree matches the tested candidate. Render reports the exact merged revision live; public health/access and authenticated page-fetch verification passed. The separate GitHub image workflow was blocked before execution by the account billing/spending-limit condition. All temporary gate worktrees are archived and the primary checkout is clean. [Release evidence](./deployment/README.md). The initial image failure and supplemental title-assertion correction remain recorded; no check result or coverage identity was rewritten.

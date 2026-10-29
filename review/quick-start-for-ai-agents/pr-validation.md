@@ -6,7 +6,7 @@ The final commit adds only `docs/metrics/2026-10-28-21458b0d.json` after source
 candidate `b0ec502e8a7362bd03d82012b80362f7960c4430`. Runtime/test/build inputs
 remain frozen. Final input comparisons and manager sign-off are complete.
 
-**All selected checks passed; the candidate is eligible for Ready and merge.**
+**All selected pre-merge checks passed; the candidate was approved for Ready and merge.**
 [Final manager sign-off](./manager-review.md) includes the actual
 image retry outcome, source review, and frozen-input comparisons.
 
@@ -114,11 +114,16 @@ already-selected organization. No role, membership, credential, or selection
 changed; its temporary tab was closed. Positive production Admin UI remains
 unverified. Access remains unchanged. The
 [access-limit record](./browser-access-limit.md) remains material.
-After eligible merge, authorized existing-Render-Git deployment must bind the
-merged SHA/deployment ID, health, and public access readback. No merge or deploy
-completion is claimed here.
+The completed deployment verification below binds the merged SHA/deployment
+ID, health, and public access readback.
 
 Earlier report sources remain in
 [pre-final report history](./history/before-final-8eb8d345/pr-validation.md).
 Keep this same maintained Validation comment and retain failure/retry and final
 manager history as results arrive.
+
+### Deployment verification after merge
+
+The eligible candidate was merged once as `b0723a0a03eb2408bd1b8aeda6646a0f7c77f8d1`. Candidate and merge trees are identical. Render deployment `dep-dbh91hmc6qcc73endk40` became **live at 2026-10-29 00:21:34 UTC** on that exact revision. Health GET/HEAD, portal/assets, signed-out guide/MCP access checks, and one authenticated page fetch passed. The bounded post-deploy error/fatal query was empty. [Deployment report](./deployment/README.md), [HTTP results](./deployment/public-after.json), [source identity](./deployment/source-identity.json).
+
+The supplemental MCP title assertion expected a heading absent from the successful Markdown result. Inspection verified the actual page body and IANA reference; there was no repeat request or service error. The initial assertion is retained. Positive production Admin UI remains outside the available browser permissions. The separate [GitHub image run](https://github.com/tomer-mayara/Thermus/actions/runs/40793133570) could not start because GitHub reports failed account payments or a spending limit. Render's Git-backed build completed independently. No billing, role, or deployment mode changed.

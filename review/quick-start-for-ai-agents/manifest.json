@@ -1,12 +1,12 @@
 {
   "candidate": "8eb8d34519bd9aa0e2541bf3ad79f0ca8ad84ac0",
   "base": "21458b0d18cc4f9efd3a59f6361a86f1acdc317c",
-  "createdAt": "2026-10-29T00:17:07.742Z",
+  "createdAt": "2026-10-29T00:25:50.367Z",
   "files": [
     {
       "path": "README.md",
-      "bytes": 2146,
-      "sha256": "74c2b1b71c293ca0158c813f28ea4f07ecfe4d098164b1db82b1e194e7aaec97"
+      "bytes": 2196,
+      "sha256": "2c7a7ec2bfba24c9227eb983e36e65bab2ae236b944fe0184d861214b11cc21a"
     },
     {
       "path": "artifact/admin-quick-start.after.html",
@@ -89,9 +89,64 @@
       "sha256": "a0b5b7c0054fdb791b079ca7040f3385bbd2459f3648a635b0d78f3dd88eddaa"
     },
     {
+      "path": "deployment/README.md",
+      "bytes": 3067,
+      "sha256": "1051e900ecc5e0ce656325d1c1f6c7b6c02537bcba80b9f28cfd5c0e762636dc"
+    },
+    {
+      "path": "deployment/cleanup.json",
+      "bytes": 545,
+      "sha256": "2af12631416878123132c524c28888abb5d543564b7e137fb6b21e62b7baac3e"
+    },
+    {
+      "path": "deployment/github-image-run.json",
+      "bytes": 267,
+      "sha256": "90c68520cf167310834eb614d4615dbbd372a6481c9e9af660d30f0281f73535"
+    },
+    {
+      "path": "deployment/github-image-run.log",
+      "bytes": 818,
+      "sha256": "b9b3a8d237a48b6fbe42f2e415bb93ee5ef7c69be5e9f8d7cde21275678fba12"
+    },
+    {
+      "path": "deployment/live.json",
+      "bytes": 558,
+      "sha256": "47142043649d64ce01a42068518b8df78ad2f8cac3c734b920f7312d8ca6357f"
+    },
+    {
+      "path": "deployment/mcp-probe-initial.json",
+      "bytes": 174,
+      "sha256": "b486e6545b654543eb0cb1e25ff86ea9470227089dfb9c07fc7de8ef563e0a47"
+    },
+    {
+      "path": "deployment/mcp-probe.json",
+      "bytes": 566,
+      "sha256": "fdfd588e803f663330b618b8ab29ab530a746501249fe37fc4166eb5d583b4db"
+    },
+    {
+      "path": "deployment/public-after.json",
+      "bytes": 1718,
+      "sha256": "1a18748658871a9a184ddb85f3b786a345563a5961c90c78703273bc15d5ac68"
+    },
+    {
       "path": "deployment/public-smoke.cjs",
       "bytes": 2811,
       "sha256": "3fc3d202345292abab07d03dddfc3560be1be760dfe8c0ee48ee3beff46721a3"
+    },
+    {
+      "path": "deployment/runtime-errors.json",
+      "bytes": 330,
+      "sha256": "eed8b0d6ad911060928d6557a9b82acbc50b5c316bdd383c11b53d092cb152e0"
+    },
+    {
+      "path": "deployment/source-identity.json",
+      "bytes": 514,
+      "sha256": "76945a2076a63331e86bdde04271018a95ab70d1cff8b46e4c05a7dab4ac9a40"
+    },
+    {
+      "path": "deployment/trigger.json",
+      "bytes": 525,
+      "sha256": "d855a9e6c29a01de69a05251f6f3a6b3e89b02b02ead53ec6fde6ac31f9b1351"
     },
     {
       "path": "environment-gates/01-self-hosted-container.json",
@@ -360,18 +415,18 @@
     },
     {
       "path": "pr-body.md",
-      "bytes": 2139,
-      "sha256": "9fc8040a684a64e7b012920bc8553e6b0490944767b57a73bf726551d1177d9c"
+      "bytes": 2328,
+      "sha256": "d1e03d34b973b76ae2026ccf1b95c09c786cbc16986612638b0573e3e2668d6e"
     },
     {
       "path": "pr-quality.md",
-      "bytes": 10386,
-      "sha256": "cbfc872cc89460976ac07ef0fd0afde224652667702d236bfc0868d77795c72e"
+      "bytes": 11036,
+      "sha256": "a45349860ace0b4003a9c668759cd3291244c8795b0558eba90fb1f2aabbe45e"
     },
     {
       "path": "pr-validation.md",
-      "bytes": 9320,
-      "sha256": "5ac7e58725a1d2d98b5df64889693b9a762314ee46238c4a6d7e38c5f31470ac"
+      "bytes": 10452,
+      "sha256": "c3f6e5f0d90ff282908ee857bb6a6ba326d035ea7cf7de39d981708eb9edaf15"
     },
     {
       "path": "process-final-command.json",
@@ -422,6 +477,11 @@
       "path": "publication-pending-readback.json",
       "bytes": 370,
       "sha256": "b05b80331ccb56272081c7d16a463771958e2717a726e7e607aac77a137e3744"
+    },
+    {
+      "path": "publication-ready-readback.json",
+      "bytes": 393,
+      "sha256": "8a289dde42c42b4d1196d10285a7e12b26e6c02022404fd29c6ad273627e9d17"
     },
     {
       "path": "review-initial.json",

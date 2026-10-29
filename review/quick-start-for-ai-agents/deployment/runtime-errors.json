@@ -1,0 +1,16 @@
+{
+  "startTime": "2026-10-29T00:21:34.73362Z",
+  "endTime": "2026-10-29T00:24:15.858Z",
+  "serviceId": "srv-db8mnqg473hc739d529g",
+  "type": [
+    "app"
+  ],
+  "level": [
+    "error",
+    "fatal"
+  ],
+  "hasMore": false,
+  "logs": [],
+  "nextEndTime": "2026-10-29T00:24:15.858Z",
+  "nextStartTime": "2026-10-29T00:21:34.73362Z"
+}

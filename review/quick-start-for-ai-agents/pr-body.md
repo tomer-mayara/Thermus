@@ -22,17 +22,14 @@ URL validation, provider operations, callable contracts, and deployment
 relationships retain their rules. Architecture and all 20 registry views are
 unchanged. The final metadata commit adds only the immutable base metric record.
 
-**Overall merge status: eligible.** All selected checks passed, and the manager
+**Pre-merge status: eligible.** All selected checks passed, and the manager
 reviewed the complete candidate. The AMD64 gate passed all seven runtime cases
 on one unchanged retry after an existing timing-test failure; both attempts
 remain in the evidence. Frozen-input comparisons match the final candidate.
 The unchanged MI goal miss has a recorded retained reason; other metric stages
 pass. Blockers and required decisions: none. T0 requires no human approval.
 
-Authorized deployment follows merge through the existing Render Git service.
-Verification will bind the deployed revision, health, and public access; the
-current production browser is denied guide access. Positive UI evidence is from
-fresh local Admin checks. No role or selection change is planned.
+Merged as [b0723a0a](https://github.com/tomer-mayara/Thermus/commit/b0723a0a03eb2408bd1b8aeda6646a0f7c77f8d1), and **production is live on that exact revision**. Health, public access, and authenticated page-fetch checks passed. Positive Admin UI evidence is local because the current production browser lacks guide access. GitHub's separate image workflow remains blocked by its billing/spending-limit condition; Render completed its own build. [Deployment evidence](./deployment/README.md).
 
 ---
 Candidate: [8eb8d345](https://github.com/tomer-mayara/Thermus/commit/8eb8d34519bd9aa0e2541bf3ad79f0ca8ad84ac0)
