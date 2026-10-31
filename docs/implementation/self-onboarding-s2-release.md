@@ -128,7 +128,7 @@ rehearsal. They follow the ticket and the
 | --- | --- | --- |
 | Deployment proof of the approved removal bundle | Complete. Deployment `57c99e2b` was live at 19:05:56 UTC on 26 October 2026, with the removal, receipt, and audit proofs; the comment says "Slice 2.5 production scope is complete". Production has run `b0723a0a` since 29 October 2026. | [PR #260 Validation](https://github.com/tomer-mayara/Thermus/pull/260#issuecomment-6421162914); the [Slice 2.5 checkpoint](admin-s2-5-production-release.md#update-of-31-october-2026) links it. |
 | Marketing **Start free** link | Draft pull request. It stays open until step 9 of the production order. A merge to `main` of that repository publishes `thermus.ai`. | [Thermus-Marketing #37](https://github.com/tomer-mayara/Thermus-Marketing/pull/37), head `edd5a9d` |
-| Free-tier guides | The [free subscription guide](../free-subscription-guide.md), the [README](../../README.md#hosted-edition), and the [user portal guide](../user-portal.md#public-entry) name the link `https://app.thermus.ai/signup?tier=free`, the setup state, the pause, and the restart. | The Thermus pull request of part A |
+| Free-tier guides | The [free subscription guide](../free-subscription-guide.md), the [README](../../README.md#hosted-edition), and the [user portal guide](../user-portal.md#public-entry) name the link `https://app.thermus.ai/signup?tier=free`, the setup state, the pause, and the restart. | [PR #300](https://github.com/tomer-mayara/Thermus/pull/300), the Thermus pull request of part A |
 
 Legal and marketing follow the existing document process (D-11). The marketing
 pull request changes no legal page. The approved Terms of Service already say
