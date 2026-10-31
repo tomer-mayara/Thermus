@@ -6,9 +6,10 @@ SO-10 of the [self on-boarding plan](../implementation/self-onboarding-plan.md#s
 adds the daily idle sweep of the free tenants, connects the resume of the MCP
 gateway to the Render adapter, gives a resumed `deploying` row the `503` with
 `Retry-After: 60`, lets the provisioner claim such a row 15 s after its resume
-mark, and binds the restore of a failed resume and the failure record of the
-provisioner to the observed service. Inventory presence is not a passing
-result; the pull request records the runs.
+mark, binds the restore of a failed resume and the failure record of the
+provisioner to the observed service, and gives Connect in the portal the notice
+of a paused workspace. Inventory presence is not a passing result; the pull
+request records the runs.
 
 - `test/acceptance/tenants/idle-suspension.test.ts` has the four sweep cases of
   the ticket and one more: a free tenant without an MCP call for 14 days is
@@ -47,9 +48,21 @@ result; the pull request records the runs.
   `mcp-tenants-config.test.ts`. `test/acceptance/auth/hosted-startup.test.ts`
   refuses an invalid `FREE_TENANT_IDLE_DAYS` at the start of the built server
   and ignores it with the switch off.
+- `test/acceptance/user-portal/workspace-setup.test.ts` and
+  `test/acceptance/auth/hosted-signup-workspace.test.ts` add the notice of a
+  paused workspace: the portal shows the notice above the connection guide with
+  no refresh, and the workspace status of a suspended tenant answers `ready`
+  true with the notice of 14 days and requests no tenant.
+  `test/unit/web/workspace-status.test.ts`,
+  `test/unit/app/workspace-composition.test.ts`,
+  `test/unit/user-portal/workspace-status.test.ts`, and
+  `test/integration/hosted-admin/workspace-status-route.test.ts` add the days
+  of `FREE_TENANT_IDLE_DAYS` with the default of 14, the notice as text before
+  the guide, and the safe error for empty words or words that are not text.
 
 The runtime files need Docker Engine and OpenSSL. The other files are in the
-ordinary suite, and the hosted offline build selects the two acceptance files.
+ordinary suite, and the hosted offline build selects the acceptance files of
+the idle sweep, the resume, and the signup workspace.
 
 ## Current SO-07 inventory scope
 
