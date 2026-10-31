@@ -15,7 +15,8 @@ Set GO_BIN to the Go executable if it is not on PATH.
 An intact installation is reused without downloads or build tools.
 `;
 
-function run(command: string, args: readonly string[], cwd: string, env = process.env): string {
+function run(commandLine: readonly [string, ...string[]], cwd: string, env = process.env): string {
+  const [command, ...args] = commandLine;
   const result = spawnSync(command, args, { cwd, env, encoding: 'utf8', timeout: 15 * 60_000, maxBuffer: 16 * 1024 * 1024 });
   if (result.error || result.status !== 0) {
     throw new CommandError(`${command} ${args[0]} failed: ${result.error?.message ?? (result.stderr.trim() || `exit status ${result.status}`)}`);
@@ -24,7 +25,7 @@ function run(command: string, args: readonly string[], cwd: string, env = proces
 }
 
 function verifyVersion(binary: string): void {
-  const actual = /^\s*Current version\s+(\S+)\s*$/mu.exec(run(binary, ['version'], toolRoot))?.[1];
+  const actual = /^\s*Current version\s+(\S+)\s*$/mu.exec(run([binary, 'version'], toolRoot))?.[1];
   if (actual !== pinnedToolVersion) throw new CommandError(`Built ast-metrics version ${actual ?? 'unknown'} differs from ${pinnedToolVersion}.`);
 }
 
@@ -48,22 +49,25 @@ function goBuildEnvironment(workspace: string) {
     GOPRIVATE: '', GONOPROXY: '', GONOSUMDB: '', GOPATH: join(workspace, 'go'),
     GOMODCACHE: join(workspace, 'go/pkg/mod'), GOCACHE: join(workspace, 'go-build'),
   };
-  const version = /^go version (\S+)/u.exec(run(go, ['version'], toolRoot, env))?.[1];
+  const version = /^go version (\S+)/u.exec(run([go, 'version'], toolRoot, env))?.[1];
   if (version !== pinnedGoVersion) throw new CommandError(`Go ${version ?? 'unknown'} differs from required ${pinnedGoVersion}. Set GO_BIN to that executable.`);
   return { go, env };
 }
 
-function build(source: string, target: string, patch: string, environment: ReturnType<typeof goBuildEnvironment>): void {
-  const { go, env } = environment;
+function applyPatch(source: string, patch: string): void {
   // An extracted tree under .cache must not discover the enclosing Thermus repository.
-  run('git', ['init', '--quiet'], source);
-  run('git', ['apply', '--check', patch], source);
-  run('git', ['apply', patch], source);
-  run('git', ['apply', '--reverse', '--check', patch], source);
-  run(go, ['mod', 'download'], source, env);
-  run(go, ['mod', 'verify'], source, env);
+  run(['git', 'init', '--quiet'], source);
+  run(['git', 'apply', '--check', patch], source);
+  run(['git', 'apply', patch], source);
+  run(['git', 'apply', '--reverse', '--check', patch], source);
+}
+
+function build(source: string, target: string, environment: ReturnType<typeof goBuildEnvironment>): void {
+  const { go, env } = environment;
+  run([go, 'mod', 'download'], source, env);
+  run([go, 'mod', 'verify'], source, env);
   const ldflags = `-s -w -X main.version=${pinnedToolVersion} -X main.commit=${upstreamCommit} -X main.date=2026-10-22T00:00:00Z`;
-  run(go, ['build', '-mod=readonly', '-trimpath', '-buildvcs=false', '-ldflags', ldflags, '-o', target, './cmd/ast-metrics'], source, env);
+  run([go, 'build', '-mod=readonly', '-trimpath', '-buildvcs=false', '-ldflags', ldflags, '-o', target, './cmd/ast-metrics'], source, env);
 }
 
 function removeWorkspace(path: string): void {
@@ -105,11 +109,12 @@ async function install(): Promise<void> {
     await downloadSource(archive);
     const source = join(workspace, 'source');
     mkdirSync(source);
-    run('tar', ['-xzf', archive, '--strip-components=1', '-C', source], workspace);
+    run(['tar', '-xzf', archive, '--strip-components=1', '-C', source], workspace);
     const staged = join(workspace, 'runtime');
     mkdirSync(staged);
     const binary = join(staged, 'ast-metrics');
-    build(source, binary, patch, environment);
+    applyPatch(source, patch);
+    build(source, binary, environment);
     verifyVersion(binary);
     await verifyNativeRuntime(binary, workspace);
     copyFileSync(join(toolRoot, 'patches/ast-metrics/LICENSE.txt'), join(staged, 'LICENSE.txt'));
