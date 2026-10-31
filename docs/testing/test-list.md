@@ -1455,7 +1455,7 @@ A fake of the tenant platform, the registry fake, a virtual clock, and a spy of 
 
 A fake of the tenant platform records each call and the signal that it gets.
 
-[V] After the stop, each of the ten operations refuses with the stop reason before the platform gets the call; a call that started runs with the in-flight signal instead of the stop signal and gives the answer of the platform; an abort of the in-flight signal reaches the call in flight
+[V] After the stop, each of the eight platform calls of the tenant loops refuses with the stop reason before the platform gets the call; a call that started runs with the in-flight signal instead of the stop signal and gives the answer of the platform; an abort of the in-flight signal reaches the call in flight
 
 **Tenant loop** (`test/unit/app/tenant-loop.test.ts`)
 
