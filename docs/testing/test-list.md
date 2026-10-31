@@ -35,12 +35,16 @@ presence is not a passing result; the pull request records the runs.
   trimmed split parts; no name for a missing profile, another user, the wrong
   types, blank parts, or a split part with a control character.
 
-The other changed test files change their structure: they put expected outcomes
-in tables, name their steps, or replace non-null assertions with checks that
-fail with a clear message.
+Two existing files gain cases: `test/integration/auth/workos-signup.test.ts`
+(1 case: a subject that the acceptance record cannot hold gets no provider
+write) and `test/unit/html/logging-form.test.ts` (2 cases: the settings expect
+the saved revision, and a tenant or revision that is not visible ASCII text is
+refused). The other changed test files change their structure: they put
+expected outcomes in tables, name their steps, or replace non-null assertions
+with checks that fail with a clear message.
 
 ```sh
-npm run build && node --test dist/test/unit/logging/audit/destination-endpoint.test.js dist/test/unit/mcp/fetch-tool-server.test.js dist/test/unit/html/administration-routes.test.js dist/test/unit/auth-workos/workos-profile-name.test.js
+npm run build && node --test dist/test/unit/logging/audit/destination-endpoint.test.js dist/test/unit/mcp/fetch-tool-server.test.js dist/test/unit/html/administration-routes.test.js dist/test/unit/auth-workos/workos-profile-name.test.js dist/test/integration/auth/workos-signup.test.js dist/test/unit/html/logging-form.test.js
 ```
 
 ## Current SO-11a inventory scope
