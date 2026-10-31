@@ -35,7 +35,7 @@ cached. `pnpm exec node --version` must report `v24.20.0`. For direct `npm` or
 | Container | `npm run test:container` | `dist/test/acceptance/auth/self-hosted-container.test.js` with `THERMUS_CONTAINER_GATE=1` | Docker Engine with Buildx and Compose. The image build needs network access, or a build cache with the pinned images, the packages, and the Lightpanda asset. The containers under test run without outbound access. The gate supplies its own trusted rules fixture; `ad-rules.txt` next to `compose.yaml` is the operator's file. |
 | Hosted offline build | `npm run build:hosted` | `check`, all emitted integration tests, the explicit acceptance/interface selection, and the renderer gate below | No live credentials or public network access. Pinned absolute `LIGHTPANDA_BIN`, Git and OpenSSL in `PATH`, and local loopback access. The Docker build supplies Git and the renderer. |
 | Hosted image | `npm run test:container:hosted` | `dist/test/acceptance/auth/hosted-image.test.js` only | Docker Engine with Buildx and a Linux AMD64 builder/runtime, native or emulated. Image build needs network access or cached pinned inputs; the renderer test needs HTTPS egress to `https://example.com/`. No live WorkOS or Axiom credential. |
-| Hosted live | `npm run test:hosted-live` | `hosted.live.js` and `hosted-removal.live.js`, in sequence after a build of the portal | A WorkOS staging environment with its settings and dashboard configuration, absolute pinned `LIGHTPANDA_BIN`, public network access, Playwright Chromium, OpenSSL, Docker Engine for the scoped removal proof’s disposable PostgreSQL, and free local ports 24443 and 24480. The [hosted live gate](#hosted-live-gate-auth-06) gives the details. |
+| Hosted live | `npm run test:hosted-live` | `hosted.live.js` and `hosted-removal.live.js`, in sequence after a build of the portal | A WorkOS staging environment with its settings and dashboard configuration, absolute pinned `LIGHTPANDA_BIN`, public network access, Playwright Chromium, OpenSSL, Docker Engine for the disposable PostgreSQL of the scoped removal proof and of the SO-07 signup scenario, and free local ports 24443 and 24480. The [hosted live gate](#hosted-live-gate-auth-06) gives the details. |
 | Search live | `npm run test:mcp:search:live` | `dist/test/acceptance/mcp/search-pipeline.live.js` only | Absolute pinned `LIGHTPANDA_BIN` and public Brave access. No API key or Axiom credential. |
 | Private PostgreSQL | `npm run test:logging:postgres` | Settings and removal-store integration, settings and hosted storage-failure acceptance, membership-removal overlap/restart and integrated hosted acceptance, tenant registry store, tenant provisioner, and organization sweep integration, and tenant registry acceptance `.runtime.js` files | Docker Engine and OpenSSL. Uses disposable local PostgreSQL 17 with verified test TLS and the scoped runtime role; no Supabase or other live credentials. |
 | Members browser | `npm run build:user-portal && npm run build && node --test dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js` | Labelled member rows and distinct counts; short closed desktop rows at most 72px with 48px actions; quiet self/other actions, keyboard Cancel and one confirmation at 320px/1280px without JavaScript; expanded-row reflow at 481px/600px/860px/861px; shared Members/Audit navigation, focus, text resize and Save/Test with JavaScript on/off; Audit width at 800px/860px; closed/open invitation, typed Cancel, native validation, User/Admin send and last-Admin guidance; counted zero/nonzero pending disclosure, compact long rows, UTC expiry, section order and protected keyboard Resend/Revoke, with JavaScript on/off | Playwright Chromium, OpenSSL and the built portal assets. Uses a temporary loopback HTTPS bridge to the local HTTP site and provider doubles; no live credentials. |
@@ -465,6 +465,7 @@ then runs these emitted files directly, without another build:
    `dist/test/acceptance/auth/hosted-signup-restart.test.js`,
    `dist/test/acceptance/auth/hosted-signup-guidance.test.js`,
    `dist/test/acceptance/auth/hosted-mcp-signup-guidance.test.js`,
+   `dist/test/acceptance/auth/hosted-signup-workspace.test.js`,
    `dist/test/acceptance/mcp/hosted-fetch-tool.test.js`,
    `dist/test/acceptance/mcp/search-pipeline.test.js`,
    `dist/test/acceptance/mcp/hosted-search-capacity.test.js`,
@@ -514,6 +515,14 @@ sweeps as app composes them, with one daily tick of a wall clock double: the
 weekly organization sweep and the daily summary line. The WorkOS fake answers
 the pinned SDK on loopback, and a fake of the Render API answers the adapter in
 the process, so they need no network either.
+
+The signup workspace file, added by SO-07, covers the free signup at
+`?tier=free` and the route `GET /workspace/status`: the tenant request after the
+confirmed first Admin membership, the free-tenant cap before the notice, the
+setup state until the row is `live`, and the denials. It is offline too: the
+WorkOS fake with its signup fake and the real registry rules over an in-memory
+registry stand in for WorkOS and PostgreSQL, and a case moves a row as the
+provisioner would.
 
 The exact selection is in `package.json`. It includes the current emitted
 integration glob and explicit, nonempty acceptance and interface paths. It
@@ -927,6 +936,8 @@ names do not match the `*.test.js` globs on purpose. Thus `npm test` and
 Docker Engine for disposable PostgreSQL. It creates only fresh staging
 fixtures, records their exact IDs, and verifies cleanup. It does not enroll
 factors, create SSO or Directory Sync resources, or scan old fixtures.
+The SO-07 signup scenario at the end of `hosted.live.js` needs Docker Engine
+for its disposable PostgreSQL too.
 
 The gate needs a WorkOS staging environment and these settings in the
 environment of the command:
@@ -1025,6 +1036,25 @@ for the verified token workspace. Revoking workspace A denies the same token
 while browser B and a fresh B token still work. A repeat activation cannot
 restore A. No production setting or policy page changes.
 
+The SO-07 signup scenario runs after the FS-02 cases, with a third
+composition at the same origin (answer 1 of 27 October 2026). It is the hosted
+composition with WorkOS Staging, signup open on the clearly marked test
+documents, `MCP_TENANTS_ENABLED` on with placeholder tenant settings and a key
+pair of the run, and the tenant registry on a disposable PostgreSQL 17 with
+verified TLS, which the removal proof also uses. Its provisioner loop starts
+only when the case asks, and its Render adapter reaches only the in-process
+Render fake, `test/support/doubles/render/render-fake.ts`: the gate makes no
+Render call. The SO-06 live interface test and the SO-12 rehearsal prove the
+real Render path. The tenant sweeps of SO-09 do not start in this
+composition. A new user, `thermus-live-<run ID>-workspace`, signs up at
+`/signup?tier=free` and names the organization. The case checks that the row of
+the new organization is `requested`, that Connect shows "Setting up your
+workspace. This takes about two minutes." and reloads by itself with its meta
+refresh, that the row reaches `live` after the provisioner starts, and that
+Connect then shows the connection guide. The run deletes the user and its
+signup organization at the end, also after a failure, and the case removes
+the database container.
+
 The gate also needs:
 
 - An absolute `LIGHTPANDA_BIN` path to the pinned Lightpanda 1.0.0 executable.
@@ -1095,6 +1125,12 @@ The profiles exercise the following product behavior:
   the earlier Optional administration suite is removed.
 - Signup cases in `test/acceptance/auth/hosted-live/signup-server.ts` check
   the production notice, agreement, callback, and access behavior.
+- The SO-07 signup scenario in
+  `test/acceptance/auth/hosted-live/signup-workspace-server.ts` checks the
+  tenant request after a free signup and the workspace setup state of the
+  portal until the tenant is live. Its steps are in
+  `test/support/hosted-live/free-signup.ts` and its site in
+  `test/support/hosted-live/workspace-site.ts`.
 
 For the AUTH-07W proofs and cases, the run makes its own operator
 organization, `Thermus live <run ID> operator` with the external ID

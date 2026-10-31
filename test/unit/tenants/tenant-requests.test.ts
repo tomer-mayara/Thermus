@@ -62,6 +62,16 @@ test('Given unavailable or unconfirmed storage, when an organization requests a 
   assert.deepEqual(await requests.request('org_A'), { status: 'present', state: 'requested' });
 });
 
+test('Given the row counts of a registry copy, when signup asks for a place before the agreement, then a place is free only while the rows that hold a place stay under FREE_TENANT_LIMIT', () => {
+  const counts = (rows: Readonly<Partial<Record<TenantState, number>>>): ReadonlyMap<TenantState, number> => new Map(Object.entries(rows) as [TenantState, number][]);
+  const requests = new TenantRequests(new TenantRegistryStoreFake(), 5);
+  assert.equal(requests.hasPlaceIn(counts({})), true);
+  assert.equal(requests.hasPlaceIn(counts({ requested: 1, creating: 1, deploying: 1, live: 1 })), true);
+  assert.equal(requests.hasPlaceIn(counts({ requested: 1, creating: 1, deploying: 1, live: 1, suspended: 1 })), false);
+  assert.equal(requests.hasPlaceIn(counts({ live: 4, failed: 3, deleted: 9 })), true, 'A failed or a deleted row holds no place');
+  assert.equal(new TenantRequests(new TenantRegistryStoreFake(), 0).hasPlaceIn(counts({})), false, 'FREE_TENANT_LIMIT 0 closes free signup');
+});
+
 function fleetWith(rows: Readonly<Record<string, TenantState>>): TenantFleetStoreFake {
   const store = new TenantFleetStoreFake();
   for (const [organizationId, state] of Object.entries(rows)) {

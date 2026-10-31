@@ -63,6 +63,8 @@ export interface HostedAccountParts {
   readonly billing: Billing;
   readonly operation?: AccountOperation;
   readonly signupUrl?: string;
+  // The workspace status of the portal (SO-07).
+  readonly workspaces?: HostedAccountRoutesOptions['workspaces'];
 }
 
 export interface Application {
@@ -178,6 +180,7 @@ export function composeHostedApplication(config: RouteConfig, parts: HostedProvi
     signupUrl: account.signupUrl,
     logging: loggingStorage?.service,
     audit: account.audit,
+    workspaces: account.workspaces,
   });
   const handle = routeHostedRequests(config, { mcp: (request) => parts.mcp.fetch(request), account: (request) => routes.handle(request), browser: parts.browserRoutes, internal: parts.internalRoutes });
   const shutdown = new AbortController();

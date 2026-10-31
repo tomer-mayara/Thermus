@@ -8,6 +8,7 @@ import { describeHostedServerCases } from './hosted-live/hosted-server.ts';
 import { describeOperatorSetupProofs } from './hosted-live/operator-setup.ts';
 import { describeOrganizationServerCases } from './hosted-live/organization-server.ts';
 import { describeSignupServerCases } from './hosted-live/signup-server.ts';
+import { describeSignupWorkspaceCases } from './hosted-live/signup-workspace-server.ts';
 
 type Environment = Readonly<Record<string, string | undefined>>;
 // A refusal gives the reason why the gate does not accept a value. The reason must not contain the value.
@@ -91,4 +92,5 @@ if ('problems' in setup) {
   describeHostedServerCases(run);
   describeExpiredSelectionCase();
   describeSignupServerCases(run);
+  describeSignupWorkspaceCases(run);
 }

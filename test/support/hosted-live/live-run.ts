@@ -10,7 +10,7 @@ import { createSignupFixtures } from './signup-fixtures.ts';
 import { LocalHttpsSite } from './local-https-site.ts';
 import { createOrganizationFixtures, type OrganizationFixtures } from './organization-fixtures.ts';
 import { requestTimeout, workosClient, type HostedLiveSettings } from './settings.ts';
-import { createStagingFixtures, type StagingFixtures } from './staging-fixtures.ts';
+import { createStagingFixtures, FixtureFactory, type StagingFixtures } from './staging-fixtures.ts';
 
 export function once<T>(make: () => Promise<T>): () => Promise<T> {
   let result: Promise<T> | undefined;
@@ -48,6 +48,8 @@ export class LiveRun {
     readonly signupDocuments?: SignupDocuments;
     readonly existingFixtures?: () => Promise<StagingFixtures>;
     readonly site?: () => Promise<LocalHttpsSite>;
+    // The label of the signup user of this run. The default is signup.
+    readonly signupLabel?: string;
   } = {}) {
     this.settings = settings;
     this.workos = workosClient(settings);
@@ -56,7 +58,7 @@ export class LiveRun {
     this.fixtures = options.existingFixtures ?? once(() => createStagingFixtures(this.workos, this.#registry));
     this.organizationFixtures = once(async () => createOrganizationFixtures(this.workos, this.#registry, await this.fixtures()));
     this.administrationFixtures = once(async () => createAdministrationFixtures(this.workos, this.#registry, await this.fixtures()));
-    this.signupFixtures = once(async () => createSignupFixtures(this.workos, this.#registry, (await this.fixtures()).runId));
+    this.signupFixtures = once(async () => createSignupFixtures(new FixtureFactory(this.workos, this.#registry, (await this.fixtures()).runId), options.signupLabel));
     this.newUserSignIn = once(async () => signInWithAuthKit(this, { user: (await this.fixtures()).newUser }));
     this.newUserLaterSignIn = once(async () => {
       await this.newUserSignIn();
