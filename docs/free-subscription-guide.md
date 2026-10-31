@@ -87,7 +87,7 @@ Send Claude this prompt:
 
 > Use the Thermus getURLAsMarkdown tool exactly once with url https://example.com/ and reason "Free signup test". Do not use another fetch or web tool. Show the returned Markdown.
 
-A successful test shows a **Thermus tool call** and returned Markdown containing **Example Domain**. Connected status or plausible text alone does not prove success.
+A successful test shows a **Thermus tool call** and the returned Markdown of example.com. Today it starts with **This domain is for use in documentation examples**; an older version of the page has the title **Example Domain**. Connected status or plausible text alone does not prove success.
 
 While the workspace is still being set up, the server answers each MCP call with HTTP `503`, `Retry-After: 15`, and "Your workspace is not ready yet. Try again in 15 seconds." Wait until Connect shows the connection guide, then send the prompt again. If the tool answers "Server restarted. Try again in a minute.", the container of the workspace restarted during the call; send the prompt again after a minute.
 

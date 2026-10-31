@@ -543,13 +543,15 @@ What differed from the expected values:
    says.
 4. **The words of `https://example.com/` changed.** In run 2, each answer
    was 957 characters and started "This domain is for use in documentation
-   examples"; "Example Domain" was absent. The checks of R6 to R14 and the
-   [free subscription guide](../free-subscription-guide.md) name "Example
-   Domain". The helper uses the marker of the hosted image gate
-   (`documentation examples|illustrative examples|Example Domain`), as
-   [`hosted-image.test.ts`](../../test/acceptance/auth/hosted-image.test.ts)
-   does. The guide and the checks of section 4 need the new words in a later
-   document change.
+   examples"; "Example Domain" was absent. The helper uses the marker of the
+   hosted image gate (`documentation examples|illustrative examples|Example Domain`),
+   as [`hosted-image.test.ts`](../../test/acceptance/auth/hosted-image.test.ts)
+   does. The manager decided on 31 October 2026 that each check of R6 to R14
+   that names "Example Domain" counts as passed with this marker. The same
+   pull request corrects the expected words of the test call in the
+   [free subscription guide](../free-subscription-guide.md#4-test-a-real-thermus-call)
+   and in the check of step 8. The checks of [3.5](#35-runbook) keep the
+   words with which the rehearsal ran.
 5. **A new tenant refuses calls for about 75 s after `live`.** In R8, the
    row of A was `live` at 21:15:36, and four calls from 21:15:47 to 21:16:37
    got `MCP gateway tenant restart:` lines at the level ERROR, with
@@ -726,8 +728,10 @@ The new settings are read only with the switch on (answer 6 of 27 October
   reads the `slug` of the production service and checks the start.
 - **Before:** items 1, 4, 9, and 10 of [section 6](#6-owner-steps-outstanding).
 - **Action:** in one save of the Environment page of the production service,
-  set these variables, then select **Save and deploy** (step R7 recorded
-  whether a variable update starts a deploy by itself):
+  set these variables, then select **Save and deploy**. Step R7 showed that a
+  variable update through the API starts no deploy ([3.7](#37-part-b-findings),
+  item 7): so the owner uses **Save and deploy** in the dashboard, or the agent
+  dispatches the workflow deploy of the current digest again after the save.
 
   | Variable | Value |
   | --- | --- |
@@ -755,13 +759,22 @@ The new settings are read only with the switch on (answer 6 of 27 October
   `Listening on` line in `system-log`, and the Render log has no
   `System log export failed:` line. Then the owner makes the monitor Tenant
   restart ([runbook 7.4](tenant-fleet-runbooks.md#74-owner-steps-for-the-alerts),
-  step 4).
+  step 4). A new tenant refuses calls for about 75 s after its row is `live`,
+  and it writes `MCP gateway tenant restart:` lines at the level ERROR in that
+  window ([3.7](#37-part-b-findings), item 5). So the owner expects an email
+  of this monitor for each new tenant, until the monitor or the gateway is
+  changed ([section 6](#6-owner-steps-outstanding), item 15).
 - **Go-ahead:** —
 - **Result:** —
 
 ### Step 7. One real MCP call for each kept organization
 
 - **Who:** the owner, with a member of each kept organization.
+- **Before:** the old instance of the control plane has stopped, about two
+  minutes after the deploy of step 6 is `live`. Until then, two provisioner
+  loops run, and in R9 the old loop claimed a row a second time
+  ([3.7](#37-part-b-findings), item 6). The Render log shows
+  `Stopping after SIGTERM` for the old instance.
 - **Action:** a member of each kept organization makes one MCP call. The first
   call gets `503` with `Retry-After: 15`, and the provisioner makes the tenant.
   The member calls again after about two minutes. A portal visit of a member
@@ -789,8 +802,11 @@ The new settings are read only with the switch on (answer 6 of 27 October
   client and call the tool, as sections 3 and 4 of the guide say.
 - **Check:** Quick start opens. Connect shows the setup words, then the
   connection guide. The organization has a `live` tenant, and the MCP call
-  answers "Example Domain". The owner decides to keep or remove the canary
-  organization ([runbook 4](tenant-fleet-runbooks.md#4-deletion-of-a-tenant)).
+  answers with the Markdown of example.com: today it starts with "This domain
+  is for use in documentation examples". The hosted image gate accepts
+  "documentation examples", "illustrative examples", or "Example Domain"
+  ([3.7](#37-part-b-findings), item 4). The owner decides to keep or remove
+  the canary organization ([runbook 4](tenant-fleet-runbooks.md#4-deletion-of-a-tenant)).
 - **Go-ahead:** —
 - **Result:** —
 
@@ -871,6 +887,7 @@ publishes the revert.
 | 12 | If step R4 shows that Render cannot switch a Git build to an image, decide the path of step 5. Answered by run 2 of the rehearsal: Render accepts the switch ([3.7](#37-part-b-findings), item 7), so no decision is needed. | Step 5 |
 | 13 | Review the copy of the marketing pull request, and give the go-ahead for its merge at step 9. | Step 9 |
 | 14 | At the monthly GHCR pruning, keep the candidate digest `sha256:8025ae1b…`, the rollback digest `sha256:bbee3f89…`, and the upgrade digest `sha256:fd8d747e…` until the release is complete ([runbook 5.5](tenant-fleet-runbooks.md#55-monthly-ghcr-pruning)). | Each pruning |
+| 15 | Open follow-ups of the rehearsal ([3.7](#37-part-b-findings), items 5 and 6). (a) A new tenant refuses calls for about 75 s after its row is `live` and writes `MCP gateway tenant restart:` lines at the level ERROR, so the monitor Tenant restart sends an email for each new tenant: change the monitor or the gateway. (b) During each deploy of the control plane, the old instance runs its provisioner loop for about two minutes, and in R9 it claimed a row a second time: decide a shared claim of the rows, which [plan section 7](self-onboarding-plan.md#7-risks-and-limits) names for a second instance. Until then, step 7 waits for the old instance to stop. | Open; no step of section 4 waits for it |
 
 ## 7. Record
 
@@ -895,7 +912,7 @@ no secret.
 | R12 Fleet upgrade | Run 2: 21:29:32 to 21:31:29 | Run 2: passed. | `fleet.ts upgrade --all --image ghcr.io/tomer-mayara/thermus-hosted@sha256:fd8d747e…` with `yes`: one batch of 2; A `dep-dbj5rgetlv9c73cahs3g` `live` after 21 s and B `dep-dbj5rhbbc2fs73btp220` after 26.5 s, each line ending with `digest recorded` (21:29:32 to 21:30:08). Calls for A and B answered at 21:30:15 and 21:30:17. The same command with the candidate digest: A `dep-dbj5ruajnfac73c7kimg` after 41.7 s and B `dep-dbj5rvflk1mc738bcbjg` after 46.8 s, each `digest recorded` (21:30:28 to 21:31:24). Calls for A and B answered at 21:31:24 and 21:31:27. Run 1: not run. |
 | R13 Organization removal | Run 2: 21:31:41 to 21:32:02 | Run 2: passed. | A new token of A at 21:31:37, then the delete of organization A `org_01M69WF8TCW2C4BMH73PAXVY19` at 21:31:41.4: the read by ID answered `404` at read 4, 7.2 s after the delete. `fleet.ts delete --organization org_01M69WF8TCW2C4BMH73PAXVY19` with `yes` at 21:31:57: "Done: srv-dbj5kajbc2fs73bt71j0 is deleted, and the row of org_01M69WF8TCW2C4BMH73PAXVY19 is deleted." Render no longer lists the service, and `fleet.ts status` shows the row `deleted`, the newest deploy `gone`, and the address `unavailable`. The call with the token of A at 21:31:59 got `403` with `access_denied` ("Access denied. Open https://thermus-spike-control.onrender.com/signup to check free signup availability. ...") in 0.3 s; the control plane forwarded nothing. Run 1: not run. |
 | R14 Rollback steps | Run 2: 21:33:18 to 21:37:43 | Run 2: passed. Render also accepts the switch back to the Git build. | 1: `PUT MCP_TENANTS_ENABLED=false` and `PUT SELF_SERVE_SIGNUP_ENABLED=false` at 21:33:18 (each `200`), then run [41244137060](https://github.com/tomer-mayara/Thermus/actions/runs/41244137060): "Deploy: live", deploy `dep-dbj5teks728c738tpln0` `live` 29.6 s after the call, `/healthz` `200`. The new start has `Listening on` and no `The tenant provisioner runs:` line. The call for B at 21:34:37 answered, and the control plane served it: its log has `mcp.tool.completed` for user B, and the registry kept the last use of B at 21:31:28. `/signup?tier=free` showed "Activation is closed" at 21:34:40. 2: the service of B stayed `not_suspended`, and its row `live`. 3: run [41244265833](https://github.com/tomer-mayara/Thermus/actions/runs/41244265833) deployed `sha256:bbee3f89…`: "Deploy: live", deploy `dep-dbj5u7ks728c738trjl0` `live` 24.8 s after the call, the digest in the live deploy and in `imagePath`, `/healthz` `200` at the first request, and a start with no error line. The call for B at 21:36:14 answered, served by the rollback image. The measure: `PATCH /v1/services/srv-dbj5advf3r2c73f08rf0` with `repo`, `branch` `main`, and the runtime `docker` with `./Dockerfile.hosted` answered `200` after 0.9 s at 21:36:38; the service then shows the runtime `docker`, the repository, and no `imagePath` or credential. Render started no deploy in the 60 s after it, and the deploy of the rollback image stayed `live`. Run 1: not run. |
-| Cleanup | Run 1: 20:40:10 to 20:40:48. Run 2: 21:37:58 to 21:38:57 | Done for both runs, except the owner step 5 and the redirect URI of the manager. | Run 2. Step 1: `fleet.ts delete --organization org_01M69XBJYWXGDYV7V82G7K723J` with `yes` at 21:37:59 deleted the service of B and set its row `deleted`; then `SELECT state, count(*) FROM thermus_admin.tenants GROUP BY state` gives `deleted 2`. Step 2: `DELETE /v1/services/srv-dbj5advf3r2c73f08rf0` answered `204` at 21:38:09, and the service list at 21:38:10 held only `srv-db8mnqg473hc739d529g`. Step 3: the Connect application, users A and B, the client owner organization, and organization B were deleted (organization A was gone already), and the OAuth resource `authkit_oauth_resource_01M69WF050ZR1JTAN4QZW41XYD` (`204`); each read by ID answered `404` within 4.8 s. No organization, user, or Connect application holds the run ID. In run 2, WorkOS Staging made only the client owner organization (21:04:56) and organization B (21:20:24); no organization of another party came in the signup window, 21:19:46 to 21:36:08. The OAuth resources equal those of R0. Step 4: the redirect URI `redir_01M69WDTZHN880TX6KV645D8P8` stays for the manager, who removes it through the WorkOS connector after this cleanup; the other redirect URIs, the sign-out URIs, and the initiate-login URI equal those of R0. Step 5 (owner): delete the Supabase project `thermus-staging-rehearsal`; its tenant registry holds the two `deleted` rows, and the other four tables have 0 rows. Step 6: the private state folder (the IDs, the passwords of the test users, and the Connect tokens) was deleted at 21:38:57; no key file, token file, or `.env` file of the rehearsal is left; the cookie password, the settings key, and the gateway key pair were made in memory only. Run 1. Step 1: the registry had no row. Step 2: `DELETE /v1/services/srv-dbj4vs6c6qcc73bfrgv0` answered `204` at 20:40:16, and the service list at 20:40:17 held only `srv-db8mnqg473hc739d529g`. Step 3: the run made no WorkOS object and no OAuth resource. No organization, user, or Connect application holds the run ID, WorkOS Staging made no organization after 20:29, and the OAuth resources, the redirect URIs, the sign-out URIs, and the initiate-login URI equal those of R0. Step 4: the owner added no redirect URI, so none is to be removed. Step 5 (owner): the Supabase project `thermus-staging-rehearsal` stays until the manager decides about a new run; its five tables have 0 rows. Step 6: the private state folder of the run, which held only the service IDs, was deleted at 20:40:48. |
+| Cleanup | Run 1: 20:40:10 to 20:40:48. Run 2: 21:37:58 to 21:38:57 | Done. The manager removes the redirect URI `redir_01M69WDTZHN880TX6KV645D8P8` through the WorkOS connector, and the owner deletes the Supabase project `thermus-staging-rehearsal` (two `deleted` rows in `tenants`, the other four tables empty). | Run 2. Step 1: `fleet.ts delete --organization org_01M69XBJYWXGDYV7V82G7K723J` with `yes` at 21:37:59 deleted the service of B and set its row `deleted`; then `SELECT state, count(*) FROM thermus_admin.tenants GROUP BY state` gives `deleted 2`. Step 2: `DELETE /v1/services/srv-dbj5advf3r2c73f08rf0` answered `204` at 21:38:09, and the service list at 21:38:10 held only `srv-db8mnqg473hc739d529g`. Step 3: the Connect application, users A and B, the client owner organization, and organization B were deleted (organization A was gone already), and the OAuth resource `authkit_oauth_resource_01M69WF050ZR1JTAN4QZW41XYD` (`204`); each read by ID answered `404` within 4.8 s. No organization, user, or Connect application holds the run ID. In run 2, WorkOS Staging made only the client owner organization (21:04:56) and organization B (21:20:24); no organization of another party came in the signup window, 21:19:46 to 21:36:08. The OAuth resources equal those of R0. Step 4: the redirect URI `redir_01M69WDTZHN880TX6KV645D8P8` stays for the manager, who removes it through the WorkOS connector after this cleanup; the other redirect URIs, the sign-out URIs, and the initiate-login URI equal those of R0. Step 5 (owner): delete the Supabase project `thermus-staging-rehearsal`; its tenant registry holds the two `deleted` rows, and the other four tables have 0 rows. Step 6: the private state folder (the IDs, the passwords of the test users, and the Connect tokens) was deleted at 21:38:57; no key file, token file, or `.env` file of the rehearsal is left; the cookie password, the settings key, and the gateway key pair were made in memory only. Run 1. Step 1: the registry had no row. Step 2: `DELETE /v1/services/srv-dbj4vs6c6qcc73bfrgv0` answered `204` at 20:40:16, and the service list at 20:40:17 held only `srv-db8mnqg473hc739d529g`. Step 3: the run made no WorkOS object and no OAuth resource. No organization, user, or Connect application holds the run ID, WorkOS Staging made no organization after 20:29, and the OAuth resources, the redirect URIs, the sign-out URIs, and the initiate-login URI equal those of R0. Step 4: the owner added no redirect URI, so none is to be removed. Step 5 (owner): the Supabase project `thermus-staging-rehearsal` stays until the manager decides about a new run; its five tables have 0 rows. Step 6: the private state folder of the run, which held only the service IDs, was deleted at 20:40:48. |
 | 1 WorkOS inventory and D-10 cleanup | — | — | — |
 | 2 Release holds | — | — | — |
 | 3 Database migration | — | — | — |
