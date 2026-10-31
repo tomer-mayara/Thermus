@@ -535,8 +535,10 @@ control plane, and the test plays the gateway with its own Ed25519 key pair.
 - `test/acceptance/mcp/hosted-tenant-capacity.test.ts` (2 cases) holds the
   running calls in incoming processing: at `OPERATION_CAPACITY=5`, the sixth
   call gets `Server busy` with completion `busy`, and the relay receives its
-  `busy` event and then the five others; without the setting, the eleventh
-  call is busy: the default stays 10.
+  `busy` event and then the five others. The case counts one event for each
+  operation ID, as the control plane does. A late answer can make the tenant
+  send a relay again. Without the setting, the eleventh call is busy: the
+  default stays 10.
 - `test/acceptance/auth/hosted-startup.test.ts` gains the suite "Hosted image
   in the tenant role" (5 cases) on the built server process with outbound
   access denied: the tenant listens and answers `/healthz`, `404`, and `403`

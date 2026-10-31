@@ -15,21 +15,19 @@
   },
   "architecture": {
     "modelUpdated": false,
-    "summary": "Documents only. SO-12 part A adds docs/implementation/self-onboarding-s2-release.md, the release record of the free tier: the release candidate (main fa787be4, image sha256:8025ae1b of run 41232469232), the production state, the removal proof of PR #260, the rehearsal runbook in WorkOS Staging and Thermus AI with its cleanup checklist, the ten production steps with their checks and go-ahead slots, the rollback with the image sha256:bbee3f89 of 81e8f2df (the code of production b0723a0a), the open owner steps, and the record table. It corrects docs/free-subscription-guide.md (the signup link with ?tier=free, the stale Start Subscription sentence, the organization creation, the setup state of SO-07, the pause of SO-10 and its Retry-After of 60 s) and updates README.md, docs/user-portal.md, docs/README.md, the SO-12 entry of the plan, and the Slice 2.5 checkpoint with a dated note that the removal proof is complete. No source, test, configuration, workflow, migration, or Mermaid block changes, so no component, edge, public module, declaration, or runtime behavior changes, and the registry stays accurate.",
+    "summary": "Test only. The SO-12 release rehearsal of 31 October 2026 found that the OPERATION_CAPACITY=5 case of test/acceptance/mcp/hosted-tenant-capacity.test.ts failed on the Render builder with two busy events at the relay spy. The release of the five held calls kept the event loop busy, so the tenant read the answer to its busy relay after the 5 s limit of an audit send and sent the same event again (same operation ID). The case now counts the relayed events one time for each operation ID, as the relay route of the control plane does (AcceptedRelays), and waits for six operations instead of six deliveries; it still requires one busy event and five success events. docs/testing/test-list.md describes the count. No source, support, configuration, workflow, dependency, or Mermaid block changes, so no component, edge, public module, declaration, or runtime behavior changes, and the registry stays accurate.",
     "views": [
-      "All 24 views of architecture/components.md unchanged (checked: documents only)"
+      "All 24 views of architecture/components.md unchanged (checked: one acceptance test and the test list)"
     ],
     "evidence": [
-      "docs/implementation/self-onboarding-s2-release.md",
-      "docs/free-subscription-guide.md",
-      "docs/user-portal.md#public-entry",
-      "README.md#hosted-release",
-      "docs/implementation/admin-s2-5-production-release.md",
-      "src/interfaces/web/auth/workos/workos-signup-routes.ts",
-      "src/interfaces/web/account/workspace-status.ts",
-      "src/interfaces/mcp/mcp-gateway-refusals.ts",
-      "src/tenancy/tenants/tenant-environment.ts",
-      ".github/workflows/hosted-image.yml",
+      "test/acceptance/mcp/hosted-tenant-capacity.test.ts",
+      "docs/testing/test-list.md",
+      "test/support/doubles/logging/audit-relay-route-spy.ts",
+      "src/logs/audit/audit-relay-request.ts",
+      "src/logs/audit/audit-collector-state.ts",
+      "src/logs/audit/audit-relay-scheduler.ts",
+      "src/interfaces/web/internal/audit-relay-route.ts",
+      "src/interfaces/web/internal/accepted-relays.ts",
       "architecture/components.md"
     ]
   }
