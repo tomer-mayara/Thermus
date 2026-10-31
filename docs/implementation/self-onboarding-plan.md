@@ -285,10 +285,12 @@ with a capacity message until the operator raises the cap.
 
 **Provisioning.** The provisioner is a bounded loop in the control plane. It
 claims one `requested` row at a time and moves it through `creating`,
-`deploying`, and `live`. It names the Render service from the organization ID
-and searches by that name before it creates, so a restart never creates a
-second service; two services with that name stop the row as `failed`. Since
-27 October 2026, the name is `TENANT_NAME_PREFIX` and the organization ID in
+`deploying`, and `live`. The claim holds the row for one loop for 60 s, and
+the loop renews it during the work, so a second instance of a deploy of the
+control plane leaves a row in work (SO-12 rehearsal of 31 October 2026). It
+names the Render service from the organization ID and searches by that name
+before it creates, so a restart never creates a second service; two services
+with that name stop the row as `failed`. Since 27 October 2026, the name is `TENANT_NAME_PREFIX` and the organization ID in
 lower case. The provisioner reads the slug from the API answer and never
 computes it. It moves rows only from `requested` to `live` and, after a resume,
 from `deploying` to `live`. The create call carries every tenant variable,
@@ -321,7 +323,8 @@ The capacity follows the plan: before the deploy, the provisioner also sets
 from a constant map in the provisioner, with no new setting (27 October 2026).
 The update alone does not restart the container; the deploy replaces the
 instance with zero downtime: the new instance goes live, and the old one gets
-`SIGTERM` 60 s later. A tool call during that deploy gets a `503` with
+`SIGTERM` about 120 s later (SO-12 rehearsal of 31 October 2026; Render
+documents 60 s). A tool call during that deploy gets a `503` with
 `Retry-After`. Open point for Slice 3: SO-01c showed that the old instance
 serves calls until the new one is live, so the tier change ticket decides
 whether this `503` window is still needed.
@@ -483,7 +486,7 @@ operations, and a committed intent before a provider effect.
 
 | Table | Columns | Notes |
 | --- | --- | --- |
-| `tenants` | `organization_id` (key), `render_service_id`, `service_name`, `internal_url`, `state`, `plan`, `applied_plan`, `image_digest`, `last_active_at`, `failure_reason`, `created_at`, `updated_at` | One row for each organization. `state` is `requested`, `creating`, `deploying`, `live`, `suspended`, `failed`, or `deleted`. `plan` is the wanted Render plan; `applied_plan` is the current one. |
+| `tenants` | `organization_id` (key), `render_service_id`, `service_name`, `internal_url`, `state`, `plan`, `applied_plan`, `image_digest`, `last_active_at`, `failure_reason`, `created_at`, `updated_at`, `claimed_by`, `claimed_until` | One row for each organization. `state` is `requested`, `creating`, `deploying`, `live`, `suspended`, `failed`, or `deleted`. `plan` is the wanted Render plan; `applied_plan` is the current one. `claimed_by` and `claimed_until` hold the claim of the provisioner loop that works on the row and the end of its lease, both empty when no loop holds it (SO-12 rehearsal of 31 October 2026). |
 | `subscriptions` | `organization_id` (key), `stripe_customer_id`, `stripe_subscription_id`, `status`, `current_period_end`, `cancel_at_period_end`, `terms_accepted_at`, `updated_at` | The last Stripe-confirmed state. No row means `free`. |
 | `billing_events` | `stripe_event_id` (key), `type`, `received_at`, `applied_at` | Duplicate protection; `applied_at` is set after a successful apply. |
 
@@ -1188,7 +1191,7 @@ consider a smaller instance for it. Size S. Depends on SO-12.
 | Render API rate limits | 20 creates an hour for each Render user, and 10 updates, deploys, suspends, and resumes a minute for each service ([SO-01c](self-onboarding-s1.md#so-01c-render-private-service-lifecycle)). | A dedicated user for the control plane. The provisioner is a queue. Suspend only after 14 idle days, so resumes are rare. Ask Render for a higher limit before a launch campaign. |
 | PostgreSQL on Supabase Free | Pauses after 7 idle days; a pause stops provisioning, billing, and the audit export. | Accepted in D-8. The daily reconciliation keeps the project active. A [runbook](tenant-fleet-runbooks.md#3-paused-supabase-project) resumes it. Revisit at the first paying customer. |
 | Cost of free tenants | 7 USD a month for each live free tenant. Signup needs only a verified email. | `FREE_TENANT_LIMIT`, idle suspension from creation, deletion of dead organizations, the admission limits, the global switch. |
-| Gateway on the request path | Every MCP call crosses one more hop. The control plane is one instance with process-local state: the signup counters, the registry copy, the provisioner, the sweeps. | The proxy is light. A second instance needs a shared claim for the loops; not planned. Keep `1c-2g` until SO-16. |
+| Gateway on the request path | Every MCP call crosses one more hop. The control plane is one instance with process-local state: the signup counters, the registry copy, the provisioner, the sweeps. | The proxy is light. Each deploy runs two instances for about 2 minutes (SO-12 rehearsal of 31 October 2026): the claim lease of the provisioner keeps their loops off one row, and a stop ends the claims and the Render calls at once while the call in flight gets 3 s to end. The sweeps and the other state stay process-local. Keep `1c-2g` until SO-16. |
 | Shared search limit | The public Brave website answered `HTTP 429` to 10 searches at the same time from the shared outbound addresses of a region ([SO-01e](self-onboarding-s1.md#findings)). | The gateway allows 5 searches at a time across all tenants (27 October 2026). A Brave API key or a dedicated outbound IP is a later option. |
 | Member limit | Native acceptance cannot be refused. An organization keeps the members it added while it paid. Member removal and its verification merged on 26 October 2026 (PRs #251 to #257); the removal release itself is still pending in the S2.5-02 ledger. | The limit counts pending invitations. Pending invitations above the limit are revoked at a downgrade. The invariant on joining paths holds. The kept members are accepted in D-5. |
 | Billed count | WorkOS counts every active membership, also a membership with only the default role, which gives no product access. | Default-role memberships do not exist in normal use; the fleet summary reports one. |

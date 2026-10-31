@@ -1,5 +1,5 @@
 import { watchDeploy, type WatchParts } from './tenant-deploy-watch.ts';
-import type { ClaimResult, TenantProvisioningStore } from './tenant-provisioning-store.ts';
+import type { ClaimResult, ProvisioningRow, RecordResult, RowWork, TenantProvisioningStore } from './tenant-provisioning-store.ts';
 import { RowRecords, type RowOutcome } from './tenant-row-records.ts';
 import { serviceOfRow, type CreationParts } from './tenant-service-creation.ts';
 
@@ -20,16 +20,32 @@ export class RowProvisioning {
     this.records = new RowRecords(parts);
   }
 
+  /** The work on one claimed row. Its end frees the row for the next claim, also after a stop or a failure. */
   async provision(claim: Extract<ClaimResult, { status: 'claimed' }>, signal: AbortSignal): Promise<RowOutcome> {
     const { row } = claim;
     this.records.claimed(row, claim.resumed);
-    const service = await serviceOfRow(this.parts, row, signal);
-    // Without a service, the row still has the service of its claim: none for a creating row.
-    if (service.status === 'failed') return this.records.failed(row, row.serviceId, service.reason);
+    try {
+      return await this.workOn(row, signal);
+    } finally {
+      await this.parts.store.releaseClaim(row);
+    }
+  }
+
+  private async workOn(row: ProvisioningRow, signal: AbortSignal): Promise<RowOutcome> {
+    const work = rowWorkOf(this.parts.store, row, signal);
+    const service = await serviceOfRow(this.parts, row, work);
+    if (service.status !== 'service') return this.records.unserved(row, service);
     // A deploying row has its service in the registry already, so only a creating row records it.
     const stop = row.state === 'creating' ? await this.records.service(row, service.serviceId) : undefined;
-    if (stop !== undefined) return stop;
-    const watched = await watchDeploy(this.parts, service.serviceId, signal);
-    return watched.status === 'failed' ? this.records.failed(row, service.serviceId, watched.reason) : this.records.live(row, service.serviceId, watched.live);
+    return stop ?? this.records.watched(row, service.serviceId, await watchDeploy(this.parts, service.serviceId, work));
   }
+}
+
+// The work on the claimed row: the renewal of its claim, which rejects after the stop, and the stop signal.
+function rowWorkOf(store: Pick<TenantProvisioningStore, 'renewClaim'>, row: ProvisioningRow, signal: AbortSignal): RowWork {
+  const renew = async (): Promise<RecordResult> => {
+    signal.throwIfAborted();
+    return store.renewClaim(row);
+  };
+  return { renew, signal };
 }

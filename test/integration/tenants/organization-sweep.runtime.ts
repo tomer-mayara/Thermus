@@ -136,11 +136,12 @@ test('Given a live row on the real registry that a delete, a revive, and a new p
   const { fleet, provisioning } = storesOn(t, site);
   assert.deepEqual(await fleet.markDeleted(organizationId, 'live', old), { status: 'recorded' });
   assert.deepEqual(await reviveTenant(fleet, organizationId, 25), { status: 'revived' });
-  assert.equal((await provisioning.claimNext({ serviceNameOf: nameOf, plan: '0.5c-512mb' })).status, 'claimed');
+  const claim = await provisioning.claimNext({ serviceNameOf: nameOf, plan: '0.5c-512mb', holder: 'holder-1' });
+  assert.ok(claim.status === 'claimed');
   const replacement = render.addService(nameOf(organizationId));
   const route = `http://${replacement.slug}:8080`;
-  assert.deepEqual(await provisioning.recordService(organizationId, replacement.id), { status: 'recorded' });
-  assert.deepEqual(await provisioning.recordLive(organizationId, replacement.id, { internalUrl: route, imageDigest: digest }), { status: 'recorded' });
+  assert.deepEqual(await provisioning.recordService(claim.row, replacement.id), { status: 'recorded' });
+  assert.deepEqual(await provisioning.recordLive(claim.row, replacement.id, { internalUrl: route, imageDigest: digest }), { status: 'recorded' });
   const rowNow = () => site.ownerQuery(`SELECT concat_ws(' ', state, render_service_id, coalesce(internal_url, 'no-route')) FROM thermus_admin.tenants WHERE organization_id = '${organizationId}'`);
 
   assert.deepEqual(await fleet.markDeleted(organizationId, 'live', old), { status: 'moved' }, 'A stale removal leaves the replacement');
@@ -150,8 +151,10 @@ test('Given a live row on the real registry that a delete, a revive, and a new p
   assert.deepEqual(await fleet.markSuspended(organizationId, replacement.id), { status: 'recorded' });
   assert.deepEqual(await fleet.markResumed(organizationId, old), { status: 'moved' }, 'A stale resume leaves the suspended replacement');
   assert.deepEqual(await fleet.markResumed(organizationId, replacement.id), { status: 'recorded' });
-  assert.deepEqual(await provisioning.recordLive(organizationId, old, { internalUrl: 'http://stale:8080' }), { status: 'moved' }, 'A stale live record leaves the resumed replacement');
-  assert.deepEqual(await provisioning.recordLive(organizationId, replacement.id, { internalUrl: route }), { status: 'recorded' });
+  // The live record of the fleet resume holds no claim.
+  const resume = { organizationId, holder: null };
+  assert.deepEqual(await provisioning.recordLive(resume, old, { internalUrl: 'http://stale:8080' }), { status: 'moved' }, 'A stale live record leaves the resumed replacement');
+  assert.deepEqual(await provisioning.recordLive(resume, replacement.id, { internalUrl: route }), { status: 'recorded' });
   assert.equal(await rowNow(), `live ${replacement.id} ${route}`);
 
   await site.ownerQuery("INSERT INTO thermus_admin.tenants (organization_id, state) VALUES ('org_01JNOSERVICE', 'requested')");

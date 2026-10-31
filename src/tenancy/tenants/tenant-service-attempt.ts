@@ -1,4 +1,5 @@
 import type { ServiceCreation, TenantPlatform, TenantServiceRequest } from './tenant-platform.ts';
+import type { LostClaim, RowWork } from './tenant-provisioning-store.ts';
 
 const ATTEMPT_PAUSE_MS = 30_000;
 // A rate-limited create waits for the time that the platform gives, at most one hour: the window of the create limit.
@@ -6,7 +7,8 @@ const MAX_LIMIT_WAIT_MS = 3_600_000;
 
 export type ServiceOutcome =
   | { readonly status: 'service'; readonly serviceId: string }
-  | { readonly status: 'failed'; readonly reason: string };
+  | { readonly status: 'failed'; readonly reason: string }
+  | LostClaim;
 
 /** No service yet: the next attempt comes after waitMs and searches by name first. */
 export interface AgainAttempt { readonly status: 'again'; readonly reason: string; readonly waitMs: number }
@@ -18,15 +20,19 @@ export type CreationPlatform = Pick<TenantPlatform, 'findServices' | 'createServ
 /**
  * One attempt: a search by name, then one create only when the search found no service. So a create that got no clear
  * answer never makes a second service, and two services with the name stop the row, because the provisioner cannot
- * tell which one is the tenant.
+ * tell which one is the tenant. The claim of the row renews right before the create: then no other loop can claim the
+ * row for 60 s, longer than the 30 s bound of a create call, so its search sees the service of this create. A claim
+ * that did not renew sends no create, and a stop during the search renews nothing.
  */
-export async function attemptService(platform: CreationPlatform, request: TenantServiceRequest, signal: AbortSignal): Promise<Attempt> {
-  const search = await platform.findServices(request.name, signal);
+export async function attemptService(platform: CreationPlatform, request: TenantServiceRequest, work: RowWork): Promise<Attempt> {
+  const search = await platform.findServices(request.name, work.signal);
   if (search.status === 'unavailable') return again(`the service list is unavailable (${search.reason})`, ATTEMPT_PAUSE_MS);
   if (search.services.length > 1) return { status: 'failed', reason: `${search.services.length} services of the platform have the name ${request.name}` };
   const [service] = search.services;
   if (service !== undefined) return { status: 'service', serviceId: service.id };
-  return outcomeOf(await platform.createService(request, signal));
+  const held = await work.renew();
+  if (held.status !== 'recorded') return { status: 'lost', claim: held };
+  return outcomeOf(await platform.createService(request, work.signal));
 }
 
 function outcomeOf(creation: ServiceCreation): Attempt {

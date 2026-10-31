@@ -60,6 +60,7 @@ export const thermusAdminMigrations = [
   '20261024231921_add_logging_axiom_dataset.sql',
   '20261025082850_membership_removal_operations.sql',
   '20261027175430_tenant_registry_and_billing.sql',
+  '20261031221342_tenant_claim_lease.sql',
 ].map(name => fileURLToPath(new URL(`sql/migrations/${name}`, repositoryRoot)));
 
 export const auditSenderRuntime = {

@@ -3,26 +3,48 @@
   "classification": {
     "container": false,
     "external": false,
-    "contract": false,
-    "deployment": false,
+    "contract": true,
+    "deployment": true,
     "crossCutting": false,
     "component": false,
-    "internalInterface": false,
-    "sensitiveBehavior": false,
+    "internalInterface": true,
+    "sensitiveBehavior": true,
     "dependencyRisk": false,
     "policy": false,
     "uncertain": false
   },
   "architecture": {
-    "modelUpdated": false,
-    "summary": "Documents only. Part C of SO-12 fills the result slots of the production steps 1 to 5 in docs/implementation/self-onboarding-s2-release.md: the WorkOS inventory and the D-10 cleanup, the disposition of the release holds, the tenant registry migration on the production project, the registry credential, and the switch of the production service to the candidate image with the workflow deploy in the GitHub environment production. No source, test, configuration, workflow, migration, or Mermaid block changes; the registry stays accurate.",
+    "modelUpdated": true,
+    "summary": "The claim of a tenant row becomes a lease, and the stop of the tenant loops lets the Render call in flight end: the SO-12 release rehearsal of 31 October 2026 measured that Render keeps the old instance of the control plane for about 120 s after a new deploy is live, and in R9 the old provisioner loop claimed a row 0.4 s after the new loop recorded its service, 81.7 s before the old instance got SIGTERM. Inside the hosted Node server, tenants claims a row for the claim holder of its loop (claimed_by, new at each start) until claimed_until, 60 s later, renews it right before each create and before each read of the deploy, names the holder in each record, frees the row at the end (a creating row only when its lease ends), and leaves a row that another holder holds; app starts the provisioner and the sweeps with a stop signal that ends claims, waits, and new Render calls at once, and an in-flight signal that ends the call in flight 3 s later, inside the hosted deadline of 10 s (FinishingPlatform of tenants, tenant loop of app); a claim that commits during the stop starts no work and frees its row. The data contract of the tenants table gains two columns with a pair check (migration 20261031221342_tenant_claim_lease.sql, applied before the deploy), and the fleet resume records live without a claim. No component, container, public module, dependency, or declaration snapshot changes. The scenario view tenant provisioning changes; the prose of the tenant registry view, the writers of each transition, the deployment view, and the known limits record the lease, the stop, and the residual risk that the sweeps of two instances both run when the daily tick falls inside a deploy.",
     "views": [
-      "Recorded hosted Render target of architecture/components.md: its release-path prose names the deploy job but not the place of the key, so it stays accurate (prose, no Mermaid block)",
-      "All 24 Mermaid views of architecture/components.md unchanged (checked: the release workflow is in no view, and no container, component, or runtime change)"
+      "Scenario: tenant provisioning (edited: the claim for 60 s, the renewal before the create and in the loop of deploy reads, the live record that frees the claim, and the stop with the call in flight and the release)",
+      "Selected C4 components: hosted tenant registry, provisioning, and sweeps in the Node server (diagram unchanged; prose: the stop, the claim lease, the claim migration, the finishing platform, the writers)",
+      "Deployment view (diagram unchanged; prose: two instances during a deploy and the claim migration not applied)",
+      "All other views of architecture/components.md unchanged (checked: the hosted containers view, the MCP gateway view, the gateway, resume, weekly sweep, and idle sweep scenarios)"
     ],
     "evidence": [
-      "docs/implementation/self-onboarding-s2-release.md (sections 4 and 7)",
-      "PR #303 Validation and Quality review"
+      "src/tenancy/tenants/pg-tenant-claim.ts",
+      "src/tenancy/tenants/pg-tenant-provisioning-store.ts",
+      "src/tenancy/tenants/tenant-provisioning-store.ts",
+      "src/tenancy/tenants/tenant-provisioner.ts",
+      "src/tenancy/tenants/tenant-row-provisioning.ts",
+      "src/tenancy/tenants/tenant-row-records.ts",
+      "src/tenancy/tenants/tenant-service-attempt.ts",
+      "src/tenancy/tenants/tenant-service-creation.ts",
+      "src/tenancy/tenants/tenant-deploy-watch.ts",
+      "src/tenancy/tenants/finishing-platform.ts",
+      "src/app/tenant-loop.ts",
+      "src/app/tenant-provisioning.ts",
+      "src/app/tenant-sweeps.ts",
+      "src/index.ts",
+      "src/app/application.ts",
+      "script/fleet/fleet-power.ts",
+      "sql/migrations/20261031221342_tenant_claim_lease.sql",
+      "test/acceptance/tenants/provisioner-instances.runtime.ts",
+      "test/integration/tenants/provisioner-registry.runtime.ts",
+      "test/acceptance/tenants/idle-suspension.test.ts",
+      "architecture/components.md",
+      "docs/implementation/tenant-fleet-runbooks.md"
     ]
   }
 }

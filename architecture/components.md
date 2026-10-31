@@ -575,7 +575,9 @@ owner on it next to the settings and removal adapter of audit-logs. With the
 switch on, app also composes the `render` adapter with its write guard and the
 WorkOS organization inventory of the `workos` owner on the WorkOS client of the
 hosted connection, and starts the provisioner loop and the tenant sweeps of
-`tenants`; it stops both at close, before the SQL runtime closes. The MCP
+`tenants`; it stops both at close, before the SQL runtime closes: after the
+stop they start no claim and no Render call, and a call in flight gets 3 s to
+end. The MCP
 gateway (SO-05) calls the registry through a port that app composes, with the
 resume operation on the adapter of the sweeps (SO-10). Thick arrows show composition; solid
 arrows show runtime calls, and their labels name only the calls that this
@@ -649,7 +651,10 @@ concurrent asks share one read. After a failed read, it serves the copy until it
 is 60 s old, then reports unavailable. It has no timer and opens no connection at
 startup. The [migration](../sql/migrations/20261027175430_tenant_registry_and_billing.sql)
 holds the row rules: seven states, a service ID and address for a `live` row,
-and a plain HTTP address to a private service name. The `subscriptions` and
+and a plain HTTP address to a private service name. The
+[claim migration](../sql/migrations/20261031221342_tenant_claim_lease.sql)
+adds the claim of the provisioner, `claimed_by` and `claimed_until`, both set
+or both empty. The `subscriptions` and
 `billing_events` tables have no store until Slice 3.
 
 The [provisioner](../src/tenancy/tenants/tenant-provisioner.ts) moves rows only
@@ -662,16 +667,30 @@ the organization ID in lower case with each character outside a-z, 0-9, and
 hyphen as a hyphen, and the free plan. A `deploying` row that keeps its address
 is the row of a resume, because only a live record gives an address and a
 delete takes it away; the claim takes it 15 s after its resume mark, when
-Render has made the deploy of the resume (SO-10). Each later record names the
-state that it starts from, and the live and failed records name the service of
-the work too. The loop works behind the
+Render has made the deploy of the resume (SO-10). The claim is a lease (SO-12
+rehearsal of 31 October 2026): it holds the row for the claim holder of the
+loop, `claimed_by`, new at each start, until `claimed_until`, 60 s later. The
+loop renews it right before each create and before each read of the newest
+deploy, so the loop of the old instance of a deploy, which Render keeps for
+about 120 s, leaves a row in work; a loop takes back its own row at once. Each
+later record names the state that it starts from and the holder, and the live
+and failed records name the service of the work too and free the row. The end
+of the work frees a `deploying` row at once; a `creating` row stays held until
+its lease ends, so that a create without a clear answer shows in the next
+search by name. The loop works behind the
 [`TenantPlatform`](../src/tenancy/tenants/tenant-platform.ts) contract: the
 search by name, the create, the newest deploy, the internal address, and the
 delete. The [Render adapter](../src/tenancy/providers/render/render-tenant-platform.ts)
 implements it with the calls of the SO-01c probe. The create call carries a
 closed list of tenant variables of plan section 4.1 with `OPERATION_CAPACITY=5`
 and no secret. The adapter refuses a write for a service ID that the registry
-does not own, and always for the production service.
+does not own, and always for the production service. At the stop, the loop and
+the sweeps call the platform through a
+[finishing platform](../src/tenancy/tenants/finishing-platform.ts): a call
+starts only before the stop, and a call that started runs on with the in-flight
+signal, which the [tenant loop](../src/app/tenant-loop.ts) of app aborts 3 s
+after the stop. So the answer of a call that ends in time, such as the service
+of a create or a suspend, reaches the registry.
 
 The gateway writes the registry through three narrow statements of the registry
 adapter. [TenantResumes](../src/tenancy/tenants/tenant-resumes.ts) moves a
@@ -718,7 +737,11 @@ The writers of each transition of a row:
   fleet `resume` command; `deploying` back to `suspended` after a failed
   resume, on the service of the mark: the gateway.
 - `deploying` to `live` after a resume: the provisioner, or the fleet `resume`
-  command after its own wait.
+  command after its own wait; the command holds no claim, and its live record
+  frees the claim of the row.
+- The claim of a row (`claimed_by`, `claimed_until`): the claim, the renewal,
+  and the release of the provisioner; the live and failed records of the
+  provisioner and the live record of the fleet `resume` command free it.
 - Each state except `deleted` to `deleted`: the organization sweep and the fleet
   `delete` command, both through the removal.
 - The digest of a `live` row: the fleet `upgrade` command. The last use: the
@@ -1678,8 +1701,8 @@ sequenceDiagram
   participant Store as tenants / SQL adapter
   participant Render as render / adapter
   participant API as Render API
-  App->>Prov: Start the loop
-  Prov->>Store: Claim the next row
+  App->>Prov: Start the loop with a new claim holder
+  Prov->>Store: Claim a row for 60 s
   Store-->>Prov: creating row with its service name
   Prov->>Render: Find the services with the name
   Render->>API: GET /services, up to 3 attempts
@@ -1687,11 +1710,13 @@ sequenceDiagram
     Prov->>Store: Record failed, with one operator report
   end
   opt No service with the name
+    Prov->>Store: Renew the claim for 60 s
     Prov->>Render: Create the private service
     Render->>API: POST /services, sent one time
   end
   Prov->>Store: Record deploying with the service ID
   loop Every 5 s, at most 15 minutes
+    Prov->>Store: Renew the claim for 60 s
     Prov->>Render: Read the newest deploy
     Render->>API: GET /services/{id}/deploys
   end
@@ -1701,8 +1726,10 @@ sequenceDiagram
   Prov->>Render: Read the internal address
   Render->>API: GET /services/{id}
   Render-->>Prov: http://slug:8080
-  Prov->>Store: Record live with the address and the digest
-  App->>Prov: Stop at close
+  Prov->>Store: Record live with the address and the digest, and free the claim
+  App->>Prov: Stop at close, with no claim and no new call after it
+  Note over Prov,API: The call in flight gets 3 s to end
+  Prov->>Store: Free the row, unless it is creating
 ```
 
 A claim without a row waits 5 s. A create that Render limits waits for
@@ -1711,9 +1738,20 @@ the next attempt searches by name again, so a lost answer never makes a second
 service, and a row has at most three attempts. A `deploying` row after a resume
 skips the search and the create, and its claim comes 15 s after the resume
 mark, when the newest deploy is the deploy of the resume
-([resume of a suspended tenant](#scenario-resume-of-a-suspended-tenant)). A stop leaves a `creating` or `deploying` row
-for the next start, which searches by name or reads the newest deploy again.
-An unreadable registry or a failed record logs one error and waits 60 s.
+([resume of a suspended tenant](#scenario-resume-of-a-suspended-tenant)). The
+claim takes only a row without a claim, a row whose lease ended, or a row of
+its own holder, so the loop of the other instance during a deploy leaves a row
+in work (SO-12 rehearsal of 31 October 2026). A renewal that finds another
+holder, or a row that left the work, ends the work with the line
+`Tenant provisioning leaves organization`; a renewal that the registry does
+not answer sends no create, and the loop waits 60 s. A stop starts no claim,
+no renewal, and no Render call; a call in flight gets 3 s to end, and the
+record of its answer reaches the registry. Then a `deploying` row is free for
+the next claim of any instance, which reads the newest deploy again; a
+`creating` row waits until its lease ends, and the next claim searches by
+name. A claim that commits while the stop comes starts no work and frees its
+row at once. An unreadable registry or
+a failed record logs one error and waits 60 s.
 
 ### Scenario: weekly organization sweep
 
@@ -1957,7 +1995,14 @@ Current replica count and activated database settings are unknown here. The
 [removal-operation migration](../sql/migrations/20261025082850_membership_removal_operations.sql)
 still needs deployment verification; this map does not claim that the live target
 has its new table. The [tenant registry migration](../sql/migrations/20261027175430_tenant_registry_and_billing.sql)
-is not applied there: SO-12 of the self on-boarding plan applies it.
+is not applied there: SO-12 of the self on-boarding plan applies it. Nor is
+the [claim migration](../sql/migrations/20261031221342_tenant_claim_lease.sql),
+which comes after it and before the deploy of a control plane that claims with
+a lease. A deploy of the Render service starts a new instance and keeps the
+old one for about 120 s after the new deploy is live (SO-12 rehearsal of
+31 October 2026), so two Node server processes run for about 2 minutes; the
+claim lease of the [tenant provisioning](#scenario-tenant-provisioning)
+scenario keeps their provisioner loops off one row.
 Compose publishes only loopback HTTP. A different public address requires the
 HTTPS reverse proxy described by the installation contract; this diagram does
 not invent that infrastructure.
@@ -2292,10 +2337,23 @@ The following limits affect architectural decisions today:
   `OPERATION_CAPACITY` calls. It rejects a call above that limit instead of
   queuing work and does not coordinate multiple instances. A deployment change
   must account for that actual scope.
-- One control plane runs one provisioner loop. Its claim is a short
-  transaction, not a lease: a second instance would work on the same rows. A
-  slow deploy holds the queue for up to 15 minutes, and the creates of one hour
-  are 20 for each Render user. The tenants run in the region oregon, the region
+- Each instance of the control plane runs one provisioner loop, and each
+  deploy runs two instances for about 2 minutes (SO-12 rehearsal of
+  31 October 2026). The claim lease keeps the two loops off one row while each
+  renews its lease. A loop that cannot renew for 60 s, for example in a long
+  stall of Render or of the database, can lose its row to the other loop; its
+  records then name a holder that no longer holds the row, so only one loop
+  writes it. An old instance of a version before the lease ignores the claims,
+  so the first deploy of the lease runs with the switch off or without a row in
+  work. The 3 s for a call in flight at the stop keep the close inside the
+  hosted deadline of 10 s while the database answers at once; a slow database
+  can make the process reach the deadline, and then the lease of its row ends
+  by itself.
+  The tenant sweeps have no shared claim: when the daily tick falls inside the
+  2 minutes of a deploy, both instances run them, and the guarded marks keep
+  each row right, but Render can get a suspend or a delete two times. A slow
+  deploy holds the queue for up to 15 minutes, and the creates of one hour are
+  20 for each Render user. The tenants run in the region oregon, the region
   of the control plane, as a constant of the adapter.
 - Render shortens a long service name into its hostname at a separator and
   keeps hostnames unique: names of up to 33 characters stayed whole, names of

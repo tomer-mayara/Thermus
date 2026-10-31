@@ -72,15 +72,30 @@ export class SweepHarness {
 
   /** Runs the sweeps of one daily tick from the given time, then stops them as the application close does. */
   async runOneTick(startMs: number): Promise<void> {
+    const tick = this.startOneTick(startMs);
+    try {
+      await this.until(tick.ended, 'the end of one tick');
+    } finally {
+      await tick.close();
+    }
+  }
+
+  /** Starts the sweeps of one daily tick from the given time; close stops them as the application close does. */
+  startOneTick(startMs: number): { readonly ended: () => boolean; close(): Promise<void> } {
     const clock = new TickClock(startMs, 1);
     const platform = tenantPlatformOf({ settings: this.settings, store: this.store, fetch: this.render.fetch, clock: this.platformClock });
     const sweeps = startTenantSweeps({
       settings: this.settings, platform, fleet: this.store, workos: workosClientFor(this.workos.fake), logger: this.log, sweepClock: clock,
     });
-    try {
-      await this.until(() => clock.blocked, 'the end of one tick');
-    } finally {
-      await sweeps.close();
+    return { ended: () => clock.blocked, close: () => sweeps.close() };
+  }
+
+  /** Waits until the condition holds, at most 10 s of real time. */
+  async until(condition: () => boolean, what: string): Promise<void> {
+    const deadline = performance.now() + REAL_WAIT_LIMIT_MS;
+    while (!condition()) {
+      if (performance.now() > deadline) throw new Error(`The sweeps did not reach ${what}. Log: ${this.log.lines.join(' | ')}`);
+      await new Promise((resolve) => setTimeout(resolve, 2));
     }
   }
 
@@ -92,11 +107,4 @@ export class SweepHarness {
     return this.log.lines.filter((line) => line.startsWith('ERROR '));
   }
 
-  private async until(condition: () => boolean, what: string): Promise<void> {
-    const deadline = performance.now() + REAL_WAIT_LIMIT_MS;
-    while (!condition()) {
-      if (performance.now() > deadline) throw new Error(`The sweeps did not reach ${what}. Log: ${this.log.lines.join(' | ')}`);
-      await new Promise((resolve) => setTimeout(resolve, 2));
-    }
-  }
 }

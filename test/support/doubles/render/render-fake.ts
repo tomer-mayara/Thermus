@@ -10,7 +10,7 @@
 // a unique suffix. So a long name gets a slug that differs from it, and a test can see that the adapter reads the slug
 // and does not compute it. Saboteur entries (failNext) replace the next answer of a route with a status, a network
 // failure before Render sees the request, or a lost answer after Render did the work; hold keeps the answers of a route
-// until the test releases them.
+// until the test releases them, and an abort of a held call rejects it as it rejects a real fetch.
 
 export type RenderRoute = 'list services' | 'create service' | 'read service' | 'list deploys' | 'delete service' | 'suspend service' | 'resume service' | 'memory metrics' | 'memory limit metrics' | 'list events';
 
@@ -158,7 +158,7 @@ export class RenderFake {
   private async answer(input: Parameters<typeof fetch>[0], init: RequestInit = {}): Promise<Response> {
     init.signal?.throwIfAborted();
     const request = this.recorded(new URL(input instanceof Request ? input.url : input), init);
-    if (request.route !== 'unknown') await this.#holds.get(request.route);
+    if (request.route !== 'unknown') await heldUntil(this.#holds.get(request.route), init.signal);
     const fault = request.route === 'unknown' ? undefined : this.takeFault(request.route);
     if (fault === 'network') throw new TypeError('fetch failed');
     if (fault !== undefined && fault !== 'lost') return responseOf(fault);
@@ -372,6 +372,21 @@ const ROUTES: readonly (readonly [string, RegExp, RenderRoute])[] = [
 
 function routeOf(method: string, path: string): RenderRoute | 'unknown' {
   return ROUTES.find(([routeMethod, pattern]) => routeMethod === method && pattern.test(path))?.[2] ?? 'unknown';
+}
+
+// A held answer waits for its release. As a real fetch does, an abort of the signal of the caller rejects the call,
+// also while the answer is held, and Render does not do the work.
+async function heldUntil(hold: Promise<void> | undefined, signal: AbortSignal | null | undefined): Promise<void> {
+  if (hold === undefined || signal == null) return hold;
+  signal.throwIfAborted();
+  const aborted = Promise.withResolvers<never>();
+  const reject = (): void => aborted.reject(signal.reason);
+  signal.addEventListener('abort', reject, { once: true });
+  try {
+    await Promise.race([hold, aborted.promise]);
+  } finally {
+    signal.removeEventListener('abort', reject);
+  }
 }
 
 interface MetricsWindow {

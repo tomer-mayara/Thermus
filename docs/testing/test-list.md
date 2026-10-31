@@ -1,5 +1,50 @@
 # Test inventory
 
+## Current SO-12 claim lease inventory scope
+
+The SO-12 release rehearsal of 31 October 2026 found two provisioner loops on
+one registry during each deploy of the control plane: Render keeps the old
+instance for about 120 s after the new deploy is `live`, and in R9 the old
+loop claimed a row in work. This change gives the claim of a row a lease, lets
+a Render call in flight end at the stop of the provisioner and of the sweeps,
+and adds the claim migration. Inventory presence is not a passing result; the
+pull request records the runs.
+
+- `test/acceptance/tenants/provisioner-instances.runtime.ts` has the four
+  cases on one disposable PostgreSQL 17 and one fake of the Render API, with
+  two control planes that each have their own pool: while the create of the
+  claim waits for Render, the other loop finds no row in ten claims, and Render
+  gets one create call; when the control plane of a create in flight gets the
+  stop signal, it starts no claim and no Render call after the signal, its
+  create ends and records the service, and the other control plane makes the
+  row live at once without a second create; an idle control plane starts no
+  claim after the stop, and a later row goes live through the other one; a
+  `creating` row of a stopped instance waits until its lease ends, and the
+  other control plane then finds the service by name. It runs in
+  `npm run test:logging:postgres`.
+- `test/acceptance/tenants/idle-suspension.test.ts` adds the stop of the
+  sweeps: the suspend in flight ends and its row is suspended, and the next
+  idle tenant gets no suspend call. The fake of the Render API
+  (`test/support/doubles/render/render-fake.ts`) now rejects a held call whose
+  signal aborts, as a real fetch does.
+- `test/integration/tenants/provisioner-registry.runtime.ts` adds the lease on
+  the real registry: another holder gets no row until the lease ends, while the
+  holder takes back its own row at once; a renewal holds the row 60 s more; a
+  write of another holder is moved; the release keeps a `creating` row and
+  frees a `deploying` row; the live record frees the claim.
+  `tenant-registry.runtime.ts` checks the two columns and their pair rule, and
+  `organization-sweep.runtime.ts` the live record of the fleet resume, which
+  holds no claim.
+- `test/unit/tenants/finishing-platform.test.ts` and
+  `test/unit/app/tenant-loop.test.ts` check the stop: a platform call after the
+  stop is refused before the platform gets it, a call that started runs with
+  the in-flight signal, and the in-flight signal aborts at the end of the grace
+  of 3 s. New cases of `provisioner.test.ts` and
+  `pg-tenant-provisioning-store.test.ts` check the holder of each claim, the
+  renewal before each create and each read of the deploy, no renewal after the
+  stop, a row that another holder took, a claim that commits during the stop,
+  the release, and the SQL of each statement.
+
 ## Current SO-10 inventory scope
 
 SO-10 of the [self on-boarding plan](../implementation/self-onboarding-plan.md#slice-2-free-tier-end-to-end)
@@ -1401,8 +1446,20 @@ A fake of the tenant platform, the registry fake, a virtual clock, and a spy of 
 [V] A create without a clear answer waits 30 s and searches by name before another create; a rate-limited create waits the given time, at most one hour; three attempts without a service, or three unavailable service lists, give `failed`
 [V] The newest deploy is read every 5 s for at most 15 minutes, 180 reads; a live deploy waits for the internal address; a gone service fails the row
 [V] A `deploying` row after a resume goes `live` without a create; a `deploying` row without a service ID fails; a row that another writer gave a new service during the watch is left with that service, and the live deploy of the old service records nothing
-[V] An idle loop reads the registry every 5 s; an unreadable registry, a failed write, and an unexpected failure log one error and wait 60 s; a row that changed elsewhere is left; a failure that the registry cannot record is reported once it is recorded; a stop leaves the row for the next start
+[V] An idle loop reads the registry every 5 s; an unreadable registry, a failed write, and an unexpected failure log one error and wait 60 s; a row that changed elsewhere is left; a failure that the registry cannot record is reported once it is recorded; a stop leaves the row for the next claim
 [V] The claim selects with `FOR UPDATE SKIP LOCKED` in one transaction and moves the oldest requested row to `creating` with its name and plan; a resumed row keeps its name; each record names the state that it starts from, and the live record the service of the work too; a failure reason is bounded to 1000 characters; the write guard owns a service ID only when a row has it
+[V] Each claim names the holder of the loop and holds the row for 60 s: a row without a claim, a row of the holder, or a row whose lease ended; the row is held at each platform call, renewed right before each create and before each read of the deploy, and freed by the live record; a renewal that finds another holder sends no create, ends the watch, and leaves the row; a renewal that the registry does not answer sends no create and waits 60 s; in a run of two loops with a deploy of three minutes, the second loop never gets the row; a stop during the create keeps the `creating` row held, and a stop during the watch frees the `deploying` row; after the stop, a search or a create in flight ends with no renewal, and a claim that commits during the stop starts no work and frees its row
+[V] The renewal, the release, and each record name the holder; the release never frees a `creating` row, and the release of a claim without work frees each state; the live and failed records free the claim; the live record of the fleet resume names no holder
+
+**Finishing platform** (`test/unit/tenants/finishing-platform.test.ts`)
+
+A fake of the tenant platform records each call and the signal that it gets.
+
+[V] After the stop, each of the eight platform calls of the tenant loops refuses with the stop reason before the platform gets the call; a call that started runs with the in-flight signal instead of the stop signal and gives the answer of the platform; an abort of the in-flight signal reaches the call in flight
+
+**Tenant loop** (`test/unit/app/tenant-loop.test.ts`)
+
+[V] The close aborts the stop signal at once and keeps the in-flight signal open while the loop ends; the in-flight signal aborts with the shutdown reason at the end of the grace; a second close waits for the same end; the grace of production is 3 s
 
 **Render adapter** (`test/unit/render/render-tenant-platform.test.ts`)
 

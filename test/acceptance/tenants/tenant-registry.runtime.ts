@@ -40,7 +40,7 @@ async function makeLive(site: Site, organizationId: string): Promise<void> {
     image_digest = 'sha256:${'a'.repeat(64)}', updated_at = '2026-10-27T10:00:00Z' WHERE organization_id = '${organizationId}'`);
 }
 
-test('Given the migration, when it is applied, then the three tables exist with the columns of the data model and the seven tenant states', { timeout: 60_000 }, async (t) => {
+test('Given the migrations, when they are applied, then the three tables exist with the columns of the data model, the seven tenant states, and a claim of a holder with an end time or no claim', { timeout: 60_000 }, async (t) => {
   const site = await postgresSettingsSite(t);
   const columns = await site.ownerQuery(`SELECT table_name || ': ' || string_agg(column_name, ', ' ORDER BY ordinal_position)
     FROM information_schema.columns WHERE table_schema = 'thermus_admin' AND table_name IN ('tenants', 'subscriptions', 'billing_events')
@@ -48,7 +48,7 @@ test('Given the migration, when it is applied, then the three tables exist with 
   assert.deepEqual(columns.split('\n'), [
     'billing_events: stripe_event_id, type, received_at, applied_at',
     'subscriptions: organization_id, stripe_customer_id, stripe_subscription_id, status, current_period_end, cancel_at_period_end, terms_accepted_at, updated_at',
-    'tenants: organization_id, render_service_id, service_name, internal_url, state, plan, applied_plan, image_digest, last_active_at, failure_reason, created_at, updated_at',
+    'tenants: organization_id, render_service_id, service_name, internal_url, state, plan, applied_plan, image_digest, last_active_at, failure_reason, created_at, updated_at, claimed_by, claimed_until',
   ]);
   const keys = await site.ownerQuery(`SELECT constraints.table_name || ': ' || usage.column_name
     FROM information_schema.table_constraints constraints JOIN information_schema.key_column_usage usage USING (constraint_schema, constraint_name)
@@ -61,6 +61,10 @@ test('Given the migration, when it is applied, then the three tables exist with 
   }
   await makeLive(site, 'org_A');
   await assert.rejects(site.ownerQuery("UPDATE thermus_admin.tenants SET state = 'paused' WHERE organization_id = 'org_A'"), /tenants_state_check/);
+  await site.ownerQuery("UPDATE thermus_admin.tenants SET claimed_by = 'holder-1', claimed_until = now() WHERE organization_id = 'org_A'");
+  await assert.rejects(site.ownerQuery("UPDATE thermus_admin.tenants SET claimed_until = NULL WHERE organization_id = 'org_A'"), /tenants_claim_pair/);
+  await assert.rejects(site.ownerQuery("UPDATE thermus_admin.tenants SET claimed_by = NULL WHERE organization_id = 'org_A'"), /tenants_claim_pair/);
+  await site.ownerQuery("UPDATE thermus_admin.tenants SET claimed_by = NULL, claimed_until = NULL WHERE organization_id = 'org_A'");
   assert.deepEqual(await tenantRows(site), ['org_A live']);
 });
 

@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { FinishingPlatform } from '../../../src/tenancy/tenants/finishing-platform.ts';
 import { serviceNameOf } from '../../../src/tenancy/tenants/tenant-environment.ts';
 import { TenantProvisioner } from '../../../src/tenancy/tenants/tenant-provisioner.ts';
 import { OperatorLogSpy } from '../../support/doubles/application/operator-log-spy.ts';
@@ -19,13 +20,16 @@ const tenant = {
 const live = { status: 'found', deploy: { id: 'dep-1', progress: 'live', status: 'live', imageDigest: `sha256:${'d'.repeat(64)}` } } as const;
 const inProgress = { status: 'found', deploy: { id: 'dep-1', progress: 'pending', status: 'update_in_progress' } } as const;
 
+const holder = 'holder-1';
+
 function provisionerWith(options: { readonly namePrefix?: string; readonly storeClock?: boolean } = {}) {
   const platform = new TenantPlatformFake();
   const clock = new VirtualClock();
-  // With the clock, the registry fake leaves the row of a resume for 15 s after its change, as the claim of the SQL adapter does.
+  // With the clock, the registry fake leaves the row of a resume for 15 s after its change, as the claim of the SQL
+  // adapter does, and ends a claim lease 60 s after its last renewal.
   const store = new TenantProvisioningStoreFake(options.storeClock === true ? clock.now : undefined);
   const log = new OperatorLogSpy();
-  const provisioner = new TenantProvisioner({ platform, store, clock, log, tenant, namePrefix: options.namePrefix ?? 'thermus-tenant-', freePlan: '0.5c-512mb' });
+  const provisioner = new TenantProvisioner({ platform, store, clock, log, tenant, namePrefix: options.namePrefix ?? 'thermus-tenant-', freePlan: '0.5c-512mb', holder });
   const runUntil = async (condition: () => boolean): Promise<void> => {
     const controller = new AbortController();
     const running = provisioner.run(controller.signal);
@@ -368,7 +372,7 @@ test('Given two requested rows, when the loop runs, then it finishes one row bef
   ]);
 });
 
-test('Given a stop during a platform call, when the loop stops, then it records nothing more and the row waits for the next start', async () => {
+test('Given a stop during the create call, when the loop stops, then it records nothing more, and the creating row waits for the next claim with the claim of the loop, because the create can still be unknown', async () => {
   const { platform, store, provisioner } = provisionerWith();
   const controller = new AbortController();
   platform.onCall = (call) => { if (call.startsWith('create ')) controller.abort(); };
@@ -378,6 +382,92 @@ test('Given a stop during a platform call, when the loop stops, then it records 
 
   assert.deepEqual(platform.calls, [`find ${name}`, `create ${name}`]);
   assert.equal(store.row(organization).state, 'creating');
+  assert.equal(store.row(organization).claimedBy, holder);
+});
+
+test('Given a stop while the loop watches the deploy, when the loop stops, then it frees the deploying row, so the next claim of any loop takes it at once', async () => {
+  const { platform, store, provisioner } = provisionerWith();
+  const controller = new AbortController();
+  platform.onCall = (call) => { if (call.startsWith('deploy ')) controller.abort(); };
+  store.request(organization);
+
+  await provisioner.run(controller.signal);
+
+  assert.deepEqual(platform.calls, [`find ${name}`, `create ${name}`, 'deploy srv-new1']);
+  assert.equal(store.row(organization).state, 'deploying');
+  assert.equal(store.row(organization).claimedBy, null);
+});
+
+test('Given a requested row, when the loop claims it, then the claim holds the row for the holder of the loop at each platform call, and the live record frees the row', async () => {
+  const { platform, store, runUntil, stateOf } = provisionerWith();
+  const holders: (string | null)[] = [];
+  platform.onCall = () => { holders.push(store.row(organization).claimedBy); };
+  store.request(organization);
+
+  await runUntil(() => stateOf(organization)() === 'live');
+
+  assert.deepEqual(holders, [holder, holder, holder, holder]);
+  assert.equal(store.row(organization).claimedBy, null);
+});
+
+test('Given a row that another holder claims during the search, when the loop renews its claim before the create, then it sends no create and leaves the row', async () => {
+  const { platform, store, log, runUntil } = provisionerWith();
+  platform.onCall = (call) => { if (call.startsWith('find ')) store.row(organization).claimedBy = 'holder-2'; };
+  store.request(organization);
+
+  await runUntil(() => log.lines.some((line) => line.includes('leaves')));
+
+  assert.deepEqual(platform.calls, [`find ${name}`]);
+  assert.deepEqual([store.row(organization).state, store.row(organization).claimedBy], ['creating', 'holder-2']);
+  assert.match(log.lines.at(-1) ?? '', /^INFO Tenant provisioning leaves organization org_01JUNITAAAAAAAAAAAAAAAAAAA: its row changed during the work\.$/);
+});
+
+test('Given a registry that does not answer the renewal before the create, when the loop would create, then it sends no create, logs one error, and claims its row again after 60 s', async () => {
+  const { platform, store, clock, runUntil, stateOf, errors } = provisionerWith();
+  platform.onCall = (call) => {
+    if (call !== `find ${name}`) return;
+    if (platform.calls.length === 1) store.unavailable.add('renew');
+    else store.unavailable.delete('renew');
+  };
+  store.request(organization);
+
+  await runUntil(() => stateOf(organization)() === 'live');
+
+  assert.deepEqual(platform.calls, [`find ${name}`, `find ${name}`, `create ${name}`, 'deploy srv-new1', 'address srv-new1']);
+  assert.ok(clock.waits.includes(60_000));
+  assert.deepEqual(errors(), [`ERROR Tenant provisioning could not write the row of organization ${organization}. It tries again in 60 s.`]);
+});
+
+test('Given another holder that claims the row while the loop watches the deploy, when the loop renews its claim at the next read, then it reads no more, records nothing, and leaves the row', async () => {
+  const { platform, store, log, runUntil } = provisionerWith();
+  platform.deploys.push(inProgress, inProgress, live);
+  platform.onCall = (call) => { if (call === 'deploy srv-new1') store.row(organization).claimedBy = 'holder-2'; };
+  store.request(organization);
+
+  await runUntil(() => log.lines.some((line) => line.includes('leaves')));
+
+  assert.deepEqual(platform.calls, [`find ${name}`, `create ${name}`, 'deploy srv-new1']);
+  assert.deepEqual([store.row(organization).state, store.row(organization).claimedBy], ['deploying', 'holder-2']);
+});
+
+test('Given a deploy that takes three minutes, when a second loop of another holder runs on the same registry, then it never claims the row, because the first loop renews its claim at each read', async () => {
+  const { platform, store, clock, log, runUntil, stateOf } = provisionerWith({ storeClock: true });
+  for (let read = 0; read < 36; read += 1) platform.deploys.push(inProgress);
+  const secondLog = new OperatorLogSpy();
+  const second = new TenantProvisioner({ platform, store, clock, log: secondLog, tenant, namePrefix: 'thermus-tenant-', freePlan: '0.5c-512mb', holder: 'holder-2' });
+  const stopSecond = new AbortController();
+  const secondRunning = second.run(stopSecond.signal);
+  store.request(organization);
+
+  await runUntil(() => stateOf(organization)() === 'live');
+  stopSecond.abort();
+  await secondRunning;
+
+  assert.ok(clock.now() >= 180_000, `The deploy took ${clock.now()} ms of virtual time`);
+  assert.deepEqual(platform.calls.filter((call) => call.startsWith('create ')), [`create ${name}`]);
+  assert.deepEqual(store.changes, [`${organization} creating`, `${organization} deploying`, `${organization} live`]);
+  assert.ok(log.lines.some((line) => line.includes('"state":"live"')));
+  assert.deepEqual(secondLog.lines, [], 'The second loop has no line about the row');
 });
 
 test('Given an unexpected failure of a collaborator, when the loop meets it, then it logs one error, waits 60 s, and goes on', async () => {
@@ -390,4 +480,55 @@ test('Given an unexpected failure of a collaborator, when the loop meets it, the
 
   assert.deepEqual(errors(), ['ERROR Tenant provisioning failed unexpectedly: private platform failure. It tries again in 60 s.']);
   assert.equal(clock.waits[0], 60_000);
+});
+
+test('Given a stop while the search of the loop is in flight, when the search ends, then the loop renews no claim and sends no create, so the creating row keeps the lease end of its claim', async () => {
+  const { platform, store, clock, log } = provisionerWith();
+  const stop = new AbortController();
+  const renewals: string[] = [];
+  const renewClaim = store.renewClaim.bind(store);
+  store.renewClaim = async (row) => { renewals.push(row.organizationId); return renewClaim(row); };
+  platform.onCall = (call) => { if (call.startsWith('find ')) stop.abort(); };
+  const finishing = new FinishingPlatform(platform, new AbortController().signal);
+  const provisioner = new TenantProvisioner({ platform: finishing, store, clock, log, tenant, namePrefix: 'thermus-tenant-', freePlan: '0.5c-512mb', holder });
+  store.request(organization);
+
+  await provisioner.run(stop.signal);
+
+  assert.deepEqual(platform.calls, [`find ${name}`], 'The search in flight ended; nothing started after the stop');
+  assert.deepEqual(renewals, []);
+  assert.deepEqual([store.row(organization).state, store.row(organization).claimedBy], ['creating', holder]);
+});
+
+test('Given a stop while the create call of the loop is in flight, when the create ends, then the loop records the service, renews no claim for the watch, reads no deploy, and frees the deploying row', async () => {
+  const { platform, store, clock, log } = provisionerWith();
+  const stop = new AbortController();
+  const renewals: string[] = [];
+  const renewClaim = store.renewClaim.bind(store);
+  store.renewClaim = async (row) => { renewals.push(row.organizationId); return renewClaim(row); };
+  platform.onCall = (call) => { if (call.startsWith('create ')) stop.abort(); };
+  const finishing = new FinishingPlatform(platform, new AbortController().signal);
+  const provisioner = new TenantProvisioner({ platform: finishing, store, clock, log, tenant, namePrefix: 'thermus-tenant-', freePlan: '0.5c-512mb', holder });
+  store.request(organization);
+
+  await provisioner.run(stop.signal);
+
+  assert.deepEqual(platform.calls, [`find ${name}`, `create ${name}`]);
+  assert.deepEqual(renewals, [organization], 'Only the renewal before the create');
+  assert.deepEqual([store.row(organization).state, store.row(organization).serviceId, store.row(organization).claimedBy], ['deploying', 'srv-new1', null]);
+});
+
+test('Given a stop while the claim commits, when the claim returns a row, then the loop starts no work, logs no record, and frees the row at once, also a creating row', async () => {
+  const { platform, store, clock, log } = provisionerWith();
+  const stop = new AbortController();
+  const claimNext = store.claimNext.bind(store);
+  store.claimNext = async (request) => { const claim = await claimNext(request); stop.abort(); return claim; };
+  const provisioner = new TenantProvisioner({ platform, store, clock, log, tenant, namePrefix: 'thermus-tenant-', freePlan: '0.5c-512mb', holder });
+  store.request(organization);
+
+  await provisioner.run(stop.signal);
+
+  assert.deepEqual(platform.calls, []);
+  assert.deepEqual(log.lines, []);
+  assert.deepEqual([store.row(organization).state, store.row(organization).claimedBy], ['creating', null]);
 });
