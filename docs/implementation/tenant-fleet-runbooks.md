@@ -51,7 +51,7 @@ of the SO-12 order, so production has no tenant yet.
 | Name | What it is | Where it lives |
 | --- | --- | --- |
 | `RENDER_API_KEY` of the control plane | The API key of the dedicated Render user of the control plane. | A Render secret variable of the production service `srv-db8mnqg473hc739d529g`, from step 6 of the SO-12 order. |
-| `RENDER_API_KEY` of the release workflow | The API key of a dedicated Render user, a Member of Thermus AI. | The GitHub repository secret `RENDER_API_KEY` of `tomer-mayara/Thermus`. Before step 5 of the SO-12 order, it can move to a GitHub environment that allows only `main` (manager note of the SO-02 review). |
+| `RENDER_API_KEY` of the release workflow | The API key of a dedicated Render user, a Member of Thermus AI. | The secret `RENDER_API_KEY` of the GitHub environment `production` of `tomer-mayara/Thermus`. The deployment branch rule of the environment allows only `main`. The repository secret `RENDER_API_KEY` stays until the first dispatch on `main` passes with the environment; then the owner deletes it ([Hosted release](../../README.md#hosted-release)). |
 | Fleet key | The API key of the owner's Render user, which the fleet script uses. It is not the key of the control plane, so the fleet has its own rate-limit bucket. | The variable `RENDER_API_KEY` in the git-ignored `.env.local` of the main checkout, `/Users/tomermayara/git/Thermus/.env.local`. The probes and the [Render interface gate](test-gate-policy.md#render-interface-gate-so-06) read the same variable. The fleet script reads it from the environment of `node --env-file`. |
 | `GATEWAY_SIGNING_KEY` | The Ed25519 private key that signs each access context. Only the control plane holds it, and it reads the key only with `MCP_TENANTS_ENABLED` on. | A Render secret variable of the production service, from step 6 of the SO-12 order. |
 | `GATEWAY_PUBLIC_KEY` | One or more Ed25519 public keys in PEM form, separated by commas. It is not a secret. | A Render variable of the production service, and a Render variable of each tenant service. The provisioner copies the value of the control plane into each new tenant. |
@@ -448,7 +448,7 @@ the user of the control plane
 | Key | Used by | Where it lives |
 | --- | --- | --- |
 | Control plane key | The provisioner, the organization sweep, the idle sweep, the daily summary, and the resume of the gateway. | The Render secret variable `RENDER_API_KEY` of the production service. |
-| Release key | The deploy job of [`hosted-image.yml`](../../.github/workflows/hosted-image.yml) ([Hosted release](../../README.md#hosted-release)). | The GitHub repository secret `RENDER_API_KEY`, or the GitHub environment that SO-12 can add. |
+| Release key | The deploy job of [`hosted-image.yml`](../../.github/workflows/hosted-image.yml) ([Hosted release](../../README.md#hosted-release)). | The secret `RENDER_API_KEY` of the GitHub environment `production`, which allows only `main`. The repository secret `RENDER_API_KEY` stays only until the first dispatch on `main` passes with the environment. |
 | Fleet key | The fleet script, the probes, and the Render interface gate. It is the key of the owner's Render user. | The variable `RENDER_API_KEY` in the git-ignored `.env.local` of the main checkout. |
 
 The Render documentation gives no expiry date for a key. Rotate a key when it
@@ -464,11 +464,15 @@ places before step 5.
    - Control plane: open the production service, then **Environment**.
      Replace the value of `RENDER_API_KEY`, and save. Deploy the service if the
      save does not start a deploy.
-   - Release: on GitHub, open the repository **Settings**, then **Secrets and
-     variables**, then **Actions**. Update `RENDER_API_KEY`. Or run
-     `gh secret set RENDER_API_KEY --repo tomer-mayara/Thermus`, and paste the
-     key at its prompt. Do not put the key on the command line. If the secret
-     is in a GitHub environment, update it there.
+   - Release: on GitHub, open the repository **Settings**, then
+     **Environments**, then `production`. Under **Environment secrets**, update
+     `RENDER_API_KEY`. Or run
+     `gh secret set RENDER_API_KEY --env production --repo tomer-mayara/Thermus`,
+     and paste the key at its prompt. Do not put the key on the command line.
+     Do not put the key in a repository secret: a workflow on any branch can
+     read a repository secret. If the repository secret `RENDER_API_KEY` still
+     exists, delete it after the check of step 4, with
+     `gh secret delete RENDER_API_KEY --repo tomer-mayara/Thermus`.
    - Fleet: open `/Users/tomermayara/git/Thermus/.env.local` in an editor, and
      replace the value. Do not show the file.
 3. Do not revoke the old key yet.
@@ -487,9 +491,11 @@ places before step 5.
      The deploy job reads the service with the key, and then it stops with
      "The service is a private_service, not a web service." No deploy starts
      ([`deploy-hosted-image.ts`](../../script/release/deploy-hosted-image.ts)).
-     With a wrong key, the job stops with `answered 401`. Before a tenant
-     exists, the next release dispatch is the check. The job reads the service
-     before it deploys, so a wrong key stops the job before any change.
+     With a wrong key, the job stops with `answered 401`. With no key in the
+     environment `production` and no repository secret, it stops with
+     `RENDER_API_KEY is empty` before any Render call. Before a tenant exists,
+     the next release dispatch is the check. The job reads the service before
+     it deploys, so a wrong key stops the job before any change.
    - Fleet: run `fleet.ts status --organization <organization ID>` for a
      tenant with a service. It reads the newest deploy and the internal address
      on Render with the key; a wrong key gives `unavailable (Render answered

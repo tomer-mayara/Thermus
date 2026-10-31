@@ -142,6 +142,10 @@ jobs:
     if: github.event_name == 'workflow_dispatch' && (inputs.digest != '' || inputs.service_id != '' || inputs.confirm_production != '')
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    # The release key is the secret RENDER_API_KEY of the GitHub environment production. Owner steps: the environment
+    # exists, its deployment branch rule allows only main, and the key is in it. Then GitHub refuses this job on another
+    # branch before the job starts. The request check below keeps its own branch rule.
+    environment: production
     permissions:
       contents: read
       packages: read
