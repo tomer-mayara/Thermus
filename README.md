@@ -739,11 +739,23 @@ gives its runs.
   production before that step. The
   [SO-12 release record](docs/implementation/self-onboarding-s2-release.md#4-production-order)
   gives the candidate, the order with its checks, and the rollback image.
-- **Key.** The deploy job reads the repository secret `RENDER_API_KEY`, the API
-  key of a dedicated Render user who is a Member of the Thermus AI workspace,
-  and `GITHUB_TOKEN`. It never prints them. There is no GitHub environment, so
-  a workflow on any branch of this repository can read the secret; the branch
-  rule is in the workflow and the script of each branch. To rotate the key,
+- **Key.** The deploy job runs in the GitHub environment `production`. It
+  reads the secret `RENDER_API_KEY` of that environment: the API key of a
+  dedicated Render user who is a Member of the Thermus AI workspace. The job
+  also reads `GITHUB_TOKEN`, and it never prints the key or the token. The
+  deployment branch rule of the environment allows only `main`. GitHub refuses
+  a job of the environment on another branch before the job starts. A job
+  outside the environment cannot read the secrets of the environment. So, when
+  the repository has no secret `RENDER_API_KEY`, a workflow on another branch
+  cannot reach the key. The repository secret stays until the first dispatch
+  on `main` passes with the environment; then the owner deletes the repository
+  secret. Until then, the job reads the environment secret first, and the
+  repository secret only when the environment has none. The request check of
+  the workflow keeps its own branch rule. On GitHub Free, environment secrets
+  and deployment branch rules work only in a public repository (GitHub
+  documentation, read on 31 October 2026). This repository became public on
+  31 October 2026. GitHub shows each deploy run as a deployment to
+  `production`, also when the target is another service. To rotate the key,
   follow [runbook 5.1](docs/implementation/tenant-fleet-runbooks.md#51-render-api-keys).
 
 GHCR facts, from the GitHub documentation read on 26 and 27 October 2026:
