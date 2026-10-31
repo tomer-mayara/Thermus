@@ -1,6 +1,7 @@
 // The WorkOS Staging, Connect, MCP, portal, and database commands of the rehearsal helper. Each WorkOS command runs
 // through the WorkOS Staging launcher; the settings module refuses the values of another environment.
 import { setTimeout as delay } from 'node:timers/promises';
+import type { Page } from 'playwright';
 import { workosClient } from '../../../test/support/hosted-live/settings.ts';
 import { LiveBrowser } from '../../../test/support/hosted-live/live-browser.ts';
 import { accessToken, authorize, type TokenSession } from './rehearsal-connect.ts';
@@ -75,7 +76,23 @@ async function view(input: CommandInput): Promise<void> {
   }
 }
 
-/** R10 and R11: the Connect view of the paused workspace, the first call, the view during the resume, and the calls until one answers. */
+// Between two calls of the resume check, the portal page loads again every 5 s, and each changed view prints.
+const VIEW_EVERY_MS = 5_000;
+const VIEWS_BETWEEN_CALLS = 3;
+
+async function viewsBetweenCalls(page: Page, print: (line: string) => void, last: { line: string }): Promise<void> {
+  for (let view = 1; view <= VIEWS_BETWEEN_CALLS; view++) {
+    // The meta refresh of the setup state can load the page at the same time; then the reload stops, and the view
+    // reads the page that the refresh loaded.
+    await page.reload().catch(() => page.waitForLoadState('domcontentloaded'));
+    const line = viewLine(await connectView(page));
+    if (line.slice(25) !== last.line) print(`View: ${line}`);
+    last.line = line.slice(25);
+    await delay(VIEW_EVERY_MS);
+  }
+}
+
+/** R10 and R11: the Connect view of the paused workspace, the first call, the views during the resume, and the calls until one answers. */
 async function resumeCheck(input: CommandInput): Promise<void> {
   const current = session(input);
   const visit = visitOf(current, 'B');
@@ -83,19 +100,21 @@ async function resumeCheck(input: CommandInput): Promise<void> {
   try {
     const page = await signIn(browser, visit);
     await page.goto(`${visit.origin}/`);
-    input.print(`Before the call: ${viewLine(await connectView(page))}`);
+    const before = viewLine(await connectView(page));
+    input.print(`Before the call: ${before}`);
     await accessToken(current, 'B');
     const started = performance.now();
+    const last = { line: before.slice(25) };
     for (let attempt = 1; attempt <= UNTIL_ANSWER.attempts; attempt++) {
       const result = await callOnce(endpointOf(current.dir), await accessToken(current, 'B'));
       input.print(`Call ${attempt} for B: ${callLine(result)}`);
-      await page.reload();
-      input.print(`After call ${attempt}: ${viewLine(await connectView(page))}`);
       if (result.answered) {
         input.print(`The first answer came ${((performance.now() - started) / 1_000).toFixed(1)} s after the first call.`);
+        await page.reload();
+        input.print(`After the answer: ${viewLine(await connectView(page))}`);
         return;
       }
-      await delay(10_000);
+      await viewsBetweenCalls(page, input.print, last);
     }
     throw new Error('No call answered during the resume check.');
   } finally {

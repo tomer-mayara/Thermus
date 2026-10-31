@@ -56,15 +56,18 @@ async function settle(page: Page): Promise<string> {
 
 export async function connectView(page: Page): Promise<ConnectView & { readonly access: string }> {
   const access = await settle(page);
+  const at = utcNow();
   const count = async (selector: ReturnType<Page['locator']>): Promise<boolean> => (await selector.count()) > 0;
+  // A read of an attribute waits for its element, so the refresh is read only when the page has it.
+  const refresh = page.locator('meta[http-equiv="refresh"]');
   return {
-    at: utcNow(),
+    at,
     access,
     heading: await count(page.getByRole('heading', { name: 'Connect your MCP client' })),
     settingUp: await count(page.getByText(SETTING_UP, { exact: true })),
     paused: await count(page.getByText(PAUSED, { exact: true })),
     guide: await count(page.locator('.connection-guide')),
-    refresh: await page.locator('meta[http-equiv="refresh"]').getAttribute('content').catch(() => null),
+    refresh: (await refresh.count()) > 0 ? await refresh.first().getAttribute('content', { timeout: 1_000 }).catch(() => null) : null,
   };
 }
 
