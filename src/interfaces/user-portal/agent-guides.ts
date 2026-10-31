@@ -14,7 +14,14 @@ export interface AgentGuide {
 }
 
 export function agentGuides(endpoint: string): readonly AgentGuide[] {
-  const shellEndpoint = `'${endpoint.replaceAll("'", "'\\''")}'`;
+  return [...terminalGuides(shellQuoted(endpoint)), ...desktopGuides(endpoint)];
+}
+
+function shellQuoted(value: string): string {
+  return `'${value.replaceAll("'", "'\\''")}'`;
+}
+
+function terminalGuides(shellEndpoint: string): AgentGuide[] {
   return [
     {
       category: 'cli', id: 'claude-code', name: 'Claude Code',
@@ -32,6 +39,11 @@ export function agentGuides(endpoint: string): readonly AgentGuide[] {
       tryIt: 'Start a new Codex session. Run /mcp to check Thermus, then send this prompt.',
       url: 'https://learn.chatgpt.com/docs/extend/mcp?surface=cli',
     },
+  ];
+}
+
+function desktopGuides(endpoint: string): AgentGuide[] {
+  return [
     {
       category: 'desktop', id: 'claude', name: 'Claude (web / desktop)',
       add: 'Open Customize → Connectors → + Add → Add custom connector. Name it Thermus, paste this URL, and select Continue.',
