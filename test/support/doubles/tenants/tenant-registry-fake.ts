@@ -52,9 +52,10 @@ export class TenantRegistryFake implements TenantRegistryStore, TenantGatewaySto
     return { status: 'resuming', serviceId: row.serviceId };
   }
 
-  async restoreSuspended(organizationId: string): Promise<GatewayWrite> {
+  // The restore names the service of the mark, as the guarded update of the SQL adapter does.
+  async restoreSuspended(organizationId: string, serviceId: string): Promise<GatewayWrite> {
     const row = this.rows.get(organizationId);
-    if (row?.state !== 'deploying') return { status: 'moved' };
+    if (row?.state !== 'deploying' || row.serviceId !== serviceId) return { status: 'moved' };
     this.rows.set(organizationId, { ...row, state: 'suspended' });
     return { status: 'recorded' };
   }

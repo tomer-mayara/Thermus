@@ -4,8 +4,13 @@ import type { ClaimRequest, ClaimResult } from './tenant-provisioning-store.ts';
 // A row of an earlier run or a resume comes before the oldest request. The row lock holds the row until the claim
 // commits, and SKIP LOCKED takes the next row when another writer holds one, so a claim never waits for it. The
 // claim is not a lease: one control plane runs one loop (plan section 7).
+// A deploying row with an address is the row of a resume: only a live record gives an address, and a delete takes it
+// away. Right after a resume, the newest deploy of the service is still the live deploy from before the suspend
+// (record SO-09), and Render made the deploy of the resume 1.8 to 2.0 s after the resume call (SO-01c, SO-09). So the
+// claim takes such a row 15 s after its resume mark, when the newest deploy is the deploy of the resume.
 const NEXT_ROW = `SELECT organization_id, state, service_name, render_service_id FROM thermus_admin.tenants
   WHERE state IN ('requested', 'creating', 'deploying')
+  AND (state <> 'deploying' OR internal_url IS NULL OR updated_at <= now() - interval '15 seconds')
   ORDER BY state = 'requested', updated_at, organization_id
   LIMIT 1 FOR UPDATE SKIP LOCKED`;
 const CLAIM_REQUESTED = `UPDATE thermus_admin.tenants SET state = 'creating', service_name = $2, plan = $3, updated_at = now()

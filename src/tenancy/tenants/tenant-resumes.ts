@@ -16,9 +16,10 @@ const UNAVAILABLE: ResumeResult = Object.freeze({ status: 'unavailable' });
 
 /**
  * The resume of a suspended tenant (answer 3 of 27 October 2026). The row moves from suspended to deploying first, and
- * only the call that moved it sends the one resume call, so concurrent calls of any process send one. A failed resume
- * sets the row back to suspended: the next call tries again, and there is no new state. The provisioner then watches
- * the newest deploy of the deploying row and records live.
+ * only the call that moved it sends the one resume call, so concurrent calls of any process send one. A failed resume,
+ * also a 429, sets the row back to suspended on the service of the mark: the next call tries again, and there is no
+ * new state (answer 4 of 27 October 2026). The provisioner then watches the newest deploy of the deploying row and
+ * records live.
  */
 export class TenantResumes {
   private readonly store: Pick<TenantGatewayStore, 'markResuming' | 'restoreSuspended'>;
@@ -46,7 +47,7 @@ export class TenantResumes {
     if (mark.status !== 'resuming') return mark.status === 'moved' ? PENDING : UNAVAILABLE;
     const outcome = await platformResume(this.operation, { organizationId, serviceId: mark.serviceId });
     if (outcome.status === 'resumed') return SENT;
-    await this.store.restoreSuspended(organizationId);
+    await this.store.restoreSuspended(organizationId, mark.serviceId);
     return { status: 'failed', reason: outcome.reason };
   }
 }

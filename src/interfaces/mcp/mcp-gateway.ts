@@ -14,6 +14,9 @@ export interface McpGatewayOptions {
 // The organizations that got their one failure report. At this size, the gateway forgets them all.
 const REPORT_MEMORY = 1_024;
 
+// The state and the internal address of a row, from the registry copy or, without an address, from a tenant request.
+type TenantRow = { readonly state: GatewayTenantState; readonly internalUrl: string | null };
+
 // The refusal of each row state that needs no registry write. A row that starts gets the starting words; a live row
 // without an address, here or in a tenant request, waits for the next copy of the registry.
 const STATE_REFUSALS: Readonly<Record<Exclude<GatewayTenantState, 'suspended' | 'failed'>, Refusal['reason']>> = {
@@ -52,21 +55,21 @@ export class McpGateway {
     if (route.status === 'absent') return this.requestTenant(organizationId, signal);
     this.states.rowSeen(organizationId, route.state);
     if (route.state === 'live' && route.internalUrl !== null) return this.live.forward(request, forwarded, route.internalUrl);
-    return this.answerState(organizationId, route.state, signal);
+    return this.answerState(organizationId, route, signal);
   }
 
-  private async answerState(organizationId: string, state: GatewayTenantState, signal: AbortSignal): Promise<Response> {
-    if (state === 'suspended') {
+  private async answerState(organizationId: string, row: TenantRow, signal: AbortSignal): Promise<Response> {
+    if (row.state === 'suspended') {
       const resumed = await waitForRequest(signal, () => this.tenants.resume(organizationId));
       return this.refusals.refuse(organizationId, resumeRefusalOf(resumed));
     }
-    return this.refusals.refuse(organizationId, this.states.refusalOf(organizationId, state));
+    return this.refusals.refuse(organizationId, this.states.refusalOf(organizationId, row.state, row.internalUrl));
   }
 
   /** The access check ran before, so a token without product access requests no tenant. */
   private async requestTenant(organizationId: string, signal: AbortSignal): Promise<Response> {
     const result = await waitForRequest(signal, () => this.tenants.request(organizationId));
-    if (result.status === 'present') return this.answerState(organizationId, result.state, signal);
+    if (result.status === 'present') return this.answerState(organizationId, { state: result.state, internalUrl: null }, signal);
     return this.refusals.refuse(organizationId, REQUEST_REFUSALS[result.status]);
   }
 }
@@ -93,9 +96,12 @@ class StateRefusals {
     if (state !== 'failed') this.reported.delete(organizationId);
   }
 
-  refusalOf(organizationId: string, state: Exclude<GatewayTenantState, 'suspended'>): Refusal {
-    if (state !== 'failed') return { reason: STATE_REFUSALS[state], state };
-    return { reason: 'failed', state, report: this.firstReport(organizationId) };
+  refusalOf(organizationId: string, state: Exclude<GatewayTenantState, 'suspended'>, internalUrl: string | null): Refusal {
+    if (state === 'failed') return { reason: 'failed', state, report: this.firstReport(organizationId) };
+    // Only a live record gives a row its address, and a delete takes it away, so a deploying row with an address was
+    // live before: its deploy is the deploy of a resume, and the client waits a minute (plan section 4.2).
+    if (state === 'deploying' && internalUrl !== null) return { reason: 'resuming', state };
+    return { reason: STATE_REFUSALS[state], state };
   }
 
   private firstReport(organizationId: string): boolean {

@@ -49,6 +49,8 @@ export interface WorkOSApplicationParts {
   // With MCP_TENANTS_ENABLED on: MCPServer forwards each admitted request to the tenant of the organization, and
   // /internal/audit takes the audit relays of the tenants. Without it, the control plane serves the tools as today.
   readonly gateway?: GatewayParts;
+  // With MCP_TENANTS_ENABLED on: FREE_TENANT_IDLE_DAYS, which the portal names in the notice of a paused workspace.
+  readonly freeTenantIdleDays?: number | undefined;
 }
 
 // No retry and a short timeout: each WorkOS call runs during a browser or MCP request.
@@ -72,11 +74,12 @@ export async function openWorkOSApplication(config: RouteConfig, logger: SystemL
   const { openLoggingStorage } = await import('./logging-storage.ts');
   await using resources = new AsyncDisposableStack();
   const opened = await openLoggingStorage(environment, logger, gateway.freeTenantLimit);
-  const loggingStorage = provisioningSettings === undefined ? opened : (await import('./tenant-provisioning.ts')).withTenantProvisioning(opened, {
+  const tenancy = provisioningSettings === undefined ? undefined : (await import('./tenant-provisioning.ts')).withTenantProvisioning(opened, {
     settings: provisioningSettings, publicBaseUrl: config.publicBaseUrl, authkitIssuer: connection.settings.authkitIssuer, logger, workos: connection.workos,
   });
+  const loggingStorage = tenancy?.storage ?? opened;
   if (loggingStorage !== undefined) resources.defer(() => loggingStorage.close());
-  const application = await composeWorkOSApplication(config, connection, { logger, toolOperations: operations, signup, loggingStorage, gateway: gateway.partsOn(loggingStorage) });
+  const application = await composeWorkOSApplication(config, connection, { logger, toolOperations: operations, signup, loggingStorage, gateway: gateway.partsOn(tenancy), freeTenantIdleDays: provisioningSettings?.freeTenantIdleDays });
   resources.move();
   return portal.withApplication(application);
 }
@@ -112,7 +115,7 @@ export async function composeWorkOSApplication(config: RouteConfig, connection: 
   const billing = await billingOf(parts);
   // Signup and the portal follow the tenant of each organization through the registry rules of the gateway (SO-07).
   const { workspacePartsOf } = await import('./workspace-composition.ts');
-  const workspaces = workspacePartsOf({ gateway: parts.gateway, storage: parts.loggingStorage, logger: parts.logger });
+  const workspaces = workspacePartsOf({ gateway: parts.gateway, storage: parts.loggingStorage, logger: parts.logger, idleDays: parts.freeTenantIdleDays });
   const providerParts = await workosProviderParts(config, connection, { ...parts, buildServer, billing, audit, signupTenants: workspaces.signup });
   const application = composeHostedApplication(config, providerParts, {
     reportFailure: accountFailureReporter(parts.logger),

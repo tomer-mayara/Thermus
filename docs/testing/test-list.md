@@ -1,5 +1,69 @@
 # Test inventory
 
+## Current SO-10 inventory scope
+
+SO-10 of the [self on-boarding plan](../implementation/self-onboarding-plan.md#slice-2-free-tier-end-to-end)
+adds the daily idle sweep of the free tenants, connects the resume of the MCP
+gateway to the Render adapter, gives a resumed `deploying` row the `503` with
+`Retry-After: 60`, lets the provisioner claim such a row 15 s after its resume
+mark, binds the restore of a failed resume and the failure record of the
+provisioner to the observed service, and gives Connect in the portal the notice
+of a paused workspace. Inventory presence is not a passing result; the pull
+request records the runs.
+
+- `test/acceptance/tenants/idle-suspension.test.ts` has the four sweep cases of
+  the ticket and one more: a free tenant without an MCP call for 14 days is
+  suspended through the Render API and its row becomes `suspended`, with one
+  record line and one count line; a tenant that never served a call stays live
+  13 days and 23 hours after its creation and is suspended at the next tick; a
+  tenant with a call inside the period stays live; idle team tenants stay live;
+  a suspend that Render limits with `429` leaves the row live with one operator
+  line, and the sweep of the next day suspends it. They run the sweeps as app
+  composes them, with the Render fake (now with the suspend and the resume),
+  the registry fake (now with the last use and the creation time of a row), and
+  a wall clock double.
+- `test/acceptance/mcp/hosted-gateway-resume.test.ts` has the three resume
+  cases: a call of a suspended tenant sends one resume to Render and gets `503`
+  with `Retry-After: 60`, a call while the tenant deploys gets the same, and
+  after the provisioner records the deploy of the resume as live, the next call
+  reaches the tenant; calls at the same time send one resume; a resume that
+  Render limits gives one operator report and the next call resumes again. The
+  site `test/support/in-process/hosted-resume-site.ts` composes the gateway
+  parts, the provisioner, and the resume operation as app does, over
+  `test/support/doubles/tenants/tenant-table-fake.ts`, one fake of the tenants
+  table with the statements of each store.
+- `test/integration/tenants/idle-sweep.runtime.ts` runs the idle query and the
+  suspended mark on the real registry store on disposable PostgreSQL 17, with
+  the boundary of the period, rows that never served a call, team rows, and a
+  row that another writer moves after the query. It runs in
+  `npm run test:logging:postgres`. `tenant-gateway-writes.runtime.ts` adds the
+  restore that names the old service of a replaced row, and
+  `provisioner-registry.runtime.ts` the claim of a resumed row and the failure
+  record that names the service of the work.
+- `test/unit/tenants/idle-sweep.test.ts` and `tenant-resume.test.ts`, with new
+  cases of `tenant-resumes.test.ts`, `provisioner.test.ts`,
+  `pg-tenant-fleet-store.test.ts`, `pg-tenant-provisioning-store.test.ts`,
+  `pg-tenant-registry-store.test.ts`, `test/unit/mcp/mcp-gateway.test.ts`,
+  `test/unit/config/tenant-sweep-config.test.ts`, and
+  `mcp-tenants-config.test.ts`. `test/acceptance/auth/hosted-startup.test.ts`
+  refuses an invalid `FREE_TENANT_IDLE_DAYS` at the start of the built server
+  and ignores it with the switch off.
+- `test/acceptance/user-portal/workspace-setup.test.ts` and
+  `test/acceptance/auth/hosted-signup-workspace.test.ts` add the notice of a
+  paused workspace: the portal shows the notice above the connection guide with
+  no refresh, and the workspace status of a suspended tenant answers `ready`
+  true with the notice of 14 days and requests no tenant.
+  `test/unit/web/workspace-status.test.ts`,
+  `test/unit/app/workspace-composition.test.ts`,
+  `test/unit/user-portal/workspace-status.test.ts`, and
+  `test/integration/hosted-admin/workspace-status-route.test.ts` add the days
+  of `FREE_TENANT_IDLE_DAYS` with the default of 14, the notice as text before
+  the guide, and the safe error for empty words or words that are not text.
+
+The runtime files need Docker Engine and OpenSSL. The other files are in the
+ordinary suite, and the hosted offline build selects the acceptance files of
+the idle sweep, the resume, and the signup workspace.
+
 ## Current SO-07 inventory scope
 
 SO-07 of the [self on-boarding plan](../implementation/self-onboarding-plan.md#slice-2-free-tier-end-to-end)

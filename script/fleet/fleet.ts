@@ -26,9 +26,9 @@ Commands:
   upgrade --image <reference@sha256:...> (--organization <id> | --all) [--batch-size 1..${MAX_BATCH}]
                                           Deploy the image to the live tenants in batches of ${MAX_BATCH}, record the
                                           digest of each live deploy that names it, and stop at the first that does not.
-  suspend --organization <id>             Suspend a live tenant. Until SO-10 connects the resume of the gateway, only
-                                          resume brings it back; its MCP calls get a 503 with a retry time.
-  resume --organization <id>              Resume a suspended tenant, and wait until its deploy is live.
+  suspend --organization <id>             Suspend a live tenant. Its next MCP call resumes it; the calls of about a
+                                          minute get a 503 with Retry-After 60 until it is live.
+  resume --organization <id>              Resume a suspended tenant without a call, and wait until its deploy is live.
   delete --organization <id>              Delete the Render service of the tenant, then set its row deleted.
   summary                                 Print the daily summary line: Tenant fleet summary: <JSON>.
 

@@ -3,8 +3,8 @@ import type { TestContext } from 'node:test';
 import { setImmediate } from 'node:timers/promises';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/client';
 import type { Application } from '../../../src/app/application.ts';
-import { composeLoggingStorage } from '../../../src/app/logging-storage.ts';
-import { gatewayTenantsOf } from '../../../src/app/mcp-gateway-composition.ts';
+import { composeLoggingStorage, type HostedLoggingStorage } from '../../../src/app/logging-storage.ts';
+import { gatewayTenantsOf, type GatewayParts } from '../../../src/app/mcp-gateway-composition.ts';
 import { AuditLog, type AuditEvent } from '../../../src/logs/audit/audit-log.ts';
 import { startHttpServer } from '../../../src/runtime/http/server.ts';
 import { TenantActivity } from '../../../src/tenancy/tenants/tenant-activity.ts';
@@ -24,7 +24,7 @@ import { httpRefusal, mcpRequest, rpcResult, type McpRequestOptions } from '../d
 import type { McpProtocolEra } from '../drivers/mcp/mcp-protocol-eras.ts';
 import { SignedContextGateway, type ContextChanges } from '../drivers/mcp/signed-context-gateway.ts';
 import { hostedRootConfig } from '../fixtures/hosted-config.ts';
-import { gatewayKeyPairOf } from '../fixtures/hosted-tenant.ts';
+import { gatewayKeyPairOf, type GatewayKeyPair } from '../fixtures/hosted-tenant.ts';
 import { userGrant } from '../fixtures/hosted-roles.ts';
 import { composeApplicationWithWorkOSFake } from './workos-site.ts';
 
@@ -49,7 +49,44 @@ type PostOptions = Omit<McpRequestOptions, 'url'>;
 
 export type HostedGatewaySite = Awaited<ReturnType<typeof openHostedGatewaySite>>;
 
+export interface SiteTenancyParts {
+  readonly keys: GatewayKeyPair;
+  readonly internalUrl: string;
+  readonly clock: () => number;
+  readonly world: WorkOSFake;
+  readonly storage: HostedLoggingStorage;
+  readonly log: OperatorLogSpy;
+}
+
+export interface SiteTenancy {
+  readonly gateway: GatewayParts | undefined;
+  readonly storage: HostedLoggingStorage;
+}
+
 export async function openHostedGatewaySite(t: TestContext, options: HostedGatewaySiteOptions = {}) {
+  const registry = new TenantRegistryFake();
+  const resume = new TenantResumeSpy();
+  const site = await serveHostedGatewaySite(t, ({ keys, internalUrl, clock, storage }) => ({
+    storage,
+    gateway: options.tenantsEnabled === false ? undefined : {
+      settings: { signingKey: keys.privateKey, verifyingKey: createPublicKey(keys.publicKeyPem), controlPlaneInternalUrl: internalUrl },
+      tenants: gatewayTenantsOf({
+        lookup: new TenantLookup(registry, clock), requests: new TenantRequests(registry, options.freeTenantLimit ?? 25),
+        resumes: new TenantResumes(registry, resume), activity: new TenantActivity(registry, clock),
+      }),
+    },
+  }));
+  return {
+    ...site, registry, resume,
+    addTenant: async (organizationId: string) => {
+      const other = await TenantUpstreamFake.start(t, { publicKey: site.publicKey, organizationId });
+      registry.live(organizationId, other.origin);
+      return { tenant: other, token: site.tokenOf(otherUser, organizationId) };
+    },
+  };
+}
+
+export async function serveHostedGatewaySite(t: TestContext, tenancyOf: (parts: SiteTenancyParts) => SiteTenancy | Promise<SiteTenancy>) {
   const config = hostedRootConfig;
   const world = await WorkOSFake.start(t, config.publicBaseUrl, [gatewayOrganization, otherGatewayOrganization]);
   world.users = [gatewayUser, otherUser];
@@ -60,28 +97,18 @@ export async function openHostedGatewaySite(t: TestContext, options: HostedGatew
   const keys = gatewayKeyPairOf();
   const publicKey = createPublicKey(keys.publicKeyPem);
   const tenant = await TenantUpstreamFake.start(t, { publicKey, organizationId: gatewayOrganization });
-  const registry = new TenantRegistryFake();
-  const resume = new TenantResumeSpy();
   let now = 0;
   const clock = (): number => now;
   const settings = new SnapshotSettingsStoreSpy();
   const sender = new AuditExportSenderSpy();
   t.after(() => sender.attempts.forEach((attempt) => attempt.complete()));
-  const storage = composeLoggingStorage({ store: settings, close: async () => { settings.close(); } }, Buffer.alloc(32, 7), sender);
+  const exportStorage = composeLoggingStorage({ store: settings, close: async () => { settings.close(); } }, Buffer.alloc(32, 7), sender);
   const log = new OperatorLogSpy();
   // The listener starts first, because its origin is the internal URL of the composition.
   const composed = Promise.withResolvers<Application>();
   const server = await startHttpServer(async (request) => (await composed.promise).handle(request), { listen: { host: '127.0.0.1', port: 0 }, publicBaseUrl: config.publicBaseUrl, logger: log });
   const internalUrl = server.url.origin;
-  const gateway = options.tenantsEnabled === false ? undefined : {
-    settings: { signingKey: keys.privateKey, verifyingKey: publicKey, controlPlaneInternalUrl: internalUrl },
-    tenants: gatewayTenantsOf({
-      lookup: new TenantLookup(registry, clock),
-      requests: new TenantRequests(registry, options.freeTenantLimit ?? 25),
-      resumes: new TenantResumes(registry, resume),
-      activity: new TenantActivity(registry, clock),
-    }),
-  };
+  const { gateway, storage } = await tenancyOf({ keys, internalUrl, clock, world, storage: exportStorage, log });
   const toolOperations = {
     fetch: async (url: string) => `Markdown of ${url} from the control plane`,
     search: async (query: string) => ({ status: 'released' as const, markdown: `Results for ${query} from the control plane` }),
@@ -99,15 +126,10 @@ export async function openHostedGatewaySite(t: TestContext, options: HostedGatew
   const post = (request: PostOptions): Promise<Response> => fetch(mcpRequest({ url: mcpUrl, ...request }));
 
   return {
-    config, world, tenant, registry, resume, sender, settings, log, authority, wire, tenantId,
+    config, world, tenant, publicKey, sender, settings, log, authority, wire, tenantId, tokenOf,
     token: tokenOf(gatewayUser, gatewayOrganization),
     advance: (milliseconds: number): void => { now += milliseconds; },
-    enableExport: (organizationId: string = gatewayOrganization) => storage.service.save(tenantId(organizationId), { expectedRevision: null, endpoint: 'https://collector.example/v1/logs', auth: 'none', token: '', enabled: true }),
-    addTenant: async (organizationId: string) => {
-      const other = await TenantUpstreamFake.start(t, { publicKey, organizationId });
-      registry.live(organizationId, other.origin);
-      return { tenant: other, token: tokenOf(otherUser, organizationId) };
-    },
+    enableExport: (organizationId: string = gatewayOrganization) => exportStorage.service.save(tenantId(organizationId), { expectedRevision: null, endpoint: 'https://collector.example/v1/logs', auth: 'none', token: '', enabled: true }),
     connect: async (token: string, era: McpProtocolEra = '2026-07-28') => {
       const tap = async (input: string | URL | Request, init?: RequestInit): Promise<Response> => {
         const response = await fetch(input, init);

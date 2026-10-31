@@ -17,6 +17,7 @@ import { accountRequest, adminGrant, allowedFor, ann, contextOf, serve, signedIn
 // of web, the port that app composes on the gateway port, and the real registry rules over an in-memory registry.
 
 const settingUp = 'Setting up your workspace. This takes about two minutes.';
+const paused = 'Your workspace was paused after 14 days without use. It restarts on the next request, which can take about a minute.';
 const userContext = contextOf(ann, [userGrant], userGrant.permissions);
 
 function statusSite(options: { readonly context?: RequestContext; readonly freeTenantLimit?: number; readonly setup?: Setup } = {}) {
@@ -26,7 +27,7 @@ function statusSite(options: { readonly context?: RequestContext; readonly freeT
   const requests = new TenantRequests(registry, options.freeTenantLimit ?? 25);
   const reports: string[] = [];
   const tenants = gatewayTenantsOf({ lookup, requests, resumes: new TenantResumes(registry, new TenantResumeSpy()), activity: new TenantActivity(registry, () => clock.now) });
-  const workspaces = new WorkspaceStatuses(workspaceTenantsOf(tenants), (line) => reports.push(line));
+  const workspaces = new WorkspaceStatuses(workspaceTenantsOf(tenants), (line) => reports.push(line), 14);
   const site = serve({
     sessions: new Map([['session=ann', signedIn(ann)]]),
     decisions: new Map([[ann.subject, allowedFor(options.context ?? userContext)]]),
@@ -46,7 +47,7 @@ const rowViews: ReadonlyArray<readonly [TenantState, Record<string, unknown>]> =
   ['creating', { ready: false, message: settingUp }],
   ['deploying', { ready: false, message: settingUp }],
   ['live', { ready: true }],
-  ['suspended', { ready: true }],
+  ['suspended', { ready: true, message: paused }],
   ['failed', { ready: false, message: 'Workspace setup failed. We have been notified and will fix it.' }],
   ['deleted', { ready: false, message: 'Your workspace is not available. Contact Thermus support.' }],
 ];

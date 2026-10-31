@@ -38,9 +38,12 @@ export class RowRecords {
     return 'done';
   }
 
-  /** creating or deploying to failed, with one report for the operator once the registry holds the failure. */
-  async failed(row: ProvisioningRow, reason: string): Promise<RowOutcome> {
-    const recorded = await this.store.recordFailed(row.organizationId, reason);
+  /**
+   * creating or deploying to failed on serviceId, the service of the work (null before the row has one), with one
+   * report for the operator once the registry holds the failure.
+   */
+  async failed(row: ProvisioningRow, serviceId: string | null, reason: string): Promise<RowOutcome> {
+    const recorded = await this.store.recordFailed(row.organizationId, serviceId, reason);
     if (recorded.status !== 'recorded') return this.unrecorded(row, recorded);
     this.lines.failed(row, reason);
     return 'done';

@@ -76,3 +76,16 @@ test('Given a tenant that reaches live, when the portal opens again, then it sho
   assert.ok(document.querySelector('.workspace-status') === null, 'A live workspace has no setup words.');
   assert.equal(refreshOf(document), undefined);
 });
+
+// SO-10: the idle sweep suspends a free tenant, and the next MCP call restarts it. The server answers a suspended
+// workspace as ready with the notice of the pause (answer 3 of 27 October 2026), so the portal keeps the guide.
+const paused = 'Your workspace was paused after 14 days without use. It restarts on the next request, which can take about a minute.';
+
+test('Given a suspended tenant, when a member opens the portal, then it shows the notice of the pause with the connection guide and no refresh', async () => {
+  const { document, requests } = await openPortal({ session: ada, productAccess: acmeAccess, workspace: { state: 'suspended', ready: true, message: paused } });
+  assert.equal(document.querySelector('.workspace-notice')?.textContent, paused);
+  assert.ok(document.querySelector('.connection-guide') !== null, 'The guide stays: the next MCP call restarts the workspace.');
+  assert.ok(document.querySelector('.workspace-status') === null, 'A paused workspace has no setup words.');
+  assert.equal(refreshOf(document), undefined);
+  assert.deepEqual(requests, ['session', 'portal/access', 'workspace/status']);
+});

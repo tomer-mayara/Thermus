@@ -8,10 +8,11 @@ import type { Application } from '../../../src/app/application.ts';
 import { composeWorkOSApplication, openWorkOSConnection } from '../../../src/app/hosted-workos-application.ts';
 import { openLoggingStorage, type HostedLoggingStorage } from '../../../src/app/logging-storage.ts';
 import { gatewayStartOf } from '../../../src/app/mcp-gateway-composition.ts';
-import { startTenantProvisioning, type TenantProvisioning } from '../../../src/app/tenant-provisioning.ts';
+import { startTenantProvisioning, tenantPlatformOf, type TenantProvisioning } from '../../../src/app/tenant-provisioning.ts';
 import type { SystemLog } from '../../../src/logs/system/system-logger.ts';
 import { loadDeploymentConfig } from '../../../src/runtime/config/deployment-config.ts';
 import { loadTenantProvisioningSettings } from '../../../src/runtime/config/mcp-tenants-config.ts';
+import { platformResumeOf } from '../../../src/tenancy/tenants/tenant-resume.ts';
 import { RenderFake } from '../doubles/render/render-fake.ts';
 import { controlPlaneTenantSettingsOf } from '../fixtures/control-plane-tenants.ts';
 import { signupDocuments } from '../fixtures/signup-documents.ts';
@@ -115,11 +116,13 @@ export class WorkspaceSite {
     };
     // The loop closes before the shared SQL runtime, as withTenantProvisioning closes it with the sweeps.
     const storage: HostedLoggingStorage = { ...opened, close: async () => { await provisioning?.close(); await opened.close(); } };
+    // The resume of the gateway on the Render fake, as withTenantProvisioning composes it on the adapter of the sweeps.
+    const resume = platformResumeOf(tenantPlatformOf({ settings: provisioningSettings, store: registry.provisioning, fetch: this.render.fetch }));
     await using owned = new AsyncDisposableStack();
     owned.defer(() => storage.close());
     const connection = await openWorkOSConnection(config, logger, environment);
     const application = await composeWorkOSApplication(config, connection, {
-      logger, signup: { enabled: true, documents: signupDocuments }, loggingStorage: storage, gateway: gateway.partsOn(storage),
+      logger, signup: { enabled: true, documents: signupDocuments }, loggingStorage: storage, gateway: gateway.partsOn({ storage, resume }),
     });
     owned.move();
     return application;
