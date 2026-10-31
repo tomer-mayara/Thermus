@@ -25,22 +25,22 @@ export class RowProvisioning {
     const { row } = claim;
     this.records.claimed(row, claim.resumed);
     try {
-      return await this.work(row, signal);
+      return await this.workOn(row, signal);
     } finally {
       await this.parts.store.releaseClaim(row);
     }
   }
 
-  private async work(row: ProvisioningRow, signal: AbortSignal): Promise<RowOutcome> {
-    const hold = () => this.parts.store.renewClaim(row);
-    const service = await serviceOfRow(this.parts, row, hold, signal);
+  private async workOn(row: ProvisioningRow, signal: AbortSignal): Promise<RowOutcome> {
+    const work = { renew: () => this.parts.store.renewClaim(row), signal };
+    const service = await serviceOfRow(this.parts, row, work);
     if (service.status === 'lost') return this.records.unrecorded(row, service.claim);
     // Without a service, the row still has the service of its claim: none for a creating row.
     if (service.status === 'failed') return this.records.failed(row, row.serviceId, service.reason);
     // A deploying row has its service in the registry already, so only a creating row records it.
     const stop = row.state === 'creating' ? await this.records.service(row, service.serviceId) : undefined;
     if (stop !== undefined) return stop;
-    const watched = await watchDeploy(this.parts, service.serviceId, hold, signal);
+    const watched = await watchDeploy(this.parts, service.serviceId, work);
     if (watched.status === 'lost') return this.records.unrecorded(row, watched.claim);
     return watched.status === 'failed' ? this.records.failed(row, service.serviceId, watched.reason) : this.records.live(row, service.serviceId, watched.live);
   }

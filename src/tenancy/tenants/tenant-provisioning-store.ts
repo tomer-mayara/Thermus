@@ -33,8 +33,14 @@ export type ClaimResult =
 /** moved: the row is no longer in the state that the change starts from. unavailable: the change can be absent. */
 export type RecordResult = { readonly status: 'recorded' | 'moved' | 'unavailable' };
 
-/** The renewal of the claim of the row of the work, which the work makes before each create and each read of the deploy. */
-export type ClaimHold = () => Promise<RecordResult>;
+/**
+ * The work of the loop on one claimed row: the renewal of the claim, which the work makes before each create and each
+ * read of the deploy, and the stop signal of the loop, which ends each wait and each new platform call.
+ */
+export interface RowWork {
+  renew(): Promise<RecordResult>;
+  readonly signal: AbortSignal;
+}
 
 /** The claim did not renew: another loop holds the row or it left the work (moved), or the registry did not answer. */
 export interface LostClaim {
