@@ -17,6 +17,11 @@ interface SignupOrganization {
   readonly domains: readonly unknown[];
 }
 
+interface Creation {
+  readonly name: string;
+  readonly metadata: Readonly<Record<string, string>>;
+}
+
 interface Membership {
   readonly userId: string;
   readonly organizationId: string;
@@ -122,25 +127,22 @@ export class WorkOSSignup implements SignupActivation {
 
   private async createOrganization(request: ActivationRequest): Promise<SignupResult> {
     const { user, signal } = request;
-    const name = organizationNameIn(request.organizationName);
-    if (name === undefined || request.documents.purpose !== 'organization-creation') return UNAVAILABLE;
-    const documents = validateSignupDocuments(request.documents);
-    const metadata = acceptanceRecord(user.subject, documents, (this.options.clock ?? (() => new Date()))());
-    if (!validAcceptance(metadata, user.subject)) return UNAVAILABLE;
+    const creation = creationOf(request, this.options.clock ?? (() => new Date()));
+    if (creation === undefined) return UNAVAILABLE;
     signal.throwIfAborted();
     let created: SignupOrganization;
     try {
-      created = await this.options.workos.organizations.createOrganization({ name, externalId: personalExternalId(user), metadata });
+      created = await this.options.workos.organizations.createOrganization({ name: creation.name, externalId: personalExternalId(user), metadata: creation.metadata });
     } catch {
       // A lost response and a conflict confer no grant authority, even when the saved record can be read.
       signal.throwIfAborted();
       return this.recoverAccess(request);
     }
     signal.throwIfAborted();
-    if (!validRecord(created, user) || created.name !== name || !sameRecord(created.metadata, metadata)) return SUPPORT;
+    if (!isRequestedRecord(created, user, creation)) return SUPPORT;
     const saved = await this.options.workos.organizations.getOrganization(created.id);
     signal.throwIfAborted();
-    if (!validRecord(saved, user) || saved.id !== created.id || saved.name !== name || !sameRecord(saved.metadata, metadata)) return SUPPORT;
+    if (!isRequestedRecord(saved, user, creation) || saved.id !== created.id) return SUPPORT;
     return this.grantNewWorkspace(saved, request);
   }
 
@@ -208,6 +210,17 @@ export class WorkOSSignup implements SignupActivation {
     }
     throw new Error('Signup membership read limit exceeded');
   }
+}
+
+function creationOf(request: ActivationRequest, clock: () => Date): Creation | undefined {
+  const name = organizationNameIn(request.organizationName);
+  if (name === undefined || request.documents.purpose !== 'organization-creation') return undefined;
+  const metadata = acceptanceRecord(request.user.subject, validateSignupDocuments(request.documents), clock());
+  return validAcceptance(metadata, request.user.subject) ? { name, metadata } : undefined;
+}
+
+function isRequestedRecord(organization: SignupOrganization, user: AuthenticatedUser, creation: Creation): boolean {
+  return validRecord(organization, user) && organization.name === creation.name && sameRecord(organization.metadata, creation.metadata);
 }
 
 function acceptanceRecord(subject: string, documents: SignupDocuments, now: Date): Record<string, string> {
