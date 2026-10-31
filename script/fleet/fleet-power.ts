@@ -2,10 +2,11 @@
 // platform took the call, so a refused or failed call changes no row. Each mark names the state and the service that
 // the command read, so a row that another writer changed or replaced stays as it is. A resume then waits until the
 // first new deploy after it is live, and records the row live on its service, as the provisioner records a resumed row.
-// Render names no deploy in the answer of a resume, so the identity of that deploy stays unconfirmed. Until SO-10
-// connects the resume operation of the gateway, the resume command is the only way back for a suspended tenant.
+// Render names no deploy in the answer of a resume, so the identity of that deploy stays unconfirmed. Since SO-10, the
+// next MCP call of the organization also resumes a suspended tenant; the resume command brings it back without a call.
 import { systemClock } from '../../src/app/system-clock.ts';
 import { newestDeployBefore, waitForStartedDeploy } from '../../src/tenancy/tenants/fleet-deploy-wait.ts';
+import { serviceChangeReason } from '../../src/tenancy/tenants/service-change-reason.ts';
 import type { FleetRow } from '../../src/tenancy/tenants/tenant-fleet-store.ts';
 import type { ServiceChange } from '../../src/tenancy/tenants/tenant-platform.ts';
 import { confirmed } from './fleet-confirm.ts';
@@ -18,7 +19,7 @@ const START_RULES = { live: 'Only a live tenant is suspended.', suspended: 'Only
 
 export async function suspendTenant(parts: CommandParts, organizationId: string): Promise<void> {
   const row = await rowIn(parts, organizationId, 'live');
-  if (!await confirmed(parts.io, [rowLine(row), `Suspend the Render service ${row.serviceId} of ${organizationId}, then set the row suspended. A suspended tenant costs nothing. Until SO-10 connects the resume of the gateway, only fleet.ts resume brings it back: each MCP call of the organization gets a 503 with a retry time and writes one operator report.`])) return;
+  if (!await confirmed(parts.io, [rowLine(row), `Suspend the Render service ${row.serviceId} of ${organizationId}, then set the row suspended. A suspended tenant costs nothing. The next MCP call of the organization resumes it: the calls of about a minute get a 503 with Retry-After 60 until the tenant is live. fleet.ts resume brings it back without a call.`])) return;
   const platform = await parts.context.platform();
   changed(await platform.suspendService(row.serviceId, parts.signal), 'suspend');
   const marked = await (await parts.context.stores()).fleet.markSuspended(organizationId, row.serviceId);
@@ -53,7 +54,5 @@ async function rowIn(parts: CommandParts, organizationId: string, state: keyof t
 
 function changed(change: ServiceChange, call: 'suspend' | 'resume'): void {
   if (change.status === 'accepted') return;
-  const reason = change.status === 'gone' ? 'the tenant service no longer exists'
-    : change.status === 'rate-limited' ? `Render limits the calls of the service for ${Math.ceil(change.retryAfterMs / 1_000)} s` : change.reason;
-  throw new FleetStepError(`Render did not take the ${call}: ${reason}. ${change.status === 'unknown' ? 'The call can have reached Render: read the status first.' : 'Nothing changed.'}`);
+  throw new FleetStepError(`Render did not take the ${call}: ${serviceChangeReason(change)}. ${change.status === 'unknown' ? 'The call can have reached Render: read the status first.' : 'Nothing changed.'}`);
 }

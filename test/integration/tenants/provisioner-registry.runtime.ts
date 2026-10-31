@@ -204,3 +204,44 @@ test('Given a database that stops while a claim waits, when the claim fails, the
   assert.equal((await holding).status, 'unavailable');
   await new Promise((resolve) => setTimeout(resolve, 200));
 });
+
+// SO-10: right after a resume, the newest deploy of a service is still the live deploy from before the suspend, so the
+// claim takes a deploying row that keeps its address 15 s after its resume mark (record SO-09).
+test('Given a deploying row of a resume on the real registry, when the next row is claimed, then the claim leaves it until 15 s after its resume mark, and a deploying row of a first deploy is claimed at once', { timeout: 120_000 }, async (t) => {
+  const site = await postgresSettingsSite(t);
+  const runtime = createPgSettingsRuntime(site.connection);
+  t.after(() => runtime.close());
+  const store = new PgTenantProvisioningStore(runtime);
+  await site.ownerQuery(`INSERT INTO thermus_admin.tenants (organization_id, state, render_service_id, service_name, internal_url, plan, updated_at)
+    VALUES ('${organizationA}', 'deploying', 'srv-d0resumedaaaaaaaaaa', '${nameOf(organizationA)}', 'http://thermus-tenant-org-a:8080', '0.5c-512mb', now() - interval '14 seconds')`);
+  const claim = { serviceNameOf: nameOf, plan: '0.5c-512mb' };
+
+  const young = await store.claimNext(claim);
+  await site.ownerQuery(`UPDATE thermus_admin.tenants SET updated_at = now() - interval '16 seconds' WHERE organization_id = '${organizationA}'`);
+  const old = await store.claimNext(claim);
+  await site.ownerQuery(`INSERT INTO thermus_admin.tenants (organization_id, state, render_service_id, service_name, plan) VALUES ('${organizationB}', 'deploying', 'srv-d0firstbbbbbbbbbbbb', '${nameOf(organizationB)}', '0.5c-512mb')`);
+  await site.ownerQuery(`UPDATE thermus_admin.tenants SET state = 'live' WHERE organization_id = '${organizationA}'`);
+  const first = await store.claimNext(claim);
+
+  assert.deepEqual(young, { status: 'idle' });
+  assert.deepEqual(old, { status: 'claimed', resumed: true, row: { organizationId: organizationA, state: 'deploying', serviceName: nameOf(organizationA), serviceId: 'srv-d0resumedaaaaaaaaaa' } });
+  assert.deepEqual(first, { status: 'claimed', resumed: true, row: { organizationId: organizationB, state: 'deploying', serviceName: nameOf(organizationB), serviceId: 'srv-d0firstbbbbbbbbbbbb' } });
+});
+
+// Each state-only write names the observed service (manager decision of 31 October 2026), so the failure of the work on
+// an old service cannot fail a row that another writer gave a new service.
+test('Given a deploying row that another writer gave a new service, when the failure of the old service is recorded, then the row stays, and the failure of its own service, or of a creating row without a service, is recorded', { timeout: 120_000 }, async (t) => {
+  const site = await postgresSettingsSite(t);
+  const runtime = createPgSettingsRuntime(site.connection);
+  t.after(() => runtime.close());
+  const store = new PgTenantProvisioningStore(runtime);
+  await site.ownerQuery(`INSERT INTO thermus_admin.tenants (organization_id, state, render_service_id, service_name, plan) VALUES ('${organizationA}', 'deploying', 'srv-d0newaaaaaaaaaaaaa', '${nameOf(organizationA)}', '0.5c-512mb')`);
+  await site.ownerQuery(`INSERT INTO thermus_admin.tenants (organization_id, state, service_name, plan) VALUES ('${organizationB}', 'creating', '${nameOf(organizationB)}', '0.5c-512mb')`);
+
+  assert.deepEqual(await store.recordFailed(organizationA, 'srv-d0oldaaaaaaaaaaaaa', 'The deploy of the old service failed'), { status: 'moved' });
+  assert.deepEqual(await rows(site), [`${organizationA} deploying`, `${organizationB} creating`]);
+  assert.deepEqual(await store.recordFailed(organizationA, 'srv-d0newaaaaaaaaaaaaa', 'The deploy of the new service failed'), { status: 'recorded' });
+  assert.deepEqual(await store.recordFailed(organizationB, null, 'No tenant service after 3 attempts'), { status: 'recorded' });
+  assert.deepEqual(await rows(site), [`${organizationA} failed`, `${organizationB} failed`]);
+  assert.equal((await rowOf(site, organizationA)).failure_reason, 'The deploy of the new service failed');
+});
