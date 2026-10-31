@@ -8,29 +8,21 @@
     "crossCutting": false,
     "component": false,
     "internalInterface": false,
-    "sensitiveBehavior": true,
+    "sensitiveBehavior": false,
     "dependencyRisk": false,
-    "policy": true,
+    "policy": false,
     "uncertain": false
   },
   "architecture": {
     "modelUpdated": false,
-    "summary": "A workflow, one script message, and documents change; no runtime behavior of Thermus changes. The deploy job of hosted-image.yml names the GitHub environment production. Its deployment branch rule allows only main, so GitHub refuses a job of the environment on another branch before the job starts, and only a job of the environment can read its secret RENDER_API_KEY. The repository secret stays until the first dispatch on main passes. policy: a policy path that changes which workflow runs can reach the release key. sensitiveBehavior: it narrows the authorization of a credential that can deploy production. No container, component, edge, public module, declaration, or Mermaid view changes.",
+    "summary": "Documents only. Part C of SO-12 fills the result slots of the production steps 1 to 5 in docs/implementation/self-onboarding-s2-release.md: the WorkOS inventory and the D-10 cleanup, the disposition of the release holds, the tenant registry migration on the production project, the registry credential, and the switch of the production service to the candidate image with the workflow deploy in the GitHub environment production. No source, test, configuration, workflow, migration, or Mermaid block changes; the registry stays accurate.",
     "views": [
       "Recorded hosted Render target of architecture/components.md: its release-path prose names the deploy job but not the place of the key, so it stays accurate (prose, no Mermaid block)",
       "All 24 Mermaid views of architecture/components.md unchanged (checked: the release workflow is in no view, and no container, component, or runtime change)"
     ],
     "evidence": [
-      ".github/workflows/hosted-image.yml",
-      "script/release/deploy-hosted-image.ts",
-      "script/release/deploy-request.ts",
-      "README.md#hosted-release",
-      "docs/implementation/tenant-fleet-runbooks.md#51-render-api-keys",
-      "docs/implementation/self-onboarding-s2-release.md#6-owner-steps-outstanding",
-      "architecture/components.md#recorded-hosted-render-target",
-      "docs/implementation/pr-review-rules.yaml",
-      "https://docs.github.com/en/actions/reference/workflows-and-actions/deployments-and-environments",
-      "https://docs.github.com/en/actions/reference/security/secrets"
+      "docs/implementation/self-onboarding-s2-release.md (sections 4 and 7)",
+      "PR #303 Validation and Quality review"
     ]
   }
 }
