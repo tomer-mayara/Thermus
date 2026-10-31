@@ -9,7 +9,7 @@ export interface SweepClock {
   sleep(ms: number, signal: AbortSignal): Promise<void>;
 }
 
-/** One step of the daily tick, such as the organization sweep and the fleet summary; SO-10 adds the idle suspension. */
+/** One step of the daily tick, such as the organization sweep, the idle sweep, and the fleet summary. */
 export interface SweepStep {
   readonly name: string;
   /** True when the step runs at the tick of this time, in milliseconds since the epoch. */
