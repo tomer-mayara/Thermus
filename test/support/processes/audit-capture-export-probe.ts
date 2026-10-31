@@ -47,7 +47,7 @@ try {
   try { audit.toolCompleted(completion); exported = await attempted.promise; }
   finally { clearTimeout(guard); }
   const dispatchReads = reads - beforeDispatchReads;
-  const tested = await storage.service.test(tenant, { expectedRevision: revision, endpoint: destination.endpoint, auth: 'bearer', token: '', enabled: true }, actor);
+  const tested = await storage.service.test({ organizationId: tenant, actor }, { expectedRevision: revision, endpoint: destination.endpoint, auth: 'bearer', token: '', enabled: true });
   process.stdout.write(`${JSON.stringify({ exported, tested, saves, dispatchReads, productResultBytes: Buffer.byteLength(result) })}\n`);
 } finally {
   snapshots.close();

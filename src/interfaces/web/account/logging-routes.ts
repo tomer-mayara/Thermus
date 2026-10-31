@@ -104,7 +104,7 @@ export class LoggingRoutes {
     const destination = { endpoint: settings.endpoint, ...(settings.axiomDataset === undefined ? {} : { axiomDataset: settings.axiomDataset }), auth: settings.auth, enabled: settings.enabled };
     request.signal.throwIfAborted();
     let result: DestinationTestResult;
-    try { result = await this.options.service?.test?.(scope.tenantId, { ...destination, expectedRevision: settings.revision, token: '' }, scope.user, request.signal) ?? { status: 'unavailable' }; }
+    try { result = await this.options.service?.test?.({ organizationId: scope.tenantId, actor: scope.user }, { ...destination, expectedRevision: settings.revision, token: '' }, request.signal) ?? { status: 'unavailable' }; }
     catch {
       request.signal.throwIfAborted();
       result = { status: 'unconfirmed' };

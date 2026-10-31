@@ -1,5 +1,4 @@
 import { auditActorName } from './audit-content.ts';
-import type { AuditContext } from './audit-log.ts';
 import { DestinationCredentialCodec } from './destination-credential-codec.ts';
 import { validDestinationEndpoint } from './destination-endpoint.ts';
 import type { DestinationSettingsStore, ReadSettingsResult, SaveSettingsResult, StoredDestinationSettings } from './destination-settings-store.ts';
@@ -7,7 +6,7 @@ import type { AuditDestination, AuditSendOutcome } from './audit-send.ts';
 import { confirmedTest, DestinationTestLifetime, testEvent } from './destination-test.ts';
 import type { DestinationTestResult, DestinationTestSender, TestRequester } from './destination-test.ts';
 
-export type { DestinationTestResult } from './destination-test.ts';
+export type { DestinationTestResult, TestRequester } from './destination-test.ts';
 
 export interface PublicDestinationSettings {
   readonly revision: string | null;
@@ -61,12 +60,13 @@ export class DestinationSettingsService {
   }
 
   /** Tenant and actor come from the caller's current trusted Admin context. */
-  test(tenantId: string, input: DestinationSettingsSaveInput, actor: AuditContext['actor'], signal?: AbortSignal): Promise<DestinationTestResult> {
+  test(requester: TestRequester, input: DestinationSettingsSaveInput, signal?: AbortSignal): Promise<DestinationTestResult> {
     const desired = { ...input };
+    const { organizationId, actor } = requester;
     const name = auditActorName(actor.name);
     const trustedActor = Object.freeze({ authority: actor.authority, subject: actor.subject, ...(name === undefined ? {} : { name }) });
-    const requester: TestRequester = { organizationId: tenantId, actor: trustedActor };
-    return this.tests.run(control => this.testSaved(requester, desired, control), signal);
+    const trusted: TestRequester = { organizationId, actor: trustedActor };
+    return this.tests.run(control => this.testSaved(trusted, desired, control), signal);
   }
 
   private async testSaved(requester: TestRequester, desired: DestinationSettingsSaveInput, signal: AbortSignal): Promise<DestinationTestResult> {

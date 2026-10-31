@@ -30,7 +30,7 @@ test('Given edited protected settings, when Test is submitted, then Save runs fi
   assert.doesNotMatch(html, /private-new-token/);
   assert.deepEqual(calls, [
     ['save', 'trusted:a', { expectedRevision: 'r1', endpoint: fields.endpoint, auth: 'bearer', token: 'private-new-token', enabled: false }],
-    ['test', 'trusted:a', { expectedRevision: 'r2', endpoint: saved.endpoint, axiomDataset: saved.axiomDataset, auth: 'bearer', token: '', enabled: true }, context.user, request.signal],
+    ['test', { organizationId: 'trusted:a', actor: context.user }, { expectedRevision: 'r2', endpoint: saved.endpoint, axiomDataset: saved.axiomDataset, auth: 'bearer', token: '', enabled: true }, request.signal],
   ]);
 });
 
