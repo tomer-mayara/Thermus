@@ -763,11 +763,11 @@ The new settings are read only with the switch on (answer 6 of 27 October
   `Listening on` line in `system-log`, and the Render log has no
   `System log export failed:` line. Then the owner makes the monitor Tenant
   restart ([runbook 7.4](tenant-fleet-runbooks.md#74-owner-steps-for-the-alerts),
-  step 4). A new tenant refuses calls for about 75 s after its row is `live`,
-  and it writes `MCP gateway tenant restart:` lines at the level ERROR in that
-  window ([3.7](#37-part-b-findings), item 5). So the owner expects an email
-  of this monitor for each new tenant, until the monitor or the gateway is
-  changed ([section 6](#6-owner-steps-outstanding), item 15).
+  step 4). A new tenant refuses calls for about 75 s after its row is `live`
+  ([3.7](#37-part-b-findings), item 5). The gateway answers a refused call in
+  the first 2 minutes after the live record as the cold start of the tenant,
+  with the INFO line `MCP gateway tenant starting:`, so this monitor sends no
+  email for a new tenant ([runbook 7.3](tenant-fleet-runbooks.md#73-axiom-monitors)).
 - **Go-ahead:** —
 - **Result:** —
 
@@ -891,7 +891,7 @@ publishes the revert.
 | 12 | If step R4 shows that Render cannot switch a Git build to an image, decide the path of step 5. Answered by run 2 of the rehearsal: Render accepts the switch ([3.7](#37-part-b-findings), item 7), so no decision is needed. | Step 5 |
 | 13 | Review the copy of the marketing pull request, and give the go-ahead for its merge at step 9. | Step 9 |
 | 14 | At the monthly GHCR pruning, keep the candidate digest `sha256:8025ae1b…`, the rollback digest `sha256:bbee3f89…`, and the upgrade digest `sha256:fd8d747e…` until the release is complete ([runbook 5.5](tenant-fleet-runbooks.md#55-monthly-ghcr-pruning)). | Each pruning |
-| 15 | Open follow-ups of the rehearsal ([3.7](#37-part-b-findings), items 5 and 6). (a) A new tenant refuses calls for about 75 s after its row is `live` and writes `MCP gateway tenant restart:` lines at the level ERROR, so the monitor Tenant restart sends an email for each new tenant: change the monitor or the gateway. (b) During each deploy of the control plane, the old instance runs its provisioner loop for about two minutes, and in R9 it claimed a row a second time: decide a shared claim of the rows, which [plan section 7](self-onboarding-plan.md#7-risks-and-limits) names for a second instance. Until then, step 7 waits for the old instance to stop. | Open; no step of section 4 waits for it |
+| 15 | Open follow-ups of the rehearsal ([3.7](#37-part-b-findings), items 5 and 6). (a) A new tenant refuses calls for about 75 s after its row is `live`. Closed in the gateway: a refused call in the first 2 minutes after the live record writes the INFO line `MCP gateway tenant starting:`, not the restart line, so the monitor Tenant restart sends no email for a new tenant ([runbook 7.3](tenant-fleet-runbooks.md#73-axiom-monitors)). (b) During each deploy of the control plane, the old instance runs its provisioner loop for about two minutes, and in R9 it claimed a row a second time: decide a shared claim of the rows, which [plan section 7](self-onboarding-plan.md#7-risks-and-limits) names for a second instance. Until then, step 7 waits for the old instance to stop. | Open; no step of section 4 waits for it |
 
 ## 7. Record
 

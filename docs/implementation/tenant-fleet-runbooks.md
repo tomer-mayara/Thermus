@@ -94,8 +94,8 @@ prefix too. A tenant writes to standard error only.
 | `Tenant provisioning leaves organization` | INFO | `tenant-provisioning-log.ts` | The row changed during the work: another writer moved it, for example a delete, or the loop of the other instance claimed it after the claim lease of this loop ended. The loop leaves the row as it is. |
 | `Tenant provisioning failed unexpectedly:` | ERROR | `tenant-provisioner.ts` | A defect. The loop tries again in 60 s. |
 | `Logging storage is unavailable:` | ERROR | [`src/app/logging-storage.ts`](../../src/app/logging-storage.ts) | At the start: `DATABASE_URL`, `LOGGING_DESTINATION_ENCRYPTION_KEY`, or `DATABASE_CA_CERT_PATH` is missing or invalid. |
-| `MCP gateway tenant restart: {json}` | ERROR | [`src/interfaces/mcp/mcp-gateway-refusals.ts`](../../src/interfaces/mcp/mcp-gateway-refusals.ts) | A live tenant stopped during a call. The fields are `organizationId`, `phase` (`before-answer` or `during-answer`), and `cause` (`http-502` or `connection`). In the first 2 minutes after the live record of the row, a failure before the first answer byte is a cold start: it gives the next line, not this one. |
-| `MCP gateway tenant starting: {json}` | INFO | `mcp-gateway-refusals.ts` | A new tenant does not answer yet: a call failed before the first answer byte less than 2 minutes after the last change of the live row, its live record or the digest record of a fleet upgrade. The private address of a new Render service refuses connections until about 76 s after its first deploy is live ([SO-03](self-onboarding-s1.md#so-03-private-address-of-the-control-plane), and the SO-12 rehearsal of 31 October 2026). The client gets "Your workspace is not ready yet. Try again in 15 seconds.". The fields are `organizationId`, `cause` (`http-502` or `connection`), and `secondsSinceLive`, the seconds since that change, in whole tenths. No monitor matches it. |
+| `MCP gateway tenant restart: {json}` | ERROR | [`src/interfaces/mcp/mcp-gateway-refusals.ts`](../../src/interfaces/mcp/mcp-gateway-refusals.ts) | A live tenant stopped during a call. The fields are `organizationId`, `phase` (`before-answer` or `during-answer`), and `cause`: `refused` (no server took the connection), `connection` (the connection broke, or the answer broke before its first byte), or `http-502`. A refused connection in the first 2 minutes after the last change of the live row is a cold start: it gives the next line, not this one. A broken connection or HTTP `502` in those 2 minutes still gives this line, because the tenant took the call, for example before a memory kill. |
+| `MCP gateway tenant starting: {json}` | INFO | `mcp-gateway-refusals.ts` | A new tenant does not answer yet. Its private address refused the connection of a call less than 2 minutes after the last change of the live row: its live record, or the digest record of a fleet upgrade. The private address of a new Render service refuses connections until about 76 s after its first deploy is live ([SO-03](self-onboarding-s1.md#so-03-private-address-of-the-control-plane), and item 5 of the [SO-12 rehearsal](self-onboarding-s2-release.md#37-part-b-findings) of 31 October 2026). The client gets "Your workspace is not ready yet. Try again in 15 seconds.". The fields are `organizationId` and `secondsSinceChange`, the seconds since that change, in whole tenths. No monitor matches it. |
 | `MCP gateway refusal: {json}` | INFO, or ERROR for an operator report | `mcp-gateway-refusals.ts` | The gateway answered by itself, with `503` or with the search busy words. The fields are `organizationId`, `reason`, and, when they apply, `state`, `resume`, and `resumeFailure`. The operator reports are the first refusal of a `failed` tenant and a failed resume. The first call of a `suspended` tenant sends one resume call to Render (`"resume":"sent"`); the other calls until the tenant is live have `"resume":"pending"`, or `"state":"deploying"` with `"reason":"resuming"`. A failed resume, also a `429`, gives `resumeFailure` with the reason, for example "The platform did not take the resume: the platform limits the calls of the service for 30 s", and the row is `suspended` again, so the next call tries again. A resume that fails again and again needs a check: `fleet.ts status --organization <organization ID>`. |
 | `Workspace setup failed: {json}` | ERROR | [`src/interfaces/web/account/workspace-status.ts`](../../src/interfaces/web/account/workspace-status.ts) | The portal read the status of a `failed` tenant. The field is `organizationId`. One line for each organization, until its row leaves `failed`. |
 | `Hosted signup could not read the free-tenant cap.` | ERROR | [`src/interfaces/web/auth/workos/workos-signup-tenants.ts`](../../src/interfaces/web/auth/workos/workos-signup-tenants.ts) | With the switch on, the database does not answer and the registry copy of the gateway is 60 s old, so signup cannot check the cap and answers "Activation is temporarily unavailable. Try again later.". |
@@ -939,7 +939,7 @@ The query uses `where`, and no aggregation
 
 | Monitor | Match | Meaning |
 | --- | --- | --- |
-| Tenant restart | Each line that contains `MCP gateway tenant restart: `. | A live tenant answered `HTTP 502` or reset the connection during a call. With `phase` `before-answer`, the client got "Server restarted. Try again in a minute.". With `during-answer`, the gateway ended the answer stream. This is the alert on the first restart outside a deploy (SO-01e). A restart during a fleet upgrade also gives a line: compare its time with the upgrade. A new tenant sends no email: in the first 2 minutes after the live record of its row, a failure before the first answer byte gives the INFO line `MCP gateway tenant starting:`, because the private address of a new tenant refuses connections for about 75 s after the provisioner records it live (the SO-12 rehearsal of 31 October 2026). |
+| Tenant restart | Each line that contains `MCP gateway tenant restart: `. | A live tenant refused the connection, reset it, or answered `HTTP 502` during a call. With `phase` `before-answer`, the client got "Server restarted. Try again in a minute.". With `during-answer`, the gateway ended the answer stream. This is the alert on the first restart outside a deploy (SO-01e). A restart during a fleet upgrade also gives a line: compare its time with the upgrade. A new tenant sends no email: its private address refuses connections for about 75 s after the provisioner records it live ([SO-12 rehearsal](self-onboarding-s2-release.md#37-part-b-findings), item 5), and in the first 2 minutes after the last change of the live row, a refused connection gives the INFO line `MCP gateway tenant starting:`. A reset or a `502` in those 2 minutes still gives this line, because the tenant took the call. |
 | Tenant memory at 80 % | The daily summary line, when its `highestMemoryShare` is 0.8 or more: a live tenant had a memory point at or above 80 % of the memory limit that Render gives for its plan, about 410 MiB of the 536,870,900 bytes of `0.5c-512mb`, and about 1,638 MiB of the 2 GiB of `1c-2g`. | A tenant came near its memory limit. On `0.5c-512mb`, five 9 MiB calls peaked at 379 MiB, 74 % of the limit, and ten calls restarted the container (SO-01e). |
 | Fleet summary | Each line that contains `Tenant fleet summary: `. | One email a day with the counts and the cost by state and plan, the memberships with only the default role, the restarts outside a deploy, and the memory values ([the summary fields](#the-summary-fields)). This is the fleet alert of D-9. |
 
@@ -960,7 +960,7 @@ last, run this query; no monitor uses it:
 ['system-log']
 | where body contains "MCP gateway tenant starting: "
 | extend start = parse_json(substring(body, indexof(body, "MCP gateway tenant starting: ") + 29))
-| project _time, organizationId = tostring(start.organizationId), secondsSinceLive = todouble(start.secondsSinceLive)
+| project _time, organizationId = tostring(start.organizationId), secondsSinceChange = todouble(start.secondsSinceChange)
 ```
 
 ```kusto
@@ -993,10 +993,10 @@ Keep the prefix `Tenant fleet summary: ` stable: the match monitors use it with
   memory and its instance count at the time of the line; the instance count
   can show 0. For one restart, write it in the operator record. For restarts
   again and again, tell the owner. D-2 accepts a kill on a very large page on
-  `0.5c-512mb`. A `before-answer` line soon after 2 minutes from a
-  `Tenant provisioning record:` line with `"state":"live"` of the same
-  organization, after `MCP gateway tenant starting:` lines with a
-  `secondsSinceLive` near 120, is a cold start that lasted longer than 2
+  `0.5c-512mb`. A `before-answer` line with `"cause":"refused"` soon after 2
+  minutes from a `Tenant provisioning record:` line with `"state":"live"` of
+  the same organization, after `MCP gateway tenant starting:` lines with a
+  `secondsSinceChange` near 120, is a cold start that lasted longer than 2
   minutes. If the next calls answer, write its length in the operator record;
   it is not a restart.
 - Tenant memory at 80 %: no action at once. If it comes again for a tenant,
@@ -1079,8 +1079,8 @@ External, read on 28 October 2026: Axiom
 `system-log` (edge deployment `https://us-east-1.aws.edge.axiom.co`) and the
 fields of `system-log-test`, read with the Axiom connector without a change.
 
-The cold start line, on 31 October 2026: item 5 of the findings of the SO-12
-rehearsal ([#301](https://github.com/tomer-mayara/Thermus/pull/301)), the
+The cold start line, on 31 October 2026: item 5 of the
+[findings of the SO-12 rehearsal](self-onboarding-s2-release.md#37-part-b-findings), the
 [SO-03](self-onboarding-s1.md#so-03-private-address-of-the-control-plane)
 measurements, and the source files
 [`mcp-gateway-refusals.ts`](../../src/interfaces/mcp/mcp-gateway-refusals.ts)

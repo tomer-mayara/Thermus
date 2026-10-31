@@ -844,10 +844,10 @@ server. The gateway reads the row of the organization through the port that
 `mcp` imports no registry module. For a live row, it signs a context with
 [`AccessContextSigner`](../src/accounts/identity/access-context-signer.ts),
 removes the hop-by-hop headers, the cookie, and each client context, and
-streams the answer of the tenant back; each other state gets `503`. A failure
-of a live tenant before the first answer byte is its cold start when the row
-changed less than 2 minutes before, and a restart after that ([gateway call
-scenario](#scenario-hosted-mcp-call-through-the-gateway)). A
+streams the answer of the tenant back; each other state gets `503`. A refused
+connection to a live tenant is its cold start when the row changed less than 2
+minutes before; each other failure, and a refusal after that, is a restart
+([gateway call scenario](#scenario-hosted-mcp-call-through-the-gateway)). A
 `suspended` row and a `deploying` row that keeps its address, the row of a
 resume, get `Retry-After: 60`; the first of them sends the one resume (SO-10).
 It reads only the id, the method, and the tool name of the JSON-RPC messages
@@ -1372,11 +1372,11 @@ sequenceDiagram
     Gateway->>Registry: Row of the organization and the time since its last change, from the lookup copy
     alt Live row
       Gateway->>Tenant: Same method, path, and body, with a signed Thermus-Access
-      alt No answer byte, less than 2 minutes after the live record
-        Tenant-->>Gateway: A refused or reset connection, or HTTP 502
+      alt Connection refused, less than 2 minutes after the last change of the row
+        Tenant-->>Gateway: Refused: the private address of a new tenant does not answer yet
         Gateway-->>Client: Tool error "Your workspace is not ready yet. Try again in 15 seconds.", info line
-      else No answer byte, 2 minutes or more after the live record
-        Tenant-->>Gateway: HTTP 502 or a reset connection
+      else Other failure before the first answer byte
+        Tenant-->>Gateway: HTTP 502, a reset connection, or a refusal after the 2 minutes
         Gateway-->>Client: Tool error "Server restarted. Try again in a minute.", operator report
       else Answer
         Tenant-->>Gateway: Status, headers, and first answer byte
@@ -1402,13 +1402,17 @@ The client abort reaches the tenant on two paths: before the tenant answers,
 the gateway aborts its pending fetch; after that, it cancels the answer body of
 the tenant. A restart after the first answer byte ends the answer stream. Each
 refusal writes one system log line and no audit event, and the restart line is
-the operator report. A failure before the first answer byte less than 2 minutes
-after the last change of a live row, its live record, is the cold start of a
-new tenant, not a restart: the private address of a new Render service refused
-connections until about 76 s after its first deploy was live (SO-03, and the
-SO-12 rehearsal of 31 October 2026). So the client gets the starting words, and
-the line `MCP gateway tenant starting:` is an info line that the restart alert
-does not match. After the first answer byte, a failure is always a restart. The
+the operator report. A refused connection less than 2 minutes after the last
+change of a live row (its live record, or the digest record of a fleet upgrade)
+is the cold start of a new tenant, not a restart: the private address of a new
+Render service refused connections until about 76 s after its first deploy was
+live (SO-03, and the
+[SO-12 rehearsal](../docs/implementation/self-onboarding-s2-release.md#37-part-b-findings)
+of 31 October 2026). So the client gets the starting words, and the line
+`MCP gateway tenant starting:` is an info line that the restart alert does not
+match. A reset connection, a broken answer, or HTTP `502` means that the tenant
+took the call, so it is a restart also in those 2 minutes, as each failure after
+the first answer byte is. The
 [gateway](../src/interfaces/mcp/mcp-gateway.ts), its
 [upstream call](../src/interfaces/mcp/mcp-gateway-stream.ts) and
 [answer stream](../src/interfaces/mcp/mcp-gateway-answer-stream.ts), the
@@ -2329,17 +2333,21 @@ The following limits affect architectural decisions today:
 - After the first answer byte, the gateway can only end the answer stream of a
   tenant that fails; a client then sees no result and waits for its own request
   timeout.
-- The cold start of a new tenant is a time bound, 2 minutes after the last
-  change of its live row, not a check of the tenant. Two measurements bound the
-  refused window: refused 16.5 s and answered 76.4 s after the first deploy was
-  live (SO-03), and refused up to 61 s and answered 76 s after the live record
-  (SO-12 rehearsal of 31 October 2026). A restart before the first answer
-  byte inside the bound, such as a memory kill of a new tenant, gives only an
-  info line, and a cold start longer than the bound gives restart lines. A live
+- The cold start of a new tenant is a refused connection inside a time bound,
+  2 minutes after the last change of its live row, not a check of the tenant.
+  Two measurements bound the refused window: refused 16.5 s and answered 76.4 s
+  after the first deploy was live (SO-03), and refused up to 61 s and answered
+  76 s after the live record (SO-12 rehearsal of 31 October 2026). A container
+  that restarts inside the bound gives the restart line for the call that it
+  broke, but only info lines for the calls that its address refuses while it
+  starts again; a cold start longer than the bound gives restart lines. A live
   record after a resume and the digest record of a fleet upgrade also start the
-  bound, because each changes `updated_at`. The provisioner records `live` when
-  the deploy is live and the address is known, so Connect shows the connection
-  guide while the private address still refuses connections.
+  bound, because each changes `updated_at`; a resumed tenant answered at once
+  in the rehearsal, so there the bound only hides refusals. The time is that of
+  the lookup of the call, and a refusal comes when the body is read and the
+  context is signed. The provisioner records `live` when the deploy is live and
+  the address is known, so Connect shows the connection guide while the private
+  address still refuses connections.
 - The claim of a resumed `deploying` row waits a time, 15 s after the resume
   mark, not a deploy identity: the answer of a resume names no deploy. Render
   made the deploy of a resume about 2 s after the call (SO-01c, SO-09). A resume

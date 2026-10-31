@@ -103,11 +103,9 @@ test('Given a client pinned to protocol 2025-11-25, when it opens its GET stream
 });
 
 for (const failure of ['http-502', 'reset-before-answer'] as const) {
-  test(`Given a tenant live for 3 minutes that fails with ${failure} during a call, when the call fails before the first answer byte, then the client gets one tool error with the restart words and the operator gets a report`, { timeout: 30_000 }, async (t) => {
+  test(`Given a live tenant that fails with ${failure} during a call, when the call fails before the first answer byte, then the client gets one tool error with the restart words and the operator gets a report`, { timeout: 30_000 }, async (t) => {
     const site = await openHostedGatewaySite(t);
     site.registry.live(gatewayOrganization, site.tenant.origin);
-    // Past the cold start of a new tenant (hosted-gateway-cold-start.test.ts).
-    site.advance(180_000);
     const client = await site.connect(await site.token());
     site.tenant.failNext(failure);
     const before = site.log.lines.length;

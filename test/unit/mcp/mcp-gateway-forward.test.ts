@@ -103,10 +103,16 @@ test('Given a client that cancels the answer stream, when the stream is cancelle
   assert.ok(await answer.cancelled);
 });
 
+// A refused connection: no server took it. The fetch of Node gives the code of the connect error as its cause.
+function refusedConnection(): never {
+  throw new TypeError('fetch failed', { cause: Object.assign(new Error('connect ECONNREFUSED 10.15.25.140:8080'), { code: 'ECONNREFUSED' }) });
+}
+
 const restarts: ReadonlyArray<readonly [string, (body: ReturnType<typeof controlledBody>) => Promise<Response>, string]> = [
   ['the tenant answers HTTP 502', async () => new Response('<html>Bad Gateway</html>', { status: 502 }), 'http-502'],
   ['the connection resets before the answer', async () => { throw new TypeError('fetch failed'); }, 'connection'],
   ['the connection resets before the first answer byte', async (body) => { body.fail(); return new Response(body.body, { status: 200, headers: { 'Content-Type': 'text/event-stream' } }); }, 'connection'],
+  ['the private address refuses the connection', async () => refusedConnection(), 'refused'],
 ];
 
 for (const [label, answer, cause] of restarts) {
@@ -129,38 +135,48 @@ for (const [label, answer, cause] of restarts) {
 const coldStart: GatewayRoute = { ...liveRoute, sinceChangeMs: 30_000 };
 const startingWords = 'Your workspace is not ready yet. Try again in 15 seconds.';
 
-for (const [label, answer, cause] of restarts) {
-  test(`Given a live row that changed 30 s ago and ${label}, when a tool call fails, then it is the cold start of the tenant: the client gets one tool error with the starting words, and the log gets one info line and no operator report`, async (t) => {
-    const { forward, upstream, log, registry } = gatewayOf(t, coldStart);
+test('Given a live row that changed 30 s ago, when its private address refuses the connection of a tool call, then it is the cold start of the tenant: the client gets one tool error with the starting words, and the log gets one info line and no operator report', async (t) => {
+  const { forward, upstream, log, registry } = gatewayOf(t, coldStart);
+  upstream.answer = async () => refusedConnection();
+
+  const response = await forward(post(fetchCall));
+
+  assert.deepEqual(await response.json(), { jsonrpc: '2.0', id: 7, result: { content: [{ type: 'text', text: startingWords }], isError: true, resultType: 'complete' } });
+  assert.deepEqual(log.lines, ['INFO MCP gateway tenant starting: {"organizationId":"org_A","secondsSinceChange":30}']);
+  assert.deepEqual(registry.active, []);
+});
+
+for (const [label, answer, cause] of restarts.filter(([, , cause]) => cause !== 'refused')) {
+  test(`Given a live row that changed 30 s ago and ${label}, when a tool call fails, then a server took the connection, so it is a restart with the restart words and one operator report`, async (t) => {
+    const { forward, upstream, log } = gatewayOf(t, coldStart);
     const body = controlledBody();
     upstream.answer = () => answer(body);
 
     const response = await forward(post(fetchCall));
 
-    assert.deepEqual(await response.json(), { jsonrpc: '2.0', id: 7, result: { content: [{ type: 'text', text: startingWords }], isError: true, resultType: 'complete' } });
-    assert.deepEqual(log.lines, [`INFO MCP gateway tenant starting: {"organizationId":"org_A","cause":"${cause}","secondsSinceLive":30}`]);
-    assert.deepEqual(registry.active, []);
+    assert.deepEqual(await response.json(), { jsonrpc: '2.0', id: 7, result: { content: [{ type: 'text', text: 'Server restarted. Try again in a minute.' }], isError: true, resultType: 'complete' } });
+    assert.deepEqual(log.lines, [`ERROR MCP gateway tenant restart: {"organizationId":"org_A","phase":"before-answer","cause":"${cause}"}`]);
   });
 }
 
-test('Given live rows that changed just under and exactly 2 minutes ago, when the connection fails before the first answer byte, then the first is a cold start and the second a restart', async (t) => {
+test('Given live rows that changed just under and exactly 2 minutes ago, when the private address refuses the connection, then the first is a cold start and the second a restart', async (t) => {
   const lines: string[] = [];
   for (const sinceChangeMs of [119_999, 120_000]) {
     const { forward, upstream, log } = gatewayOf(t, { ...liveRoute, sinceChangeMs });
-    upstream.answer = async () => { throw new TypeError('fetch failed'); };
+    upstream.answer = async () => refusedConnection();
     await (await forward(post(fetchCall))).text();
     lines.push(...log.lines);
   }
 
   assert.deepEqual(lines, [
-    'INFO MCP gateway tenant starting: {"organizationId":"org_A","cause":"connection","secondsSinceLive":119.9}',
-    'ERROR MCP gateway tenant restart: {"organizationId":"org_A","phase":"before-answer","cause":"connection"}',
+    'INFO MCP gateway tenant starting: {"organizationId":"org_A","secondsSinceChange":119.9}',
+    'ERROR MCP gateway tenant restart: {"organizationId":"org_A","phase":"before-answer","cause":"refused"}',
   ]);
 });
 
 test('Given a cold start, when the request is not a tool call, then each request gets a JSON-RPC error with the starting words, and a body without a request gets 503 with Retry-After: 15', async (t) => {
   const { forward, upstream } = gatewayOf(t, coldStart);
-  upstream.answer = async () => { throw new TypeError('fetch failed'); };
+  upstream.answer = async () => refusedConnection();
 
   const listed = await forward(post({ jsonrpc: '2.0', id: 'list-1', method: 'tools/list' }));
   const notification = await forward(post({ jsonrpc: '2.0', method: 'notifications/cancelled', params: { requestId: 7 } }));
