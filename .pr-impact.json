@@ -3,32 +3,48 @@
   "classification": {
     "container": false,
     "external": false,
-    "contract": false,
-    "deployment": false,
+    "contract": true,
+    "deployment": true,
     "crossCutting": false,
     "component": false,
-    "internalInterface": false,
-    "sensitiveBehavior": false,
+    "internalInterface": true,
+    "sensitiveBehavior": true,
     "dependencyRisk": false,
     "policy": false,
     "uncertain": false
   },
   "architecture": {
-    "modelUpdated": false,
-    "summary": "Test only. The SO-12 release rehearsal of 31 October 2026 found that the OPERATION_CAPACITY=5 case of test/acceptance/mcp/hosted-tenant-capacity.test.ts failed on the Render builder with two busy events at the relay spy. The release of the five held calls kept the event loop busy, so the tenant read the answer to its busy relay after the 5 s limit of an audit send and sent the same event again (same operation ID). The case now counts the relayed events one time for each operation ID, as the relay route of the control plane does (AcceptedRelays), and waits for six operations instead of six deliveries; it still requires one busy event and five success events. docs/testing/test-list.md describes the count. No source, support, configuration, workflow, dependency, or Mermaid block changes, so no component, edge, public module, declaration, or runtime behavior changes, and the registry stays accurate.",
+    "modelUpdated": true,
+    "summary": "The claim of a tenant row becomes a lease, and the stop of the tenant loops lets the Render call in flight end: the SO-12 release rehearsal of 31 October 2026 measured that Render keeps the old instance of the control plane for about 120 s after a new deploy is live, and in R9 the old provisioner loop claimed a row 0.4 s after the new loop recorded its service, 81.7 s before the old instance got SIGTERM. Inside the hosted Node server, tenants claims a row for the claim holder of its loop (claimed_by, new at each start) until claimed_until, 60 s later, renews it right before each create and before each read of the deploy, names the holder in each record, frees the row at the end (a creating row only when its lease ends), and leaves a row that another holder holds; app starts the provisioner and the sweeps with a stop signal that ends claims, waits, and new Render calls at once, and an in-flight signal that ends the call in flight 5 s later (FinishingPlatform of tenants, tenant loop of app). The data contract of the tenants table gains two columns with a pair check (migration 20261031221342_tenant_claim_lease.sql, applied before the deploy), and the fleet resume records live without a claim. No component, container, public module, dependency, or declaration snapshot changes. The scenario view tenant provisioning changes; the prose of the tenant registry view, the writers of each transition, the deployment view, and the known limits record the lease, the stop, and the residual risk that the sweeps of two instances both run when the daily tick falls inside a deploy.",
     "views": [
-      "All 24 views of architecture/components.md unchanged (checked: one acceptance test and the test list)"
+      "Scenario: tenant provisioning (edited: the claim for 60 s, the renewal before the create and in the loop of deploy reads, the live record that frees the claim, and the stop with the call in flight and the release)",
+      "Selected C4 components: hosted tenant registry, provisioning, and sweeps in the Node server (diagram unchanged; prose: the stop, the claim lease, the claim migration, the finishing platform, the writers)",
+      "Deployment view (diagram unchanged; prose: two instances during a deploy and the claim migration not applied)",
+      "All other views of architecture/components.md unchanged (checked: the hosted containers view, the MCP gateway view, the gateway, resume, weekly sweep, and idle sweep scenarios)"
     ],
     "evidence": [
-      "test/acceptance/mcp/hosted-tenant-capacity.test.ts",
-      "docs/testing/test-list.md",
-      "test/support/doubles/logging/audit-relay-route-spy.ts",
-      "src/logs/audit/audit-relay-request.ts",
-      "src/logs/audit/audit-collector-state.ts",
-      "src/logs/audit/audit-relay-scheduler.ts",
-      "src/interfaces/web/internal/audit-relay-route.ts",
-      "src/interfaces/web/internal/accepted-relays.ts",
-      "architecture/components.md"
+      "src/tenancy/tenants/pg-tenant-claim.ts",
+      "src/tenancy/tenants/pg-tenant-provisioning-store.ts",
+      "src/tenancy/tenants/tenant-provisioning-store.ts",
+      "src/tenancy/tenants/tenant-provisioner.ts",
+      "src/tenancy/tenants/tenant-row-provisioning.ts",
+      "src/tenancy/tenants/tenant-row-records.ts",
+      "src/tenancy/tenants/tenant-service-attempt.ts",
+      "src/tenancy/tenants/tenant-service-creation.ts",
+      "src/tenancy/tenants/tenant-deploy-watch.ts",
+      "src/tenancy/tenants/finishing-platform.ts",
+      "src/app/tenant-loop.ts",
+      "src/app/tenant-provisioning.ts",
+      "src/app/tenant-sweeps.ts",
+      "src/index.ts",
+      "src/app/application.ts",
+      "script/fleet/fleet-power.ts",
+      "sql/migrations/20261031221342_tenant_claim_lease.sql",
+      "test/acceptance/tenants/provisioner-instances.runtime.ts",
+      "test/integration/tenants/provisioner-registry.runtime.ts",
+      "test/acceptance/tenants/idle-suspension.test.ts",
+      "architecture/components.md",
+      "docs/implementation/tenant-fleet-runbooks.md"
     ]
   }
 }

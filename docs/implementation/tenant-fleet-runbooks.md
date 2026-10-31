@@ -85,12 +85,13 @@ prefix too. A tenant writes to standard error only.
 
 | Prefix | Level | Source | Meaning |
 | --- | --- | --- | --- |
-| `The tenant provisioner runs:` | INFO | [`src/app/tenant-provisioning.ts`](../../src/app/tenant-provisioning.ts) | The start read the tenant settings and started the loop. The line names the workspace, the tenant image, the plan, and the name prefix. |
+| `The tenant provisioner runs:` | INFO | [`src/app/tenant-provisioning.ts`](../../src/app/tenant-provisioning.ts) | The start read the tenant settings and started the loop. The line names the workspace, the tenant image, the plan, the name prefix, and the claim holder: the mark that the claims of this instance write to `claimed_by` ([runbook 1](#1-failed-provision), "A deploy of the control plane"). |
 | `Tenant provisioning record: {json}` | INFO | [`src/tenancy/tenants/tenant-provisioning-log.ts`](../../src/tenancy/tenants/tenant-provisioning-log.ts) | A row takes a state. The fields are `organizationId`, `state`, `serviceName`, and the facts of the state: `serviceId`, `internalUrl`, `imageDigest`, or `resumed`. |
 | `Tenant provisioning retry: {json}` | INFO | [`src/tenancy/tenants/tenant-service-creation.ts`](../../src/tenancy/tenants/tenant-service-creation.ts) | The provisioner tries again to find or create the service of a row. The fields are `organizationId`, `attempt`, `waitSeconds`, and `reason`. |
 | `Tenant provisioning failed: {json}` | ERROR | `tenant-provisioning-log.ts` | The row is `failed`. The fields are `organizationId`, `serviceName`, and `reason`. The registry holds the same reason in `failure_reason`. |
 | `Tenant provisioning cannot read the tenant registry. It tries again in 60 s.` | ERROR | [`src/tenancy/tenants/tenant-provisioner.ts`](../../src/tenancy/tenants/tenant-provisioner.ts) | The database does not answer. |
-| `Tenant provisioning could not write the row of organization` | ERROR | `tenant-provisioning-log.ts` | A record did not reach the registry. The row waits for the next claim. |
+| `Tenant provisioning could not write the row of organization` | ERROR | `tenant-provisioning-log.ts` | A record, or the renewal of the claim before a create, did not reach the registry. The row waits for the next claim. |
+| `Tenant provisioning leaves organization` | INFO | `tenant-provisioning-log.ts` | The row changed during the work: another writer moved it, for example a delete, or the loop of the other instance claimed it after the claim lease of this loop ended. The loop leaves the row as it is. |
 | `Tenant provisioning failed unexpectedly:` | ERROR | `tenant-provisioner.ts` | A defect. The loop tries again in 60 s. |
 | `Logging storage is unavailable:` | ERROR | [`src/app/logging-storage.ts`](../../src/app/logging-storage.ts) | At the start: `DATABASE_URL`, `LOGGING_DESTINATION_ENCRYPTION_KEY`, or `DATABASE_CA_CERT_PATH` is missing or invalid. |
 | `MCP gateway tenant restart: {json}` | ERROR | [`src/interfaces/mcp/mcp-gateway-refusals.ts`](../../src/interfaces/mcp/mcp-gateway-refusals.ts) | A live tenant stopped during a call. The fields are `organizationId`, `phase` (`before-answer` or `during-answer`), and `cause` (`http-502` or `connection`). |
@@ -181,6 +182,28 @@ The loop works on one row at a time, so this wait delays each later row too.
 A row that waits is not failed: do not repair it. Each repair uses one create
 of the same limit.
 
+**A deploy of the control plane.** Render keeps the old instance of the
+control plane for about 120 s after the new deploy is `live`. So two
+provisioner loops run on one registry for about 2 minutes (SO-12 rehearsal of
+31 October 2026, release record section 3.7, item 6). The claim of a row holds
+it for one loop. `claimed_by` names the claim holder of that instance, as its
+`The tenant provisioner runs:` line shows. `claimed_until` is the end of the
+lease: 60 s after the claim or the last renewal. The loop renews the lease
+right before each create and before each read of the deploy, so the other loop
+leaves the row. Each record of the work names the holder, and the `live` and
+`failed` records free the row
+([`pg-tenant-claim.ts`](../../src/tenancy/tenants/pg-tenant-claim.ts)).
+
+At `SIGTERM`, the old instance claims no row and starts no Render call. A
+Render call in flight ends within 5 s, and its answer reaches the registry.
+Then the end of its work frees a `deploying` row at once, and the new instance
+continues it. A `creating` row stays held until its lease ends, because a
+create of the old instance can still be unknown. After that, the next claim
+searches by name. To see who holds a row, read `claimed_by` and
+`claimed_until` of the row with the read of step 1 below. An old instance of
+a version before the claim lease ignores the claims. So the protection starts
+when the two instances have the lease.
+
 **Repair: delete, then request.** The fleet commands `status`, `delete`, and
 `request` do it ([Operate the tenant fleet](../../script/README.md#operate-the-tenant-fleet)).
 A tenant request of signup or of the gateway keeps a `failed` or `deleted` row
@@ -196,7 +219,7 @@ the answer `yes` before each write; another answer writes nothing.
    Dashboard, open the SQL Editor of the project and run this read:
 
    ```sql
-   SELECT organization_id, state, service_name, render_service_id, failure_reason, updated_at
+   SELECT organization_id, state, service_name, render_service_id, failure_reason, updated_at, claimed_by, claimed_until
    FROM thermus_admin.tenants WHERE state = 'failed';
    ```
 
@@ -573,8 +596,10 @@ the digest is the current one.
    refuses each call with `403`. If calls fail, set the old private key again
    and deploy: each tenant still accepts the old key.
 5. Wait 2 minutes after the deploy of step 4 is `live`, so that each context of
-   the old key expires. Render stops the old instance of the control plane
-   60 s after the new instance is live.
+   the old key expires. Calls go to the new instance once it is live (SO-01c).
+   Render stops the old instance of the control plane about 120 s after the
+   new instance is live: 119.7 s in R9 and in R14 of the SO-12 rehearsal of
+   31 October 2026, not the 60 s that Render documents.
 6. Remove on each tenant. Set `GATEWAY_PUBLIC_KEY` of each tenant service to
    the new public key only. Deploy the live tenants in batches of three with
    `fleet.ts upgrade --all --image ghcr.io/tomer-mayara/thermus-hosted@<current digest>`,

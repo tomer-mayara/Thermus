@@ -109,6 +109,18 @@ resource, or pool is required. Until the gateway (SO-05) and signup (SO-07) call
 the registry, the tables stay empty; a rollback of the code leaves them unused.
 Local proof uses disposable PostgreSQL 17 only (`npm run test:logging:postgres`).
 
+The [claim migration](../../sql/migrations/20261031221342_tenant_claim_lease.sql)
+adds two empty columns to `tenants`, `claimed_by` and `claimed_until`, with a
+check that both are set or both empty: the claim lease of the provisioner after
+the SO-12 rehearsal of 31 October 2026. Apply it once after the tenant registry
+migration, with stop-on-error, and before the deploy of a control plane that
+claims with a lease. Without the columns, the claim of that control plane
+fails, so its loop writes `Tenant provisioning cannot read the tenant
+registry.` every 60 s and makes no tenant. An earlier control plane ignores the
+columns, so the migration can come first. It adds no grant: the server role
+already has UPDATE on the table. A rollback of the code leaves the columns
+unused.
+
 ### Initial credentials and configuration
 
 Use a secure owner session to assign a new independent password to
