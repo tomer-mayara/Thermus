@@ -53,6 +53,17 @@ test('Given creation metadata has non-ASCII or oversized values, when creation i
   }
 });
 
+test('Given a subject that the acceptance record cannot hold, when creation is requested, then no provider write runs', async () => {
+  for (const subject of ['user_é', 'u'.repeat(501)]) {
+    const fake = new SignupClientFake();
+    fake.currentUser = { id: subject, emailVerified: true };
+    const request = { user: { ...user, subject }, documents, organizationName, signal: new AbortController().signal };
+    assert.deepEqual(await new WorkOSSignup(fake.options()).activate(request), { status: 'unavailable' });
+    assert.deepEqual(fake.organizationWrites, []);
+    assert.deepEqual(fake.membershipWrites, []);
+  }
+});
+
 test('Given canonical document text no longer matches its hash, when direct activation is requested, then no provider write runs', async () => {
   for (const key of ['terms', 'notice'] as const) {
     const fake = new SignupClientFake();
