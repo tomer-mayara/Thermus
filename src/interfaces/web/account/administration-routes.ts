@@ -47,7 +47,18 @@ interface ChangeRoute<Fields extends { readonly organizationId: string }> {
   readonly change: (actor: Actor, fields: Fields) => Promise<ChangeResult>;
 }
 
-type AdministrationPaths = ReturnType<typeof administrationPaths>;
+interface AdministrationPaths {
+  readonly product: string;
+  readonly members: string;
+  readonly invitations: string;
+  readonly send: string;
+  readonly resend: string;
+  readonly revoke: string;
+  readonly remove: string;
+  readonly login: string;
+  readonly billing: string;
+  readonly logging: string;
+}
 
 // The member, invitation, and billing pages, and the member and invitation changes. Each runs after the account routes
 // resolved current access to the organization that the session selected, so that only that organization can be the
@@ -181,7 +192,7 @@ export class AdministrationRoutes {
   }
 }
 
-function administrationPaths(publicBaseUrl: string, organizationsPage: string) {
+function administrationPaths(publicBaseUrl: string, organizationsPage: string): AdministrationPaths {
   const pathOf = (relative: string) => new URL(relative, publicBaseUrl).pathname;
   const login = new URL('login', publicBaseUrl);
   login.searchParams.set('return_to', organizationsPage);
@@ -196,5 +207,5 @@ function administrationPaths(publicBaseUrl: string, organizationsPage: string) {
     login: login.pathname + login.search,
     billing: pathOf('billing'),
     logging: pathOf('logging'),
-  } as const;
+  };
 }
