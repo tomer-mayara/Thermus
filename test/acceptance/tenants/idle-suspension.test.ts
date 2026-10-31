@@ -84,3 +84,28 @@ test('Given a suspend that Render limits with 429, when the sweep runs, then the
   assert.equal(harness.render.requestsOf('suspend service').length, 2);
   assert.equal(harness.store.stateOf(organizationA), 'suspended');
 });
+
+// The SO-12 release rehearsal of 31 October 2026: the old instance of a deploy gets SIGTERM about 120 s after the new
+// one is live. Its stop starts no new Render call, and the call in flight ends, so its mark reaches the registry.
+test('Given two idle free tenants and the suspend of the first in flight, when the control plane stops, then the suspend ends and its row is suspended, and the second tenant gets no suspend call', async (t) => {
+  const harness = await SweepHarness.start(t, [organizationA, organizationB]);
+  harness.liveTenant(organizationA, { lastActiveAt: fifteenDaysBeforeTuesday });
+  harness.liveTenant(organizationB, { lastActiveAt: fifteenDaysBeforeTuesday });
+  const suspend = harness.render.hold('suspend service');
+  const tick = harness.startOneTick(tuesdayBeforeTheSweep);
+  await harness.until(() => harness.render.requestsOf('suspend service').length > 0, 'the first suspend call');
+
+  const stopped = tick.close();
+  suspend.release();
+  await stopped;
+
+  const [first] = harness.render.requestsOf('suspend service');
+  const target = [organizationA, organizationB].find((organizationId) => first?.path === `/services/${harness.render.service(serviceNameOf(organizationId))?.id}/suspend`);
+  assert.ok(target !== undefined);
+  const other = target === organizationA ? organizationB : organizationA;
+  assert.equal(harness.render.requestsOf('suspend service').length, 1, 'No suspend call after the stop');
+  assert.equal(harness.render.service(serviceNameOf(target))?.suspended, true, 'The suspend in flight ended at Render');
+  assert.deepEqual([harness.store.stateOf(target), harness.store.stateOf(other)], ['suspended', 'live'], 'Its row is suspended, and the other row stays live');
+  assert.equal(harness.linesWith('Tenant suspension record:').length, 1);
+  assert.deepEqual(harness.errorLines(), []);
+});

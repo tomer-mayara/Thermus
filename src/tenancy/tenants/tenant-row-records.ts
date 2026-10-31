@@ -7,7 +7,8 @@ export type RowOutcome = 'done' | 'store-failed';
 
 /**
  * The records of one row in the registry, each with its line for the operator. Each record names the state that it
- * starts from, so the work never overwrites the change of another writer: such a row is left as it is.
+ * starts from and the holder of the claim, so the work never overwrites the change of another writer or of another
+ * loop: such a row is left as it is.
  */
 export class RowRecords {
   private readonly store: TenantProvisioningStore;
@@ -24,7 +25,7 @@ export class RowRecords {
 
   /** creating to deploying. Undefined when the work goes on, else the outcome that ends it. */
   async service(row: ProvisioningRow, serviceId: string): Promise<RowOutcome | undefined> {
-    const recorded = await this.store.recordService(row.organizationId, serviceId);
+    const recorded = await this.store.recordService(row, serviceId);
     if (recorded.status !== 'recorded') return this.unrecorded(row, recorded);
     this.lines.record(row, 'deploying', { serviceId });
     return undefined;
@@ -32,7 +33,7 @@ export class RowRecords {
 
   /** deploying to live on the service of the work, with the address and the digest. */
   async live(row: ProvisioningRow, serviceId: string, live: LiveRecord): Promise<RowOutcome> {
-    const recorded = await this.store.recordLive(row.organizationId, serviceId, live);
+    const recorded = await this.store.recordLive(row, serviceId, live);
     if (recorded.status !== 'recorded') return this.unrecorded(row, recorded);
     this.lines.record(row, 'live', { serviceId, ...live });
     return 'done';
@@ -43,14 +44,17 @@ export class RowRecords {
    * report for the operator once the registry holds the failure.
    */
   async failed(row: ProvisioningRow, serviceId: string | null, reason: string): Promise<RowOutcome> {
-    const recorded = await this.store.recordFailed(row.organizationId, serviceId, reason);
+    const recorded = await this.store.recordFailed(row, serviceId, reason);
     if (recorded.status !== 'recorded') return this.unrecorded(row, recorded);
     this.lines.failed(row, reason);
     return 'done';
   }
 
-  // moved: another writer changed the row, so this work must not touch it again. unavailable: the next claim comes back.
-  private unrecorded(row: ProvisioningRow, result: RecordResult): RowOutcome {
+  /**
+   * A write or a renewal of the claim that did not reach the row. moved: another writer changed the row, or another
+   * loop claimed it, so this work must not touch it again. unavailable: the next claim comes back.
+   */
+  unrecorded(row: ProvisioningRow, result: RecordResult): RowOutcome {
     if (result.status === 'moved') {
       this.lines.left(row);
       return 'done';

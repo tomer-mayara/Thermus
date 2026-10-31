@@ -42,7 +42,8 @@ export async function resumeTenant(parts: CommandParts, organizationId: string):
   const live = `${deploy.deploy.id} is live after ${deploy.seconds} s (the answer of a resume names no deploy: identity unconfirmed)`;
   const address = await platform.internalAddress(row.serviceId, parts.signal);
   if (address.status !== 'found') throw new FleetStepError(`${live}, but the internal address is ${address.status}. The row stays deploying; the provisioner records it.`);
-  const recorded = await stores.provisioning.recordLive(organizationId, row.serviceId, { internalUrl: address.internalUrl, ...(deploy.deploy.imageDigest === undefined ? {} : { imageDigest: deploy.deploy.imageDigest }) });
+  // The command holds no claim of the row (holder null): its record frees the claim of a loop that watches the same deploy.
+  const recorded = await stores.provisioning.recordLive({ organizationId, holder: null }, row.serviceId, { internalUrl: address.internalUrl, ...(deploy.deploy.imageDigest === undefined ? {} : { imageDigest: deploy.deploy.imageDigest }) });
   parts.io.line(recorded.status === 'recorded' ? `Done: ${live}, and the row is live.` : `${live}; the row was not recorded (${recorded.status}): another writer changed it.`);
 }
 

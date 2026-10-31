@@ -1,5 +1,5 @@
 import { watchDeploy, type WatchParts } from './tenant-deploy-watch.ts';
-import type { ClaimResult, TenantProvisioningStore } from './tenant-provisioning-store.ts';
+import type { ClaimResult, ProvisioningRow, TenantProvisioningStore } from './tenant-provisioning-store.ts';
 import { RowRecords, type RowOutcome } from './tenant-row-records.ts';
 import { serviceOfRow, type CreationParts } from './tenant-service-creation.ts';
 
@@ -20,16 +20,28 @@ export class RowProvisioning {
     this.records = new RowRecords(parts);
   }
 
+  /** The work on one claimed row. Its end frees the row for the next claim, also after a stop or a failure. */
   async provision(claim: Extract<ClaimResult, { status: 'claimed' }>, signal: AbortSignal): Promise<RowOutcome> {
     const { row } = claim;
     this.records.claimed(row, claim.resumed);
-    const service = await serviceOfRow(this.parts, row, signal);
+    try {
+      return await this.work(row, signal);
+    } finally {
+      await this.parts.store.releaseClaim(row);
+    }
+  }
+
+  private async work(row: ProvisioningRow, signal: AbortSignal): Promise<RowOutcome> {
+    const hold = () => this.parts.store.renewClaim(row);
+    const service = await serviceOfRow(this.parts, row, hold, signal);
+    if (service.status === 'lost') return this.records.unrecorded(row, service.claim);
     // Without a service, the row still has the service of its claim: none for a creating row.
     if (service.status === 'failed') return this.records.failed(row, row.serviceId, service.reason);
     // A deploying row has its service in the registry already, so only a creating row records it.
     const stop = row.state === 'creating' ? await this.records.service(row, service.serviceId) : undefined;
     if (stop !== undefined) return stop;
-    const watched = await watchDeploy(this.parts, service.serviceId, signal);
+    const watched = await watchDeploy(this.parts, service.serviceId, hold, signal);
+    if (watched.status === 'lost') return this.records.unrecorded(row, watched.claim);
     return watched.status === 'failed' ? this.records.failed(row, service.serviceId, watched.reason) : this.records.live(row, service.serviceId, watched.live);
   }
 }

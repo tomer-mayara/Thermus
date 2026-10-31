@@ -189,7 +189,7 @@ test('Given a database that stops while a claim waits, when the claim fails, the
     await new Promise(() => {});
   });
   await locked.promise;
-  const claim = new PgTenantProvisioningStore(runtime).claimNext({ serviceNameOf: nameOf, plan: '0.5c-512mb' });
+  const claim = new PgTenantProvisioningStore(runtime).claimNext({ serviceNameOf: nameOf, plan: '0.5c-512mb', holder: 'holder-1' });
   const deadline = performance.now() + 10_000;
   const waiting = "SELECT count(*) FROM pg_stat_activity WHERE application_name = 'thermus-settings' AND wait_event_type = 'Lock'";
   while (await site.ownerQuery(waiting) !== '1') {
@@ -214,7 +214,7 @@ test('Given a deploying row of a resume on the real registry, when the next row 
   const store = new PgTenantProvisioningStore(runtime);
   await site.ownerQuery(`INSERT INTO thermus_admin.tenants (organization_id, state, render_service_id, service_name, internal_url, plan, updated_at)
     VALUES ('${organizationA}', 'deploying', 'srv-d0resumedaaaaaaaaaa', '${nameOf(organizationA)}', 'http://thermus-tenant-org-a:8080', '0.5c-512mb', now() - interval '14 seconds')`);
-  const claim = { serviceNameOf: nameOf, plan: '0.5c-512mb' };
+  const claim = { serviceNameOf: nameOf, plan: '0.5c-512mb', holder: 'holder-1' };
 
   const young = await store.claimNext(claim);
   await site.ownerQuery(`UPDATE thermus_admin.tenants SET updated_at = now() - interval '16 seconds' WHERE organization_id = '${organizationA}'`);
@@ -224,8 +224,8 @@ test('Given a deploying row of a resume on the real registry, when the next row 
   const first = await store.claimNext(claim);
 
   assert.deepEqual(young, { status: 'idle' });
-  assert.deepEqual(old, { status: 'claimed', resumed: true, row: { organizationId: organizationA, state: 'deploying', serviceName: nameOf(organizationA), serviceId: 'srv-d0resumedaaaaaaaaaa' } });
-  assert.deepEqual(first, { status: 'claimed', resumed: true, row: { organizationId: organizationB, state: 'deploying', serviceName: nameOf(organizationB), serviceId: 'srv-d0firstbbbbbbbbbbbb' } });
+  assert.deepEqual(old, { status: 'claimed', resumed: true, row: { organizationId: organizationA, state: 'deploying', serviceName: nameOf(organizationA), serviceId: 'srv-d0resumedaaaaaaaaaa', holder: 'holder-1' } });
+  assert.deepEqual(first, { status: 'claimed', resumed: true, row: { organizationId: organizationB, state: 'deploying', serviceName: nameOf(organizationB), serviceId: 'srv-d0firstbbbbbbbbbbbb', holder: 'holder-1' } });
 });
 
 // Each state-only write names the observed service (manager decision of 31 October 2026), so the failure of the work on
@@ -235,13 +235,75 @@ test('Given a deploying row that another writer gave a new service, when the fai
   const runtime = createPgSettingsRuntime(site.connection);
   t.after(() => runtime.close());
   const store = new PgTenantProvisioningStore(runtime);
-  await site.ownerQuery(`INSERT INTO thermus_admin.tenants (organization_id, state, render_service_id, service_name, plan) VALUES ('${organizationA}', 'deploying', 'srv-d0newaaaaaaaaaaaaa', '${nameOf(organizationA)}', '0.5c-512mb')`);
-  await site.ownerQuery(`INSERT INTO thermus_admin.tenants (organization_id, state, service_name, plan) VALUES ('${organizationB}', 'creating', '${nameOf(organizationB)}', '0.5c-512mb')`);
+  await site.ownerQuery(`INSERT INTO thermus_admin.tenants (organization_id, state, render_service_id, service_name, plan, claimed_by, claimed_until) VALUES ('${organizationA}', 'deploying', 'srv-d0newaaaaaaaaaaaaa', '${nameOf(organizationA)}', '0.5c-512mb', 'holder-1', now() + interval '60 seconds')`);
+  await site.ownerQuery(`INSERT INTO thermus_admin.tenants (organization_id, state, service_name, plan, claimed_by, claimed_until) VALUES ('${organizationB}', 'creating', '${nameOf(organizationB)}', '0.5c-512mb', 'holder-1', now() + interval '60 seconds')`);
+  const workOf = (organizationId: string) => ({ organizationId, state: 'creating' as const, serviceName: nameOf(organizationId), serviceId: null, holder: 'holder-1' });
 
-  assert.deepEqual(await store.recordFailed(organizationA, 'srv-d0oldaaaaaaaaaaaaa', 'The deploy of the old service failed'), { status: 'moved' });
+  assert.deepEqual(await store.recordFailed(workOf(organizationA), 'srv-d0oldaaaaaaaaaaaaa', 'The deploy of the old service failed'), { status: 'moved' });
   assert.deepEqual(await rows(site), [`${organizationA} deploying`, `${organizationB} creating`]);
-  assert.deepEqual(await store.recordFailed(organizationA, 'srv-d0newaaaaaaaaaaaaa', 'The deploy of the new service failed'), { status: 'recorded' });
-  assert.deepEqual(await store.recordFailed(organizationB, null, 'No tenant service after 3 attempts'), { status: 'recorded' });
+  assert.deepEqual(await store.recordFailed(workOf(organizationA), 'srv-d0newaaaaaaaaaaaaa', 'The deploy of the new service failed'), { status: 'recorded' });
+  assert.deepEqual(await store.recordFailed(workOf(organizationB), null, 'No tenant service after 3 attempts'), { status: 'recorded' });
   assert.deepEqual(await rows(site), [`${organizationA} failed`, `${organizationB} failed`]);
   assert.equal((await rowOf(site, organizationA)).failure_reason, 'The deploy of the new service failed');
+});
+
+// The SO-12 release rehearsal of 31 October 2026: two instances of the control plane run their loops during each deploy,
+// so the claim holds a row for one holder (claimed_by) until claimed_until, 60 s after the claim or the last renewal.
+test('Given a row that one holder claimed on the real registry, when another holder claims, then it gets no row until the lease ends, while the first holder takes back its own row at once', { timeout: 120_000 }, async (t) => {
+  const site = await postgresSettingsSite(t);
+  const runtime = createPgSettingsRuntime(site.connection);
+  t.after(() => runtime.close());
+  const store = new PgTenantProvisioningStore(runtime);
+  await requestTenant(site, organizationA);
+  const request = (holder: string) => ({ serviceNameOf: nameOf, plan: '0.5c-512mb', holder });
+  const claimOf = async (holder: string) => {
+    const result = await store.claimNext(request(holder));
+    return result.status === 'claimed' ? `${result.row.holder} ${result.row.state}${result.resumed ? ' resumed' : ''}` : result.status;
+  };
+  const lease = () => site.ownerQuery(`SELECT claimed_by || ' ' || round(extract(epoch FROM claimed_until - now()))::text FROM thermus_admin.tenants WHERE organization_id = '${organizationA}'`);
+
+  const first = await claimOf('holder-1');
+  const leaseAfterClaim = await lease();
+  const second = await claimOf('holder-2');
+  const own = await claimOf('holder-1');
+  await site.ownerQuery(`UPDATE thermus_admin.tenants SET claimed_until = now() - interval '1 second' WHERE organization_id = '${organizationA}'`);
+  const afterTheLease = await claimOf('holder-2');
+
+  assert.deepEqual([first, leaseAfterClaim, second, own, afterTheLease], ['holder-1 creating', 'holder-1 60', 'idle', 'holder-1 creating resumed', 'holder-2 creating resumed']);
+  assert.equal(await lease(), 'holder-2 60');
+});
+
+test('Given a claimed row on the real registry, when its holder renews, records, and releases, then the lease moves on, a write of another holder is moved, a creating row stays held, and a deploying or live row is free', { timeout: 120_000 }, async (t) => {
+  const site = await postgresSettingsSite(t);
+  const runtime = createPgSettingsRuntime(site.connection);
+  t.after(() => runtime.close());
+  const store = new PgTenantProvisioningStore(runtime);
+  await requestTenant(site, organizationA);
+  await requestTenant(site, organizationB);
+  const request = { serviceNameOf: nameOf, plan: '0.5c-512mb', holder: 'holder-1' };
+  const claimA = await store.claimNext(request);
+  // The row of holder-1 comes first for holder-1 itself, so another holder claims the second row.
+  const claimB = await store.claimNext({ ...request, holder: 'holder-3' });
+  assert.ok(claimA.status === 'claimed' && claimB.status === 'claimed');
+  const [rowA, rowB] = [claimA.row, claimB.row];
+  const other = { ...rowA, holder: 'holder-2' };
+  const claimOf = (organizationId: string) => site.ownerQuery(`SELECT concat_ws(' ', state, coalesce(claimed_by, 'free'), (claimed_until > now() + interval '50 seconds')::text) FROM thermus_admin.tenants WHERE organization_id = '${organizationId}'`);
+  await site.ownerQuery(`UPDATE thermus_admin.tenants SET claimed_until = now() + interval '5 seconds' WHERE organization_id = '${organizationA}'`);
+
+  assert.deepEqual(await store.renewClaim(other), { status: 'moved' }, 'Another holder cannot renew');
+  assert.deepEqual(await store.renewClaim(rowA), { status: 'recorded' });
+  assert.equal(await claimOf(organizationA), 'creating holder-1 true', 'The renewal holds the row 60 s more');
+  assert.deepEqual(await store.recordService(other, 'srv-d0otheraaaaaaaaaaa'), { status: 'moved' }, 'A record of another holder is moved');
+  await store.releaseClaim(rowA);
+  assert.equal(await claimOf(organizationA), 'creating holder-1 true', 'A creating row stays held after the release');
+  assert.deepEqual(await store.recordService(rowA, 'srv-d0serviceaaaaaaaaa'), { status: 'recorded' });
+  await store.releaseClaim(rowA);
+  assert.equal(await claimOf(organizationA), 'deploying free', 'A deploying row is free after the release');
+  assert.deepEqual(await store.renewClaim(rowA), { status: 'moved' }, 'A released claim does not renew');
+  assert.deepEqual(await store.recordLive(rowA, 'srv-d0serviceaaaaaaaaa', { internalUrl: 'http://thermus-tenant-org-a:8080' }), { status: 'moved' }, 'A released claim records nothing');
+
+  assert.deepEqual(await store.recordService(rowB, 'srv-d0servicebbbbbbbbb'), { status: 'recorded' });
+  assert.deepEqual(await store.recordLive(rowB, 'srv-d0servicebbbbbbbbb', { internalUrl: 'http://thermus-tenant-org-b:8080' }), { status: 'recorded' });
+  assert.equal(await claimOf(organizationB), 'live free', 'The live record frees the claim');
+  assert.deepEqual(await store.renewClaim(rowB), { status: 'moved' }, 'A live row is out of work');
 });

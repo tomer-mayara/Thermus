@@ -2,6 +2,7 @@ import type { SystemLog } from '../logs/system/system-logger.ts';
 import { DeploymentConfigError } from '../runtime/config/deployment-config.ts';
 import type { TenantProvisioningSettings } from '../runtime/config/mcp-tenants-config.ts';
 import { RenderTenantPlatform } from '../tenancy/providers/render/render-tenant-platform.ts';
+import { FinishingPlatform } from '../tenancy/tenants/finishing-platform.ts';
 import type { ProvisioningClock } from '../tenancy/tenants/provisioning-clock.ts';
 import type { TenantPlatform } from '../tenancy/tenants/tenant-platform.ts';
 import { TenantProvisioner } from '../tenancy/tenants/tenant-provisioner.ts';
@@ -9,6 +10,7 @@ import type { TenantProvisioningStore } from '../tenancy/tenants/tenant-provisio
 import { platformResumeOf, type TenantResume } from '../tenancy/tenants/tenant-resume.ts';
 import type { HostedLoggingStorage } from './logging-storage.ts';
 import { systemClock } from './system-clock.ts';
+import { startTenantLoop } from './tenant-loop.ts';
 import { startTenantSweeps, type TenantSweepsParts } from './tenant-sweeps.ts';
 
 export interface TenantProvisioningParts {
@@ -19,10 +21,15 @@ export interface TenantProvisioningParts {
   readonly logger: SystemLog;
   readonly fetch?: typeof fetch;
   readonly clock?: ProvisioningClock;
+  // A seam of the tests: the grace of the platform call in flight after the stop. Production waits 5 s.
+  readonly inFlightGraceMs?: number;
 }
 
 export interface TenantProvisioning {
-  /** Stops the loop and waits until its current step ends. A creating or deploying row continues at the next start. */
+  /**
+   * Stops the loop: it claims no row and starts no Render call after the stop, and the call in flight ends within the
+   * grace of 5 s. A deploying row is free for the next claim at once; a creating row waits until its claim lease ends.
+   */
   close(): Promise<void>;
 }
 
@@ -35,22 +42,24 @@ export function tenantPlatformOf(parts: Pick<TenantProvisioningParts, 'settings'
   });
 }
 
-/** Starts the provisioner loop of the control plane. App owns its lifetime and closes it before the SQL runtime. */
+/**
+ * Starts the provisioner loop of the control plane. App owns its lifetime and closes it before the SQL runtime. The
+ * claim holder is new for each start, so the loop of the old instance during a deploy has another mark.
+ */
 export function startTenantProvisioning(parts: TenantProvisioningParts): TenantProvisioning {
   const { render, freePlan, namePrefix } = parts.settings;
-  const controller = new AbortController();
-  const running = provisionerOf(parts).run(controller.signal);
-  parts.logger.info(`The tenant provisioner runs: Render workspace ${render.ownerId}, image ${render.tenantImage}, plan ${freePlan}, name prefix ${namePrefix}.`);
-  // A second close aborts nothing more and waits for the same end of the loop.
-  return { close: () => { controller.abort(new DOMException('The control plane is shutting down', 'AbortError')); return running; } };
+  const holder = crypto.randomUUID();
+  const lifetime = startTenantLoop(({ stop, inFlight }) => provisionerOf(parts, holder, inFlight).run(stop), parts.inFlightGraceMs);
+  parts.logger.info(`The tenant provisioner runs: Render workspace ${render.ownerId}, image ${render.tenantImage}, plan ${freePlan}, name prefix ${namePrefix}, claim holder ${holder}.`);
+  return lifetime;
 }
 
-function provisionerOf(parts: TenantProvisioningParts): TenantProvisioner {
+function provisionerOf(parts: TenantProvisioningParts, holder: string, inFlight: AbortSignal): TenantProvisioner {
   const { gatewayPublicKey, controlPlaneInternalUrl, namePrefix, freePlan } = parts.settings;
   return new TenantProvisioner({
-    platform: tenantPlatformOf(parts), store: parts.store, clock: parts.clock ?? systemClock, log: parts.logger,
+    platform: new FinishingPlatform(tenantPlatformOf(parts), inFlight), store: parts.store, clock: parts.clock ?? systemClock, log: parts.logger,
     tenant: { publicBaseUrl: parts.publicBaseUrl, authkitIssuer: parts.authkitIssuer, gatewayPublicKey, controlPlaneInternalUrl },
-    namePrefix, freePlan,
+    namePrefix, freePlan, holder,
   });
 }
 
