@@ -39,3 +39,8 @@ files = [
   "!src/accounts/providers/workos/workos-organization-audit-documents.ts",
   "!src/accounts/providers/workos/workos-organization-removal-documents.ts",
 ]
+
+# The owner turned the comment check off. Its sensor flags almost every comment, and the comments that stay give a
+# reason, a contract, or a test intent.
+[smells.non-essential-comment]
+disabled = true
