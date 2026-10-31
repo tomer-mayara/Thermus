@@ -14,8 +14,9 @@ test('Given held hosted MCP cleanup and a listener drain, when shutdown starts t
   const application = composeHostedApplication(hostedConfig, {
     session: new BrowserSessionDouble(new Map()), accessResolver: directory, organizations: directory,
     mcp: { fetch: async () => new Response('MCP remains available'), close: () => work.promise },
-  }, { reportFailure: () => {}, changeRecords: { record: () => {} }, billing: new BillingFree() }, {
-    close: async () => { storageCloses++; },
+  }, {
+    reportFailure: () => {}, changeRecords: { record: () => {} }, billing: new BillingFree(),
+    storage: { close: async () => { storageCloses++; } },
   });
   assert.equal(await (await application.handle(new Request(hostedConfig.mcpResourceUrl))).text(), 'MCP remains available');
   const closing = application.close(listener.promise);
@@ -36,8 +37,9 @@ test('Given hosted MCP cleanup that throws before returning, when shutdown start
   const application = composeHostedApplication(hostedConfig, {
     session: new BrowserSessionDouble(new Map()), accessResolver: directory, organizations: directory,
     mcp: { fetch: async () => new Response(), close: () => { throw failure; } },
-  }, { reportFailure: () => {}, changeRecords: { record: () => {} }, billing: new BillingFree() }, {
-    close: async () => { storageCloses++; },
+  }, {
+    reportFailure: () => {}, changeRecords: { record: () => {} }, billing: new BillingFree(),
+    storage: { close: async () => { storageCloses++; } },
   });
   await assert.rejects(application.close(), (error) => error instanceof AggregateError && error.errors.includes(failure));
   assert.equal(storageCloses, 1);

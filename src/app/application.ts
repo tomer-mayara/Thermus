@@ -56,6 +56,7 @@ export interface HostedAccountParts {
   readonly billing: Billing;
   readonly operation?: AccountOperation;
   readonly signupUrl?: string;
+  readonly storage?: { close(): Promise<void>; readonly service?: HostedAccountRoutesOptions['logging']; readonly removalStore?: RemovalOperationStore };
 }
 
 export interface Application {
@@ -156,8 +157,8 @@ export function discardAuditLog(): AuditLog {
   return new AuditLog({ writeAuditEvent: () => {} });
 }
 
-export function composeHostedApplication(config: RouteConfig, parts: HostedProviderParts, account: HostedAccountParts, loggingStorage?: { close(): Promise<void>; readonly service?: HostedAccountRoutesOptions['logging']; readonly removalStore?: RemovalOperationStore }): Application {
-  const administration = new OrganizationAdministration({ directory: parts.organizations, records: account.changeRecords, billing: account.billing, removalStore: loggingStorage?.removalStore });
+export function composeHostedApplication(config: RouteConfig, parts: HostedProviderParts, account: HostedAccountParts): Application {
+  const administration = new OrganizationAdministration({ directory: parts.organizations, records: account.changeRecords, billing: account.billing, removalStore: account.storage?.removalStore });
   const routes = new HostedAccountRoutes({
     publicBaseUrl: config.publicBaseUrl,
     mcpResourceUrl: config.mcpResourceUrl,
@@ -167,7 +168,7 @@ export function composeHostedApplication(config: RouteConfig, parts: HostedProvi
     reportFailure: account.reportFailure,
     operation: account.operation,
     signupUrl: account.signupUrl,
-    logging: loggingStorage?.service,
+    logging: account.storage?.service,
     audit: account.audit,
   });
   const handle = routeHostedRequests(config, { mcp: (request) => parts.mcp.fetch(request), account: (request) => routes.handle(request), browser: parts.browserRoutes, internal: parts.internalRoutes });
@@ -180,7 +181,7 @@ export function composeHostedApplication(config: RouteConfig, parts: HostedProvi
     shutdown.abort(new DOMException('The hosted application is shutting down', 'AbortError'));
     const closing = [(async () => parts.mcp.close())(), (async () => {
       // Stop new removal work before the shared SQL runtime closes.
-      try { await administration.close(); } finally { await loggingStorage?.close(); }
+      try { await administration.close(); } finally { await account.storage?.close(); }
     })()];
     return Promise.allSettled(closing).then((results) => {
       const failures = results.filter((result) => result.status === 'rejected').map((result) => result.reason);

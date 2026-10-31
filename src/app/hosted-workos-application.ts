@@ -106,20 +106,8 @@ export async function openWorkOSConnection(config: RouteConfig, logger: SystemLo
 
 export async function composeWorkOSApplication(config: RouteConfig, connection: WorkOSConnection, parts: WorkOSApplicationParts): Promise<Application> {
   using owned = new DisposableStack();
-  const snapshots = parts.audit === undefined && parts.loggingStorage !== undefined
-    ? owned.adopt(new AuditSnapshots(parts.loggingStorage.store, parts.auditSink ?? parts.loggingStorage.dispatch ?? { admit: () => false }, parts.snapshotOptions), (capture) => capture.close())
-    : undefined;
-  const audit = parts.audit ?? (snapshots === undefined ? discardAuditLog() : new AuditLog(snapshots));
-  let buildServer = parts.buildServer;
-  if (buildServer === undefined && parts.toolOperations !== undefined) {
-    const { fetchToolServers } = await import('./fetch-tool.ts');
-    buildServer = fetchToolServers(parts.toolOperations, parts.logger, audit);
-  }
-  let loggingStorage = parts.loggingStorage;
-  if (loggingStorage !== undefined && snapshots !== undefined) {
-    const storage = loggingStorage;
-    loggingStorage = { ...storage, close: () => { snapshots.close(); return storage.close(); } };
-  }
+  const { audit, storage } = auditParts(parts, owned);
+  const buildServer = await buildServerOf(parts, audit);
   const billing = await billingOf(parts);
   const providerParts = await workosProviderParts(config, connection, { ...parts, buildServer, billing, audit });
   const application = composeHostedApplication(config, providerParts, {
@@ -129,9 +117,23 @@ export async function composeWorkOSApplication(config: RouteConfig, connection: 
     billing,
     operation: portalAccessOperation(config.publicBaseUrl, config.mcpResourceUrl, portalReads(providerParts.organizations, billing)),
     signupUrl: new URL('signup', config.publicBaseUrl).href,
-  }, loggingStorage);
+    storage,
+  });
   owned.move();
   return application;
+}
+
+function auditParts(parts: WorkOSApplicationParts, owned: DisposableStack): { readonly audit: AuditLog; readonly storage?: HostedLoggingStorage } {
+  const storage = parts.loggingStorage;
+  if (parts.audit !== undefined || storage === undefined) return { audit: parts.audit ?? discardAuditLog(), storage };
+  const snapshots = owned.adopt(new AuditSnapshots(storage.store, parts.auditSink ?? storage.dispatch ?? { admit: () => false }, parts.snapshotOptions), (capture) => capture.close());
+  return { audit: new AuditLog(snapshots), storage: { ...storage, close: () => { snapshots.close(); return storage.close(); } } };
+}
+
+async function buildServerOf(parts: WorkOSApplicationParts, audit: AuditLog): Promise<RequestServerBuilder | undefined> {
+  if (parts.buildServer !== undefined || parts.toolOperations === undefined) return parts.buildServer;
+  const { fetchToolServers } = await import('./fetch-tool.ts');
+  return fetchToolServers(parts.toolOperations, parts.logger, audit);
 }
 
 function portalReads(organizations: WorkOSOrganizations, billing: Billing): PortalReads {
