@@ -19,23 +19,30 @@ export interface ServerAnswer {
   readonly location: string | undefined;
 }
 
-export async function signInThroughPortal(run: LiveRun, user: LiveUser, organizationName?: string, expectedLanding: 'portal' | 'organizations' = 'portal'): Promise<PortalVisit> {
+export async function signInThroughPortal(run: LiveRun, user: LiveUser, organizationName?: string): Promise<PortalVisit> {
+  const { page, pages } = await startPortalSignIn(run, user, organizationName);
+  await waitForPortal(page);
+  return { page, pages, signedInAt: Date.now() };
+}
+
+export async function signInToOrganizationSelector(run: LiveRun, user: LiveUser): Promise<PortalVisit> {
+  const { page, pages } = await startPortalSignIn(run, user);
+  const destination = new URL('/organizations', localOrigin);
+  destination.searchParams.set('return_to', '/');
+  await page.waitForURL(destination.href);
+  assert.equal(page.url(), destination.href);
+  assert.equal((await sessionJson(page)).signedIn, true);
+  return { page, pages, signedInAt: Date.now() };
+}
+
+async function startPortalSignIn(run: LiveRun, user: LiveUser, organizationName?: string): Promise<Pick<PortalVisit, 'page' | 'pages'>> {
   await run.site();
   const authkitHost = new URL(run.settings.authkitIssuer).host;
   const page = await run.browser.newPage();
   await page.goto(`${localOrigin}/`);
   await page.getByRole('link', { name: 'Sign in', exact: true }).click();
   const pages = await completeAuthKit(page, { user, authkitHost, ...(organizationName === undefined ? {} : { organizationName }) });
-  if (expectedLanding === 'organizations') {
-    const destination = new URL('/organizations', localOrigin);
-    destination.searchParams.set('return_to', '/');
-    await page.waitForURL(destination.href);
-    assert.equal(page.url(), destination.href);
-    assert.equal((await sessionJson(page)).signedIn, true);
-  } else {
-    await waitForPortal(page);
-  }
-  return { page, pages, signedInAt: Date.now() };
+  return { page, pages };
 }
 
 // The acceptance of an organization invitation through its link. AuthKit sends the browser through the Initiate login

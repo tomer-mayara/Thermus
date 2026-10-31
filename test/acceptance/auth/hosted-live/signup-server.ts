@@ -7,7 +7,7 @@ import { connectMcpClient } from '../../../support/drivers/mcp/mcp-sdk-client.ts
 import { signupDocuments } from '../../../support/fixtures/signup-documents.ts';
 import { authorizeWithConnect } from '../../../support/hosted-live/connect-grant.ts';
 import { LiveRun, once } from '../../../support/hosted-live/live-run.ts';
-import { serverGet, serverPost, sessionJson, signInThroughPortal } from '../../../support/hosted-live/portal-visit.ts';
+import { serverGet, serverPost, sessionJson, signInToOrganizationSelector } from '../../../support/hosted-live/portal-visit.ts';
 import { localOrigin } from '../../../support/hosted-live/settings.ts';
 import { readToken } from '../../../support/hosted-live/tokens.ts';
 import { personalExternalId } from '../../../support/hosted-live/signup-fixtures.ts';
@@ -39,7 +39,7 @@ export function describeSignupServerCases(previous: LiveRun): void {
   const activated = once(async () => {
     const { user } = await run.signupFixtures();
     assert.equal((await (await run.workos.userManagement.listOrganizationMemberships({ userId: user.id })).autoPagination()).length, 0);
-    const visit = await signInThroughPortal(run, user, undefined, 'organizations');
+    const visit = await signInToOrganizationSelector(run, user);
     await visit.page.goto(`${localOrigin}/signup`);
     const agreement = visit.page.getByRole('checkbox');
     assert.equal(await agreement.isChecked(), false);
