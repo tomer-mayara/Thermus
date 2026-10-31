@@ -1,10 +1,8 @@
 import type { FleetRead, FleetRow, FleetWrite, RemovableState, ReviveResult, TenantFleetStore } from '../../../../src/tenancy/tenants/tenant-fleet-store.ts';
 import type { RegistryCount, TenantState } from '../../../../src/tenancy/tenants/tenant-registry-store.ts';
-import { TenantProvisioningStoreFake, type FakeTenantRow } from './tenant-provisioning-store-fake.ts';
+import { fakeCreatedAt, TenantProvisioningStoreFake, type FakeTenantRow } from './tenant-provisioning-store-fake.ts';
 
-export type FleetOperation = 'read' | 'deleted' | 'revive' | 'suspended' | 'resumed' | 'digest';
-
-const CREATED_AT = '2026-10-01T08:00:00.000Z';
+export type FleetOperation = 'read' | 'idle' | 'deleted' | 'revive' | 'suspended' | 'resumed' | 'digest';
 
 /**
  * The registry fake of the provisioner (a fake) with the statements of the fleet commands and the sweeps. Each change
@@ -21,6 +19,15 @@ export class TenantFleetStoreFake extends TenantProvisioningStoreFake implements
     return { status: 'complete', rows: [...this.rows.values()].map(fleetRowOf) };
   }
 
+  // As the idle query of the SQL adapter: the live rows of the plan with a service whose last use, or creation when
+  // they never served a call, is at or before the cutoff.
+  async readIdle(plan: string, cutoff: string): Promise<FleetRead> {
+    if (this.fleetUnavailable.has('idle')) return { status: 'unavailable' };
+    const idle = [...this.rows.values()].filter((row) => row.state === 'live' && row.serviceId !== null && row.plan === plan
+      && Date.parse(row.lastActiveAt ?? row.createdAt) <= Date.parse(cutoff));
+    return { status: 'complete', rows: idle.toSorted((first, second) => first.organizationId.localeCompare(second.organizationId)).map(fleetRowOf) };
+  }
+
   async markDeleted(organizationId: string, from: RemovableState, serviceId: string | null): Promise<FleetWrite> {
     return this.fleetMove('deleted', organizationId, { from: [from], serviceId }, (row) => {
       this.moveTo(row, 'deleted');
@@ -34,7 +41,7 @@ export class TenantFleetStoreFake extends TenantProvisioningStoreFake implements
     if (!admit(count)) return { status: 'refused', count };
     const row = this.row(organizationId);
     this.moveTo(row, 'requested');
-    Object.assign(row, { serviceName: null, serviceId: null, internalUrl: null, imageDigest: null, plan: null, appliedPlan: null, failureReason: null });
+    Object.assign(row, { serviceName: null, serviceId: null, internalUrl: null, imageDigest: null, plan: null, appliedPlan: null, failureReason: null, lastActiveAt: null });
     return { status: 'revived' };
   }
 
@@ -65,13 +72,14 @@ export class TenantFleetStoreFake extends TenantProvisioningStoreFake implements
     return { status: 'recorded' };
   }
 
-  private moveTo(row: FakeTenantRow, state: TenantState): void {
+  protected moveTo(row: FakeTenantRow, state: TenantState): void {
     row.state = state;
     row.updatedAt += 1_000;
+    row.changedAtMs = this.clock?.() ?? 0;
     this.changes.push(`${row.organizationId} ${state}`);
   }
 
-  private countFor(organizationId: string): RegistryCount {
+  protected countFor(organizationId: string): RegistryCount {
     const rowsByState = new Map<TenantState, number>();
     for (const { state } of this.rows.values()) rowsByState.set(state, (rowsByState.get(state) ?? 0) + 1);
     const current = this.rows.get(organizationId)?.state;
@@ -83,6 +91,6 @@ function fleetRowOf(row: FakeTenantRow): FleetRow {
   return {
     organizationId: row.organizationId, state: row.state, plan: row.plan, appliedPlan: row.appliedPlan, serviceId: row.serviceId,
     serviceName: row.serviceName, internalUrl: row.internalUrl, imageDigest: row.imageDigest, failureReason: row.failureReason,
-    lastActiveAt: null, createdAt: CREATED_AT, updatedAt: new Date(Date.parse(CREATED_AT) + row.updatedAt * 1_000).toISOString(),
+    lastActiveAt: row.lastActiveAt, createdAt: row.createdAt, updatedAt: new Date(Date.parse(fakeCreatedAt) + row.updatedAt * 1_000).toISOString(),
   };
 }

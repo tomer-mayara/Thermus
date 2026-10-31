@@ -6,12 +6,12 @@ import { PgTenantProvisioningStore } from '../../../src/tenancy/tenants/pg-tenan
 
 type Rows = Record<string, unknown>[];
 
-const nextRow = /^SELECT organization_id, state, service_name, render_service_id FROM thermus_admin\.tenants\s+WHERE state IN \('requested', 'creating', 'deploying'\)\s+ORDER BY state = 'requested', updated_at, organization_id\s+LIMIT 1 FOR UPDATE SKIP LOCKED$/;
+const nextRow = /^SELECT organization_id, state, service_name, render_service_id FROM thermus_admin\.tenants\s+WHERE state IN \('requested', 'creating', 'deploying'\)\s+AND \(state <> 'deploying' OR internal_url IS NULL OR updated_at <= now\(\) - interval '15 seconds'\)\s+ORDER BY state = 'requested', updated_at, organization_id\s+LIMIT 1 FOR UPDATE SKIP LOCKED$/;
 const claimRequested = /^UPDATE thermus_admin\.tenants SET state = 'creating', service_name = \$2, plan = \$3, updated_at = now\(\)\s+WHERE organization_id = \$1 AND state = 'requested'$/;
 const nameResumed = /^UPDATE thermus_admin\.tenants SET service_name = \$2 WHERE organization_id = \$1 AND service_name IS NULL$/;
 const recordService = /^UPDATE thermus_admin\.tenants SET state = 'deploying', render_service_id = \$2, updated_at = now\(\)\s+WHERE organization_id = \$1 AND state = 'creating' RETURNING organization_id$/;
 const recordLive = /^UPDATE thermus_admin\.tenants SET state = 'live', internal_url = \$3, image_digest = COALESCE\(\$4::text, image_digest\), applied_plan = plan,\s+failure_reason = NULL, updated_at = now\(\) WHERE organization_id = \$1 AND state = 'deploying' AND render_service_id = \$2 RETURNING organization_id$/;
-const recordFailed = /^UPDATE thermus_admin\.tenants SET state = 'failed', failure_reason = \$2, updated_at = now\(\)\s+WHERE organization_id = \$1 AND state IN \('creating', 'deploying'\) RETURNING organization_id$/;
+const recordFailed = /^UPDATE thermus_admin\.tenants SET state = 'failed', failure_reason = \$2, updated_at = now\(\)\s+WHERE organization_id = \$1 AND state IN \('creating', 'deploying'\) AND render_service_id IS NOT DISTINCT FROM \$3 RETURNING organization_id$/;
 const ownsService = 'SELECT 1 AS owned FROM thermus_admin.tenants WHERE render_service_id = $1';
 const claim = { serviceNameOf: (organizationId: string) => `thermus-tenant-${organizationId.toLowerCase().replace(/[^a-z0-9-]/g, '-')}`, plan: '0.5c-512mb' };
 
@@ -97,26 +97,27 @@ test('Given a deploying row on the service of the work, when live is recorded, t
   ]);
 });
 
-test('Given a row in creating or deploying, when a failure is recorded, then one guarded update sets failed with the reason, bounded to 1000 characters', async (t) => {
+test('Given a row in creating or deploying, when a failure is recorded, then one guarded update names the service of the work and sets failed with the reason, bounded to 1000 characters', async (t) => {
   const { store, queries } = provisioningStore(t, (text) => recordFailed.test(text) ? [{ organization_id: 'org_01A' }] : new Error('unexpected statement'));
-  assert.deepEqual(await store.recordFailed('org_01A', 'The deploy dep-1 of srv-a ended as update_failed'), { status: 'recorded' });
-  await store.recordFailed('org_01A', 'x'.repeat(1_500));
-  assert.deepEqual(queries[0]?.values, ['org_01A', 'The deploy dep-1 of srv-a ended as update_failed']);
+  assert.deepEqual(await store.recordFailed('org_01A', 'srv-a', 'The deploy dep-1 of srv-a ended as update_failed'), { status: 'recorded' });
+  await store.recordFailed('org_01A', null, 'x'.repeat(1_500));
+  assert.deepEqual(queries[0]?.values, ['org_01A', 'The deploy dep-1 of srv-a ended as update_failed', 'srv-a']);
   assert.equal((queries[1]?.values?.[1] as string).length, 1_000);
+  assert.equal(queries[1]?.values?.[2], null, 'A row without a service binds to no service');
 });
 
 test('Given a row in another state, when a change is recorded, then nothing changes and the result says that the row moved', async (t) => {
   const { store } = provisioningStore(t, () => []);
   assert.deepEqual(await store.recordService('org_01A', 'srv-a'), { status: 'moved' });
   assert.deepEqual(await store.recordLive('org_01A', 'srv-a', { internalUrl: 'http://a:8080' }), { status: 'moved' });
-  assert.deepEqual(await store.recordFailed('org_01A', 'reason'), { status: 'moved' });
+  assert.deepEqual(await store.recordFailed('org_01A', 'srv-a', 'reason'), { status: 'moved' });
 });
 
 test('Given a failed write, when a change is recorded, then the result is unavailable', async (t) => {
   const { store } = provisioningStore(t, () => new Error('private storage details'));
   assert.deepEqual(await store.recordService('org_01A', 'srv-a'), { status: 'unavailable' });
   assert.deepEqual(await store.recordLive('org_01A', 'srv-a', { internalUrl: 'http://a:8080' }), { status: 'unavailable' });
-  assert.deepEqual(await store.recordFailed('org_01A', 'reason'), { status: 'unavailable' });
+  assert.deepEqual(await store.recordFailed('org_01A', 'srv-a', 'reason'), { status: 'unavailable' });
 });
 
 test('Given the registry, when the write guard asks for a service ID, then a row with that ID owns it and a failed read owns nothing', async (t) => {

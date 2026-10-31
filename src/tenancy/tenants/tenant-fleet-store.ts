@@ -43,6 +43,11 @@ export type RemovableState = Exclude<TenantState, 'deleted'>;
 export interface TenantFleetStore {
   readFleet(): Promise<FleetRead>;
   /**
+   * The rows that the idle sweep suspends: live, with a service, on the plan, and with a last use at or before cutoff,
+   * or a creation at or before it when the row never served a call. cutoff is ISO 8601 in UTC.
+   */
+  readIdle(plan: string, cutoff: string): Promise<FleetRead>;
+  /**
    * from, the state that the caller read, to deleted, after the platform deleted serviceId, the service that the caller
    * read (null for a row without a service). The row keeps its service ID and name for the record; its internal address
    * goes, so no route leads to the deleted service.

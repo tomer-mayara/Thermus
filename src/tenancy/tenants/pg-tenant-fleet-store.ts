@@ -3,8 +3,13 @@ import { COUNT_ROWS, LOCK_REGISTRY, registryCount } from './pg-tenant-registry-s
 import type { FleetRead, FleetRow, FleetWrite, RemovableState, ReviveResult, TenantFleetStore } from './tenant-fleet-store.ts';
 import type { RegistryCount, TenantState } from './tenant-registry-store.ts';
 
-const READ_FLEET = `SELECT organization_id, state, plan, applied_plan, render_service_id, service_name, internal_url, image_digest,
-  failure_reason, last_active_at, created_at, updated_at FROM thermus_admin.tenants ORDER BY organization_id`;
+const FLEET_COLUMNS = `organization_id, state, plan, applied_plan, render_service_id, service_name, internal_url, image_digest,
+  failure_reason, last_active_at, created_at, updated_at`;
+const READ_FLEET = `SELECT ${FLEET_COLUMNS} FROM thermus_admin.tenants ORDER BY organization_id`;
+// A row that never served a call has no last use, so its creation counts (plan section 4.2).
+const READ_IDLE = `SELECT ${FLEET_COLUMNS} FROM thermus_admin.tenants
+  WHERE state = 'live' AND render_service_id IS NOT NULL AND plan = $1 AND COALESCE(last_active_at, created_at) <= $2::timestamptz
+  ORDER BY organization_id`;
 // Each change names the state and the service that it starts from, so a row that another writer changed stays as it is.
 // A replacement row of the same organization has a new service, so a stale change moves instead of changing it. A row
 // without a service binds to NULL.
@@ -27,9 +32,12 @@ export class PgTenantFleetStore implements TenantFleetStore {
 
   constructor(runtime: BoundedSqlRuntime) { this.runtime = runtime; }
 
-  async readFleet(): Promise<FleetRead> {
-    const result = await this.runtime.run(async (session) => (await session.query(READ_FLEET)).map(fleetRowOf));
-    return result.status === 'complete' ? { status: 'complete', rows: result.value } : { status: 'unavailable' };
+  readFleet(): Promise<FleetRead> {
+    return this.read(READ_FLEET, []);
+  }
+
+  readIdle(plan: string, cutoff: string): Promise<FleetRead> {
+    return this.read(READ_IDLE, [plan, cutoff]);
   }
 
   markDeleted(organizationId: string, from: RemovableState, serviceId: string | null): Promise<FleetWrite> {
@@ -60,6 +68,11 @@ export class PgTenantFleetStore implements TenantFleetStore {
 
   recordDigest(organizationId: string, serviceId: string, imageDigest: string): Promise<FleetWrite> {
     return this.change(RECORD_DIGEST, [organizationId, serviceId, imageDigest]);
+  }
+
+  private async read(text: string, values: unknown[]): Promise<FleetRead> {
+    const result = await this.runtime.run(async (session) => (await session.query(text, values)).map(fleetRowOf));
+    return result.status === 'complete' ? { status: 'complete', rows: result.value } : { status: 'unavailable' };
   }
 
   // No changed row: the row is no longer in the start state or on the service of the change, because another writer moved it.

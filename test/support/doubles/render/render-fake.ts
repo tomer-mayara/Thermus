@@ -1,15 +1,18 @@
 // A fake (Meszaros) of the Render API v1 for the calls of the tenant platform: list the services of a name, create an
-// image-backed private service, read a service and its deploys, delete a service, and read the memory metrics and the
-// events of the sweeps. It keeps services, deploys, memory points, and events in memory, with the answer shapes and
-// rate-limit headers that records SO-01c and SO-01e measured. A new deploy shows
-// update_in_progress for deployReads reads of the deploy list and then ends with deployOutcome. The fake makes the
-// slug as the SO-06 live runs measured: Render keeps a short name whole, shortens a long name at the last separator
-// before a limit, and gives a second service with the same shortened start a unique suffix. So a long name gets a
-// slug that differs from it, and a test can see that the adapter reads the slug and does not compute it.
-// Saboteur entries (failNext) replace the next answer of a route with a status, a network failure before Render sees
-// the request, or a lost answer after Render did the work.
+// image-backed private service, read a service and its deploys, delete, suspend, and resume a service, and read the
+// memory metrics and the events of the sweeps. It keeps services, deploys, memory points, and events in memory, with
+// the answer shapes and rate-limit headers that records SO-01c and SO-01e measured. A new deploy shows
+// update_in_progress for deployReads reads of the deploy list and then ends with deployOutcome. A suspended service
+// keeps its last deploy live, and a resume adds a deploy with the trigger service_resumed resumeDeployDelayMs after the
+// resume call, by the clock of the test, as records SO-01c and SO-09 measured: until then, the newest deploy is the one
+// from before the suspend. The fake makes the slug as the SO-06 live runs measured: Render keeps a short name whole,
+// shortens a long name at the last separator before a limit, and gives a second service with the same shortened start
+// a unique suffix. So a long name gets a slug that differs from it, and a test can see that the adapter reads the slug
+// and does not compute it. Saboteur entries (failNext) replace the next answer of a route with a status, a network
+// failure before Render sees the request, or a lost answer after Render did the work; hold keeps the answers of a route
+// until the test releases them.
 
-export type RenderRoute = 'list services' | 'create service' | 'read service' | 'list deploys' | 'delete service' | 'memory metrics' | 'memory limit metrics' | 'list events';
+export type RenderRoute = 'list services' | 'create service' | 'read service' | 'list deploys' | 'delete service' | 'suspend service' | 'resume service' | 'memory metrics' | 'memory limit metrics' | 'list events';
 
 // A limit between the longest whole slug that the live runs saw (33 characters) and the shortest shortened name (42).
 const SLUG_LIMIT = 40;
@@ -51,6 +54,12 @@ export interface FakeService {
   readonly id: string;
   readonly name: string;
   readonly slug: string;
+  /** The port that the server of the service opens. */
+  readonly port: number;
+  /** True after a suspend call, until a resume call. */
+  suspended: boolean;
+  /** The time of the clock of the test at the last resume call, until Render adds the deploy of that resume. */
+  resumedAt?: number;
   readonly ownerId: string;
   readonly imagePath: string;
   readonly registryCredentialId?: string;
@@ -72,12 +81,15 @@ interface Account {
   readonly now?: () => number;
 }
 
-type ServiceInput = Omit<FakeService, 'id' | 'slug' | 'ownerId' | 'deploys' | 'openPorts' | 'memory' | 'memoryLimitBytes' | 'events'>;
+type ServiceInput = Omit<FakeService, 'id' | 'slug' | 'port' | 'suspended' | 'resumedAt' | 'ownerId' | 'deploys' | 'openPorts' | 'memory' | 'memoryLimitBytes' | 'events'>;
+type ServiceAddress = { readonly host: string; readonly port: number };
 type Answer = { readonly status: number; readonly body?: unknown; readonly headers?: Readonly<Record<string, string>> };
 
 const SERVER_PORT = 8080;
 const ENDED = new Set(['live', 'build_failed', 'update_failed', 'canceled', 'pre_deploy_failed', 'deactivated']);
 const readLimits = { 'Ratelimit-Limit': '400', 'Ratelimit-Remaining': '399', 'Ratelimit-Reset': '30' };
+// 10 suspends, resumes, and deploys a minute for each service (record SO-01c).
+const changeLimits = { 'Ratelimit-Limit': '10', 'Ratelimit-Remaining': '9', 'Ratelimit-Reset': '40' };
 const metricsLimits = { 'Ratelimit-Limit': '30', 'Ratelimit-Remaining': '29', 'Ratelimit-Reset': '50' };
 const deleteLimits = { 'Ratelimit-Limit': '100', 'Ratelimit-Remaining': '99', 'Ratelimit-Reset': '22' };
 const notFound: Answer = { status: 404, body: { message: 'Not Found' } };
@@ -90,12 +102,15 @@ export class RenderFake {
   deployOutcome = 'live';
   /** Ratelimit-Remaining of the next create answer. */
   createsRemaining = 19;
+  /** The time from a resume call to the deploy of that resume, by the clock of the test: 1.8 to 2.0 s in SO-01c and SO-09. */
+  resumeDeployDelayMs = 2_000;
   /** Runs before Render handles a create call, so a test can observe the system at that moment. */
   beforeCreate: (request: RenderRequest) => void | Promise<void> = () => {};
   readonly fetch: typeof fetch = (input, init) => this.answer(input, init);
   readonly #account: Account;
   readonly #services = new Map<string, FakeService>();
   readonly #faults: { readonly route: RenderRoute; readonly fault: RenderFault }[] = [];
+  readonly #holds = new Map<RenderRoute, Promise<void>>();
   #sequence = 0;
   #time = Date.parse('2026-10-27T12:00:00Z');
 
@@ -115,9 +130,12 @@ export class RenderFake {
     return this.requests.filter((request) => request.route === route);
   }
 
-  /** A service that Render already has, such as one of an earlier run, with a first deploy that ends as outcome. */
-  addService(name: string, deploy: { readonly outcome: string; readonly readsLeft: number } = { outcome: 'live', readsLeft: 0 }): FakeService {
-    const service = this.makeService({ name, imagePath: `ghcr.io/tomer-mayara/thermus-hosted@sha256:${'e'.repeat(64)}`, plan: '0.5c-512mb', region: 'oregon', envVars: new Map() });
+  /**
+   * A service that Render already has, such as one of an earlier run, with a first deploy that ends as outcome. An
+   * address gives the service another hostname and port, such as those of a local server of the test.
+   */
+  addService(name: string, deploy: { readonly outcome: string; readonly readsLeft: number } = { outcome: 'live', readsLeft: 0 }, address?: ServiceAddress): FakeService {
+    const service = this.makeService({ name, imagePath: `ghcr.io/tomer-mayara/thermus-hosted@sha256:${'e'.repeat(64)}`, plan: '0.5c-512mb', region: 'oregon', envVars: new Map() }, address);
     this.addDeploy(service.id, { trigger: 'manual', ...deploy });
     return service;
   }
@@ -139,9 +157,17 @@ export class RenderFake {
     this.#faults.push({ route, fault });
   }
 
+  /** Each answer of the route waits until release(), so a test can see the system while a call of the route runs. */
+  hold(route: RenderRoute): { release(): void } {
+    const gate = Promise.withResolvers<void>();
+    this.#holds.set(route, gate.promise);
+    return { release: () => { this.#holds.delete(route); gate.resolve(); } };
+  }
+
   private async answer(input: Parameters<typeof fetch>[0], init: RequestInit = {}): Promise<Response> {
     init.signal?.throwIfAborted();
     const request = this.recorded(new URL(input instanceof Request ? input.url : input), init);
+    if (request.route !== 'unknown') await this.#holds.get(request.route);
     const fault = request.route === 'unknown' ? undefined : this.takeFault(request.route);
     if (fault === 'network') throw new TypeError('fetch failed');
     if (fault !== undefined && fault !== 'lost') return responseOf(fault);
@@ -180,6 +206,8 @@ export class RenderFake {
     'read service': (_request, id) => this.readService(id),
     'list deploys': (request, id) => this.listDeploys(id, request.query),
     'delete service': (_request, id) => this.deleteService(id),
+    'suspend service': (_request, id) => this.suspendService(id),
+    'resume service': (_request, id) => this.resumeService(id),
     'memory metrics': (request) => this.metrics(request.query, memoryPointsOf),
     'memory limit metrics': (request) => this.metrics(request.query, memoryLimitPointsOf),
     'list events': (request, id) => this.listEvents(id, request.query),
@@ -240,6 +268,7 @@ export class RenderFake {
   private listDeploys(id: string, query: URLSearchParams): Answer {
     const service = this.#services.get(id);
     if (service === undefined) return notFound;
+    this.addResumeDeploy(service);
     this.advance(service);
     const limit = Number(query.get('limit') ?? '20');
     const items = service.deploys.slice(0, limit).map((deploy) => ({ deploy: deployJson(deploy), cursor: `cursor-${deploy.id}` }));
@@ -249,6 +278,34 @@ export class RenderFake {
   private deleteService(id: string): Answer {
     if (!this.#services.delete(id)) return { ...notFound, headers: deleteLimits };
     return { status: 204, headers: deleteLimits };
+  }
+
+  // Render answers 202 without a body (SO-01c). The last deploy keeps its status live while the service is suspended.
+  private suspendService(id: string): Answer {
+    const service = this.#services.get(id);
+    if (service === undefined) return notFound;
+    service.suspended = true;
+    return { status: 202, headers: changeLimits };
+  }
+
+  private resumeService(id: string): Answer {
+    const service = this.#services.get(id);
+    if (service === undefined) return notFound;
+    if (service.suspended) {
+      service.suspended = false;
+      service.resumedAt = this.#account.now?.() ?? 0;
+    }
+    return { status: 202, headers: changeLimits };
+  }
+
+  // The deploy of a resume, once resumeDeployDelayMs passed on the clock of the test; without a clock, at the next read.
+  private addResumeDeploy(service: FakeService): void {
+    const { resumedAt } = service;
+    if (resumedAt === undefined) return;
+    const now = this.#account.now;
+    if (now !== undefined && now() < resumedAt + this.resumeDeployDelayMs) return;
+    service.resumedAt = undefined;
+    this.addDeploy(service.id, { trigger: 'service_resumed', outcome: this.deployOutcome, readsLeft: this.deployReads });
   }
 
   // One read of the deploy list moves the newest deploy that has not ended one step on.
@@ -266,11 +323,14 @@ export class RenderFake {
 
   private goLive(service: FakeService, live: FakeDeploy): void {
     for (const deploy of service.deploys) if (deploy !== live && deploy.status === 'live') deploy.status = 'deactivated';
-    service.openPorts = [SERVER_PORT];
+    service.openPorts = [service.port];
   }
 
-  private makeService(input: ServiceInput): FakeService {
-    const service: FakeService = { ...input, id: this.nextId('srv'), slug: this.slugOf(input.name), ownerId: this.#account.ownerId, deploys: [], openPorts: [], memory: [], events: [] };
+  private makeService(input: ServiceInput, address?: ServiceAddress): FakeService {
+    const service: FakeService = {
+      ...input, id: this.nextId('srv'), slug: address?.host ?? this.slugOf(input.name), port: address?.port ?? SERVER_PORT, suspended: false,
+      ownerId: this.#account.ownerId, deploys: [], openPorts: [], memory: [], events: [],
+    };
     this.#services.set(service.id, service);
     return service;
   }
@@ -287,7 +347,7 @@ export class RenderFake {
     const credential = service.registryCredentialId === undefined ? {} : { registryCredential: { id: service.registryCredentialId, name: 'ghcr-thermus-hosted-read' } };
     return {
       id: service.id, name: service.name, slug: service.slug, ownerId: service.ownerId, type: 'private_service',
-      imagePath: service.imagePath, suspended: 'not_suspended', suspenders: [], ...credential,
+      imagePath: service.imagePath, suspended: service.suspended ? 'suspended' : 'not_suspended', suspenders: service.suspended ? ['user'] : [], ...credential,
       serviceDetails: {
         runtime: 'image', plan: service.plan, region: service.region, numInstances: 1, url: `${service.slug}:10000`,
         openPorts: service.openPorts.map((port) => ({ port, protocol: 'TCP' })),
@@ -313,9 +373,13 @@ const READ_ROUTES: readonly (readonly [RegExp, RenderRoute])[] = [
   [/^\/v1\/metrics\/memory-limit$/, 'memory limit metrics'],
 ];
 
+const CHANGE_ROUTES: Readonly<Record<string, RenderRoute>> = { suspend: 'suspend service', resume: 'resume service' };
+
 function routeOf(method: string, path: string): RenderRoute | 'unknown' {
   if (path === '/v1/services') return method === 'GET' ? 'list services' : method === 'POST' ? 'create service' : 'unknown';
   if (/^\/v1\/services\/[^/]+$/.test(path)) return method === 'GET' ? 'read service' : method === 'DELETE' ? 'delete service' : 'unknown';
+  const change = /^\/v1\/services\/[^/]+\/(suspend|resume)$/.exec(path)?.[1];
+  if (change !== undefined) return method === 'POST' ? CHANGE_ROUTES[change] ?? 'unknown' : 'unknown';
   const read = READ_ROUTES.find(([pattern]) => pattern.test(path));
   return read !== undefined && method === 'GET' ? read[1] : 'unknown';
 }

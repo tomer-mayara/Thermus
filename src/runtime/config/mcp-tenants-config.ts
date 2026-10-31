@@ -1,7 +1,7 @@
 import { DeploymentConfigError } from './deployment-config.ts';
 import { ed25519PublicKeysOf } from './gateway-public-keys.ts';
 import { originWithSlashOf } from './setting-origins.ts';
-import { loadTenantSweepHour } from './tenant-sweep-config.ts';
+import { loadFreeTenantIdleDays, loadTenantSweepHour } from './tenant-sweep-config.ts';
 
 type Environment = Readonly<Record<string, string | undefined>>;
 
@@ -25,6 +25,8 @@ export interface TenantProvisioningSettings {
   readonly controlPlaneInternalUrl: string;
   // The hour in UTC of the daily tick of the tenant sweeps.
   readonly sweepHourUtc: number;
+  // The days without an MCP call after which the idle sweep suspends a free tenant.
+  readonly freeTenantIdleDays: number;
 }
 
 const DEFAULT_NAME_PREFIX = 'thermus-tenant-';
@@ -63,6 +65,7 @@ export function loadTenantProvisioningSettings(environment: Environment): Tenant
     gatewayPublicKey: gatewayPublicKeyOf(required(environment, 'GATEWAY_PUBLIC_KEY')),
     controlPlaneInternalUrl: internalOriginOf(required(environment, 'CONTROL_PLANE_INTERNAL_URL')),
     sweepHourUtc: loadTenantSweepHour(environment),
+    freeTenantIdleDays: loadFreeTenantIdleDays(environment),
   };
   return Object.freeze(settings);
 }

@@ -87,3 +87,16 @@ test('Given a resume operation that throws, when the tenant is resumed, then the
   assert.deepEqual(result, { status: 'failed', reason: 'The resume call failed unexpectedly.' });
   assert.equal(registry.stateOf('org_A'), 'suspended');
 });
+
+test('Given a resume call that fails while another writer gives the row a new service, when the row is restored, then the restore names the service of the mark, so the new row stays as it is', async () => {
+  const registry = suspendedRegistry();
+  const operation = new TenantResumeSpy();
+  operation.outcome = { status: 'failed', reason: 'Render answered 429' };
+  const resume = operation.resume.bind(operation);
+  operation.resume = async (service) => { registry.set('org_A', { state: 'deploying', serviceId: 'srv-new' }); return resume(service); };
+
+  const result = await new TenantResumes(registry, operation).resume('org_A');
+
+  assert.deepEqual(result, { status: 'failed', reason: 'Render answered 429' });
+  assert.equal(registry.stateOf('org_A'), 'deploying');
+});
