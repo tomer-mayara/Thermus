@@ -3,7 +3,8 @@ import type {
   DefaultRoleMembership, DefaultRoleRead, OrganizationInventory, OrganizationList, OrganizationRead,
 } from '../../../tenancy/tenants/organization-inventory.ts';
 import { isMappedRole } from './hosted-role-mapping.ts';
-import { workosMembershipReads, type WorkOSOrganizationsOptions } from './workos-organizations.ts';
+import { workosMembershipReads } from './workos-membership-reads.ts';
+import type { WorkOSOrganizationsOptions } from './workos-organizations.ts';
 
 // The largest page that WorkOS gives. The page limit bounds each read: 10,000 organizations, and 10,000 memberships of
 // one organization.
