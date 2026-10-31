@@ -39,7 +39,7 @@ function launchError(error: unknown, executable: string): WebsiteFetchLaunchErro
   if (typeof syscall !== 'string' || !syscall.startsWith('spawn') || SYSTEM_LIMIT_CODES.has(code)) return undefined;
   const name = systemErrorName(code);
   const problem = name === 'ENOENT' ? 'was not found' : `could not start (${name})`;
-  return new WebsiteFetchLaunchError(name, `Lightpanda executable "${executable}" ${problem}. See docs/lightpanda-runtime.md for setup.`, { cause: error }, { category: 'launch', phase: 'renderer_launch', ...processDiagnostic(error as ExecFileException) });
+  return new WebsiteFetchLaunchError(name, `Lightpanda executable "${executable}" ${problem}. See docs/lightpanda-runtime.md for setup.`, { cause: error });
 }
 
 export class WebsiteFetcherLightpanda implements WebsiteFetcher {
