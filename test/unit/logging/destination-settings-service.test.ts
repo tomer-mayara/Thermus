@@ -78,7 +78,9 @@ test('Given a bearer destination, when saved and reread, then only token presenc
   const result = await service.read('tenant-a');
   assert.deepEqual(result, { status: 'found', settings: { revision: 'revision-1', endpoint: input.endpoint, auth: 'bearer', enabled: true, tokenPresent: true, tokenPreview: 'priv****' } });
   assert.ok(!JSON.stringify([...fake.rows.values()]).includes(input.token));
-  fake.rows.set('tenant-b', fake.rows.get('tenant-a')!);
+  const saved = fake.rows.get('tenant-a');
+  assert.ok(saved);
+  fake.rows.set('tenant-b', saved);
   assert.deepEqual(await service.read('tenant-b'), { status: 'unavailable' });
 });
 
@@ -125,8 +127,9 @@ test('Given corrupt or wrong-key credentials, when read or saved, then only a sa
   const wrongKey = new DestinationSettingsService(fake.store, Buffer.alloc(32, 8), senderStub);
   assert.deepEqual(await wrongKey.read('tenant-a'), { status: 'unavailable' });
   assert.deepEqual(await wrongKey.save('tenant-a', { ...input, expectedRevision: 'revision-1' }), { status: 'unavailable' });
-  const current = fake.rows.get('tenant-a')!;
-  fake.rows.set('tenant-a', { ...current, encryptedCredential: `${current.encryptedCredential!.slice(0, 5)}AAAA` });
+  const current = fake.rows.get('tenant-a');
+  assert.ok(current?.encryptedCredential);
+  fake.rows.set('tenant-a', { ...current, encryptedCredential: `${current.encryptedCredential.slice(0, 5)}AAAA` });
   assert.deepEqual(await service.read('tenant-a'), { status: 'unavailable' });
   assert.deepEqual(await service.save('tenant-a', { ...input, expectedRevision: 'revision-1', auth: 'none' }), { status: 'unavailable' });
 });
