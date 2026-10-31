@@ -5,9 +5,6 @@ import { ContextReportToolSpy, type ContextReport } from '../../support/doubles/
 import { toolJson } from '../../support/drivers/mcp/mcp-http-request.ts';
 import { alice, allowed, callReport, contextFor, serveAccess } from '../../support/in-process/access-test-server.ts';
 
-// A tenant admits each request with its signed context and gives MCPServer the access and the tool server of that
-// request. The bearer check of MCPServer stays first, and a request without a scope keeps the configured access.
-
 describe('MCPServer request scope', () => {
   test('Given a request scope with its own access resolver and tool server, when the request calls a tool, then MCPServer resolves access with the scope and builds the tool server of the scope, and the configured resolver gets no call', { timeout: 5_000 }, async (t) => {
     const { server, resolver, tools } = serveAccess(t, new Map());

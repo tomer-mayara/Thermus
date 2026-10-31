@@ -6,9 +6,6 @@ import type { GatewayResume, GatewayRoute, GatewayTenantRequest } from '../../..
 import type { McpForwardedRequest } from '../../../../src/interfaces/mcp/mcp-server.ts';
 import { OperatorLogSpy } from '../../../support/doubles/application/operator-log-spy.ts';
 
-// The gateway step of MCPServer (SO-05) with its collaborators replaced: a spy of the registry port, a stub of the
-// context signer, and a stub of the fetch of the tenant upstream that the test scripts.
-
 export const organizationId = 'org_A';
 export const internalUrl = 'http://thermus-tenant-org-a:8080';
 export const context: RequestContext = Object.freeze({

@@ -40,8 +40,6 @@ interface PendingSignIn {
 
 const CSRF_TOKEN_BYTES = 32;
 
-// The AuthKit sign-in of a browser with PKCE. The sign-in cookie keeps the state and the verifier of the browser until
-// the callback, and the callback turns the code into a new session cookie.
 export class AuthKitSignIn {
   private readonly userManagement: AuthKitSignInOptions['userManagement'];
   private readonly settings: AuthKitSignInOptions['settings'];
@@ -118,7 +116,6 @@ export class AuthKitSignIn {
   }
 }
 
-// A callback value must appear exactly one time and must not be empty.
 function onlyValue(query: URLSearchParams, name: string): string | undefined {
   const values = query.getAll(name);
   return values.length === 1 && values[0] !== '' ? values[0] : undefined;

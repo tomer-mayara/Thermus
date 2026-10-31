@@ -1,7 +1,6 @@
 import { answerStream, tenantBodyOf, type StreamEnd } from './mcp-gateway-answer-stream.ts';
 import { answerHeaders } from './mcp-gateway-headers.ts';
 
-/** The failure of a tenant that restarts, before its first answer byte: HTTP 502, or a connection that resets. */
 export type RestartCause = 'http-502' | 'connection';
 
 export type TenantAnswer =

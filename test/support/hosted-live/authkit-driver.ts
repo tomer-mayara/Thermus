@@ -115,8 +115,6 @@ export async function visitAuthKit(page: Page, start: string, plan: AuthKitPlan)
   }
 }
 
-// Completes each AuthKit page of a sign-in that a server started, until AuthKit sends the browser back to that server.
-// The server itself answers the callback. Returns the AuthKit pages that the browser saw.
 export async function completeAuthKit(page: Page, plan: Omit<AuthKitPlan, 'callback'>): Promise<readonly string[]> {
   const pages: string[] = [];
   await page.waitForURL((url) => url.host === plan.authkitHost, { waitUntil: 'commit', timeout: stepTimeout });

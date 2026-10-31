@@ -1,7 +1,6 @@
 import { CommandError } from '../shared/repository.ts';
 import type { FileChange } from './changes.ts';
 
-// A move across a selected boundary is an addition or deletion on that side.
 export function changeWithin(change: FileChange, includes: (path: string) => boolean): FileChange[] {
   if (change.status !== 'R') return includes(change.path) ? [change] : [];
   const oldPath = change.oldPath;

@@ -11,7 +11,6 @@ export function selfHostedSettings(directory: string): Readonly<Record<string, s
   return { DEPLOYMENT: 'self-hosted', PUBLIC_BASE_URL: publicBaseUrl, DATA_DIR: directory, LISTEN_HOST: '127.0.0.1', LISTEN_PORT: '0' };
 }
 
-// The local commands share these settings. Only the server reads AD_RULES_FILE.
 export function selfHostedServerSettings(directory: string, adRulesFile = trustedAdRulesFile): Readonly<Record<string, string>> {
   return { ...selfHostedSettings(directory), AD_RULES_FILE: adRulesFile };
 }

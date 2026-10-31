@@ -37,7 +37,6 @@ export async function shownPage(browser: HostedBrowser, path: string): Promise<S
   return { answer, forms: formsIn(answer.body) };
 }
 
-// The button of a form and the values of its visible fields.
 interface FilledForm {
   readonly label: string;
   readonly filled: Readonly<Record<string, string>>;
@@ -56,7 +55,6 @@ export function seatsIn(body: string): number | undefined {
   return match === null ? undefined : Number(match[1]);
 }
 
-// The seat line of a free workspace on Members, such as "4 of 5 seats used", or undefined without one.
 export function seatUsageIn(body: string): string | undefined {
   return /\b\d+ of \d+ seats used\b/.exec(body)?.[0];
 }
@@ -81,8 +79,6 @@ export function labelsOf(forms: readonly PageForm[]): readonly string[] {
   return forms.map(({ label }) => label);
 }
 
-// Each record as one line: "<actor> in <organization>: <action> <role> for <target>: <outcome>". Each record must have a
-// time in ISO 8601 UTC, the actor of the provider double, and no field other than those of the contract.
 export function recordLines(records: readonly ChangeRecord[]): readonly string[] {
   return records.map((record) => {
     assert.match(record.time, isoTime);

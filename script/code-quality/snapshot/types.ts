@@ -28,12 +28,9 @@ export interface Snapshot {
 }
 
 interface GlobalNumbers {
-  // From get_communities, for the dependency graph of src/.
   readonly modularity: number;
   readonly crossShare: number;
-  // The labels of the communities in each cycle between src/ communities.
   readonly cycles: readonly (readonly string[])[];
-  // The LOC-weighted maintainability, the decision paths, and the counts of the src/ files.
   readonly maintainability?: number;
   readonly paths: number;
   readonly files: number;
@@ -46,7 +43,6 @@ export interface SnapshotCommunity {
   readonly id: string;
   readonly label: string;
   readonly hub: string;
-  // The src/ files of the community, with their extension.
   readonly members: readonly string[];
   readonly files: number;
   readonly loc: number;
@@ -62,7 +58,6 @@ export interface CommunityReferences {
   readonly outbound: number;
 }
 
-// A dependency on another src/ community, sorted by the label of that community.
 export interface SnapshotEdge {
   readonly to: string;
   readonly references: number;
@@ -75,7 +70,6 @@ export interface SnapshotFile {
   // null for a file that is in no community, such as an entry point that no file imports.
   readonly community: string | null;
   readonly maintainability?: number;
-  // Native file MI before rounding. Absent when the report has no index.
   readonly maintainabilityRaw?: number;
   readonly paths: number;
   readonly loc: number;
@@ -93,7 +87,6 @@ export interface SnapshotFunction {
   readonly loc: number;
 }
 
-// One src/ file of the JSON report of ast-metrics analyze, with the values of the report before they are rounded.
 export interface FileMeasurement {
   readonly path: string;
   readonly paths: number;

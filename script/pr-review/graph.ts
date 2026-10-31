@@ -9,7 +9,6 @@ interface FileImport {
   readonly kind: ImportKind;
 }
 
-// source is the first file that gives the edge its kind.
 export interface PackageEdge {
   readonly from: string;
   readonly to: string;
@@ -51,7 +50,6 @@ export function packageOf(path: string): string {
   return names.length > 2 ? names[1] : 'composition';
 }
 
-// paths holds every path under src/ at HEAD, and sources the text of each TypeScript file among them.
 export function sourceGraphOf(paths: readonly string[], sources: ReadonlyMap<string, string>, ownerOf = packageOf): SourceGraph {
   const owners = new Map(paths.map((path) => [path, ownerOf(path)]));
   const javascript = paths.filter(isJavaScript);

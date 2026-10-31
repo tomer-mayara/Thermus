@@ -54,7 +54,6 @@ export function globListAt(document: unknown, key: string, where: string): reado
   return checkedGlobs(textListAt(document, key, where), key, where);
 }
 
-// One pattern, or a list of patterns.
 export function globsAt(document: unknown, key: string, where: string): readonly string[] {
   const value = valueAt(document, key);
   const patterns = typeof value === 'string' ? [value] : value;

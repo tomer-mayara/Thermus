@@ -1,7 +1,5 @@
 import type { ResumedService, ResumeOutcome, TenantResume } from '../../../../src/tenancy/tenants/tenant-resume.ts';
 
-// A spy of the resume operation, which SO-10 connects to the Render API. It records each call and gives the scripted
-// outcome. hold() keeps each call open until the test releases it, so concurrent calls can meet one running resume.
 export class TenantResumeSpy implements TenantResume {
   readonly calls: ResumedService[] = [];
   outcome: ResumeOutcome = { status: 'resumed' };

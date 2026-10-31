@@ -13,7 +13,6 @@ export function member(subject: string, organizationId: string, grants: readonly
   return { subject, organizationId, organizationName: organizationNames[organizationId] ?? organizationId, active: true, grants };
 }
 
-// nora has no membership. mia is a User in Acme, an Admin in Globex, and inactive in Initech. Umbrella is otto's only.
 export const members: readonly MembershipRecord[] = [
   { ...member('user-ivy', 'org-a', [userGrant, adminGrant]), active: false },
   member('user-dora', 'org-a', [memberRole]),

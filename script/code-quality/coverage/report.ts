@@ -12,8 +12,6 @@ type FunctionCoverage = { readonly name: string; readonly start: number; readonl
 type FileCoverage = { readonly path: string; readonly representation: MergedScript['representation']; readonly contentIdentity: string; readonly sourceContentIdentity?: string; readonly functions: readonly FunctionCoverage[] };
 type UnmeasuredFunction = { readonly path: string; readonly name: string; readonly start: number; readonly end: number; readonly reason: 'no-own-characters'; readonly sourceIdentity?: FunctionIdentity };
 
-// suite: the suite whose run gave the coverage. processes: the coverage files that the command read. scripts: the
-// scripts of the build of src/ in them.
 type CoverageReport = {
   readonly version: 3; readonly measurementVersion: 'own-characters-1'; readonly unmeasuredFunctions: readonly UnmeasuredFunction[]; readonly suite: CoverageSuite | readonly CoverageSuite[]; readonly commit: string | null; readonly provenance: CoverageProvenance;
   readonly processes: number; readonly scripts: number; readonly files: readonly FileCoverage[];
@@ -42,7 +40,6 @@ export function writeCoverageReport(file: string, origin: { commit: string | nul
   return report;
 }
 
-// Preserve the whole range while measuring only characters that the function owns.
 function orderedFunctions({ functions }: MergedScript): MergedFunction[] {
   return [...functions.values()].sort((first, second) => first.start - second.start || second.end - first.end || first.name.localeCompare(second.name));
 }

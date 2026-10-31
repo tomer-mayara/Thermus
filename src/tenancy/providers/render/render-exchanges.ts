@@ -9,13 +9,11 @@ const MAX_LIMIT_PAUSE_MS = 60_000;
 // A bounded message keeps a long answer of Render out of the log and the registry.
 const MESSAGE_LIMIT = 200;
 
-/** The answer of a 2xx exchange, else undefined. */
 export function successOf(exchange: RenderExchange): RenderAnswer | undefined {
   const { answer } = exchange;
   return answer !== undefined && answer.status >= 200 && answer.status < 300 ? answer : undefined;
 }
 
-/** A 429, a 5xx, or no answer: a read or the delete can go again. */
 export function retryable(exchange: RenderExchange): boolean {
   return exchange.answer === undefined || exchange.answer.status === 429 || exchange.answer.status >= 500;
 }

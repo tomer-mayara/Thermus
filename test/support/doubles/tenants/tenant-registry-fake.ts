@@ -7,9 +7,6 @@ interface FakeRow {
   readonly serviceId: string | null;
 }
 
-// A working tenant registry in memory with the statements of the lookup, the tenant request, and the writes of the
-// gateway. readFailure stands in for a registry that cannot be read. The lists record the inserts and the writes of
-// last_active_at, so a test can count them.
 export class TenantRegistryFake implements TenantRegistryStore, TenantGatewayStore {
   readonly rows = new Map<string, FakeRow>();
   readonly inserts: string[] = [];

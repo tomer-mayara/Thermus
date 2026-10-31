@@ -1,10 +1,7 @@
 type ChangeOperation = 'sendInvitation' | 'resendInvitation' | 'revokeInvitation';
 
-// The next answer of a change: a result without a change, or a failure before or after the change.
 type Override = { readonly result: 'unsupported' | 'stale' | 'not-pending' | 'address-in-use' } | { readonly error: Error; readonly afterChange?: boolean };
 
-// The answers of the changes of a provider double. A test can queue a result or a failure for the next change of an
-// operation, and it can hold each change until it releases them, so that several changes wait at the same time.
 export class ChangeAnswers {
   private readonly overrides = new Map<ChangeOperation, Override[]>();
   private held?: Promise<void>;

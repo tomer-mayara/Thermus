@@ -7,7 +7,6 @@ export interface ScriptResult {
   readonly stderr: string;
 }
 
-// Sends the signal to the command as soon as when gives true. when is checked every 20 ms while the command runs.
 interface ScriptStop {
   readonly signal: NodeJS.Signals;
   readonly when: () => boolean;

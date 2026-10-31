@@ -4,7 +4,6 @@ const ATTEMPT_PAUSE_MS = 30_000;
 // A rate-limited create waits for the time that the platform gives, at most one hour: the window of the create limit.
 const MAX_LIMIT_WAIT_MS = 3_600_000;
 
-/** The service of a row, or the reason that stops the row as failed. */
 export type ServiceOutcome =
   | { readonly status: 'service'; readonly serviceId: string }
   | { readonly status: 'failed'; readonly reason: string };

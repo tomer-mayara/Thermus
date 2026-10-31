@@ -25,7 +25,6 @@ interface FakeResponse {
 
 export type FakeAnswer = FakeResponse | 'hang' | 'close';
 type Responder = FakeAnswer | ((request: RecordedRequest) => FakeAnswer | Promise<FakeAnswer>);
-// A responder for the requests of a route pattern. It gets the path segment of the ID, decoded.
 type IdResponder = (request: RecordedRequest, id: string) => FakeAnswer | Promise<FakeAnswer>;
 
 interface PatternRoute {

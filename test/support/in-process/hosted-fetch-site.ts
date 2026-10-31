@@ -9,7 +9,6 @@ import { completionRecordsIn } from '../drivers/operator-log.ts';
 const hostedFetchUser: FakeUser = { id: 'user_fetch', email: 'fetch@example.com', firstName: 'Fetch' };
 const hostedFetchOrganization = 'org_fetch';
 
-// The production composition runs unchanged. The fetch seam routes only WorkOS and AuthKit to the local fake.
 export async function openHostedFetchSite(t: TestContext, settings: Readonly<Record<string, string>> = {}) {
   const world = await WorkOSFake.start(t, hostedRootConfig.publicBaseUrl, [hostedFetchOrganization]);
   world.users = [hostedFetchUser];

@@ -15,7 +15,6 @@ function grantOf(role: string): RoleGrant {
 
 export const userGrant: RoleGrant = grantOf('user');
 export const adminGrant: RoleGrant = grantOf('admin');
-// A retired role with no application permission, kept for refusal cases.
 export const superAdminGrant: RoleGrant = grantOf('super-admin');
 // The role that the provider gives a membership without another role. It gives no application permission.
 export const memberRole: RoleGrant = grantOf('member');

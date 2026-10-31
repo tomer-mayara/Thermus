@@ -31,7 +31,6 @@ export type AdministrationRefusal = 'denied';
 export interface AuthorizedOrganization {
   readonly organizationId: string;
   readonly organizationName: string;
-  // The browser session of the user selected this organization.
   readonly selected: boolean;
 }
 
@@ -119,8 +118,6 @@ export class OrganizationAdministration {
     return managesBilling(memberships, organizationId) ? this.billing.stateOf(organizationId) : 'denied';
   }
 
-  // An invitation gives the role that it names. Admin includes product access. The directory owns the acceptance, so a
-  // pending invitation holds a seat, and the check and the send of each invitation of an organization run alone.
   async sendInvitation(actor: Actor, request: InvitationSendRequest): Promise<ChangeResult> {
     const entry: ChangeEntry = { actor: actor.user, organizationId: request.organizationId, target: { email: request.email }, action: 'invite', role: request.role };
     return this.limit.serialize(request.organizationId, () => this.changes.run(entry, async () => {
@@ -159,8 +156,6 @@ export class OrganizationAdministration {
     });
   }
 
-  // The current organization name and roles that the actor manages, from one read of its own memberships.
-  // The organization comes from the request; a selected organization of a session authorizes nothing.
   private async managedBy(actor: Actor, organizationId: string): Promise<ManagedOrganization | AdministrationRefusal> {
     const memberships = await this.directory.membershipsOf(actor.user);
     const roles = managedRoles(memberships, organizationId);

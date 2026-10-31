@@ -2,7 +2,6 @@ import type { ScriptIdentity } from './identity.ts';
 import { coverageSourceFiles } from './source-files.ts';
 import { sourceBindingsOf, type SourceBindings } from './source-bindings.ts';
 
-// The cache belongs to one capture read; each lookup first checks live file hashes.
 export function coverageSourceFunctions(root: string) {
   const cached = new Map<string, SourceBindings | undefined>();
   return {

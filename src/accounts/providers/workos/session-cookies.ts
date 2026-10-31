@@ -56,7 +56,6 @@ export class SealedCookie<Content> {
     return setCookieValue(this.name, '', 0);
   }
 
-  // True when the Cookie header has a cookie of this name, also one that does not open.
   isSentIn(cookieHeader: string | null): boolean {
     return cookieValues(cookieHeader, this.name).length > 0;
   }

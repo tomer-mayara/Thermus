@@ -17,7 +17,6 @@ export interface SnapshotSources {
   readonly title?: string;
   // Sorted by path, as sourceFilesOf gives them. The snapshot keeps this order.
   readonly files: readonly FileMeasurement[];
-  // The answer texts of get_communities and of get_file_metrics for each file.
   readonly communities: string;
   readonly functions: ReadonlyMap<string, string>;
   readonly sourceTexts: ReadonlyMap<string, string>;

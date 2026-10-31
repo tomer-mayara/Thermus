@@ -18,22 +18,16 @@ import type { TenantResume } from '../tenancy/tenants/tenant-resume.ts';
 import { TenantResumes } from '../tenancy/tenants/tenant-resumes.ts';
 import type { HostedLoggingStorage } from './logging-storage.ts';
 
-/** The parts of the MCP gateway with MCP_TENANTS_ENABLED on: its settings and the tenant registry. */
 export interface GatewayParts {
   readonly settings: GatewaySettings;
   readonly tenants: GatewayTenants;
 }
 
-/** The settings that the control plane reads only with MCP_TENANTS_ENABLED on (plan section 4.1). */
 interface TenantsSettings {
   readonly freeTenantLimit: number;
   readonly gateway: GatewaySettings;
 }
 
-/**
- * The gateway of one start of the control plane: the cap of the tenant registry, read only with the switch on (else the
- * default of 25), the key check, and the gateway parts on the hosted storage, or none with the switch off.
- */
 export interface GatewayStart {
   readonly freeTenantLimit: number;
   /**

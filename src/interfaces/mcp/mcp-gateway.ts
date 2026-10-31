@@ -36,7 +36,6 @@ export class McpGateway {
   private readonly tenants: GatewayTenants;
   private readonly refusals: GatewayRefusals;
   private readonly live: LiveForward;
-  /** The refusal of each row that is not live, with the one report of each failed row. */
   private readonly states = new StateRefusals();
 
   constructor(options: McpGatewayOptions) {
@@ -45,7 +44,6 @@ export class McpGateway {
     this.live = new LiveForward({ signer: options.signer, tenants: options.tenants, refusals: this.refusals });
   }
 
-  /** The forward step: the answer of the live tenant of the organization, or the 503 of its row. */
   async forward(request: Request, forwarded: McpForwardedRequest): Promise<Response> {
     const organizationId = organizationOf(forwarded);
     const signal = forwarded.lifetime.signal;
@@ -57,7 +55,6 @@ export class McpGateway {
     return this.answerState(organizationId, route.state, signal);
   }
 
-  /** The 503 of a row that is not live, after the one resume of a suspended row. */
   private async answerState(organizationId: string, state: GatewayTenantState, signal: AbortSignal): Promise<Response> {
     if (state === 'suspended') {
       const resumed = await waitForRequest(signal, () => this.tenants.resume(organizationId));
@@ -90,10 +87,8 @@ function resumeRefusalOf(result: GatewayResume): Refusal {
 
 /** The refusal of each row state. A failed tenant reports one time until its row leaves the failed state. */
 class StateRefusals {
-  /** The organizations that got their report. At REPORT_MEMORY of them, the memory starts again. */
   private readonly reported = new Set<string>();
 
-  /** A row that is not failed makes the next failure of its organization report again. */
   rowSeen(organizationId: string, state: GatewayTenantState): void {
     if (state !== 'failed') this.reported.delete(organizationId);
   }

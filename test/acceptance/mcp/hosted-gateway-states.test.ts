@@ -4,9 +4,6 @@ import { setTimeout as delay } from 'node:timers/promises';
 import { gatewayOrganization, openHostedGatewaySite } from '../../support/in-process/hosted-gateway-site.ts';
 import { fetchCall } from './fixtures/gateway-calls.ts';
 
-// The row states of the MCP gateway (SO-05): each row that is not live gets the 503 of its state, one system log line,
-// and no forward. The site is the control plane of hosted-gateway.test.ts.
-
 for (const state of ['requested', 'creating', 'deploying'] as const) {
   test(`Given a tenant in state ${state}, when a call arrives, then the client gets 503 with Retry-After: 15 and a safe message`, { timeout: 30_000 }, async (t) => {
     const site = await openHostedGatewaySite(t);

@@ -9,9 +9,6 @@ import { FailureReporterSpy } from '../../support/doubles/mcp/failure-reporter-s
 import { mcpRequest } from '../../support/drivers/mcp/mcp-http-request.ts';
 import { alice, allowed, contextFor, identityFor, resourceUrl } from '../../support/in-process/access-test-server.ts';
 
-// MCPServer with a forward step (SO-05): after the bearer check and the access check, the step answers each request in
-// place of the local MCP server, with the decided context, the bearer token, and the lifetime of the request.
-
 function forwardingServer(t: TestContext, decision = allowed(contextFor(alice, 'tenant-org-a'))) {
   const forwarded: Array<{ readonly request: Request; readonly access: McpForwardedRequest }> = [];
   const tools = new ContextReportToolSpy();

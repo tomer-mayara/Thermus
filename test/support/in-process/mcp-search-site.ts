@@ -14,8 +14,6 @@ export async function openSearchSite(t: TestContext, era: McpProtocolEra, editio
   return openSearchSiteFor(t, era, { DEPLOYMENT: edition });
 }
 
-// The settings are a server environment: DEPLOYMENT selects the edition, as for the real server, and a hosted test
-// can add OPERATION_CAPACITY. The site adds the trusted ad rules file.
 export async function openSearchSiteFor(t: TestContext, era: McpProtocolEra, settings: Readonly<Record<string, string>>) {
   const hosted = settings.DEPLOYMENT === 'hosted';
   const records: string[] = [];

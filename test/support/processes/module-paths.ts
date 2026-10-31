@@ -26,7 +26,6 @@ export const hostedPortalFixture = new URL('test/support/fixtures/hosted-portal/
 export const lightpandaStub = fileURLToPath(new URL('test/support/doubles/website-fetcher/lightpanda-stub.sh', repositoryRoot));
 export const hostedPortalPreload = siblingModule('use-hosted-portal-fixture').href;
 
-// The program that the child-process sites and the command tests run: dist/src/index.js after a build.
 export const programEntry = fileURLToPath(new URL(`../../../src/index.${extension}`, import.meta.url));
 
 // The preloads load by URL through --import. The probe runs as the main module of a new Node process.
@@ -40,20 +39,14 @@ export const lingeringHostedHandle = siblingModule('keep-hosted-handle-open').hr
 export const heldHostedIdentity = siblingModule('hold-hosted-identity').href;
 export const heldHostedCleanup = siblingModule('hold-hosted-cleanup').href;
 
-// The two roles of the hosted image as two processes (SO-05): loopback connections only, WorkOS at a local fake, and a
-// control plane with one live tenant and no PostgreSQL.
 export const loopbackNetworkBlocker = siblingModule('deny-public-network').href;
 export const workosFakeRoute = siblingModule('route-workos-to-fake').href;
 export const oneLiveTenant = siblingModule('serve-one-live-tenant').href;
 
-// The container sites send these scripts into containers. container-site.ts copies the edge and the page seam, and
-// hosted-image-gate.ts mounts the page seam. container-gate.ts and hosted-image-gate.ts send the probe on standard
-// input.
 export const containerEdgeScript = containerModule('container-edge');
 export const containerPageScript = containerModule('container-page');
 export const containerProbeScript = containerModule('container-probe');
 
-// The identity preload that the hosted-image gate mounts. It is not copied into the final image.
 export const hostedImageIdentity = containerModule('hosted-image-identity');
 
 // The debug command runs directly from source; no build copies the script.
@@ -69,7 +62,6 @@ export const thermusAdminMigrations = [
   '20261027175430_tenant_registry_and_billing.sql',
 ].map(name => fileURLToPath(new URL(`sql/migrations/${name}`, repositoryRoot)));
 
-// The audit sender gate copies only source modules and test support into an isolated Docker network.
 export const auditSenderRuntime = {
   source: fileURLToPath(new URL(fromSource ? 'src/' : 'dist/src/', repositoryRoot)),
   support: fileURLToPath(new URL(fromSource ? 'test/support/' : 'dist/test/support/', repositoryRoot)),

@@ -35,7 +35,6 @@ export interface TenantSettings {
   readonly authkitIssuer: string;
 }
 
-// The same hosted image in the tenant role: it serves /healthz and /mcp for one organization.
 interface TenantConfig extends PublicUrls {
   readonly deployment: 'hosted';
   readonly role: 'tenant';

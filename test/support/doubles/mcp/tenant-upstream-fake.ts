@@ -13,10 +13,6 @@ import { TenantUpstreamTools, type SlowCall } from './tenant-upstream-tools.ts';
 
 type McpHandler = (request: Request, options: { authInfo: AuthInfo }) => Promise<Response>;
 
-// A fake of the tenant container of one organization behind the gateway. Like the tenant role, it refuses a request
-// without a valid Thermus-Access context for its organization and the bearer token of the request with 403, and then
-// serves the MCP tools of tenant-upstream-tools.ts with one server for each request through the production HTTP
-// bridge. A test can script the failures of a restart, hold an answer, and hold searches.
 export class TenantUpstreamFake {
   readonly requests: UpstreamRequest[] = [];
   readonly #tools = new TenantUpstreamTools(() => this.#changed());
@@ -51,7 +47,6 @@ export class TenantUpstreamFake {
     return fake;
   }
 
-  // The internal_url of the tenant in the registry.
   get origin(): string {
     return this.#origin;
   }
@@ -64,17 +59,14 @@ export class TenantUpstreamFake {
     return this.#tools.slowTicks;
   }
 
-  // The tenant relays the audit events of getURLAsMarkdown to the control plane at this internal origin.
   relayTo(controlPlaneInternalUrl: string): void {
     this.#tools.relayTo(controlPlaneInternalUrl);
   }
 
-  // The next tools/call fails as a restarted container does.
   failNext(failure: UpstreamFailure): void {
     this.#failures.push(failure);
   }
 
-  // The next MCP request waits before any MCP handling until release().
   holdNextAnswer(): { readonly arrived: Promise<UpstreamRequest>; release(): void } {
     const gate = Promise.withResolvers<void>();
     const arrived = Promise.withResolvers<UpstreamRequest>();
@@ -94,7 +86,6 @@ export class TenantUpstreamFake {
     return this.#until(() => (this.#tools.slowCalls.get(label)?.progressSentAt.length ?? 0) >= count);
   }
 
-  // The time when the tenant saw the signal of a slow call (by label) or of an HTTP request.
   async untilSignal(target: string | UpstreamRequest): Promise<number> {
     const signalAt = () => (typeof target === 'string' ? this.#tools.slowCalls.get(target)?.signalAt : target.signalAt);
     await this.#until(() => signalAt() !== undefined);

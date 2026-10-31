@@ -6,10 +6,6 @@ import { RendererProcessDouble } from '../../support/doubles/website-fetcher/ren
 import { openSearchSiteFor } from '../../support/in-process/mcp-search-site.ts';
 import { repositoryRoot } from '../../support/processes/module-paths.ts';
 
-// The hosted edition reads OPERATION_CAPACITY when it starts. These specifications call the public MCP tools of a
-// hosted site with the production operation factory and the renderer double. Each call that runs stops in incoming
-// processing until the test settles it, so the test controls how many calls run at the same time.
-
 const url = 'https://source.example/story';
 const query = 'capacity';
 const searchUrl = 'https://search.brave.com/search?q=capacity';
@@ -25,8 +21,6 @@ async function nextTurn(t: TestContext): Promise<void> {
   await new Promise<void>((resolve) => setImmediate(resolve));
 }
 
-// A held call continues with the real processing when the test settles it with success. A failure gives the
-// processing failure of its tool.
 function holdIncomingWork(t: TestContext) {
   const held: Array<{ signal?: AbortSignal; gate: PromiseWithResolvers<'success' | 'failure'> }> = [];
   const process = HtmlToMarkdownPipeline.prototype.process;

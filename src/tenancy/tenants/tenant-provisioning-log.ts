@@ -17,17 +17,14 @@ export class ProvisioningLog {
     this.log.info(`Tenant provisioning record: ${JSON.stringify({ organizationId: row.organizationId, state, serviceName: row.serviceName, ...details })}`);
   }
 
-  /** The report of a failure that the registry holds. */
   failed(row: ProvisioningRow, reason: string): void {
     this.log.error(`Tenant provisioning failed: ${JSON.stringify({ organizationId: row.organizationId, serviceName: row.serviceName, reason })}`);
   }
 
-  /** Another writer changed the row during the work, so the provisioner leaves it. */
   left(row: ProvisioningRow): void {
     this.log.info(`Tenant provisioning leaves organization ${row.organizationId}: its row changed during the work.`);
   }
 
-  /** The registry did not take a record; the row waits for the next claim. */
   unwritten(row: ProvisioningRow): void {
     this.log.error(`Tenant provisioning could not write the row of organization ${row.organizationId}. It tries again in 60 s.`);
   }

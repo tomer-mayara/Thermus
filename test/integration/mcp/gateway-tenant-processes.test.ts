@@ -13,11 +13,8 @@ import { oneLiveTenant, workosFakeRoute } from '../../support/processes/module-p
 import { withPreload } from '../../support/processes/server-preloads.ts';
 import { ServerProcess, type ServerSettings } from '../../support/processes/server-process.ts';
 
-// Both roles of the hosted image as two local processes (SO-05): the control plane with MCP_TENANTS_ENABLED on and the
-// tenant of one organization. They reach each other on loopback only; WorkOS is a local fake, and a preload gives the
-// control plane one live registry row and an idle provisioner without PostgreSQL. The renderer is the stub of the offline tests, so the tool
-// call ends as a fetch failure of the tenant, which is enough to show the forward and the relay.
-
+// The renderer is the stub of the offline tests, so the tool call ends as a fetch failure of the tenant. That failure
+// is enough to show the forward and the relay.
 const user: FakeUser = { id: 'user_01PROCESSES', email: 'processes@example.com', firstName: 'Process' };
 const authority = `workos:${workOSSettings.WORKOS_CLIENT_ID}`;
 const tenantId = `${authority}:${tenantOrganizationId}`;

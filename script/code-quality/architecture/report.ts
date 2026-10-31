@@ -20,8 +20,6 @@ const legendParts = {
 
 const bandsNeedTheCoverage = 'No coverage report: the bands are withheld. Run the coverage command when the test selection permits it.';
 
-// Every report includes the graph and its legend. An unchanged map keeps its note above the graph. Without coverage,
-// the line after the summary says how to get the bands.
 export function architectureReportOf(sources: mapTypes.MapSources, delta: CrapDelta | undefined): string {
   const map = architectureMapOf(sources, delta);
   const coverageNote = delta === undefined ? ['', sources.coverageNotice ?? bandsNeedTheCoverage] : [];
@@ -45,8 +43,6 @@ function headerOf({ base }: mapTypes.MapSources): string {
   return `## Architecture of src/: base ${base.commit.slice(0, 8)} → head`;
 }
 
-// A share keeps two decimals. The communities include the shared kernel, and the count of the new and the gone ones
-// follows when there are such. With coverage, the count of the functions at CRAP 30 or more in all of src/ comes last.
 function summaryOf({ base, head }: mapTypes.MapSources, nodes: readonly mapTypes.MapNode[], delta: CrapDelta | undefined): string {
   const counts = (['new', 'gone'] as const)
     .map((status) => `${nodes.filter((node) => node.status === status).length} ${status}`)

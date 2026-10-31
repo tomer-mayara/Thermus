@@ -33,7 +33,6 @@ export interface RenderRequest {
   readonly query: URLSearchParams;
   readonly body: unknown;
   readonly authorized: boolean;
-  /** The time of the clock of the test when the request arrived. */
   readonly at: number;
 }
 
@@ -86,11 +85,8 @@ export class RenderFake {
   readonly requests: RenderRequest[] = [];
   /** The reads of the deploy list that show a new deploy in progress before it ends. */
   deployReads = 2;
-  /** The end of each new deploy: live, or a failed status such as update_failed. */
   deployOutcome = 'live';
-  /** Ratelimit-Remaining of the next create answer. */
   createsRemaining = 19;
-  /** Runs before Render handles a create call, so a test can observe the system at that moment. */
   beforeCreate: (request: RenderRequest) => void | Promise<void> = () => {};
   readonly fetch: typeof fetch = (input, init) => this.answer(input, init);
   readonly #account: Account;
@@ -115,14 +111,12 @@ export class RenderFake {
     return this.requests.filter((request) => request.route === route);
   }
 
-  /** A service that Render already has, such as one of an earlier run, with a first deploy that ends as outcome. */
   addService(name: string, deploy: { readonly outcome: string; readonly readsLeft: number } = { outcome: 'live', readsLeft: 0 }): FakeService {
     const service = this.makeService({ name, imagePath: `ghcr.io/tomer-mayara/thermus-hosted@sha256:${'e'.repeat(64)}`, plan: '0.5c-512mb', region: 'oregon', envVars: new Map() });
     this.addDeploy(service.id, { trigger: 'manual', ...deploy });
     return service;
   }
 
-  /** A new deploy of a service, such as the deploy that Render starts after a resume. */
   addDeploy(serviceId: string, deploy: { readonly trigger: string; readonly outcome: string; readonly readsLeft: number }): FakeDeploy {
     const service = this.#services.get(serviceId);
     if (service === undefined) throw new Error(`The fake has no service ${serviceId}`);
@@ -251,7 +245,6 @@ export class RenderFake {
     return { status: 204, headers: deleteLimits };
   }
 
-  // One read of the deploy list moves the newest deploy that has not ended one step on.
   private advance(service: FakeService): void {
     const deploy = service.deploys.find((item) => !ENDED.has(item.status));
     if (deploy === undefined) return;
@@ -358,7 +351,6 @@ interface CreateParts {
   readonly details: Record<string, unknown>;
 }
 
-// The checks of Render on a create body, as far as the tenant platform uses them. The first text names the refused part.
 const createChecks: readonly (readonly [string, (parts: CreateParts, ownerId: string) => boolean])[] = [
   ['invalid service', ({ service }, ownerId) => service.type === 'private_service' && service.ownerId === ownerId && isText(service.name)],
   ['invalid image', ({ image }, ownerId) => image.ownerId === ownerId && isText(image.imagePath)],

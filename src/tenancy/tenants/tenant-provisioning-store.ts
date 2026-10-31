@@ -1,4 +1,3 @@
-/** A row that the provisioner works on: it creates the service of a creating row and watches the deploy of a deploying row. */
 export interface ProvisioningRow {
   readonly organizationId: string;
   readonly state: 'creating' | 'deploying';
@@ -7,7 +6,6 @@ export interface ProvisioningRow {
 }
 
 export interface ClaimRequest {
-  /** The name of the service of an organization, for a row that has no name yet. */
   serviceNameOf(organizationId: string): string;
   readonly plan: string;
 }

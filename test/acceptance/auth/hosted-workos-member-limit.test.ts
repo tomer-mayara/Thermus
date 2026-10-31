@@ -7,9 +7,6 @@ import { signInThroughServer } from '../../support/dsl/workos-sign-in.ts';
 import { hostedConfig } from '../../support/fixtures/hosted-config.ts';
 import { serveWorkOSSite } from '../../support/in-process/workos-site.ts';
 
-// The 5-seat rule of a free workspace in the production composition with BillingFree, behind the real HTTP server,
-// with a local fake of the WorkOS API. The hosted live gate proves the refusal against WorkOS.
-
 const workspace = 'org_01FREE';
 const recordPrefix = 'INFO Account change record: ';
 const person = (name: string): FakeUser => ({ id: `user_01${name.toUpperCase()}`, email: `${name}@example.com`, firstName: name });

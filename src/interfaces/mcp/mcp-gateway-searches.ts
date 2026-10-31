@@ -9,7 +9,6 @@ const SEARCH_LIMIT = 5;
  * each search message that it holds, and keeps its places until the answer stream of the tenant ends.
  */
 export class GatewaySearches {
-  /** The places that running requests hold now. */
   private active = 0;
 
   /** The release of the places of the body, or undefined when they do not fit. A release frees the places one time. */

@@ -11,8 +11,6 @@ export interface SlowCall {
   finishedAt?: number;
 }
 
-// The organization, the signed context, and the user of a verified request: the front of the fake gives them in the
-// auth info of the MCP handler.
 interface CallScope {
   readonly organizationId: string;
   readonly context: string;
@@ -27,10 +25,6 @@ const tools: Array<{ readonly name: string; readonly inputSchema: { readonly typ
   { name: 'slow', inputSchema: { type: 'object', properties: { label: { type: 'string' } } } },
 ];
 
-// The MCP tools of the fake tenant (tenant-upstream-fake.ts), one server for each request. Each tool answers with text
-// that names the organization of the verified context. getURLAsMarkdown relays one audit event to the control plane
-// with the context, through the production relay sink; search can wait until the test releases it; slow sends
-// progress notifications and records when it sees the signal of its request. Each change calls changed().
 export class TenantUpstreamTools {
   readonly slowCalls = new Map<string, SlowCall>();
   readonly slowTicks = SLOW_TICKS;

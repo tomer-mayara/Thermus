@@ -24,8 +24,6 @@ const lockError = /in use by another Thermus process/;
 // Only the dedicated command arms the gate. npm test and npm run test:acceptance report these tests as skipped.
 const gateArmed = process.env.THERMUS_CONTAINER_GATE === '1';
 const hostedSettings = { DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://thermus.example', ...workOSSettings };
-// The hosted and paid capabilities: WorkOS sign-in, onboarding, organizations, grants, invitations, seats, and
-// billing, with the provider routes that could add them. The self-hosted composition routes none of them.
 const hostedAndPaidPaths = [
   ['GET', '/auth/callback?code=hosted-code&state=hosted-state'],
   ['GET', '/auth/sign-in'],
@@ -51,7 +49,6 @@ let images: GateImages;
 const fetchToolNames = ['getURLAsMarkdown', 'search'];
 const fetchReason = 'Read the rendered page for the task';
 const pinnedRenderer = '/opt/lightpanda/1.0.0/lightpanda';
-// The page of the test-only seam in container-page.ts, on port 8090 of a server container.
 const containerPage = 'http://localhost:8090';
 const storyMarkdown = '## Runtime story\n\nThe script rendered this paragraph with enough words to keep it.\n\nFinal host target\n\n'
   + `Related [article](${containerPage}/related) and [root](${containerPage}/root).`;

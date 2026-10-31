@@ -8,8 +8,6 @@ import { repositoryRoot } from '../shared/repository.ts';
 
 type ReportCommand = Extract<ArchitectureCommand, { readonly kind: 'report' }>;
 
-// Offline files use their own identities and optional change evidence. Repository
-// mode uses Git status for src/ and defaults to ast-report/coverage.json.
 export async function mapSourcesOf({ source, touched, changes, coverage: file, noCoverage }: ReportCommand): Promise<MapSources> {
   const root = source.kind === 'repository' ? repositoryRoot() : undefined;
   // Validate coverage before costly analysis. A skip must not read the default report.

@@ -16,7 +16,6 @@ export function architectureMapOf(sources: MapSources, delta: CrapDelta | undefi
   return { nodes, edges, changed };
 }
 
-// A community is new, gone, or touched, or its band is not the band of its base, as the plan says ("The views", view 1).
 function nodesChanged(nodes: ArchitectureMap['nodes']): boolean {
   return nodes.some((node) => node.status !== 'kept' || node.touched || node.band?.band !== node.band?.before);
 }

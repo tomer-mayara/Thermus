@@ -50,15 +50,12 @@ export class WorkOSFake implements DirectoryView, OrganizationView, InvitationVi
   readonly authkitKey: SigningKey;
   readonly settings: WorkOSSettings;
   readonly mcpResourceUrl: string;
-  // The users that the user reads give. A send to an unknown address adds an unverified user.
   users: readonly FakeUser[] = [];
   // The invitations of all organizations, in the order of the invitation pages. The JSON of each has a fake token
   // "invitation-token-<ID>" and a link on authkit.fake.example, so that a test can check that they never show.
   invitations: readonly FakeInvitation[] = [];
   // The name of each organization in the membership answers. An organization without a name here has its ID as name.
   organizationNames: Readonly<Record<string, string>> = {};
-  // The external ID of each organization. An organization without an entry here has none. WorkOS names the
-  // authorization resource of an organization by its external ID, and by its organization ID only when it has none.
   organizationExternalIds: Readonly<Record<string, string>> = {};
   // The most records on one page. WorkOS gives at most the limit of the read, and it can give fewer.
   membershipPageSize = 100;
@@ -67,8 +64,6 @@ export class WorkOSFake implements DirectoryView, OrganizationView, InvitationVi
   // during concurrent changes.
   membershipPageOverlap = 0;
   authenticationMethod = 'Password';
-  // Set to an answer, such as a 500, to make reads fail: each membership read, only the membership pages after the
-  // first, each invitation read, or the refreshes.
   membershipOutage: FakeAnswer | undefined;
   laterMembershipPageOutage: FakeAnswer | undefined;
   invitationOutage: FakeAnswer | undefined;
@@ -84,7 +79,6 @@ export class WorkOSFake implements DirectoryView, OrganizationView, InvitationVi
   readonly unlistedOrganizationIds = new Set<string>();
   readonly deletedMembershipIds = new Set<string>();
   #memberships: readonly FakeMembership[] = [];
-  // The number of changes of the roles or the status of each membership, by index. The update times come from them.
   readonly #membershipChanges: number[] = [];
   readonly #sessions: WorkOSFakeSessions;
   readonly #invitationRoutes: WorkOSFakeInvitations;
@@ -131,12 +125,10 @@ export class WorkOSFake implements DirectoryView, OrganizationView, InvitationVi
     return { settings: this.settings, workos: workosClientFor(this.fake), authkitKeySet: createRemoteJWKSet(this.fake.authkitKeySetUrl) };
   }
 
-  // Makes an authorization code as AuthKit gives it after sign-in and the organization choice.
   codeFor(user: FakeUser, organizationId?: string): string {
     return this.#sessions.codeFor(user, organizationId);
   }
 
-  // Lets each next access token expire at once, so the next request needs a refresh.
   expireAccessTokens(): void {
     this.#sessions.expireAccessTokens();
   }
@@ -153,7 +145,6 @@ export class WorkOSFake implements DirectoryView, OrganizationView, InvitationVi
     return this.#sessions.browserToken(user, organizationId);
   }
 
-  // The ID, the roles, and the status of the membership of the user in the organization. Each fails without it.
   membershipId(user: FakeUser, organizationId: string): string {
     return membershipIdAt(this.requiredIndex(user, organizationId));
   }
@@ -166,7 +157,6 @@ export class WorkOSFake implements DirectoryView, OrganizationView, InvitationVi
     return currentStatus(this.#memberships[this.requiredIndex(user, organizationId)]);
   }
 
-  // Changes a membership as someone else does in WorkOS. A change gives a later update time.
   setRoles(user: FakeUser, organizationId: string, roles: readonly string[]): void {
     changeMembership(this, this.requiredIndex(user, organizationId), { roles });
   }
@@ -187,12 +177,10 @@ export class WorkOSFake implements DirectoryView, OrganizationView, InvitationVi
     this.#invitationRoutes.expireInvitation(invitationId);
   }
 
-  // The JSON of an organization, as the pinned SDK reads it.
   organizationJson(organizationId: string) {
     return organizationShape(organizationId, this.organizationNames[organizationId] ?? organizationId, this.organizationExternalIds[organizationId] ?? null);
   }
 
-  // One counter gives the numbers of the codes, refresh tokens, invitations, invited users, and Connect tokens.
   nextNumber(): number {
     return (this.#counter += 1);
   }

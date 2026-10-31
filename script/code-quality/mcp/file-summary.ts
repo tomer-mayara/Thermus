@@ -1,9 +1,6 @@
-// The summary that the file subcommand of script/code-quality/ast-metrics-mcp.ts makes from the answer of get_file_metrics: a
-// header with the file values, then one line for each function, lowest score first.
 import { isJsonObject, jsonOf, numberOf, objectOf, type JsonObject } from '../shared/json.ts';
 import { CommandError } from '../shared/repository.ts';
 
-// Only the values that the summary prints. A value that the answer does not give is undefined.
 interface FunctionMetrics {
   readonly name: string | undefined;
   readonly cyclomaticComplexity: number | undefined;
@@ -42,7 +39,6 @@ function fileMetricsOf(text: string): FileMetrics {
   };
 }
 
-// An entry that is not an object gives no values, so its line shows only dashes.
 function functionMetricsOf(entry: unknown): FunctionMetrics {
   const fields = objectOf(entry);
   return {

@@ -1,5 +1,3 @@
-// The CRAP column of the complexity table and the list of functions after the table, for the changed files: the count of
-// the functions at CRAP 30 or more on each side, and each function that the pull request added or made worse.
 import { countOf } from './risk-counts.ts';
 import { cellOf, type Side } from './format.ts';
 import type { CrapDelta } from './crap-delta.ts';

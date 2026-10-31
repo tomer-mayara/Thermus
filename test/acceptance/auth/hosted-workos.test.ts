@@ -13,10 +13,8 @@ import { mcpRequest, rpcResult } from '../../support/drivers/mcp/mcp-http-reques
 import { ContextReportToolSpy } from '../../support/doubles/mcp/context-report-tool-spy.ts';
 import { serveWorkOSSite, type WorkOSSite } from '../../support/in-process/workos-site.ts';
 
-// The real hosted composition with the WorkOS provider behind the real HTTP server on a loopback port. A local fake
-// of the WorkOS API stands in for WorkOS, so these specifications prove the application side only. The hosted live
-// gate proves the same flows against WorkOS.
-
+// A local fake stands in for WorkOS, so these specifications prove the application side only. The hosted live gate
+// proves the same flows against WorkOS.
 const sessionCookie = '__Host-thermus-session';
 const signInCookie = '__Host-thermus-sign-in';
 const organizationA = 'org_01ACME';
@@ -32,8 +30,6 @@ const openSite = (t: TestContext, buildServer?: RequestServerBuilder) => serveWo
   organizations: [organizationA, organizationB],
   buildServer,
   setUp: (world) => {
-    // Ada: User and Admin in A, User in B. Ben: Admin only in A. Cid: the default role only in A. Dee: no membership.
-    // Eve: Admin only in A and User in B.
     world.memberships = [
       { userId: ada.id, organizationId: organizationA, roles: ['user', 'admin'] },
       { userId: ada.id, organizationId: organizationB, roles: ['user'] },

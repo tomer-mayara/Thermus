@@ -2,9 +2,6 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { apiKey, deployJson, image, json, ownerId, platformWith, productionServiceId, serviceJson, signal } from './fixtures/render-fetch-stub.ts';
 
-// The Render adapter with a stub of fetch: the request of each call from the SO-01c probe, the reading of each answer,
-// the retry rule of reads and the delete, the single send of a create, the rate-limit headers, and the write guard.
-
 const request = { name: 'thermus-tenant-org-01a', plan: '0.5c-512mb', environment: new Map([['THERMUS_ROLE', 'tenant'], ['OPERATION_CAPACITY', '5']]) };
 
 test('Given a name, when the services are found, then one read lists the private services of the owner with that name and keeps only the exact name', async () => {

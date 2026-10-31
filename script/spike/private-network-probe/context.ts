@@ -18,7 +18,6 @@ export interface PrivateAddress {
   readonly url: string;
 }
 
-// The cleanup cancels a job that has not ended on the service that runs it.
 interface JobState {
   readonly id: string;
   readonly serviceId: string;

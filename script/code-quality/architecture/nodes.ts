@@ -12,7 +12,6 @@ export interface NodeIndex {
 
 type NodeMarks = Pick<MapNode, 'touched' | 'band'>;
 
-// Without coverage, a node has no band.
 export function nodeIndexOf(sources: MapSources, matching: Matching, delta: CrapDelta | undefined): NodeIndex {
   const touched = new Set(sources.touched);
   const bandOf = bandRuleOf(delta);

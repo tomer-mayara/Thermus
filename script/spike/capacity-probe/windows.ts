@@ -60,7 +60,6 @@ function transportFailed(outcomes: readonly CallOutcome[]): boolean {
 interface RecoveryFacts {
   readonly events: readonly EventView[];
   readonly sent: Sent;
-  // Started at the window end after a transport failure, while the metrics settle. An abort gives its error.
   readonly early?: Promise<Health | Error>;
 }
 

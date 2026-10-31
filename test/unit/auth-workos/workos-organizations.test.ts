@@ -38,7 +38,6 @@ function activeMembership(roleSlugs: readonly string[] | undefined, changes: Par
   };
 }
 
-// Records each SDK read, so that a test can check the exact query.
 class WorkOSReadsDouble {
   readonly membershipReads: ListOrganizationMembershipsOptions[] = [];
   readonly roleReads: string[] = [];

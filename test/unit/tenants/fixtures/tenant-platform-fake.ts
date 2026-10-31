@@ -22,7 +22,6 @@ export class TenantPlatformFake implements TenantPlatform {
   readonly restartReads: RestartRead[] = [];
   /** The windows of the memory and restart reads, in order. */
   readonly windows: TimeWindow[] = [];
-  /** Runs at the start of each operation, so a test can stop the caller or change the registry at that point. */
   onCall: (call: string) => void = () => {};
   #sequence = 0;
 

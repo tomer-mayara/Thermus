@@ -20,7 +20,6 @@ export class RowProvisioning {
     this.records = new RowRecords(parts);
   }
 
-  /** Moves the row on as far as it goes: to live, to failed, or to the next claim after a storage failure. */
   async provision(claim: Extract<ClaimResult, { status: 'claimed' }>, signal: AbortSignal): Promise<RowOutcome> {
     const { row } = claim;
     this.records.claimed(row, claim.resumed);

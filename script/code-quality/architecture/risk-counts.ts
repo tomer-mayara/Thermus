@@ -9,8 +9,6 @@ export function memberFunctionsOf<T extends FunctionCrap>(files: ReadonlyMap<str
   return members.flatMap((path) => files.get(path)?.functions ?? []);
 }
 
-// The count of the functions at CRAP 30 or more in all the files of one snapshot, as the summary line and the trend give
-// it.
 export function totalCountOf(files: ReadonlyMap<string, FileCrap>): number {
   return countOf([...files.values()].flatMap((file) => file.functions));
 }

@@ -3,13 +3,11 @@
 
 export type GatewayTenantState = 'requested' | 'creating' | 'deploying' | 'live' | 'suspended' | 'failed' | 'deleted';
 
-/** The row of an organization in the registry copy: its state and its internal address, no row, or no usable copy. */
 export type GatewayRoute =
   | { readonly status: 'found'; readonly state: GatewayTenantState; readonly internalUrl: string | null }
   | { readonly status: 'absent' }
   | { readonly status: 'unavailable' };
 
-/** The tenant request for an organization without a row: requested, the cap is full, no registry, or a row exists. */
 export type GatewayTenantRequest =
   | { readonly status: 'requested' | 'full' | 'unavailable' }
   | { readonly status: 'present'; readonly state: GatewayTenantState };

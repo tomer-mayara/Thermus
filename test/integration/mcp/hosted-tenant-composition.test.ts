@@ -17,9 +17,6 @@ import { workOSSettings } from '../../support/fixtures/hosted-placeholder.ts';
 import { controlPlaneAuthority, gatewayKeyPairOf, tenantOrganizationId, tenantSettingsOf } from '../../support/fixtures/hosted-tenant.ts';
 import { repositoryRoot } from '../../support/processes/module-paths.ts';
 
-// The tenant composition of app with the real mcp, identity, audit-logs, and config packages and the production tool
-// operations. The renderer double stands in for Lightpanda, and a local key set for AuthKit.
-
 const logger = { info: (_line: string) => {}, error: (_line: string) => {} };
 const fetchUrl = 'https://page.test/';
 const searchHtml = readFileSync(new URL('test/support/fixtures/search-engine/brave-results.html', repositoryRoot), 'utf8');

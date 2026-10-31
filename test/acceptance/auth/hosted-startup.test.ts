@@ -10,10 +10,6 @@ import { dataDirectory } from '../../support/isolation/data-directory.ts';
 import { withPreload } from '../../support/processes/server-preloads.ts';
 import { ServerProcess, type ServerSettings } from '../../support/processes/server-process.ts';
 
-// The built server with the hosted edition and outbound access denied. These specifications show the start of the
-// WorkOS provider and the refusal of forged credentials without a WorkOS call. The hosted live gate proves the flows
-// with WorkOS.
-
 const hostedSettings: ServerSettings = {
   ...hostedFetchSettings,
   DEPLOYMENT: 'hosted',
@@ -22,7 +18,6 @@ const hostedSettings: ServerSettings = {
   LISTEN_PORT: '0',
 };
 const secretSettings = ['WORKOS_API_KEY', 'WORKOS_COOKIE_PASSWORD'] as const;
-// With MCP_TENANTS_ENABLED=true: the provisioning settings and the gateway settings (SO-05) of one key pair.
 const switchSettings = controlPlaneTenantSettingsOf();
 const forgedOrganization = 'org_01FORGEDORGANIZATION';
 const forgedCookie = 'wos-session=Fe26.2*forged-sealed-session; better-auth.session_token=forged-local-session; __Host-thermus-session=forged-envelope';
@@ -326,8 +321,6 @@ registerHooks({ resolve(specifier, context, nextResolve) {
   });
 });
 
-// The same image in the tenant role (SO-03): only the tenant settings of plan section 4.1, no WorkOS secret, no
-// database setting, and no Render or Stripe setting.
 describe('Hosted image in the tenant role', () => {
   const tenantSettings: ServerSettings = {
     ...hostedFetchSettings,

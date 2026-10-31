@@ -15,8 +15,6 @@ export interface RelayedRequest {
 // accept answers 202, refuse answers 503, and hang never answers.
 export type RelayAnswer = 'accept' | 'refuse' | 'hang';
 
-// A spy of the relay route POST /internal/audit of the control plane, which SO-05 adds. It records each request of a
-// tenant relay sink: the access context, the content type, and the event.
 export class AuditRelayRouteSpy {
   readonly received: RelayedRequest[] = [];
   answer: RelayAnswer = 'accept';
@@ -39,7 +37,6 @@ export class AuditRelayRouteSpy {
     return spy;
   }
 
-  // CONTROL_PLANE_INTERNAL_URL of the tenant.
   get origin(): string {
     return this.#origin;
   }

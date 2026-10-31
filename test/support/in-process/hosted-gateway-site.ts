@@ -49,12 +49,6 @@ type PostOptions = Omit<McpRequestOptions, 'url'>;
 
 export type HostedGatewaySite = Awaited<ReturnType<typeof openHostedGatewaySite>>;
 
-// The control plane with the gateway of SO-05: the real hosted composition against the WorkOS fake, behind the real
-// HTTP server on a loopback port. The registry rules are the real ones (lookup copy, tenant request with the cap,
-// resume, and the activity write) over an in-memory registry with a clock of the test; the resume operation is a spy.
-// The tenant of organization A is a fake upstream at its internal address. The listener origin is also the internal
-// service host of the control plane, so the relay of the fake tenant reaches /internal/audit. Customer export runs the
-// production capture and dispatch with an export sender spy.
 export async function openHostedGatewaySite(t: TestContext, options: HostedGatewaySiteOptions = {}) {
   const config = hostedRootConfig;
   const world = await WorkOSFake.start(t, config.publicBaseUrl, [gatewayOrganization, otherGatewayOrganization]);
@@ -109,7 +103,6 @@ export async function openHostedGatewaySite(t: TestContext, options: HostedGatew
     token: tokenOf(gatewayUser, gatewayOrganization),
     advance: (milliseconds: number): void => { now += milliseconds; },
     enableExport: (organizationId: string = gatewayOrganization) => storage.service.save(tenantId(organizationId), { expectedRevision: null, endpoint: 'https://collector.example/v1/logs', auth: 'none', token: '', enabled: true }),
-    // A second organization with a live fake tenant and a user with product access.
     addTenant: async (organizationId: string) => {
       const other = await TenantUpstreamFake.start(t, { publicKey, organizationId });
       registry.live(organizationId, other.origin);
@@ -134,7 +127,6 @@ export async function openHostedGatewaySite(t: TestContext, options: HostedGatew
     },
     post,
     toolResult: async (request: PostOptions) => rpcResult(await post(request)),
-    // The answer of the gateway itself to a request that it does not forward.
     refusal: async (request: PostOptions) => httpRefusal(await post(request)),
     // The request in the process, without a client: the client may send headers that the fetch of Node refuses.
     handle: (request: PostOptions): Promise<Response> => application.handle(mcpRequest({ url: config.mcpResourceUrl, ...request })),
@@ -145,9 +137,7 @@ export async function openHostedGatewaySite(t: TestContext, options: HostedGatew
       const address = new URL(target.path ?? '/internal/audit', target.host === undefined ? server.url : `http://${target.host}`);
       return listenerTransport(server.url)(new Request(address, { method: 'POST', headers, body: JSON.stringify(event) }));
     },
-    // The access context that the gateway signs for the user of organization A, with optional changes.
     contextFor: (changes: ContextChanges = {}): Promise<string> => contexts.contextFor('relay-token-of-the-request', changes),
-    // A tool completion event of organization A as the AuditLog of a tenant projects it, with a new operation ID.
     relayEventOf: async (): Promise<AuditEvent & { readonly actor: unknown }> => {
       const events: AuditEvent[] = [];
       new AuditLog({ writeAuditEvent: (event) => { events.push(event); } }).toolCompleted({

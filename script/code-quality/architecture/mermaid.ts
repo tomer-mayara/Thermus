@@ -11,7 +11,6 @@ const goneStyle = 'stroke:#999999,stroke-dasharray:4 4';
 // own would replace the thick border of a touched community, because a later class wins.
 const bandColors: readonly (readonly [Band, string])[] = [['good', '#0ca30c'], ['warning', '#fab219'], ['critical', '#d03b3b']];
 
-// The lines of the fenced block, from the opening fence to the closing one.
 export function mermaidOf(map: ArchitectureMap): string[] {
   const ids = nodeIdsOf(map.nodes);
   const idOf = (node: MapNode): string => ids.get(node) ?? '';
@@ -72,7 +71,6 @@ function nodeTextOf(node: MapNode): string {
   return (node.band === undefined ? lines : [...lines, bandTextOf(node.band)]).join('<br/>');
 }
 
-// A community without code, such as one of types only, has no maintainability.
 function numbersOf({ numbers, change }: MapNode): string[] {
   const files = `${numbers.files} ${numbers.files === 1 ? 'file' : 'files'}${changeText(change?.files, 0)}`;
   const paths = numbers.paths === undefined ? 'paths not measured' : `paths ${numbers.paths}${changeText(change?.paths, 0)}`;

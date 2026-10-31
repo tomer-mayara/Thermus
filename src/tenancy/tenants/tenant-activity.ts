@@ -29,8 +29,6 @@ export class TenantActivity {
   }
 }
 
-// A write is due one minute after the last write. Before a new entry, a full memory forgets the entries of more than a
-// minute: they stop no write.
 function writeIsDue(lastWrites: Map<string, number>, organizationId: string, now: number): boolean {
   const lastWrite = lastWrites.get(organizationId);
   if (lastWrite !== undefined && now - lastWrite < WRITE_INTERVAL_MS) return false;

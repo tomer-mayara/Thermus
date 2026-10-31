@@ -6,11 +6,6 @@ import { controlPlaneTenantSettingsOf } from '../../support/fixtures/control-pla
 import { gatewayKeyPairOf } from '../../support/fixtures/hosted-tenant.ts';
 import { ServerProcess, type ServerSettings } from '../../support/processes/server-process.ts';
 
-// The built server of the control plane with the switch MCP_TENANTS_ENABLED (SO-05) and outbound access denied.
-// FREE_TENANT_LIMIT, GATEWAY_SIGNING_KEY, and CONTROL_PLANE_INTERNAL_URL are read only with the switch on. Then the start
-// also reads the provisioning settings (SO-06) and compares the two key settings. hosted-startup.test.ts holds the other
-// start cases of the hosted edition, also those of the provisioning settings.
-
 const hostedSettings: ServerSettings = {
   ...hostedFetchSettings,
   DEPLOYMENT: 'hosted',
@@ -21,7 +16,6 @@ const hostedSettings: ServerSettings = {
 const gatewaySettings = controlPlaneTenantSettingsOf();
 const keyMismatch = /FATAL\S* (?:\[[^\]]*\]: )?GATEWAY_PUBLIC_KEY must include the public key of GATEWAY_SIGNING_KEY\.$/m;
 
-// The base64 line of a PEM key, or the whole value of another setting: the output must not show it.
 function keyLineOf(pem: string): string {
   return pem.trim().split('\n')[1] ?? pem;
 }

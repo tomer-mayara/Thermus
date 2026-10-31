@@ -211,7 +211,6 @@ async function cleanupResources(containers: readonly string[], network: string):
   if (failed.length > 0) throw new Error(`Audit fixture cleanup failed: ${failed.join('\n')}`);
 }
 
-/** Runs the real sender and TLS policy on public-shaped addresses in an isolated Docker bridge. */
 export async function openAuditSenderSite(t: TestContext, kind: 'receiver' | 'collector') {
   const directory = await mkdtemp(join(tmpdir(), 'thermus-audit-'));
   const network = `thermus-audit-${randomUUID()}`;

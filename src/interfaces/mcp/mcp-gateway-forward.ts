@@ -8,7 +8,6 @@ import { callTenant, type TenantAnswer, type TenantCall } from './mcp-gateway-st
 import type { GatewayTenants } from './mcp-gateway-tenants.ts';
 import type { McpForwardedRequest } from './mcp-server.ts';
 
-/** Signs the access context of one request. Only the control plane holds the private key. */
 export interface ContextSigner {
   sign(claims: AccessContextClaims, bearerToken: string): Promise<string>;
 }
@@ -19,12 +18,7 @@ interface ForwardParts {
   readonly refusals: GatewayRefusals;
 }
 
-/**
- * The forward of a request to a live tenant: the body within the SDK limit, the search places, the signed context,
- * the call, and the answer stream. The search places of a request stay taken until its answer stream ends.
- */
 export class LiveForward {
-  /** The search places of all tenants together. */
   private readonly searches = new GatewaySearches();
   private readonly parts: ForwardParts;
 
@@ -52,12 +46,10 @@ export class LiveForward {
       release();
       return this.parts.refusals.restarted(organizationId, read.body, answer.cause);
     }
-    // A forward that answers keeps its search places until its answer stream ends.
     forwarded.lifetime.track(answer.ended.then((end) => {
       release();
       if (end === 'failed') this.parts.refusals.streamBrokenOff(organizationId);
     }));
-    // A successful forward: the tenant answered. The registry writes last_active_at at most one time a minute.
     if (answer.response.status < 500) this.parts.tenants.recordActive(organizationId);
     return answer.response;
   }

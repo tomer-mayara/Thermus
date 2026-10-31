@@ -16,8 +16,6 @@ interface PullRequest {
   readonly state: string;
 }
 
-// The commits that a target names. baseRef is the base as the replay chose it, and base is its commit. notes tell how
-// the replay chose the commits, where that is not the plain case.
 export interface Revision extends Revisions {
   readonly pullRequest?: PullRequest;
   readonly baseRef: string;

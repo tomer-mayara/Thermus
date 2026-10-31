@@ -31,7 +31,6 @@ export class TenantProvisioner {
     }
   }
 
-  // Returns the pause before the next claim.
   private async next(signal: AbortSignal): Promise<number> {
     const { store, namePrefix, freePlan, log } = this.options;
     const claim = await store.claimNext({ serviceNameOf: (organizationId) => serviceNameOf(namePrefix, organizationId), plan: freePlan });

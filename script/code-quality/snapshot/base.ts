@@ -1,5 +1,3 @@
-// Snapshot and architecture commands compare the merge base with the head through this shared module.
-// See docs/implementation/ast-metrics-review.md, "Take a snapshot" and "Show the architecture delta".
 import type { CheckedToolVersion } from '../shared/tool-version.ts';
 import type { Notice } from './sweep.ts';
 import { snapshotOfCommit } from './commit.ts';
@@ -11,9 +9,7 @@ export interface BaseRun {
   readonly allowToolVersion?: boolean;
   readonly root: string;
   readonly ref: string;
-  // The deadline of the MCP session.
   readonly timeoutMs: number;
-  // Gets the line about the stale worktrees that the run removed, or about the signal that stopped the run.
   readonly notice: Notice;
 }
 

@@ -23,7 +23,6 @@ const session: SignedInBrowserSession = {
   selectOrganization: async () => ({ status: 'refused', cookies: [] }),
 };
 
-// The store and decided access context are the two test boundaries. The routes, settings owner, codec, and sender are real.
 class DestinationStoreFake implements DestinationSettingsStore {
   current: StoredDestinationSettings | undefined;
   saves = 0;

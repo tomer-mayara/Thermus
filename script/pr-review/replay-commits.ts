@@ -34,20 +34,17 @@ interface Evaluation {
   readonly notes: readonly string[];
 }
 
-// One side of the comparison in its worktree. parents[0] is the commit of the worktree.
 interface Side {
   readonly folder: string;
   readonly parents: readonly string[];
   readonly name: 'merge base' | 'head';
 }
 
-// A commit of the replay, with the notes of the snapshot command that made its snapshots.
 interface Installed {
   readonly commit: string;
   readonly notes: readonly string[];
 }
 
-// The declaration that the agents committed at the head. value is absent where the file is no JSON object.
 interface Declaration {
   readonly value?: JsonObject;
   readonly notes: readonly string[];

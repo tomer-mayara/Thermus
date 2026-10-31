@@ -1,7 +1,6 @@
 import type { PlatformDeploy, TenantPlatform } from './tenant-platform.ts';
 import type { LiveRecord } from './tenant-provisioning-store.ts';
 
-/** live: the record of a live row. failed: the reason for the operator. pending: what the read saw. */
 export type DeployProgressRead =
   | { readonly status: 'live'; readonly live: LiveRecord }
   | { readonly status: 'failed'; readonly reason: string }

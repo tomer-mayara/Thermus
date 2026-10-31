@@ -116,7 +116,6 @@ SIGINT or SIGTERM stopped the snapshot of the merge base, after the removal of
 its worktree.
 `;
 
-// The trend section comes last. Its record goes to the store before the output.
 async function main(): Promise<string> {
   const command = commandOf(process.argv.slice(2));
   if (command.kind === 'help') return help;

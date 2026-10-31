@@ -3,8 +3,6 @@ import { describe, test } from 'node:test';
 import type { MemberSeed } from '../../support/doubles/organizations/directory-double-records.ts';
 import { actorOf, administrationWith, invitationsWith, members, adminGrant, userGrant } from './fixtures/administration-fixtures.ts';
 
-// vic is an inactive Admin of Acme. gil is an Admin of Globex, the organization that each session of the
-// fixtures selected, and only a User in Acme.
 const billingMembers: readonly MemberSeed[] = [
   ...members,
   { subject: 'user-vic', organizationId: 'org-a', grants: [adminGrant], status: 'inactive' },

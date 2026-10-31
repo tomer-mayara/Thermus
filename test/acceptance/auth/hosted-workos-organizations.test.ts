@@ -7,10 +7,8 @@ import { signInThroughServer } from '../../support/dsl/workos-sign-in.ts';
 import type { FakeMembership, FakeUser } from '../../support/doubles/workos/workos-fake.ts';
 import { serveWorkOSSite, type WorkOSSite } from '../../support/in-process/workos-site.ts';
 
-// The real hosted composition with the WorkOS provider and the WorkOS organization reads, behind the real HTTP server
-// on a loopback port. A local fake of the WorkOS API stands in for WorkOS, so these specifications prove the
-// application side only. The hosted live gate proves the same flows against WorkOS.
-
+// A local fake stands in for WorkOS, so these specifications prove the application side only. The hosted live gate
+// proves the same flows against WorkOS.
 const sessionCookie = '__Host-thermus-session';
 const acme = 'org_01ACME';
 const globex = 'org_01GLOBEX';
@@ -26,9 +24,6 @@ const ivy: FakeUser = { id: 'user_01IVY', email: 'ivy@example.com', firstName: '
 const otto: FakeUser = { id: 'user_01OTTO', email: 'otto@example.com', firstName: 'Otto' };
 const sam: FakeUser = { id: 'user_01SAM', email: 'sam@example.com', firstName: 'Sam' };
 
-// Ada: User and Admin in Acme, User in Globex, inactive in Initech, and only the default role in Umbrella. Cid: only
-// the default role in Acme. Dee: no membership. Ivy: only an inactive membership in Acme. Otto: User in Hooli. Sam:
-// only Super Admin in Acme.
 const memberships: readonly FakeMembership[] = [
   { userId: ada.id, organizationId: acme, roles: ['user', 'admin'] },
   { userId: ada.id, organizationId: globex, roles: ['user'] },
@@ -69,7 +64,6 @@ function sessionCookiesOf(answer: BrowserAnswer): string[] {
   return answer.cookies.filter((cookie) => cookie.startsWith(`${sessionCookie}=`) && !/Max-Age=0/i.test(cookie));
 }
 
-// The organizations that a refresh of a browser session asked WorkOS to switch to, from each recorded request.
 function switchesIn(site: WorkOSSite): unknown[] {
   return site.world.fake.takeRequests()
     .filter(({ method, path }) => method === 'POST' && path.startsWith('/user_management/authenticate'))

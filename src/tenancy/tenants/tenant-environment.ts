@@ -6,7 +6,6 @@ const OPERATION_CAPACITY_BY_TIER = { free: 5, team: 10 } as const;
 export interface TenantPublicSettings {
   readonly publicBaseUrl: string;
   readonly authkitIssuer: string;
-  // One or more PEM public keys of the gateway, separated by commas.
   readonly gatewayPublicKey: string;
   readonly controlPlaneInternalUrl: string;
 }

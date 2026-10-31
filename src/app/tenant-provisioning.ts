@@ -16,7 +16,6 @@ export interface TenantProvisioningParts {
   readonly authkitIssuer: string;
   readonly store: TenantProvisioningStore;
   readonly logger: SystemLog;
-  // Seams of the tests. Production uses the global fetch and the system clock.
   readonly fetch?: typeof fetch;
   readonly clock?: ProvisioningClock;
 }
@@ -26,7 +25,6 @@ export interface TenantProvisioning {
   close(): Promise<void>;
 }
 
-/** The Render adapter of the control plane, with the write guard of the tenant registry. */
 export function tenantPlatformOf(parts: Pick<TenantProvisioningParts, 'settings' | 'fetch' | 'clock'> & { readonly store: Pick<TenantProvisioningStore, 'ownsService'> }): TenantPlatform {
   const { apiKey, ownerId, registryCredentialId, tenantImage } = parts.settings.render;
   return new RenderTenantPlatform({

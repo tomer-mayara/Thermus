@@ -12,10 +12,6 @@ import { TenantLookup } from '../../../src/tenancy/tenants/tenant-lookup.ts';
 import { TenantRequests } from '../../../src/tenancy/tenants/tenant-requests.ts';
 import { postgresSettingsSite } from '../../support/in-process/postgres-settings-site.ts';
 
-// The tenant registry of the control plane on disposable PostgreSQL 17, with verified test TLS and the scoped
-// runtime role thermus_logging. The administrative owner plays the provisioner where a case needs a changed row.
-// A clock double moves the time of the lookup; the database and its SQL run for real.
-
 type Site = Awaited<ReturnType<typeof postgresSettingsSite>>;
 
 const liveTenant = { renderServiceId: 'srv-d0tenantaaaaaaaaaaaa', internalUrl: 'http://thermus-tenant-org-a:8080' };

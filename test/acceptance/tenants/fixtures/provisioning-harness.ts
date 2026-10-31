@@ -7,9 +7,6 @@ import { TenantProvisioningStoreFake } from '../../../support/doubles/tenants/te
 import { VirtualClock } from '../../../support/doubles/tenants/virtual-clock.ts';
 import { controlPlaneAuthkitIssuer, controlPlaneEnvironment, controlPlanePublicBaseUrl } from '../../../support/fixtures/control-plane-tenants.ts';
 
-// The provisioner of the control plane as app composes it from the settings of the control plane, with a fake of the
-// Render API at its fetch, a fake of the tenant registry, a virtual clock, and a spy of the operator log.
-
 export const organizationA = 'org_01JTENANTAAAAAAAAAAAAAAAA';
 export const organizationB = 'org_01JTENANTBBBBBBBBBBBBBBBB';
 export const productionServiceId = 'srv-db8mnqg473hc739d529g';
@@ -29,7 +26,6 @@ export class ProvisioningHarness {
   readonly store = new TenantProvisioningStoreFake();
   readonly log = new OperatorLogSpy();
 
-  /** The Render adapter as app composes it for the provisioner, with the write guard of the registry. */
   platform(): TenantPlatform {
     return tenantPlatformOf({ settings: this.settings, store: this.store, fetch: this.render.fetch, clock: this.clock });
   }

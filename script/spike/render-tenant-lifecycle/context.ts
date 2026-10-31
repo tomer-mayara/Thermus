@@ -47,7 +47,6 @@ export interface ProbeStep {
   run(context: ProbeContext): Promise<string>;
 }
 
-// A probe with two services gives the reads of one service a session of its own.
 export interface ServiceSession {
   readonly client: RenderClient;
   readonly signal: AbortSignal;

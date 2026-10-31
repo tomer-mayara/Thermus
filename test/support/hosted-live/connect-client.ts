@@ -43,7 +43,6 @@ interface ClientCredentials {
 
 type FormFields = Readonly<Record<string, string | undefined>>;
 
-// A public OAuth client with PKCE, as an MCP client uses Connect. It requests the MCP resource.
 export function connectAuthorizationRequest(issuer: string, clientId: string): ConnectAuthorizationRequest {
   const verifier = randomBytes(32).toString('base64url');
   const state = randomBytes(16).toString('base64url');

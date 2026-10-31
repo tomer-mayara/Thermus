@@ -14,7 +14,6 @@ export function addedOrWorseLines(path: string, functions: readonly JudgedFuncti
   return listed.sort((first, second) => textOrder(first.name, second.name)).map(lineOf);
 }
 
-// Scores show extra precision when one decimal could hide the limit boundary.
 function lineOf({ path, name, crap }: ListedFunction): string {
   const base = typeof crap.base === 'number' ? crapTextOf(crap.base) : 'new';
   const covered = crap.share === undefined ? 'unknown' : crap.share.toFixed(2);

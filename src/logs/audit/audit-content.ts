@@ -38,7 +38,6 @@ function redactTextMatch(match: string, ...parts: unknown[]): string {
   return match.replace(queryParameter, redactParameter);
 }
 
-/** Redacts recognized credential fields, including URL parameters in public text. */
 export function redactAuditText(text: string): string {
   return text
     .replace(enclosedUrlOrParameter, redactTextMatch)

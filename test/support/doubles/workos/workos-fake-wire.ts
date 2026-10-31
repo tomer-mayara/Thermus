@@ -2,8 +2,6 @@ import { hostedRolePermissions } from '../../fixtures/hosted-roles.ts';
 import type { FakeAnswer } from './workos-fake-api.ts';
 import type { FakeInvitation, FakeMembership, FakeUser, MembershipStatus } from './workos-fake.ts';
 
-// A membership as its JSON shows it: with its ID, its effective roles and status, the name of its organization, and the
-// number of its changes.
 export interface ShownMembership extends FakeMembership {
   readonly id: string;
   readonly status: MembershipStatus;
@@ -11,8 +9,6 @@ export interface ShownMembership extends FakeMembership {
   readonly changes: number;
 }
 
-// An invitation as its JSON shows it: with the role that WorkOS gives it, the ID of the user of its address, and the
-// number of its changes.
 export interface ShownInvitation extends FakeInvitation {
   readonly userId: string | null;
   readonly changes: number;
@@ -21,7 +17,6 @@ export interface ShownInvitation extends FakeInvitation {
 const createdAt = '2026-10-01T08:00:00.000Z';
 const firstUpdateTime = Date.parse('2026-10-13T08:00:00.000Z');
 
-// Each change gives a later update time: one second after the time before.
 function updateTime(changes: number): string {
   return new Date(firstUpdateTime + changes * 1_000).toISOString();
 }

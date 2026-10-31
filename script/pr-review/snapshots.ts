@@ -10,7 +10,6 @@ export interface SnapshotPair {
   readonly notApplicable?: { readonly base: ReadonlySet<string>; readonly head: ReadonlySet<string> };
 }
 
-// Paths relative to the current folder, as the snapshot command gives its --out.
 export interface SnapshotPaths {
   readonly base: string;
   readonly head: string;

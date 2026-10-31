@@ -17,7 +17,6 @@ async function answerText(client: Client, call: CallToolRequestParams, callOptio
   return texts[0];
 }
 
-// Each request of the work gets the options of the call, such as the signal of the deadline.
 export function serverOf(client: Client, callOptions: RequestOptions): AstMetricsServer {
   return {
     tool: (name, args) => answerText(client, { name, arguments: args }, callOptions),

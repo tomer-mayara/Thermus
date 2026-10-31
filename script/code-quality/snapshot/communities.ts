@@ -63,7 +63,6 @@ function byCountThenName(first: Namespace, second: Namespace): number {
   return second.count - first.count || textOrder(first.namespace, second.namespace);
 }
 
-// A hub is a file without its extension or a folder.
 function hubName({ id, hubs }: ServerCommunity): string {
   const hub = hubs[0] ?? id;
   return hub.slice(hub.lastIndexOf('/') + 1);

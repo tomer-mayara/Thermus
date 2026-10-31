@@ -25,9 +25,6 @@ interface PostOptions {
   readonly headers?: Readonly<Record<string, string>>;
 }
 
-// A browser that opens the public URLs of a hosted application. It keeps the cookies of each answer, as a browser
-// does, and follows no redirect by itself. The transport sends each request to a listening server or to the
-// application in the same process.
 export class HostedBrowser {
   private readonly cookies = new Map<string, string>();
   private readonly transport: BrowserTransport;

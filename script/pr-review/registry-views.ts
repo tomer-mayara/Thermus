@@ -10,7 +10,6 @@ interface Fence {
   readonly lines?: string[];
 }
 
-// The views of HEAD against the views of the merge base. reordered: the same views stand in another order.
 export interface ViewChange {
   readonly added: number;
   readonly removed: number;

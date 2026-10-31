@@ -14,7 +14,6 @@ interface CommitRun {
   readonly allowToolVersion?: boolean;
 }
 
-// Analyze the requested full commit, without resolving a merge base.
 export async function snapshotOfCommit(run: CommitRun): Promise<Snapshot> {
   if (!/^[a-f0-9]{40}$/u.test(run.commit)) throw new CommandError('An exact snapshot needs a full 40-character commit.');
   const resolved = git(run.root, ['rev-parse', '--verify', `${run.commit}^{commit}`], 'Cannot verify the snapshot commit.').trim();
