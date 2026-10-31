@@ -284,9 +284,11 @@ test('Given a claimed row on the real registry, when its holder renews, records,
   await requestTenant(site, organizationC);
   const request = { serviceNameOf: nameOf, plan: '0.5c-512mb', holder: 'holder-1' };
   const claimA = await store.claimNext(request);
-  // The row of holder-1 comes first for holder-1 itself, so another holder claims the second row.
+  // The row of holder-1 comes first for holder-1 itself, so other holders claim the second and the third row.
   const claimB = await store.claimNext({ ...request, holder: 'holder-3' });
-  assert.ok(claimA.status === 'claimed' && claimB.status === 'claimed');
+  const claimC = await store.claimNext({ ...request, holder: 'holder-4' });
+  assert.ok(claimA.status === 'claimed' && claimB.status === 'claimed' && claimC.status === 'claimed');
+  assert.deepEqual([claimA.row.organizationId, claimB.row.organizationId, claimC.row.organizationId], [organizationA, organizationB, organizationC]);
   const [rowA, rowB] = [claimA.row, claimB.row];
   const other = { ...rowA, holder: 'holder-2' };
   const claimOf = (organizationId: string) => site.ownerQuery(`SELECT concat_ws(' ', state, coalesce(claimed_by, 'free'), (claimed_until > now() + interval '50 seconds')::text) FROM thermus_admin.tenants WHERE organization_id = '${organizationId}'`);
@@ -310,8 +312,6 @@ test('Given a claimed row on the real registry, when its holder renews, records,
   assert.deepEqual(await store.renewClaim(rowB), { status: 'moved' }, 'A live row is out of work');
 
   // A claim that commits while the stop comes starts no work: its release frees also a creating row.
-  const claimC = await store.claimNext({ ...request, holder: 'holder-4' });
-  assert.ok(claimC.status === 'claimed' && claimC.row.organizationId === organizationC);
   await store.releaseUnworkedClaim({ ...claimC.row, holder: 'holder-5' });
   assert.equal(await claimOf(organizationC), 'creating holder-4 true', 'Another holder cannot release it');
   await store.releaseUnworkedClaim(claimC.row);
