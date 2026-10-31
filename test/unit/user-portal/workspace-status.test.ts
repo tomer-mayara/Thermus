@@ -53,9 +53,22 @@ for (const state of ['requested', 'creating', 'deploying', 'failed', 'deleted', 
 }
 
 test('Given a ready workspace, when the portal opens, then it shows the connection guide with no status words and no refresh', async () => {
-  const { document, options } = portal({ session: signedIn, 'portal/access': access, 'workspace/status': async () => Response.json({ state: 'suspended', ready: true }) });
+  const { document, options } = portal({ session: signedIn, 'portal/access': access, 'workspace/status': async () => Response.json({ state: 'live', ready: true }) });
   await initializePortal(options);
   assert.ok(document.querySelector('.connection-guide') !== null, 'A ready workspace shows the guide.');
+  assert.ok(document.querySelector('.workspace-status') === null, 'A ready workspace has no status words.');
+  assert.ok(document.querySelector('.workspace-notice') === null, 'A ready answer without words has no notice.');
+  assert.equal(refreshOf(document), undefined);
+});
+
+test('Given a ready workspace with words, such as the notice of a pause, when the portal opens, then it shows the words as text above the connection guide, with no refresh', async () => {
+  const words = '<b>Your workspace was paused.</b>';
+  const { document, options } = portal({ session: signedIn, 'portal/access': access, 'workspace/status': async () => Response.json({ state: 'suspended', ready: true, message: words }) });
+  await initializePortal(options);
+  const notice = document.querySelector('.workspace-notice');
+  assert.equal(notice?.textContent, words);
+  assert.equal(document.querySelector('b'), null, 'The words of the server stay text.');
+  assert.ok(notice?.nextElementSibling?.querySelector('.connection-guide'), 'The notice comes just before the guide.');
   assert.ok(document.querySelector('.workspace-status') === null, 'A ready workspace has no status words.');
   assert.equal(refreshOf(document), undefined);
 });
@@ -66,6 +79,8 @@ for (const [label, answer] of [
   ['not ready without words', async () => Response.json({ state: 'requested', ready: false })],
   ['not ready with empty words', async () => Response.json({ state: 'requested', ready: false, message: ' ' })],
   ['not ready with a number for words', async () => Response.json({ state: 'requested', ready: false, message: 5 })],
+  ['ready with empty words', async () => Response.json({ state: 'suspended', ready: true, message: ' ' })],
+  ['ready with a number for words', async () => Response.json({ state: 'suspended', ready: true, message: 14 })],
   ['with status 500', async () => new Response('failure', { status: 500 })],
   ['with status 403', async () => Response.json({ access: 'denied' }, { status: 403 })],
   ['that is not JSON', async () => new Response('<p>no</p>', { headers: { 'Content-Type': 'text/html' } })],

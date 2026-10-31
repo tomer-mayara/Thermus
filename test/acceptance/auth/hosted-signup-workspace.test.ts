@@ -13,6 +13,7 @@ import { openSignupWorkspaceSite } from '../../support/in-process/signup-workspa
 const settingUp = 'Setting up your workspace. This takes about two minutes.';
 const fullCap = 'All free workspaces are in use. Try again later.';
 const setupFailed = 'Workspace setup failed. We have been notified and will fix it.';
+const paused = 'Your workspace was paused after 14 days without use. It restarts on the next request, which can take about a minute.';
 
 const creator: FakeUser = { id: 'user_FREE_CREATOR', email: 'creator@example.com', firstName: 'Creator', emailVerified: true };
 const existingOrganization = 'org_01EXISTING';
@@ -186,5 +187,14 @@ describe('The workspace status of an organization with product access (SO-07)', 
     assert.deepEqual(await site.status(browser), { status: 200, body: { state: 'live', ready: true } });
     assert.equal(site.registry.reads, reads);
     assert.deepEqual(site.registry.requests, [organizationId]);
+  });
+
+  // SO-10: a suspended free tenant keeps the connection guide, with the notice of the pause.
+  test('Given a suspended free tenant and a member with product access, when the portal reads GET /workspace/status, then the answer is ready with the notice of the pause and requests no tenant', async (t) => {
+    const site = await openSignupWorkspaceSite(t, { organizations: [existingOrganization], setUp: withMember(['user']) });
+    site.provision(existingOrganization, 'suspended', 'http://thermus-tenant-org-01existing:8080');
+    const { browser } = await site.signIn(member, existingOrganization);
+    assert.deepEqual(await site.status(browser), { status: 200, body: { state: 'suspended', ready: true, message: paused } });
+    assert.deepEqual(site.registry.requests, []);
   });
 });

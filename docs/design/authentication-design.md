@@ -1492,26 +1492,31 @@ place frees. The answer is `200` JSON with `Cache-Control: no-store`:
 | State | Answer |
 | --- | --- |
 | `requested`, `creating`, `deploying` | `{"state":"<state>","ready":false,"message":"Setting up your workspace. This takes about two minutes."}` |
-| `live`, `suspended` | `{"state":"<state>","ready":true}` |
+| `live` | `{"state":"live","ready":true}` |
+| `suspended` | `{"state":"suspended","ready":true,"message":"Your workspace was paused after 14 days without use. It restarts on the next request, which can take about a minute."}`: the notice of the pause (SO-10, answer 3 of 27 October 2026), with the days of `FREE_TENANT_IDLE_DAYS`. |
 | `failed` | `ready` false with "Workspace setup failed. We have been notified and will fix it." The first read writes `Workspace setup failed: {"organizationId":"<id>"}` at the level ERROR; the next report of the organization comes after its row leaves `failed`. |
 | `deleted` | `ready` false with "Your workspace is not available. Contact Thermus support." |
 | No row at a full cap: `full` | `ready` false with "All free workspaces are in use. Try again later." |
 | No usable registry copy: `unavailable` | `ready` false with "The service is temporarily unavailable. Try again in 15 seconds." |
 
 The words are those of the gateway for the same states (answer 2 of
-27 October 2026), except the words of the setup. Web cannot import mcp, so the
-workspace status keeps the second copy. A suspended tenant shows its
-connection guide, because the gateway resumes it at the next MCP call. Until
-SO-10 connects the resume, only the `resume` command of the fleet script
-brings it back, as [the gateway](#mcp-gateway-and-audit-relay) says. SO-10
-adds the notice of the pause. With `MCP_TENANTS_ENABLED` off, the control
-plane serves the tools itself: the route answers `live` and reads no registry.
+27 October 2026), except the words of the setup and the notice of the pause.
+Web cannot import mcp, so the workspace status keeps the second copy. A
+suspended tenant shows its connection guide with the notice, because
+[the gateway](#mcp-gateway-and-audit-relay) resumes it at the next MCP call.
+App gives the workspace status the days of `FREE_TENANT_IDLE_DAYS`, 14 by
+default, so the notice stays true for another setting. While the resume
+deploys, the row is `deploying`, so the answer is the setup state for about a
+minute. With `MCP_TENANTS_ENABLED` off, the control plane serves the tools
+itself: the route answers `live` and reads no registry.
 
 **Portal.** The [portal](../user-portal.md#workspace-setup-state) reads the
 status after `portal/access`. While `ready` is false, it shows the words as a
 status region in place of the connection guide and adds a meta refresh of 5 s,
 so the browser reloads the page without a script timer (answer 3 of
-27 October 2026). The connection guide appears only when `ready` is true.
+27 October 2026). The connection guide appears only when `ready` is true. A
+ready answer with words, the notice of a pause, shows them above the guide,
+with no refresh.
 
 The tests: the acceptance specification of the
 [signup handoff and the status](../../test/acceptance/auth/hosted-signup-workspace.test.ts)

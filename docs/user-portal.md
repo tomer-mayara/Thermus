@@ -60,7 +60,7 @@ of the server. It uses these server paths, relative to the base path:
 | --- | --- |
 | `session` | `GET` on load. `401` shows the signed-out page. `200` gives the profile, the organization of the session, the MFA evidence, and the form token of the session. |
 | `portal/access` | `GET` after a sign-in: the protected portal request. The server checks the session and reads the current grants of the selected organization. `200` gives the organization, its roles, its plan, and the configured `mcpUrl` when the user has User. Since SO-08, the plan is `"free"` with `memberLimit`, a whole number of 1 or more (5 today), or `"team"` without a limit; the portal refuses another plan, or a free plan without a valid limit, with the safe error. On the free plan, the portal shows free access, no card requirement, and no automatic charge; the team plan has no free-access line. Both show the native MCP connection steps. `403` shows signup and organization selection links. Signup can remain closed. |
-| `workspace/status` | `GET` after a `200` of `portal/access`: the state of the tenant of the selected organization (SO-07). `200` gives `state`, `ready`, and, while the workspace is not ready, the words of the server in `message`. The portal shows the connection guide only when `ready` is `true`; else it shows the words. The read can request a missing tenant, so the server needs current product access in the organization that the session selected; without it, the answer is the `403` of `portal/access`. Another answer gives the safe error. |
+| `workspace/status` | `GET` after a `200` of `portal/access`: the state of the tenant of the selected organization (SO-07). `200` gives `state`, `ready`, and the words of the server in `message`: while the workspace is not ready, and for a paused workspace, the notice of the pause (SO-10). The portal shows the connection guide only when `ready` is `true`, after the notice when there is one; else it shows the words. The read can request a missing tenant, so the server needs current product access in the organization that the session selected; without it, the answer is the `403` of `portal/access`. Another answer gives the safe error. |
 | `login` | The Sign in link opens it. The server starts the AuthKit sign-in. |
 | `logout` | The Sign Out button posts a form with the `csrf_token` field. The server checks the origin and the token, clears the session cookie, and sends the browser to the WorkOS logout URL. |
 | `organizations` | The organization page of the server: onboarding guidance or the organization selection. |
@@ -134,12 +134,15 @@ Connect shows the state of the workspace in place of the connection guide:
 | No tenant and a full free-tenant cap | "All free workspaces are in use. Try again later." Each read requests the tenant again, until a place frees. |
 | `deleted` | "Your workspace is not available. Contact Thermus support." |
 | The registry cannot be read | "The service is temporarily unavailable. Try again in 15 seconds." |
-| `live`, or `suspended` | The connection guide. The gateway resumes a suspended tenant at the next MCP call; until SO-10 connects the resume, the operator brings it back with the fleet script. SO-10 adds the notice of the pause. |
+| `live` | The connection guide. |
+| `suspended` | The notice "Your workspace was paused after 14 days without use. It restarts on the next request, which can take about a minute." above the connection guide (SO-10). The number is that of `FREE_TENANT_IDLE_DAYS`, 14 by default. The gateway resumes the tenant at the next MCP call; while the resume deploys, for about a minute, the row is `deploying`, so Connect shows the words of the setup. |
 
-The words are a status region. While they show, the page has a meta refresh of
-5 s, so the browser reloads it without a script timer and reads the state again.
-The words are those of the MCP gateway for the same states, except the words of
-the setup. With `MCP_TENANTS_ENABLED` off, the control plane serves the tools
+The words of a workspace that is not ready are a status region. While they
+show, the page has a meta refresh of 5 s, so the browser reloads it without a
+script timer and reads the state again. The notice of a paused workspace has no
+refresh, because the workspace restarts only at the next MCP call. The words are
+those of the MCP gateway for the same states, except the words of the setup and
+the notice of the pause. With `MCP_TENANTS_ENABLED` off, the control plane serves the tools
 itself, so each workspace is `live` and Connect shows the connection guide.
 
 Quick start stays as approved. Its step 1 sends the Admin to Connect for the
@@ -263,8 +266,9 @@ access, workspace selection, safe server values, and the sign-out form. Setup
 cases cover method-specific apps, app selection without new requests, the
 configured endpoint, saved selections, and copy results after a selection
 change. Workspace setup cases cover the words of each state, the meta refresh,
-the connection guide only when the workspace is ready, and the safe error for a
-status answer that is not valid. The hosted live gate,
+the connection guide only when the workspace is ready, the notice of a paused
+workspace above the guide, and the safe error for a status answer that is not
+valid. The hosted live gate,
 `npm run test:hosted-live`, builds the portal and proves the sign-in, the
 callback, the sign-out, the external sign-in through `/login`, and the
 protected portal request with WorkOS. Its SO-07 scenario also proves the setup

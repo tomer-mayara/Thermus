@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { servedByControlPlane, signupTenantsOf, workspaceTenantsOf } from '../../../src/app/workspace-composition.ts';
+import { servedByControlPlane, signupTenantsOf, workspacePartsOf, workspaceTenantsOf } from '../../../src/app/workspace-composition.ts';
 import type { GatewayRoute, GatewayTenantRequest, GatewayTenants } from '../../../src/interfaces/mcp/mcp-gateway-tenants.ts';
 import type { TenantCountResult } from '../../../src/tenancy/tenants/tenant-lookup.ts';
 import type { TenantState } from '../../../src/tenancy/tenants/tenant-registry-store.ts';
@@ -86,4 +86,22 @@ test('Given a new organization, when signup requests its tenant, then the tenant
       assert.deepEqual(registry.calls, ['request org_NEW']);
     }
   }
+});
+
+// The registry port of the gateway with a suspended row; the portal never resumes a tenant or writes its activity.
+function suspendedPort(): GatewayTenants {
+  return {
+    ...gatewayPortOf({ status: 'found', state: 'suspended', internalUrl: 'http://thermus-tenant-org-a:8080' }),
+    resume: async () => assert.fail('The portal must not resume a tenant.'),
+    recordActive: () => assert.fail('The portal must not write the activity of a tenant.'),
+  };
+}
+
+const logger = { info: () => {}, error: () => {} };
+
+test('Given FREE_TENANT_IDLE_DAYS, when the portal asks for the view of a suspended tenant, then the notice of the pause names those days, and 14 without the setting', async () => {
+  const thirty = workspacePartsOf({ gateway: { tenants: suspendedPort() }, logger, idleDays: 30 });
+  assert.deepEqual(await thirty.statuses.viewOf('org_A'), { state: 'suspended', ready: true, message: 'Your workspace was paused after 30 days without use. It restarts on the next request, which can take about a minute.' });
+  const preset = workspacePartsOf({ gateway: { tenants: suspendedPort() }, logger });
+  assert.deepEqual(await preset.statuses.viewOf('org_A'), { state: 'suspended', ready: true, message: 'Your workspace was paused after 14 days without use. It restarts on the next request, which can take about a minute.' });
 });

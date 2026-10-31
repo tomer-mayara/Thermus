@@ -4,6 +4,7 @@ import type { SignupTenants } from '../interfaces/web/auth/workos/workos-signup-
 import { WorkspaceStatuses, type WorkspaceState, type WorkspaceTenants } from '../interfaces/web/account/workspace-status.ts';
 import type { TenantLookup } from '../tenancy/tenants/tenant-lookup.ts';
 import type { TenantRequests } from '../tenancy/tenants/tenant-requests.ts';
+import { DEFAULT_FREE_TENANT_IDLE_DAYS } from '../runtime/config/tenant-sweep-config.ts';
 import type { GatewayParts } from './mcp-gateway-composition.ts';
 
 /** The registry rules of the tenants owner that signup uses: the lookup copy and the tenant request with the cap. */
@@ -54,12 +55,15 @@ export function signupTenantsOf(registry: SignupRegistry, capped: boolean): Sign
   };
 }
 
-/** The workspace parts of the hosted composition: the gateway parts mean MCP_TENANTS_ENABLED on. */
-export function workspacePartsOf(parts: { readonly gateway?: Pick<GatewayParts, 'tenants'>; readonly storage?: { readonly tenants?: SignupRegistry }; readonly logger: SystemLog }): WorkspaceParts {
+/**
+ * The workspace parts of the hosted composition: the gateway parts mean MCP_TENANTS_ENABLED on. idleDays is
+ * FREE_TENANT_IDLE_DAYS for the notice of a paused workspace; without the switch, no tenant is suspended.
+ */
+export function workspacePartsOf(parts: { readonly gateway?: Pick<GatewayParts, 'tenants'>; readonly storage?: { readonly tenants?: SignupRegistry }; readonly logger: SystemLog; readonly idleDays?: number | undefined }): WorkspaceParts {
   const tenants = parts.gateway === undefined ? servedByControlPlane : workspaceTenantsOf(parts.gateway.tenants);
   const registry = parts.storage?.tenants;
   return {
-    statuses: new WorkspaceStatuses(tenants, (line) => parts.logger.error(line)),
+    statuses: new WorkspaceStatuses(tenants, (line) => parts.logger.error(line), parts.idleDays ?? DEFAULT_FREE_TENANT_IDLE_DAYS),
     ...(registry === undefined ? {} : { signup: signupTenantsOf(registry, parts.gateway !== undefined) }),
   };
 }

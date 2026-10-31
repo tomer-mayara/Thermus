@@ -31,19 +31,24 @@ const WORDS = Object.freeze({
   unavailable: 'The service is temporarily unavailable. Try again in 15 seconds.',
 });
 
-// The connection guide appears only when the tenant is live. A suspended tenant shows its guide too: the gateway resumes
-// it at the next MCP call when SO-10 connects the resume, and SO-10 adds the notice of the pause.
-const VIEWS: Readonly<Record<WorkspaceState, Omit<WorkspaceView, 'state'>>> = {
+// The connection guide appears only when the tenant is live, or suspended: the gateway resumes a suspended tenant at
+// the next MCP call (SO-10), and the view of the class adds the notice of the pause.
+const VIEWS: Readonly<Record<Exclude<WorkspaceState, 'suspended'>, Omit<WorkspaceView, 'state'>>> = {
   requested: { ready: false, message: WORDS.settingUp },
   creating: { ready: false, message: WORDS.settingUp },
   deploying: { ready: false, message: WORDS.settingUp },
   live: { ready: true },
-  suspended: { ready: true },
   failed: { ready: false, message: WORDS.failed },
   deleted: { ready: false, message: WORDS.deleted },
   full: { ready: false, message: WORDS.full },
   unavailable: { ready: false, message: WORDS.unavailable },
 };
+
+// The notice of a free tenant that the idle sweep paused (SO-10, answer 3 of 27 October 2026). Its days are those of
+// FREE_TENANT_IDLE_DAYS, so the words stay true for another setting.
+function pausedView(idleDays: number): Omit<WorkspaceView, 'state'> {
+  return { ready: true, message: `Your workspace was paused after ${idleDays} days without use. It restarts on the next request, which can take about a minute.` };
+}
 
 // The organizations that got their one report of a failed setup. At this size, the memory starts again.
 const REPORT_MEMORY = 1_024;
@@ -56,10 +61,14 @@ export class WorkspaceStatuses {
   private readonly report: (line: string) => void;
   /** The organizations whose failed setup has its report. */
   private readonly reported = new Set<string>();
+  /** The view of each state, with the notice of a paused workspace. */
+  private readonly views: Readonly<Record<WorkspaceState, Omit<WorkspaceView, 'state'>>>;
 
-  constructor(tenants: WorkspaceTenants, report: (line: string) => void) {
+  /** idleDays is FREE_TENANT_IDLE_DAYS, the days that the notice of a paused workspace names. */
+  constructor(tenants: WorkspaceTenants, report: (line: string) => void, idleDays: number) {
     this.tenants = tenants;
     this.report = report;
+    this.views = { ...VIEWS, suspended: pausedView(idleDays) };
   }
 
   /**
@@ -79,7 +88,7 @@ export class WorkspaceStatuses {
   async viewOf(organizationId: string): Promise<WorkspaceView> {
     const state = await this.tenants.stateOf(organizationId);
     this.reportFailedSetup(organizationId, state);
-    return { state, ...VIEWS[state] };
+    return { state, ...this.views[state] };
   }
 
   // A failed setup reports one time, until the tenant leaves the failed state. An unreadable registry says nothing
