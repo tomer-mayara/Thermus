@@ -1,6 +1,6 @@
-import type { BrowserSession, CookieEffects, SignedInBrowserSession } from '../../../../accounts/identity/browser-session.ts';
+import type { BrowserSession, CookieEffects, OrganizationSwitch, SignedInBrowserSession } from '../../../../accounts/identity/browser-session.ts';
 import { waitForRequest } from '../../../../runtime/http/request-cancellation.ts';
-import { readForm } from '../../account/account-form.ts';
+import { readForm, type FormRefusal } from '../../account/account-form.ts';
 import { noticePage, seeOther } from './workos-session-pages.ts';
 import { validateSignupDocuments } from '../../../../accounts/providers/workos/workos-signup-documents.ts';
 import { signupRequestIn } from './workos-signup-form.ts';
@@ -128,19 +128,17 @@ export class WorkOSSignupRoutes {
   private async activateForm(request: Request, state: SignedInBrowserSession, run: RequestOperation): Promise<Response> {
     if (!this.admit(state.user.subject)) return limited();
     const documents = this.requireDocuments();
-    const form = await readForm(request);
-    request.signal.throwIfAborted();
-    const creation = typeof form === 'string' ? form : signupRequestIn(form, state.csrfToken, documents.version);
+    const creation = await creationIn(request, state.csrfToken, documents.version);
     if (typeof creation === 'string') return signupRequestNotice(noticePage(creation));
     const result = await run(() => this.options.activation.activate({ user: state.user, organizationName: creation.organizationName, documents, signal: request.signal }));
     request.signal.throwIfAborted();
-    if (result.status === 'active') return this.openOrganization(request, state, result.organizationId, run);
-    return this.activationAnswer(result);
+    if (result.status !== 'active') return this.activationAnswer(result);
+    const selected = await run(() => state.selectOrganization(result.organizationId));
+    request.signal.throwIfAborted();
+    return this.selectionAnswer(selected);
   }
 
-  private async openOrganization(request: Request, state: SignedInBrowserSession, organizationId: string, run: RequestOperation): Promise<Response> {
-    const selected = await run(() => state.selectOrganization(organizationId));
-    request.signal.throwIfAborted();
+  private selectionAnswer(selected: OrganizationSwitch): Response {
     if (selected.status === 'switched') return seeOther(this.quickStartDestination.href, selected.cookies);
     const status = selected.status === 'signed-out' ? 401 : 403;
     return withCookies(signupFailurePage(status, 'Your organization could not be opened. Sign in again to continue.'), selected.cookies);
@@ -172,6 +170,12 @@ export class WorkOSSignupRoutes {
     this.attempts.set(subject, { until: now + WINDOW_MS, count: 1 });
     return true;
   }
+}
+
+async function creationIn(request: Request, csrfToken: string, documentVersion: string): Promise<{ readonly organizationName: string } | FormRefusal> {
+  const form = await readForm(request);
+  request.signal.throwIfAborted();
+  return typeof form === 'string' ? form : signupRequestIn(form, csrfToken, documentVersion);
 }
 
 function limited(): Response {
