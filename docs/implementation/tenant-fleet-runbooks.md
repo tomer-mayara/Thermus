@@ -46,6 +46,7 @@ of the SO-12 order, so production has no tenant yet.
 | A key expires, is exposed, or is due, or the month ends | [5. Rotations and the monthly pruning](#5-rotations-and-the-monthly-pruning) |
 | Searches get "Server busy. Try again later." or "Search failed: HTTP 429" | [6. Shared Brave search limit](#6-shared-brave-search-limit) |
 | An alert email | [7. Alerts](#7-alerts) |
+| A `System log export failed:` line, or no new line of the control plane in the Axiom dataset `system-log` | [7.3 Axiom monitors](#73-axiom-monitors), the precondition |
 
 ## Where the secrets and settings live
 
@@ -58,6 +59,7 @@ of the SO-12 order, so production has no tenant yet.
 | `GATEWAY_PUBLIC_KEY` | One or more Ed25519 public keys in PEM form, separated by commas. It is not a secret. | A Render variable of the production service, and a Render variable of each tenant service. The provisioner copies the value of the control plane into each new tenant. |
 | `LOGGING_DESTINATION_ENCRYPTION_KEY` | The key that encrypts the saved bearer token of each Audit logs destination. | A Render secret variable of the production service, and the protected copy outside the database that [S2-01a](admin-s2-01a-database-setup.md#initial-credentials-and-configuration) asks for. |
 | `DATABASE_URL` | The connection of the runtime role `thermus_logging` to the Supabase project. | A Render secret variable of the production service. The runtime password is in the password manager of the owner. |
+| `SYSTEM_LOG_OTLP_TOKEN` | The Axiom API token with ingest permission for the dataset `system-log` only (SO-11a). The control plane sends it as the bearer token of its system log export. A tenant refuses it. | A Render secret variable of the production service, from step 6 of the SO-12 order at the latest, and the password manager of the owner. The two other settings of the export, `SYSTEM_LOG_OTLP_ENDPOINT` and `SYSTEM_LOG_AXIOM_DATASET`, are plain Render variables of the production service. |
 | GitHub token of `ghcr-thermus-hosted-read` | A GitHub personal access token (classic) with only the scope `read:packages`. Render pulls the private image with it. | Only in the Render registry credential `ghcr-thermus-hosted-read` (`rgc-dbg1h0142hec73da9ra0`) of the workspace Thermus AI. |
 | Pruning token | The GitHub CLI login of the operator, with the scopes `read:packages` and `delete:packages` for the monthly pruning only. | The credential store of the GitHub CLI on the Mac of the operator. |
 
@@ -76,8 +78,12 @@ The control plane writes its system log to standard error, one line for each
 record, in the form `[<time>] <LEVEL> <message>`
 ([console sink](../../src/logs/system/console-system-log-sink.ts)). Render keeps
 this log for 7 days on the Hobby plan. To find a line, search the log of the
-production service in the Render Dashboard for the prefix of the line.
-[Section 7.3](#73-axiom-monitors) tells how the lines can reach Axiom.
+production service in the Render Dashboard for the prefix of the line. With the
+three settings of [section 7.3](#73-axiom-monitors) (SO-11a), the control plane
+also exports each record to the Axiom dataset `system-log`: the field `body`
+holds the message with the caller file and line, without the time and the
+level label, and `severity_text` holds the level. Then query the dataset for the
+prefix too. A tenant writes to standard error only.
 
 | Prefix | Level | Source | Meaning |
 | --- | --- | --- | --- |
@@ -101,6 +107,7 @@ production service in the Render Dashboard for the prefix of the line.
 | `Tenant removal failed: {json}` | ERROR | `organization-sweep.ts` | The removal of one tenant failed. The fields are `organizationId`, `serviceId`, and `reason`. The next sweep tries again. |
 | `The organization sweep keeps the tenant of organization` | INFO | `organization-sweep.ts` | The read by ID of a left-out organization failed, so its tenant stays until the next sweep. |
 | `Tenant sweep step failed: {json}` | ERROR | [`src/tenancy/tenants/tenant-sweeps.ts`](../../src/tenancy/tenants/tenant-sweeps.ts) | A defect in a step of the tick. The fields are `step` and `reason`. The next step runs. |
+| `System log export failed:` | ERROR | [`src/app/system-log-failure-line.ts`](../../src/app/system-log-failure-line.ts) | An export to Axiom failed, after the retries of the exporter, and its lines are not in `system-log`; standard error still has them. The line names the cause: an HTTP status such as `HTTP 401` (a refused token) or `HTTP 403`, an error code such as `ECONNREFUSED`, or `no answer in time`. It comes at most once a minute and counts the failures that had no line. It is on standard error only: Axiom never gets it, so the [precondition check](#73-axiom-monitors) reads the Render log. |
 
 ### The summary fields
 
@@ -698,6 +705,33 @@ month:
 5. Write the date, the number of deleted versions, and the kept digests in the
    operator record.
 
+### 5.6 Axiom ingest token of the system log
+
+`SYSTEM_LOG_OTLP_TOKEN` of the production service is an Axiom API token with
+ingest permission for the dataset `system-log` only (SO-11a,
+[7.3](#73-axiom-monitors)). The control plane reads it at its start. A refused
+or expired token gives `System log export failed: HTTP 401.` or
+`HTTP 403.` lines on standard error, and the monitors get no new line.
+Standard error on Render still has each line for 7 days.
+
+1. In Axiom, click **Settings**, then **API tokens**, and click **New API
+   token**. Type a name such as `Thermus control plane system log <date>`.
+   In **Token permissions**, click **Basic**, and in **Dataset access** select
+   `system-log` only. A basic token can only ingest. If you set an expiration
+   date, write it in the operator record, and rotate some days before it.
+   Click **Create**
+   ([Axiom tokens](https://axiom.co/docs/reference/tokens#create-basic-api-token)).
+2. Copy the token: Axiom shows it one time only. Put it in the password
+   manager of the owner, and nowhere else.
+3. In the Render Dashboard, open the production service, then
+   **Environment**, and set the secret variable `SYSTEM_LOG_OTLP_TOKEN` to the
+   new token. Save, and deploy if the save does not start a deploy.
+4. Do the check of the log path in [7.3](#73-axiom-monitors): no `FATAL` and
+   no `System log export failed:` line in the Render log, and the
+   `Listening on` line of the deploy in `system-log`.
+5. In Axiom, delete the old token. Check again after the next line of the
+   control plane, for example after the next deploy.
+
 ## 6. Shared Brave search limit
 
 This is a runbook entry, not an alert (answer 4 of the SO-11 ticket).
@@ -745,6 +779,8 @@ The Render workspace runs on the Hobby plan (D-9):
   alert for a log line or for a metric.
 - As recorded on 16 October 2026, the workspace had no log forwarding
   ([account deletion, section 4](hosted-account-deletion.md#4-record-residual-data-and-close-the-request)).
+  SO-11a adds no Render log stream: the control plane exports its own system
+  log ([7.3](#73-axiom-monitors)).
 
 So since 27 October 2026, the alerts for the log lines are Axiom monitors on
 the production logging destination ([7.3](#73-axiom-monitors); D-9 as amended
@@ -788,27 +824,48 @@ destination email the owner. The owner makes them; this document describes
 them, and this ticket made no Axiom change.
 
 **Precondition: the log path.** The monitors read the log lines of the control
-plane in an Axiom dataset. On `main`, the control plane writes its system log
-to standard error only: [`src/index.ts`](../../src/index.ts) composes the
-console sink, and Render keeps the lines for 7 days. The source has an
-OpenTelemetry sink,
-[`OtelSystemLogSink`](../../src/logs/system/otel-system-log-sink.ts), but the
-production composition does not use it. So the monitors need a path to Axiom
-first. There are two ways:
+plane in the Axiom dataset `system-log`. The owner chose the path on
+28 October 2026: the control plane exports its system log through
+[`OtelSystemLogSink`](../../src/logs/system/otel-system-log-sink.ts), not
+through a Render log stream (SO-11a,
+[plan section 6](self-onboarding-plan.md#slice-2-free-tier-end-to-end)). The
+export needs three settings of the production service:
 
-- A Render log stream of the workspace to an Axiom Secure Syslog endpoint.
-  This is an owner step with no source change
-  ([Axiom: send Render logs](https://axiom.co/docs/send-data/render),
-  [Render log streams](https://render.com/docs/log-streams)). The stream
-  carries the logs of each service of the workspace, also of the tenants.
-- An export of the system log of the control plane through
-  `OtelSystemLogSink`. This is a source change with its own ticket.
+| Setting | Value |
+| --- | --- |
+| `SYSTEM_LOG_OTLP_ENDPOINT` | `https://us-east-1.aws.edge.axiom.co/v1/logs`: the edge deployment of the dataset `system-log`, as its dataset settings showed on 28 October 2026. |
+| `SYSTEM_LOG_AXIOM_DATASET` | `system-log` (owner decision of 28 October 2026). The tests use `system-log-test` only. |
+| `SYSTEM_LOG_OTLP_TOKEN` | A secret variable: an Axiom API token with ingest permission for `system-log` only ([5.6](#56-axiom-ingest-token-of-the-system-log)). |
 
-The owner chooses the way and the dataset. The Axiom readback of
-24 October 2026 showed 3 of 3 allowed datasets in use
-([S2-04 ledger](admin-s2-04.md#axiom-plan-usage-and-retention--dated-readback)).
-Until a path exists, no monitor can fire, and the Render failure emails are
-the only alerts.
+With the three empty, the control plane writes its system log to standard
+error only, no monitor can fire, and the Render failure emails are the only
+alerts. The endpoint without the token, or the token without the endpoint,
+stops the start with a `FATAL` line that names the setting. Only the control
+plane exports: the lines of a tenant stay on Render for 7 days, because a
+tenant holds no token (D-14). The export is best effort: a failed batch is
+dropped, and the control plane writes one `System log export failed:` line to
+standard error at most once a minute. At a stop, it waits at most 5 s for the
+last lines.
+
+**Check the log path.** After each deploy that sets or changes one of the
+three settings:
+
+1. In the Render log of the production service, look for a `FATAL` line, and
+   for a `System log export failed:` line after the start. There must be
+   none.
+2. In Axiom, run this query over the last 15 minutes. It must show the
+   `Listening on` line of the deploy.
+
+```kusto
+['system-log']
+| where ['service.name'] == "thermus-control-plane"
+| where body contains "Listening on "
+| project _time, severity_text, body, ['service.instance.id']
+```
+
+The field `body` holds the message with the caller file and line, without the
+time, the level label, or color codes, and `severity_text` holds the level. A
+query of the test dataset showed these fields on 28 October 2026.
 
 **The notifier.** In Axiom, open **Monitors**, click **Manage notifiers**, and
 click **New notifier**. Type a name, for example `Thermus owner email`. Click
@@ -827,19 +884,17 @@ The query uses `where`, and no aggregation
 | Tenant memory at 80 % | The daily summary line, when its `highestMemoryShare` is 0.8 or more: a live tenant had a memory point at or above 80 % of the memory limit that Render gives for its plan, about 410 MiB of the 536,870,900 bytes of `0.5c-512mb`, and about 1,638 MiB of the 2 GiB of `1c-2g`. | A tenant came near its memory limit. On `0.5c-512mb`, five 9 MiB calls peaked at 379 MiB, 74 % of the limit, and ten calls restarted the container (SO-01e). |
 | Fleet summary | Each line that contains `Tenant fleet summary: `. | One email a day with the counts and the cost by state and plan, the memberships with only the default role, the restarts outside a deploy, and the memory values ([the summary fields](#the-summary-fields)). This is the fleet alert of D-9. |
 
-The queries, in the advanced query language (APL). In them, `<dataset>` is the
-dataset of the log path, and `message` is the field that holds the log line.
-Check both names in a query of the dataset first. The level label of each line
-has color codes, so the queries match the text after it with `contains`.
+The queries, in the advanced query language (APL), read the field `body` of
+the dataset `system-log`:
 
 ```kusto
-['<dataset>']
-| where message contains "MCP gateway tenant restart: "
+['system-log']
+| where body contains "MCP gateway tenant restart: "
 ```
 
 ```kusto
-['<dataset>']
-| where message contains "Tenant fleet summary: "
+['system-log']
+| where body contains "Tenant fleet summary: "
 ```
 
 The memory monitor reads the JSON after the prefix. `peakShare` divides the
@@ -847,9 +902,9 @@ peak of each live tenant by the memory limit that Render gives for its plan,
 so 0.8 is 410 MiB on `0.5c-512mb` and 1,638 MiB on `1c-2g`:
 
 ```kusto
-['<dataset>']
-| where message contains "Tenant fleet summary: "
-| extend summary = parse_json(substring(message, indexof(message, "Tenant fleet summary: ") + 22))
+['system-log']
+| where body contains "Tenant fleet summary: "
+| extend summary = parse_json(substring(body, indexof(body, "Tenant fleet summary: ") + 22))
 | where todouble(summary.highestMemoryShare) >= 0.8
 ```
 
@@ -887,14 +942,17 @@ Keep the prefix `Tenant fleet summary: ` stable: the match monitors use it with
 Do them in this order:
 
 1. Set the Render failure emails ([7.2](#72-render-failure-emails)).
-2. Choose the log path and the dataset, and make the path
-   ([7.3](#73-axiom-monitors)). For the Render log stream: in Axiom, open
-   **Settings**, then **Endpoints**, click **New endpoint**, click **Secure
-   Syslog**, select the dataset, and copy the target URL. In the Render
-   Dashboard, open **Integrations**, then **Observability**, and under **Log
-   Streams** set the default destination to that URL. Keep the URL only in
-   Render and in Axiom. Check: a new log line of the control plane comes into
-   the dataset.
+2. Make the log path ([7.3](#73-axiom-monitors)), at step 6 of the SO-12
+   order at the latest, after the owner decided the privacy text: the hosted
+   document bundles name Render, not Axiom, as the processor of the service
+   logs (the open point of SO-11a in
+   [plan section 6](self-onboarding-plan.md#slice-2-free-tier-end-to-end)).
+   Make the ingest token with steps 1 and 2 of
+   [5.6](#56-axiom-ingest-token-of-the-system-log). On the production service,
+   set the secret variable `SYSTEM_LOG_OTLP_TOKEN`, and
+   `SYSTEM_LOG_OTLP_ENDPOINT` and `SYSTEM_LOG_AXIOM_DATASET` of the
+   precondition table as plain variables, and deploy. Then do the check of the
+   log path.
 3. Make the email notifier ([7.3](#73-axiom-monitors)).
 4. After the production control plane runs with `MCP_TENANTS_ENABLED` on
    (step 6 of the SO-12 order), make the monitor Tenant restart.
@@ -930,3 +988,17 @@ Supabase [project pausing](https://supabase.com/docs/guides/platform/free-projec
 Axiom [match monitors](https://axiom.co/docs/monitor-data/match-monitors),
 [email notifier](https://axiom.co/docs/monitor-data/email-notifier), and
 [Render logs](https://axiom.co/docs/send-data/render).
+
+SO-11a, on 28 October 2026: the SO-11a entry of
+[plan section 6](self-onboarding-plan.md#slice-2-free-tier-end-to-end), the
+owner decisions on the log path and the dataset `system-log`, the source files
+[`system-log-output.ts`](../../src/app/system-log-output.ts),
+[`system-log-export.ts`](../../src/app/system-log-export.ts),
+[`system-log-failure-line.ts`](../../src/app/system-log-failure-line.ts), and
+[`system-log-export-config.ts`](../../src/runtime/config/system-log-export-config.ts),
+and [OTel system logger tests](../testing/otel-logger.md#system-log-export-of-the-control-plane).
+External, read on 28 October 2026: Axiom
+[OpenTelemetry](https://axiom.co/docs/send-data/opentelemetry) and
+[API tokens](https://axiom.co/docs/reference/tokens); the dataset settings of
+`system-log` (edge deployment `https://us-east-1.aws.edge.axiom.co`) and the
+fields of `system-log-test`, read with the Axiom connector without a change.

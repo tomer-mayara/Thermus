@@ -183,6 +183,15 @@ importers:
       '@opentelemetry/api-logs':
         specifier: 0.223.0
         version: 0.223.0
+      '@opentelemetry/exporter-logs-otlp-http':
+        specifier: 0.223.0
+        version: 0.223.0(@opentelemetry/api@1.9.1)
+      '@opentelemetry/resources':
+        specifier: 2.12.0
+        version: 2.12.0(@opentelemetry/api@1.9.1)
+      '@opentelemetry/sdk-logs':
+        specifier: 0.223.0
+        version: 0.223.0(@opentelemetry/api@1.9.1)
       '@workos-inc/node':
         specifier: 11.0.0
         version: 11.0.0
@@ -232,12 +241,6 @@ importers:
       '@modelcontextprotocol/client':
         specifier: 2.3.1
         version: 2.3.1
-      '@opentelemetry/exporter-logs-otlp-http':
-        specifier: 0.223.0
-        version: 0.223.0(@opentelemetry/api@1.9.1)
-      '@opentelemetry/sdk-logs':
-        specifier: 0.223.0
-        version: 0.223.0(@opentelemetry/api@1.9.1)
       '@types/css-tree':
         specifier: 3.2.0
         version: 3.2.0

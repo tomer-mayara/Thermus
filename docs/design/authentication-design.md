@@ -1118,13 +1118,16 @@ A missing setting gives `<NAME> is required.`; a refused value gives the rule
 of its setting. No message shows a value. The tenant refuses to start when a
 secret of the control plane has a value: `WORKOS_API_KEY`,
 `WORKOS_CLIENT_SECRET`, `WORKOS_COOKIE_PASSWORD`, `GATEWAY_SIGNING_KEY`,
-`DATABASE_URL`, `LOGGING_DESTINATION_ENCRYPTION_KEY`, `RENDER_API_KEY`, or
-each `STRIPE_*` setting. The message names each such setting in order:
+`DATABASE_URL`, `LOGGING_DESTINATION_ENCRYPTION_KEY`, `RENDER_API_KEY`,
+`SYSTEM_LOG_OTLP_TOKEN`, or each `STRIPE_*` setting. The message names each
+such setting in order:
 `The tenant role refuses <names>: a tenant holds no secret of the control plane.`
 The owner answer of 27 October 2026 names five of them; SO-03 adds the cookie
 password, the signing key of the gateway, and the encryption key of the
 destination settings, because each is a secret that the plan does not give a
-tenant. An empty value holds no secret, as for each other setting.
+tenant. SO-11a adds `SYSTEM_LOG_OTLP_TOKEN` on 28 October 2026: the ingest
+token of the system log export of the control plane, so a tenant exports no
+log line. An empty value holds no secret, as for each other setting.
 
 The signed access context is the contract between the gateway of the control
 plane (SO-05) and a tenant. The

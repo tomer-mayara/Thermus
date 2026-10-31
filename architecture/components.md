@@ -29,7 +29,10 @@ outside its trust boundary. Local Better Auth belongs inside Thermus. With
 `MCP_TENANTS_ENABLED=true`, the hosted control plane also creates the services
 of its tenants through the Render API, and its sweeps delete the tenant of a
 removed organization. The operator's fleet script deploys, suspends, resumes,
-and deletes them through the same API.
+and deletes them through the same API. With the three `SYSTEM_LOG_*` settings
+(SO-11a), the control plane also exports its system log to an OTLP/HTTP logs
+endpoint of the operator; for production, the owner chose the Axiom dataset
+`system-log`.
 
 ```mermaid
 %%{init: {"flowchart": {"wrappingWidth": 260}}}%%
@@ -42,6 +45,7 @@ flowchart TB
   context_public["External systems: public websites<br/>Includes Brave HTML search"]
   context_collector["External system: customer Audit destination<br/>Collector or compatible OTLP service<br/>Includes direct Axiom"]
   context_render["External system: Render API<br/>Creates, deploys, and deletes the tenant services"]
+  context_systemlog["External system: system log destination<br/>OTLP/HTTP logs endpoint of the operator<br/>Axiom dataset system-log"]
   context_customer -->|uses tools through client| context_client
   context_customer -->|opens account and connection pages| context_thermus
   context_operator -->|configures installation / manages local accounts| context_thermus
@@ -50,6 +54,7 @@ flowchart TB
   context_thermus -->|fetches public content| context_public
   context_thermus -->|OTLP HTTP JSON / HTTPS| context_collector
   context_thermus -->|HTTPS REST / tenant services| context_render
+  context_thermus -->|system log / OTLP HTTP JSON / HTTPS| context_systemlog
 ```
 
 ## arc42 building-block view
@@ -78,6 +83,9 @@ The fleet script is an operator command line application on the machine of the
 operator (SO-09): it lists, requests, upgrades, suspends, resumes, and deletes
 tenants with the fleet key, on the same registry, and its writes ask for a yes
 first.
+With the three `SYSTEM_LOG_*` settings (SO-11a), the server also exports its
+system log to an OTLP/HTTP logs endpoint of the operator, in addition to
+standard error; a tenant server exports nothing.
 
 ```mermaid
 %%{init: {"flowchart": {"wrappingWidth": 130, "nodeSpacing": 20, "rankSpacing": 35}}}%%
@@ -97,6 +105,7 @@ flowchart TB
   hosted_public["External: public web<br/>Pages and Brave HTML"]
   hosted_collector["External: Collector<br/>Events and Test"]
   hosted_render["External: Render API<br/>Tenant services"]
+  hosted_systemlog["External: system log<br/>Axiom dataset of the operator"]
   hosted_user -->|browser| hosted_portal
   hosted_client -->|MCP / HTTP bearer| hosted_server
   hosted_portal -->|account HTTP| hosted_server
@@ -109,6 +118,7 @@ flowchart TB
   hosted_fleet -->|pg / verified TLS| hosted_settings
   hosted_fleet -->|HTTPS REST / fleet key| hosted_render
   hosted_fleet -->|HTTPS / SDK| hosted_workos
+  hosted_server -->|OTLP JSON / HTTPS · system log| hosted_systemlog
   hosted_server -->|MCP + signed context / private HTTP| hosted_tenant
   hosted_tenant -->|audit relay + same context / private HTTP| hosted_server
   hosted_tenant -->|HTTPS / JWKS only| hosted_workos
@@ -118,6 +128,7 @@ flowchart TB
   hosted_settings ~~~ hosted_workos
   hosted_workos ~~~ hosted_collector
   hosted_collector ~~~ hosted_render
+  hosted_render ~~~ hosted_systemlog
 ```
 
 ### C4 containers: local edition
@@ -802,7 +813,9 @@ Scope: one Thermus Node server container. Solid arrows show runtime calls;
 thick arrows show composition. Dashed arrows show type-only source dependencies.
 App composition supplies the concrete sender to the settings service's required
 DestinationTestSender role. The service does not select its own transport.
-App also constructs SystemLog and the hosted settings service/runtime. Audit-logs
+App also constructs SystemLog and the hosted settings service/runtime, and, on
+the hosted control plane with the `SYSTEM_LOG_*` settings, the SDK export of
+the system log (SO-11a). Audit-logs
 retains type-only ChangeOutcome and RemovalOperationStore dependencies on
 organizations; that source edge is omitted here. The saved-destination Test uses the sender in production. MCP and protected web
 boundaries capture customer events through a supplied AuditLog. The composition
@@ -813,36 +826,53 @@ authorization read for each attempt.
 ```mermaid
 flowchart TB
   subgraph logs_server["Container: Thermus Node server"]
-    logs_app["app · TypeScript<br/>Compose diagnostics and AuditLog<br/>Own settings and queue lifetime"]
+    logs_app["app · TypeScript<br/>Compose diagnostics and AuditLog<br/>Own settings, queue, and export lifetime"]
     logs_mcp["mcp · TypeScript<br/>Final public capture<br/>Content-free diagnostics"]
     logs_web["web · TypeScript<br/>Trusted Admin capture<br/>Settings and Admin changes"]
     logs_audit["audit-logs · TypeScript<br/>Redact, bound, and gate capture<br/>Queue; authorize export; settings / Test"]
     logs_system["system-logs · TypeScript<br/>Internal diagnostics<br/>Caller location retained"]
   end
   logs_collector["External: customer Audit destination<br/>Collector or compatible OTLP service<br/>Customer events and Test / includes Axiom"]
+  logs_systemdest["External: system log destination<br/>OTLP/HTTP logs endpoint of the operator<br/>Hosted control plane only"]
   logs_app ==>|supplies AuditLog| logs_mcp
   logs_app ==>|supplies settings and AuditLog| logs_web
+  logs_app ==>|composes SystemLogger with stderr and OTel sinks| logs_system
   logs_mcp -->|validated final tool outcome| logs_audit
   logs_web -->|settings and action metadata| logs_audit
   logs_mcp -->|completion diagnostics| logs_system
   logs_audit -->|authorized export and saved Test| logs_collector
+  logs_app -->|SDK batch export of each record / OTLP JSON over HTTPS| logs_systemdest
 ```
 
 HTTP and CLI also use the narrow [SystemLog](../src/logs/system/system-logger.ts)
 contract for errors. `SystemLog` is `Pick<SystemLogger, 'info' | 'error'>`,
 exported by the SystemLogger module. It accepts plain objects with those methods.
-The production entry composes SystemLogger with
-[ConsoleSystemLogSink](../src/logs/system/console-system-log-sink.ts) on stderr.
+The production entry composes SystemLogger with app's
+[SystemLogOutput](../src/app/system-log-output.ts), the sink of the process: it
+writes each record to
+[ConsoleSystemLogSink](../src/logs/system/console-system-log-sink.ts) on stderr
+and, after the start of the export, also to the export.
 SystemLogger filters by level and prepares local time, failure text, and caller
 location before it calls the synchronous `SystemLogSink.writeSystemLog` role.
 [OtelSystemLogSink](../src/logs/system/otel-system-log-sink.ts) maps that record
 to the SDK; composition owns SDK export, flush, and shutdown. It ignores the
-formatted local time because the SDK assigns its event timestamp. No production
-exporter is configured here. The separate
+formatted local time because the SDK assigns its event timestamp. Since SO-11a,
+app configures the production exporter: the hosted control plane with the
+[three settings](../src/runtime/config/system-log-export-config.ts)
+`SYSTEM_LOG_OTLP_ENDPOINT`, `SYSTEM_LOG_OTLP_TOKEN`, and `SYSTEM_LOG_AXIOM_DATASET`
+starts it before the hosted settings load, and
+[`openSystemLogExport()`](../src/app/system-log-export.ts) composes
+OtelSystemLogSink with the SDK `BatchLogRecordProcessor` and `OTLPLogExporter`,
+the resource `service.name` `thermus-control-plane` and `service.instance.id`
+from `RENDER_INSTANCE_ID`. A failure of the export never stops the stderr write;
+[ExportFailureLine](../src/app/system-log-failure-line.ts) writes one line to
+stderr at most once a minute through a logger with only the console sink, so a
+failure cannot feed the export. A tenant and the self-hosted edition write to
+stderr only. The separate
 [System Axiom test composition](../test/support/in-process/axiom-test-export.ts)
 owns its SDK exporter, endpoint, and credentials; customer destination settings do
-not configure it. Direct Audit delivery to Axiom uses the audit-owned sender and
-adds no SystemLog forwarding path. A synchronous sink failure still reaches its
+not configure either one. Direct Audit delivery to Axiom uses the audit-owned sender and
+adds no SystemLog forwarding path; the system log export never uses that sender. A synchronous sink failure still reaches its
 caller. Existing account and tool completion diagnostics remain internal. Tool records contain operation, tool,
 status, duration, and opaque identities; they omit URL, query, reason, and result.
 
@@ -1161,7 +1191,9 @@ workos; the MCP gateway reads the row of the organization, requests a tenant,
 sends the one resume call for a suspended one, which fails until SO-10 connects
 it, and records activity through a port that app composes
 on the registry; it forwards the request to the tenant server, and the relay
-route of web takes the audit relay of that tenant. Web calls the service for the
+route of web takes the audit relay of that tenant. With the three `SYSTEM_LOG_*` settings, app also
+exports the system log of the control plane through the SDK to the logs
+endpoint of the operator (SO-11a). Web calls the service for the
 trusted current tenant and actor. Test sends one synthetic event; the
 separate tool and administration capture shares hosted activity-driven snapshots.
 Organizations calls the same SQL adapter through its supplied removal store for
@@ -1777,10 +1809,13 @@ The [tenant fleet runbooks](../docs/implementation/tenant-fleet-runbooks.md)
 (SO-11) give the operator steps for this target: a failed provision, an
 orphaned tenant service, a paused Supabase project, the deletion of a tenant,
 the key rotations, the monthly GHCR pruning, and the alerts. Their Axiom
-monitors need the log lines of the control plane in Axiom. The recorded target
+monitors need the log lines of the control plane in Axiom. On 28 October 2026,
+the owner chose the export of the system log through `OtelSystemLogSink`
+(SO-11a) over a Render log stream. The source exports when the three
+`SYSTEM_LOG_*` settings are set; the recorded target does not set them yet and
 writes its system log only to standard error, which Render keeps for 7 days on
-the Hobby plan, so a Render log stream or an export of the system log must
-carry the lines first.
+the Hobby plan. So its diagram draws no export: the owner sets the settings,
+with the Axiom dataset `system-log`, at step 6 of the SO-12 order at the latest.
 
 The tenant sweeps of SO-09 run inside the Node server process of the control
 plane, only with the switch on, so the recorded target runs none. The fleet
@@ -1807,7 +1842,7 @@ surface and the narrower file-context restrictions.
 
 | Stable ID and source root | Responsibility and main parts | Boundary |
 | --- | --- | --- |
-| `app` — [`src/app/`](../src/app/), plus [`src/index.ts`](../src/index.ts) | Select hosted or self-hosted operation and the role of the hosted image; construct providers, routes, tools, logs, and shared services; own startup, shutdown, capacity, portal loading, the tenant composition and its routes, the gateway composition behind `MCP_TENANTS_ENABLED` with its registry port and the relay route, the lifetimes of the provisioner loop and the tenant sweeps, and hidden terminal input. | Entrypoint and application lifecycle; documented [tool composition](../src/app/fetch-tool.ts). Other components do not import app; the fleet script uses its system clock. |
+| `app` — [`src/app/`](../src/app/), plus [`src/index.ts`](../src/index.ts) | Select hosted or self-hosted operation and the role of the hosted image; construct providers, routes, tools, logs, and shared services; own startup, shutdown, capacity, portal loading, the tenant composition and its routes, the gateway composition behind `MCP_TENANTS_ENABLED` with its registry port and the relay route, the lifetimes of the provisioner loop and the tenant sweeps, the system log export of the control plane with its lifetime, and hidden terminal input. | Entrypoint and application lifecycle; documented [tool composition](../src/app/fetch-tool.ts). Other components do not import app; the fleet script uses its system clock. |
 | `identity` — [`src/accounts/identity/`](../src/accounts/identity/) | Define authenticated users, grants, immutable request contexts, permission checks, verification, browser sessions and profile controls, and local administration roles. Sign and verify the signed access context of a tenant with `jose`, check the context of an audit relay without a bearer token, and give the access of a verified context. | [Access context](../src/accounts/identity/access-context.ts), verifier, browser-session, browser-session-controls, local-user-administration, and [signed-access-context](../src/accounts/identity/signed-access-context.ts) contracts. The signer, the verifier, and the context resolver are for app. No provider or UI implementation belongs here. |
 | `organizations` — [`src/accounts/organizations/`](../src/accounts/organizations/) | Customer roles, administration rules, member/invitation overviews, directory reads and native invitations, the member limit of a plan at invitation send, durable removal coordination and last-Admin checks, signup activation, seat calculations, and privileged change recording. | Directory, administration, overview, customer-role, change-record, removal-store, and signup-activation modules. Administration exposes removal requests/results and close. Directory-read, member-limit, and removal helpers remain private. |
 | `billing` — [`src/accounts/billing/`](../src/accounts/billing/) | Report plan state, `free` with its member limit or `team`, and accept seat updates. `BillingFree` is the current implementation. | [Billing roles](../src/accounts/billing/billing.ts); app selects the implementation. |
@@ -1826,7 +1861,7 @@ surface and the narrower file-context restrictions.
 | `system-logs` — [`src/logs/system/`](../src/logs/system/) | Format internal engineering diagnostics with caller file and line. Customers cannot access this stream. | SystemLog for callers; concrete SystemLogger/LogLevel with a supplied SystemLogSink. ConsoleSystemLogSink and OtelSystemLogSink own output only. |
 | `audit-logs` — [`src/logs/audit/`](../src/logs/audit/) | Own customer audit event projection, activity snapshots, bounded queue and current-revision dispatch, tenant destination validation and credential protection, atomic settings revisions, saved-destination Tests, and one-shot OTLP requests to the configured Collector or compatible service, including direct Axiom. Its SQL adapter also stores removal intent and terminal receipts on the shared `sql` runtime. The relay sink of a tenant sends its events to the control plane with the bounds of the collector, and the control plane checks each relayed tool completion again before its capture. | AuditLog event methods and AuditEventSink; AuditSnapshots and RevisionBoundAuditSink; AuditCollector; destination-settings service with fresh export authorization and Test outcomes; neutral settings store, private codec, and SQL adapter; implementation of the organizations-owned removal store; OtlpAuditSender with tracked physical settlement. MCP and web share hosted snapshots and bounded dispatch; web reads, saves, and tests settings. |
 | `http` — [`src/runtime/http/`](../src/runtime/http/) | Node listener, HTTP-to-Fetch exchange, trusted client address, request cancellation, connection tracking, and listener drain. | Server for app; client-address and request-cancellation modules for other consumers. Exchange mechanics remain private. |
-| `config` — [`src/runtime/config/`](../src/runtime/config/) | Validate deployment/listen settings, `THERMUS_ROLE` and the tenant settings with the refusal of control-plane secrets, optional hosted logging storage settings, the hosted operation capacity, the switch `MCP_TENANTS_ENABLED`, and, with it on, the free-tenant cap, the provisioning settings, the hour of the tenant sweeps, and the gateway settings with the check that `GATEWAY_PUBLIC_KEY` holds the public key of `GATEWAY_SIGNING_KEY`, and read trusted ad rules. Provider settings stay with their provider; a tenant has no provider settings. | Deployment-config and ad-rules-file modules; app selects the logging-storage settings reader, the operation-capacity reader, the switch and provisioning-settings reader, the free-tenant-limit reader, and the gateway-settings reader. |
+| `config` — [`src/runtime/config/`](../src/runtime/config/) | Validate deployment/listen settings, `THERMUS_ROLE` and the tenant settings with the refusal of control-plane secrets, optional hosted logging storage settings, the optional system log export settings of the control plane, the hosted operation capacity, the switch `MCP_TENANTS_ENABLED`, and, with it on, the free-tenant cap, the provisioning settings, the hour of the tenant sweeps, and the gateway settings with the check that `GATEWAY_PUBLIC_KEY` holds the public key of `GATEWAY_SIGNING_KEY`, and read trusted ad rules. Provider settings stay with their provider; a tenant has no provider settings. | Deployment-config and ad-rules-file modules; app selects the logging-storage settings reader, the system-log-export settings reader, the operation-capacity reader, the switch and provisioning-settings reader, the free-tenant-limit reader, and the gateway-settings reader. |
 | `sql` — [`src/runtime/sql/`](../src/runtime/sql/) | Own the one bounded SQL runtime of the hosted stores: the `pg` pool with verified TLS, admission of active and pending work, acquisition, operation and statement deadlines, late-work accounting, and bounded close. The only owner that imports `pg`. | [Bounded SQL runtime](../src/runtime/sql/bounded-sql-runtime.ts) for the stores; app opens it and owns its lifetime. |
 | `tenants` — [`src/tenancy/tenants/`](../src/tenancy/tenants/) | Own the tenant registry of the control plane: the tenant request inside the free-tenant cap and the revive of a deleted row, the in-memory route lookup with its refresh bounds, the provisioner state machine with its bounds, the resume of a suspended tenant and the activity write of the gateway, the fleet statements, the removal of a tenant, and the deploy wait of the fleet writes, the tenant sweeps (the weekly organization sweep and the daily fleet summary with its cost table), and the SQL adapters of the `tenants` table. | [Tenant platform](../src/tenancy/tenants/tenant-platform.ts), the contract that render implements, and [organization inventory](../src/tenancy/tenants/organization-inventory.ts), the contract that workos implements; app composes the request, the lookup, the provisioner, the resume, the activity, the sweeps, and the adapters, and gives the gateway a port; the fleet script composes the fleet parts. Signup uses the request and the lookup in a later ticket. |
 | `render` — [`src/tenancy/providers/render/`](../src/tenancy/providers/render/) | The Render API adapter of the tenant platform: the search by name, the create of an image-backed private service, the newest deploy, the internal address, the delete, the deploy of an image by digest, the suspend, the resume, and the reads of the memory metrics and the restart events, with the retry bounds, the count of the create limit, and the write guard. It holds the Render API key. | No public module; app composes it with the write guard of the registry. It imports only the contract types of tenants. Another platform would be a sibling owner under `src/tenancy/providers/` behind the same contract; the soft spots below name what moves with it. |
@@ -1928,6 +1963,16 @@ after the other, and a step that fails reports one line without stopping the
 next one. The fleet script holds one SQL runtime, one adapter, and one WorkOS
 client for one command, and closes the runtime at its end, also after an error
 or a stop signal.
+
+The system log export has one lifetime, which app owns (SO-11a). The entry
+builds one `SystemLogOutput` on stderr. With the three `SYSTEM_LOG_*` settings,
+the hosted control plane starts the export before the server reads its other
+settings, and stops it after the HTTP server closed and after a `FATAL` line,
+so the last records reach the endpoint; the stop waits at most 5 s, also when
+the endpoint does not answer. The export keeps at most 2,048 records in memory
+and drops the newest when the queue is full, sends a batch at most every 2 s,
+and drops a batch after the retries of the exporter, which end within 4 s.
+There is no queue on disk. Only the exporter headers hold the token.
 
 A tenant composes one MCP server, one relay sink, and the hosted tool
 operations with one `OPERATION_CAPACITY` owner. Each admitted request gets its
@@ -2032,6 +2077,14 @@ The following limits affect architectural decisions today:
   timeout. A failed resume moves the row back to `suspended` only from
   `deploying`, so a provisioner that records `live` in between leaves a live row
   for a suspended service, until the sweep of SO-10.
+- The system log export of the control plane is best effort: a full queue, a
+  failed batch, and a stop after its bound of 5 s lose records; stderr on
+  Render keeps each line for 7 days. It carries every line of the system log
+  to the dataset of the operator, also the account change records with their
+  email addresses and the operator reports. The approved privacy text names
+  Render for the service logs and says that Thermus avoids routine operator-log
+  exports, so the owner reviews it before production sets the token. The lines
+  of a tenant are not exported: a tenant holds no token.
 - The application-wide hosted capacity bounds this process only, to
   `OPERATION_CAPACITY` calls. It rejects a call above that limit instead of
   queuing work and does not coordinate multiple instances. A deployment change

@@ -20,7 +20,7 @@ const tenant: Environment = {
   CONTROL_PLANE_INTERNAL_URL: 'http://thermus-control-plane:8080',
   WORKOS_AUTHKIT_ISSUER: 'https://thermus-test.authkit.app',
 };
-const refusedTenantSettings = ['WORKOS_API_KEY', 'WORKOS_CLIENT_SECRET', 'WORKOS_COOKIE_PASSWORD', 'GATEWAY_SIGNING_KEY', 'DATABASE_URL', 'LOGGING_DESTINATION_ENCRYPTION_KEY', 'RENDER_API_KEY', 'STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET', 'STRIPE_PRICE_TEAM'];
+const refusedTenantSettings = ['WORKOS_API_KEY', 'WORKOS_CLIENT_SECRET', 'WORKOS_COOKIE_PASSWORD', 'GATEWAY_SIGNING_KEY', 'DATABASE_URL', 'LOGGING_DESTINATION_ENCRYPTION_KEY', 'RENDER_API_KEY', 'SYSTEM_LOG_OTLP_TOKEN', 'STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET', 'STRIPE_PRICE_TEAM'];
 const rootUrls = { publicBaseUrl: 'https://thermus.example/', mcpResourceUrl: 'https://thermus.example/mcp',
   resourceMetadataUrl: 'https://thermus.example/.well-known/oauth-protected-resource/mcp' };
 

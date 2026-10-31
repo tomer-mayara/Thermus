@@ -236,6 +236,7 @@ One new setting, `THERMUS_ROLE`, selects the role of the hosted image.
 | `RENDER_API_KEY`, `RENDER_OWNER_ID`, `RENDER_REGISTRY_CREDENTIAL_ID`, `TENANT_IMAGE`, `TENANT_PLAN_FREE`, `TENANT_PLAN_TEAM` | new, required when the switch is on | not set |
 | `TENANT_NAME_PREFIX` | new, default `thermus-tenant-`: the name of a tenant service is the prefix and the organization ID in lower case; the staging control plane uses `thermus-spike-tenant-` (27 October 2026). Since 27 October 2026 (SO-06), the organization id in the service name is lower case with each character outside a-z, 0-9, and hyphen replaced by a hyphen; Render shortens a long name into its hostname at a separator and keeps hostnames unique, so the gateway uses the address that the provisioner reads from Render, never one computed from the name. | not read |
 | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_TEAM` | new, required | not set |
+| `SYSTEM_LOG_OTLP_ENDPOINT`, `SYSTEM_LOG_OTLP_TOKEN` (secret), `SYSTEM_LOG_AXIOM_DATASET` | new in SO-11a (28 October 2026), read at each start, also with the switch off: all three empty keep the system log on standard error only; the endpoint, an `https` URL, and the token come together, and one without the other stops the start with a message that names the setting and the rule. Production: `https://us-east-1.aws.edge.axiom.co/v1/logs`, the dataset `system-log` (owner decision of 28 October 2026), and an Axiom API token with ingest permission for that dataset only. | not read; the tenant refuses `SYSTEM_LOG_OTLP_TOKEN` |
 | `LIGHTPANDA_BIN`, `AD_RULES_FILE` | set by the image; read until SO-16 removes the tools | read, as today |
 | Routes | today's routes, plus `/billing/*`, `/billing/events`, `/workspace/status`, and `/internal/audit`; `/mcp` is the gateway when the switch is on | `/healthz` and `/mcp` only |
 | `OPERATION_CAPACITY` | new in SO-01a, default 10; applies while the control plane still serves tools | the same setting: the calls that run at the same time. The default stays 10 in the source; the provisioner sets 5 for a free tenant and 10 for a team tenant (D-15). |
@@ -247,7 +248,8 @@ required, the provisioner loop does not run, and signup only inserts the
 `requested` row. So a deploy with the switch off cannot fail at the start.
 The tenant role refuses to start when `WORKOS_API_KEY`,
 `WORKOS_CLIENT_SECRET`, `DATABASE_URL`, `RENDER_API_KEY`, or a `STRIPE_*`
-setting is present; the message names the setting.
+setting is present; the message names the setting. Since 28 October 2026
+(SO-11a), it also refuses `SYSTEM_LOG_OTLP_TOKEN`.
 
 The signed access context is one request header, `Thermus-Access`. Since
 27 October 2026, it is an EdDSA JWT that the control plane makes and the tenant
@@ -533,7 +535,7 @@ and declaration as a T2 fact.
 | `identity` | `signed-access-context.ts` | Sign and verify the access context, an EdDSA JWT made with `jose` (27 October 2026). |
 | `audit-logs` | `audit-relay-sink.ts` | The tenant-side sink that relays events to the control plane, with the bounds of the audit collector: 32 tenants, 2 active sends, 30 s age, and 3 attempts with backoff from 250 ms to 2 s (27 October 2026). |
 | `web` | `account/billing-routes.ts`, `internal/audit-relay-route.ts`, workspace status | Upgrade, portal, return, webhook, relay, and status routes. |
-| `app` | role selection, both compositions, the provisioner and sweep lifetimes | |
+| `app` | role selection, both compositions, the provisioner and sweep lifetimes, and the system log export with its lifetime (SO-11a) | |
 
 New edges, at least: `app` to `tenants`, `render`, `stripe`, and `sql`;
 `tenants` and `billing` to `sql`; `billing` to `stripe`; `mcp`, `web`, and
@@ -555,7 +557,7 @@ event contract.
 | D-6 | Cost caps | `FREE_TENANT_LIMIT` 25, `FREE_TENANT_IDLE_DAYS` 14. | At most about 175 USD a month of live free containers. |
 | D-7 | Tenant image source | A prebuilt image in GHCR from a GitHub Actions build. | SO-02; one image and one release path. |
 | D-8 | PostgreSQL plan | Supabase Free for now. | The daily reconciliation touches the database every day, so the 7-day pause is unlikely while the control plane runs. A pause stops provisioning, billing, and the audit export until the operator resumes the project. Revisit at the first paying customer. |
-| D-9 | Render workspace plan | Hobby for now. | 7 days of logs and failure emails only. Alerts come from the failure emails and the daily fleet summary. Amended on 27 October 2026: Axiom monitors on the production logging destination give the alerts (SO-11). Revisit when the fleet grows. |
+| D-9 | Render workspace plan | Hobby for now. | 7 days of logs and failure emails only. Alerts come from the failure emails and the daily fleet summary. Amended on 27 October 2026: Axiom monitors on the production logging destination give the alerts (SO-11). On 28 October 2026, the owner chose the log path: the control plane exports its system log through `OtelSystemLogSink` to the existing Axiom dataset `system-log` (SO-11a), not through a Render log stream. Revisit when the fleet grows. |
 | D-10 | Existing organizations | Fresh inventory; delete the unused test organizations. The rest get a tenant on first use. | SO-12. |
 | D-11 | Legal and marketing | Proceed under the existing document process. | SO-12 for the free tier, SO-14 for the paid tier. No customer reaches Checkout before approval and publication. |
 | D-12 | Team container | A larger instance, `1c-2g`, with the same capacity. Amended by D-15 on 27 October 2026: 10 calls at a time, against 5 on the free instance. | The tier change resizes the container and sets its capacity. Costs about 25 USD a month for each team tenant. |
@@ -1053,6 +1055,34 @@ alert: a Brave API key or a dedicated outbound IP is the later option.
 Since 28 October 2026, the runbooks and the alerts are in
 [Tenant fleet runbooks](tenant-fleet-runbooks.md). Size S.
 
+**SO-11a System log export of the control plane.** The owner decision of
+28 October 2026 on the log path of the Axiom monitors of SO-11: a source
+export through `OtelSystemLogSink`, not a Render log stream. The control plane
+exports each record of its system log to an OTLP/HTTP logs endpoint, in
+addition to standard error, with the OpenTelemetry SDK, which moves to the
+production dependencies. The settings are the three of section 4.1; the
+dataset is the existing `system-log` (owner decision of 28 October 2026). The
+export is bounded: a queue of 2,048 records that drops the newest, a batch
+every 2 s, each export with its retries within 4 s, a failed batch dropped
+with one standard error line at most once a minute that does not go through
+the export, and a wait of at most 5 s for the last records at the stop. The
+audit sender stays separate. A tenant exports nothing: it refuses the token,
+and the provisioner gives it none of the three settings. Given the three
+settings and a local OTLP/HTTP double, when the control plane writes an INFO
+and an ERROR record, then the double gets both with the bearer token, the
+dataset, the severity, and the message with the caller file and line, and
+standard error has the same lines; given a double that answers `500` or
+refuses the connection, then the control plane keeps serving and writes at
+most one export failure line a minute; given the endpoint without the token,
+or the token without the endpoint, then the start stops with a message that
+names the setting. Size M. Depends on SO-11. The production service gets the
+three settings at step 6 of the SO-12 order at the latest. Open before the
+token is set: the privacy text of the hosted document bundles names Render as
+the processor of the service logs and says that Thermus avoids routine
+operator-log exports, while the export sends each line, also the account
+change records with email addresses, to Axiom; the owner decides the update of
+that text under the document process of D-11 (28 October 2026).
+
 **SO-12 Free-tier release.** The deployment proof of the approved removal
 bundle from the Slice 2.5 release checkpoint; the marketing **Start free** link
 to `https://app.thermus.ai/signup?tier=free` and the free-tier guides;
@@ -1071,13 +1101,16 @@ inventory and the D-10 cleanup; 2. the owner's disposition of the open release
 holds; 3. the database migration; 4. the registry credential, which reuses
 `ghcr-thermus-hosted-read`; 5. an API deploy of the release candidate digest to
 the production service with the gateway switch off, where the Git build ends
-(27 October 2026); 6. the new settings with the switch on; 7. one real MCP call
+(27 October 2026); 6. the new settings with the switch on, with the three settings of the system
+log export of SO-11a: `SYSTEM_LOG_OTLP_ENDPOINT=https://us-east-1.aws.edge.axiom.co/v1/logs`,
+`SYSTEM_LOG_AXIOM_DATASET=system-log`, and the secret variable
+`SYSTEM_LOG_OTLP_TOKEN` (28 October 2026); 7. one real MCP call
 for each kept organization, which provisions its tenant; 8. a canary signup
 with an owner account; 9. marketing publication; 10. the signup switch. A
 manual dispatch stays the deploy trigger. The search limit of 5 is part of
 SO-05, so the release does not wait for it. Rollback: turn the gateway switch
 off, close signup, keep the tenants running, and redeploy the previous control
-plane release if needed. Size M. Depends on SO-02 to SO-11.
+plane release if needed. Size M. Depends on SO-02 to SO-11, and SO-11a.
 
 ### Slice 3: upgrade to team
 
@@ -1163,7 +1196,7 @@ consider a smaller instance for it. Size S. Depends on SO-12.
 | Webhook order and duplicates | Stripe can deliver an event twice and out of order. | Event ID table with the applied mark; read the subscription from Stripe on each event; daily reconciliation. |
 | Private network is plain HTTP | Render does not encrypt traffic between services. | Accepted: every service on that network is Thermus; the forwarded bearer token is short-lived, and the context is signed. |
 | Audit relay | Relayed events add one private call for each tool call; a failed relay loses the event. | Bounded best effort, as today's capture; the control plane keeps the queue across tenant deploys and suspensions. |
-| Logs on Hobby | 7 days of logs, no log forwarding. | Accepted in D-9. The daily summary and the [runbooks](tenant-fleet-runbooks.md) record what matters. The control plane writes the restart, memory, and daily summary lines to its production logging destination, Axiom, where [monitors](tenant-fleet-runbooks.md#73-axiom-monitors) email the owner (27 October 2026). |
+| Logs on Hobby | 7 days of logs on Render, no log forwarding. | Accepted in D-9. The daily summary and the [runbooks](tenant-fleet-runbooks.md) record what matters. Since SO-11a (28 October 2026), the control plane exports each line of its system log, also the restart, memory, and daily summary lines, through `OtelSystemLogSink` to the Axiom dataset `system-log`, where [monitors](tenant-fleet-runbooks.md#73-axiom-monitors) email the owner. The export is best effort: a failed batch is dropped, and standard error on Render keeps the line for 7 days. The lines of a tenant stay on Render only, because a tenant holds no token (D-14). |
 | Owner-only steps | WorkOS dashboard settings including the Stripe add-on, Render plan changes, legal approval, the open release holds, and decision records need the owner. | Section 5 and the [runbooks](tenant-fleet-runbooks.md) name each step. |
 
 ## 8. Cost model

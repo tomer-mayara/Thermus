@@ -1,3 +1,5 @@
+import { stripVTControlCharacters } from 'node:util';
+
 // The functions in this file read the operator log of the server. Three sites keep the log, each in a different form.
 // ServerProcess keeps the text of the child process. ServerContainer keeps the text of docker start --attach.
 // InProcessServer keeps the messages of its logger as lines. Each site gives the log to these functions as one text.
@@ -9,6 +11,19 @@ const tenantLine = /tenant (local:[0-9a-f-]+)\./;
 // the end of the line.
 const completionLine = /\{"event":"mcp\.tool\.completed".*\}$/gm;
 const stepLine = /\{"event":"pipeline\.step\.completed".*\}$/gm;
+// A line of the console logger without its color codes: [time] LEVEL message, where the message starts with the call
+// site.
+const consoleLine = /^\[[^\]]*\] (DEBUG|INFO|WARNING|ERROR|FATAL) (.*)$/gm;
+
+export interface ConsoleRecord {
+  readonly level: string;
+  readonly message: string;
+}
+
+// The records of the console logger in their order, without the time and the color codes.
+export function consoleRecordsIn(output: string): ConsoleRecord[] {
+  return Array.from(stripVTControlCharacters(output).matchAll(consoleLine), ([, level = '', message = '']) => ({ level, message }));
+}
 
 export function listeningUrlIn(output: string): URL | undefined {
   const address = listeningLine.exec(output)?.[1];
