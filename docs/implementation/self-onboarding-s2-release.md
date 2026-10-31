@@ -112,15 +112,25 @@ Part B runs these checks on a clean checkout of `fa787be4` before the
 rehearsal. They follow the ticket and the
 [test gate policy](test-gate-policy.md#production-gates-for-source-changes).
 
+The manager ran the full set on 31 October 2026 on `3050d706`, the head of
+[#295](https://github.com/tomer-mayara/Thermus/pull/295) that the squash merge
+made into `fa787be4`: the
+[manager verification](https://github.com/tomer-mayara/Thermus/pull/295#issuecomment-6547815686) and the
+[Validation comment](https://github.com/tomer-mayara/Thermus/pull/295#issuecomment-6541269914) of #295. Part B checked the tree identity:
+`git rev-parse 3050d706^{tree}` and `git rev-parse fa787be4^{tree}` both give
+`081f5311b622a67dd33136aae9221b1599006798`. So that run is the run of the
+candidate, and part B did not repeat it. Part B ran only the Render interface
+gate, before step R1.
+
 | Check | Note | Result (UTC) |
 | --- | --- | --- |
-| `npm test`, `npm run typecheck`, `npm run build:user-portal` | The ordinary suite and the build checks. | — |
-| `npm run test:container` | The self-hosted container gate. | — |
-| `npm run build:hosted`, `npm run test:container:hosted` | Native AMD64. | Passed in run 41232469232: see [1.2](#12-release-candidate). |
-| `npm run test:hosted-live` | Through the WorkOS Staging launcher, with `LIGHTPANDA_BIN` of the pinned renderer. Never during the rehearsal ([3.2](#32-rules-of-the-rehearsal)). | — |
-| `npm run test:logging:postgres` | Includes the runtime files of SO-04 to SO-10. | — |
-| `npm run test:logging:collector` | The test gate policy asks for it for the Slice 2 release. | — |
-| `npm run test:interface:render` | The live interface command of SO-06. It makes real Render writes, and its preflight refuses to start while a `thermus-spike-*` service exists. Run it before step R1 or after the cleanup. | — |
+| `npm test`, `npm run typecheck`, `npm run build:user-portal` | The ordinary suite and the build checks. | Passed, manager round, 18:36:51 to 18:43:29: `npm run typecheck`; `npm test` 6,037 of 6,037 and portal 87 of 87, with 0 fail, cancelled, skipped, or todo. `npm run build:user-portal` ran in `npm run check` of `npm run build:hosted`. |
+| `npm run test:container` | The self-hosted container gate. | Passed, manager round, 18:43:29 to 18:44:57: 11 of 11. |
+| `npm run build:hosted`, `npm run test:container:hosted` | Native AMD64. | Passed in run 41232469232: see [1.2](#12-release-candidate). The manager round also ran `npm run build:hosted` on the Mac, 18:44:57 to 18:47:24: unit 3,962, portal 59 and 28, integration 1,260, selection 222, renderer 13. |
+| `npm run test:hosted-live` | Through the WorkOS Staging launcher, with `LIGHTPANDA_BIN` of the pinned renderer. Never during the rehearsal ([3.2](#32-rules-of-the-rehearsal)). | Passed, manager round, 18:49:42 to 19:01:29: 30 of 30 in 9 suites, 704 s. Part B did not run it. |
+| `npm run test:logging:postgres` | Includes the runtime files of SO-04 to SO-10. | Passed, manager round, 18:47:38 to 18:49:42: 60 of 60. |
+| `npm run test:logging:collector` | The test gate policy asks for it for the Slice 2 release. | Passed, manager round, 18:47:24 to 18:47:38: 10 of 10. |
+| `npm run test:interface:render` | The live interface command of SO-06. It makes real Render writes, and its preflight refuses to start while a `thermus-spike-*` service exists. Run it before step R1 or after the cleanup. | Passed, part B, 20:26:45 to 20:29:21: 1 of 1, as `npm run build` and then `node --env-file=<main checkout>/.env.local --test dist/test/interface/render/render-tenant-platform.live.js`. Two creates answered `201` after 2.6 and 2.8 s; the deploys were `live` 71.2 and 79.4 s after the create calls; the slugs were `thermus-spike-tenant-org` and `thermus-spike-tenant-org-5efd`; the deletes took 0.5 and 0.9 s. |
 
 ## 2. Before production
 
@@ -145,7 +155,7 @@ that hosted early access is free, with no payment card.
 | WorkOS Staging redirect URI of the staging control plane | Open. The owner adds `https://<public host>/callback` in the WorkOS dashboard when part B gives the public host (step R3). |
 | Render key of the staging control plane | The fleet key: `RENDER_API_KEY` in `/Users/tomermayara/git/Thermus/.env.local` (owner decision of 31 October 2026). |
 | Axiom token of the staging system log | `AXIOM_API_KEY` in the same file, which the OTel logger tests use to ingest into `system-log-test`. If the owner wants a token for `system-log-test` only, the owner adds it to the same file under a new name. |
-| A time window | The owner confirms that no hosted live gate, work slice, probe, or Render interface gate runs during the rehearsal ([3.2](#32-rules-of-the-rehearsal)). |
+| A time window | The owner confirms that no hosted live gate, work slice, probe, or Render interface gate runs during the rehearsal ([3.2](#32-rules-of-the-rehearsal)). Done on 31 October 2026: the owner wrote "Yes. No hosted live gate, work slice, or probe runs until the rehearsal ends." |
 
 ### 3.2 Rules of the rehearsal
 
@@ -723,8 +733,8 @@ no secret.
 
 | Step | Time (UTC) | Result | Evidence |
 | --- | --- | --- | --- |
-| 1.4 Application checks | — | — | — |
-| R0 Preflight | — | — | — |
+| 1.4 Application checks | 18:36:51 to 19:01:29 (manager round); 20:26:45 to 20:29:21 (Render interface gate) | Passed | [1.4](#14-application-checks-of-the-candidate-part-b): the manager round on `3050d706`, the same tree as `fa787be4` ([verification](https://github.com/tomer-mayara/Thermus/pull/295#issuecomment-6547815686)), and the Render interface gate of part B before step R1. |
+| R0 Preflight | 20:29:59 to 20:30:32 | Passed. Run ID `20261031-2029`. | The owner confirmed the window ([3.1](#31-inputs-for-part-b)). The service list of Thermus AI held only `srv-db8mnqg473hc739d529g`. `rgc-dbg1h0142hec73da9ra0` (`ghcr-thermus-hosted-read`) has the registry `GITHUB` and the user `tomer-mayara`. WorkOS Staging, kept for the cleanup check: the redirect URIs `https://localhost:24443/callback` (default, `redir_01M5YQXX5MZ202HY1SJAXBR180`) and `https://localhost:46443/callback` (`redir_01M5Z30C8MKYE38WW92WNB2VR6`); the sign-out URIs `https://localhost:24443/` (default) and `https://localhost:46443/`; the initiate-login URI `https://localhost:24443/login`; the OAuth resources `https://localhost:24443/mcp` (`authkit_oauth_resource_01M5YQXZ9GZ4VVYFQYQZZXTP41`) and `https://localhost:46443/mcp` (`authkit_oauth_resource_01M5Z30RTN19ZAJGV5TR7HFPEM`). No organization, user, or Connect application held the run ID. With `STAGING_DATABASE_URL` and the CA, with verified TLS, the five tables of `thermus_admin` had 0 rows. The production variable `PORT` is `8080` (one read at 20:30:32). |
 | R1 Git build of `thermus-spike-control` | — | — | — |
 | R2 Host settings | — | — | — |
 | R3 WorkOS Staging entries | — | — | — |
