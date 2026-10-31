@@ -3,12 +3,14 @@ import type { SystemLog } from '../../logs/system/system-logger.ts';
 import { randomUUID } from 'node:crypto';
 import { ProtocolError, ProtocolErrorCode, Server, type CallToolRequest, type CallToolResult, type ServerContext } from '@modelcontextprotocol/server';
 import type { RequestContext } from '../../accounts/identity/access-context.ts';
-import { projectSearchOutcome, safeSearchFailure, type SearchOperation } from './search.ts';
+import { SearchFailure } from '../../pipelines/search/search-failure.ts';
+import { projectSearchOutcome, type SearchOperation } from './search.ts';
 import { searchToolInputSchema, parseSearchToolArguments } from './search-tool-schema.ts';
 import { fetchToolInputSchema, parseFetchToolArguments } from './fetch-tool-schema.ts';
-import { safeFetchFailure, type FetchOperation } from './get-url-as-markdown.ts';
+import type { FetchOperation } from './get-url-as-markdown.ts';
 import { formatToolCompletion, type CompletionStatus } from './tool-completion-record.ts';
 import type { McpRequestLifetime } from './mcp-server.ts';
+import { PageFetchFailure } from '../../pipelines/page-fetch/fetch-failure.ts';
 
 export interface ToolOperations {
   readonly fetch: FetchOperation;
@@ -145,6 +147,58 @@ function isCapturedStatus(status: CompletionStatus): status is ToolCompletion['s
 
 function actorOf({ user }: RequestContext): ToolCompletion['actor'] {
   return { authority: user.authority, subject: user.subject, ...(user.name === undefined ? {} : { name: user.name }) };
+}
+
+function safeFetchFailure(error: unknown, signal: AbortSignal): { status: CompletionStatus; message: string } {
+  let failure: { status: CompletionStatus; message: string } = { status: 'processing_failed', message: 'Page processing failed' };
+  try {
+    if (signal.aborted || (error instanceof Error && error.name === 'AbortError')) {
+      failure = { status: 'cancelled', message: 'Request cancelled' };
+    } else if (error instanceof PageFetchFailure) {
+      failure = { status: 'fetch_failed', message: error.publicMessage };
+    } else {
+      const failures = {
+        'Server busy. Try again later.': 'busy',
+        'Invalid tool arguments': 'invalid_arguments',
+        'Access denied': 'access_denied',
+        'Page fetch failed': 'fetch_failed',
+        'Page processing failed': 'processing_failed',
+      } as const;
+      const message = error instanceof Error ? error.message : undefined;
+      if (typeof message === 'string' && Object.hasOwn(failures, message)) {
+        failure = { status: failures[message as keyof typeof failures], message };
+      }
+    }
+  } catch {
+    // An untrusted error can throw when its fields are read.
+  }
+  return signal.aborted ? { status: 'cancelled', message: 'Request cancelled' } : failure;
+}
+
+function safeSearchFailure(error: unknown, signal: AbortSignal): { status: CompletionStatus; message: string } {
+  let failure: { status: CompletionStatus; message: string } = { status: 'processing_failed', message: 'Search processing failed' };
+  try {
+    if (signal.aborted || (error instanceof Error && error.name === 'AbortError')) {
+      failure = { status: 'cancelled', message: 'Request cancelled' };
+    } else if (error instanceof SearchFailure) {
+      failure = { status: 'search_failed', message: error.publicMessage };
+    } else {
+      const failures = {
+        'Server busy. Try again later.': 'busy',
+        'Invalid tool arguments': 'invalid_arguments',
+        'Access denied': 'access_denied',
+        'Search failed': 'search_failed',
+        'Search processing failed': 'processing_failed',
+      } as const;
+      const message = error instanceof Error ? error.message : undefined;
+      if (typeof message === 'string' && Object.hasOwn(failures, message)) {
+        failure = { status: failures[message as keyof typeof failures], message };
+      }
+    }
+  } catch {
+    // An untrusted error can throw when its fields are read.
+  }
+  return signal.aborted ? { status: 'cancelled', message: 'Request cancelled' } : failure;
 }
 
 function emitCompletion(logger: SystemLog, record: string): void {

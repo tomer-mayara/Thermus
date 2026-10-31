@@ -85,3 +85,26 @@ test('Given a request lifetime, when its shutdown aborts a running call, then th
   assert.equal(tracked.length, 1);
   assert.deepEqual(site.records.map((record) => record.status), ['cancelled']);
 });
+
+test('Given an operation that fails with each kind of error, when each tool answers, then only fixed public text and its status are returned', async (t) => {
+  const throwingMessage = () => Object.defineProperty(new Error('Access denied'), 'message', { get() { throw new Error('PRIVATE getter'); } });
+  const cases = [
+    { tool: 'getURLAsMarkdown', error: new Error('Server busy. Try again later.'), text: 'Server busy. Try again later.', status: 'busy' },
+    { tool: 'getURLAsMarkdown', error: new Error('Page fetch failed'), text: 'Page fetch failed', status: 'fetch_failed' },
+    { tool: 'getURLAsMarkdown', error: new Error('PRIVATE failure'), text: 'Page processing failed', status: 'processing_failed' },
+    { tool: 'getURLAsMarkdown', error: new DOMException('PRIVATE cancel', 'AbortError'), text: 'Request cancelled', status: 'cancelled' },
+    { tool: 'getURLAsMarkdown', error: throwingMessage(), text: 'Page processing failed', status: 'processing_failed' },
+    { tool: 'search', error: new Error('Search failed'), text: 'Search failed', status: 'search_failed' },
+    { tool: 'search', error: 'PRIVATE value', text: 'Search processing failed', status: 'processing_failed' },
+    { tool: 'search', error: new DOMException('PRIVATE cancel', 'AbortError'), text: 'Request cancelled', status: 'cancelled' },
+  ] as const;
+  const errors: unknown[] = cases.map(({ error }) => error);
+  const fail = async (): Promise<never> => { throw errors.shift(); };
+  const site = await connect(t, { operations: { fetch: fail, search: fail } });
+  for (const { tool, text } of cases) {
+    const result = await site.client.callTool({ name: tool, arguments: tool === 'search' ? searchArgs : fetchArgs });
+    assert.deepEqual(result, { content: [{ type: 'text', text }], isError: true });
+  }
+  assert.deepEqual(site.records.map((record) => record.status), cases.map(({ status }) => status));
+  assert.doesNotMatch(JSON.stringify([...site.records, ...site.completions]), /PRIVATE/);
+});
