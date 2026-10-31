@@ -37,7 +37,7 @@ cached. `pnpm exec node --version` must report `v24.20.0`. For direct `npm` or
 | Hosted image | `npm run test:container:hosted` | `dist/test/acceptance/auth/hosted-image.test.js` only | Docker Engine with Buildx and a Linux AMD64 builder/runtime, native or emulated. Image build needs network access or cached pinned inputs; the renderer test needs HTTPS egress to `https://example.com/`. No live WorkOS or Axiom credential. |
 | Hosted live | `npm run test:hosted-live` | `hosted.live.js` and `hosted-removal.live.js`, in sequence after a build of the portal | A WorkOS staging environment with its settings and dashboard configuration, absolute pinned `LIGHTPANDA_BIN`, public network access, Playwright Chromium, OpenSSL, Docker Engine for the scoped removal proof’s disposable PostgreSQL, and free local ports 24443 and 24480. The [hosted live gate](#hosted-live-gate-auth-06) gives the details. |
 | Search live | `npm run test:mcp:search:live` | `dist/test/acceptance/mcp/search-pipeline.live.js` only | Absolute pinned `LIGHTPANDA_BIN` and public Brave access. No API key or Axiom credential. |
-| Private PostgreSQL | `npm run test:logging:postgres` | Settings and removal-store integration, settings and hosted storage-failure acceptance, membership-removal overlap/restart and integrated hosted acceptance, tenant registry store and tenant provisioner integration, and tenant registry acceptance `.runtime.js` files | Docker Engine and OpenSSL. Uses disposable local PostgreSQL 17 with verified test TLS and the scoped runtime role; no Supabase or other live credentials. |
+| Private PostgreSQL | `npm run test:logging:postgres` | Settings and removal-store integration, settings and hosted storage-failure acceptance, membership-removal overlap/restart and integrated hosted acceptance, tenant registry store, tenant provisioner, and organization sweep integration, and tenant registry acceptance `.runtime.js` files | Docker Engine and OpenSSL. Uses disposable local PostgreSQL 17 with verified test TLS and the scoped runtime role; no Supabase or other live credentials. |
 | Members browser | `npm run build:user-portal && npm run build && node --test dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js` | Labelled member rows and distinct counts; short closed desktop rows at most 72px with 48px actions; quiet self/other actions, keyboard Cancel and one confirmation at 320px/1280px without JavaScript; expanded-row reflow at 481px/600px/860px/861px; shared Members/Audit navigation, focus, text resize and Save/Test with JavaScript on/off; Audit width at 800px/860px; closed/open invitation, typed Cancel, native validation, User/Admin send and last-Admin guidance; counted zero/nonzero pending disclosure, compact long rows, UTC expiry, section order and protected keyboard Resend/Revoke, with JavaScript on/off | Playwright Chromium, OpenSSL and the built portal assets. Uses a temporary loopback HTTPS bridge to the local HTTP site and provider doubles; no live credentials. |
 | Renderer | `npm run test:mcp:renderer` | `dist/test/acceptance/mcp/get-url-as-markdown.runtime.js` and `dist/test/acceptance/mcp/search-pipeline.runtime.js` | `LIGHTPANDA_BIN` with the absolute path of the pinned Lightpanda 1.0.0 executable. No public network access and no Axiom credentials: the pages are local fixtures on `127.0.0.1`. |
 
@@ -293,7 +293,8 @@ changed source affects their behavior:
   available. If they are unavailable, record that the gate did not run.
 - `npm run test:logging:postgres` for the private logging settings store,
   membership-removal coordinator/store, shared SQL runtime
-  (`src/runtime/sql/`), tenant registry and provisioner (`src/tenancy/tenants/`),
+  (`src/runtime/sql/`), tenant registry, provisioner, fleet statements, and
+  sweeps (`src/tenancy/tenants/`),
   the `thermus_admin` migrations, or their hosted configuration and lifetime.
   This separate gate
   exercises real PostgreSQL; ordinary test globs do not select its `.runtime.ts`
@@ -477,7 +478,9 @@ then runs these emitted files directly, without another build:
    `dist/test/acceptance/mcp/search-lifecycle.test.js`,
    `dist/test/acceptance/mcp/hosted-process-shutdown.test.js`,
    `dist/test/acceptance/mcp/server-only-modules.test.js`,
-   `dist/test/acceptance/tenants/provisioner.test.js`, and
+   `dist/test/acceptance/tenants/provisioner.test.js`,
+   `dist/test/acceptance/tenants/organization-sweep.test.js`,
+   `dist/test/acceptance/tenants/fleet-summary.test.js`, and
    `dist/test/interface/hosted-renderer-startup.test.js`.
 3. `dist/test/acceptance/mcp/get-url-as-markdown.runtime.js` and
    `dist/test/acceptance/mcp/search-pipeline.runtime.js`: both real local
@@ -505,6 +508,12 @@ starts the built server with the gateway settings and the provisioning
 settings of SO-06: it checks each rule of the gateway settings and the key
 check, which stops the start unless `GATEWAY_PUBLIC_KEY` holds the public key
 of `GATEWAY_SIGNING_KEY`.
+
+The organization sweep and fleet summary files, added by SO-09, run the tenant
+sweeps as app composes them, with one daily tick of a wall clock double: the
+weekly organization sweep and the daily summary line. The WorkOS fake answers
+the pinned SDK on loopback, and a fake of the Render API answers the adapter in
+the process, so they need no network either.
 
 The exact selection is in `package.json`. It includes the current emitted
 integration glob and explicit, nonempty acceptance and interface paths. It
@@ -745,7 +754,11 @@ the placeholder environment of SO-01c
 starts as a control plane. Each run uses two of the 20 creates an hour of the
 Render user. A pass gives evidence of the Render calls of the adapter for two
 services of one shortened start in one region; it does not run the provisioner
-loop, a tenant role, or a call over the private network.
+loop, a tenant role, or a call over the private network. It runs only the
+operations of SO-06: the deploy, suspend, resume, memory, and restart
+operations of SO-09 have unit cases with a stub of `fetch`, and their real
+calls ran in the manual steps of the fleet script
+([SO-09 record](self-onboarding-s1.md#so-09-fleet-script-and-organization-sweep)).
 
 ## Hosted offline checks
 

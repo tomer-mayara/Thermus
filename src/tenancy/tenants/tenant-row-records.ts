@@ -31,9 +31,9 @@ export class RowRecords {
     return undefined;
   }
 
-  /** deploying to live, with the address and the digest. */
+  /** deploying to live on the service of the work, with the address and the digest. */
   async live(row: ProvisioningRow, serviceId: string, live: LiveRecord): Promise<RowOutcome> {
-    const recorded = await this.store.recordLive(row.organizationId, live);
+    const recorded = await this.store.recordLive(row.organizationId, serviceId, live);
     if (recorded.status !== 'recorded') return this.unrecorded(row, recorded);
     this.lines.record(row, 'live', { serviceId, ...live });
     return 'done';

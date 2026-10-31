@@ -29,7 +29,6 @@ const defaultRoles: readonly string[] = Object.freeze(['member']);
 const membershipsRoute = 'GET /user_management/organization_memberships';
 const roleAssignmentsPath = '/authorization/organization_memberships/:id/role_assignments';
 const membershipNotFound = notFound('UserOrganizationMembership not found');
-const organizationNotFound = notFound('Organization not found');
 
 export function membershipIdAt(index: number): string {
   return `om_${index}`;
@@ -79,16 +78,14 @@ function positionAfter(records: readonly { readonly index: number }[], cursorInd
   return position === -1 ? records.length : position;
 }
 
-// The routes of the membership reads and creates, the user and organization reads, the role assignments, and the role
-// lists of the organizations of start().
+// The routes of the membership reads and creates, the user reads, the role assignments, and the role lists of the
+// organizations of start(). workos-fake-organizations.ts has the organization reads.
 export function answerDirectoryRoutes(fake: WorkOSFakeApi, view: DirectoryView, organizations: readonly string[]): void {
-  const started: ReadonlySet<string> = new Set(organizations);
   fake.answer(membershipsRoute, (request) => membershipsAnswer(view, request));
   fake.answer('POST /user_management/organization_memberships', (request) => createMembershipAnswer(view, request));
   fake.answerEach(`${membershipsRoute}/:id`, (_request, id) => membershipAnswer(view, id));
   fake.answerEach('DELETE /user_management/organization_memberships/:id', (_request, id) => deleteMembershipAnswer(view, id));
   fake.answerEach('GET /user_management/users/:id', (_request, id) => userAnswer(view, id));
-  fake.answerEach('GET /organizations/:id', (_request, id) => organizationAnswer(view, started, id));
   fake.answerEach(`POST ${roleAssignmentsPath}`, (request, id) => roleAssignmentAnswer(view, request, id));
   fake.answerEach(`DELETE ${roleAssignmentsPath}`, (request, id) => roleAssignmentAnswer(view, request, id));
   for (const organization of organizations) {
@@ -147,11 +144,6 @@ function deleteMembershipAnswer(view: DirectoryView, membershipId: string): Fake
 function userAnswer(view: DirectoryView, userId: string): FakeAnswer {
   const user = view.users.find(({ id }) => id === userId);
   return user === undefined ? notFound('User not found') : { status: 200, body: userJson(user) };
-}
-
-function organizationAnswer(view: DirectoryView, started: ReadonlySet<string>, organizationId: string): FakeAnswer {
-  const known = started.has(organizationId) || Object.hasOwn(view.organizationNames, organizationId);
-  return known ? { status: 200, body: view.organizationJson(organizationId) } : organizationNotFound;
 }
 
 // A role assignment names one role and the authorization resource of the organization of the membership. A POST

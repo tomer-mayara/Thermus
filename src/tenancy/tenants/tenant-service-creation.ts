@@ -24,13 +24,13 @@ export interface CreationParts {
 export async function serviceOfRow(parts: CreationParts, row: ProvisioningRow, signal: AbortSignal): Promise<ServiceOutcome> {
   const { organizationId } = row;
   if (row.state === 'deploying') {
-    return row.serviceId === null ? { status: 'failed', reason: 'The deploying row has no Render service ID' } : { status: 'service', serviceId: row.serviceId };
+    return row.serviceId === null ? { status: 'failed', reason: 'The deploying row has no tenant service ID' } : { status: 'service', serviceId: row.serviceId };
   }
   const request = { name: row.serviceName, plan: parts.freePlan, environment: freeTenantEnvironment(organizationId, parts.tenant) };
   for (let attempt = 1; ; attempt += 1) {
     const result = await attemptService(parts.platform, request, signal);
     if (result.status !== 'again') return result;
-    if (attempt === CREATE_ATTEMPTS) return { status: 'failed', reason: `No Render service after ${CREATE_ATTEMPTS} attempts. The last attempt: ${result.reason}` };
+    if (attempt === CREATE_ATTEMPTS) return { status: 'failed', reason: `No tenant service after ${CREATE_ATTEMPTS} attempts. The last attempt: ${result.reason}` };
     parts.log.info(retryLine(organizationId, attempt + 1, result));
     await parts.clock.sleep(result.waitMs, signal);
   }

@@ -1,9 +1,9 @@
 import { execFile } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
-import { chmod, cp, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
+import { chmod, cp, mkdir, mkdtemp, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises';
 import type { IncomingHttpHeaders } from 'node:http';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join, relative, resolve } from 'node:path';
 import type { TestContext } from 'node:test';
 import { promisify } from 'node:util';
 import type { AuditEvent } from '../../../src/logs/audit/audit-log.ts';
@@ -93,12 +93,8 @@ async function prepareFiles(directory: string): Promise<void> {
   await mkdir(join(directory, 'app/src/runtime/config'), { recursive: true });
   await cp(join(auditSenderRuntime.source, `app/logging-storage.${auditSenderRuntime.extension}`), join(directory, `app/src/app/logging-storage.${auditSenderRuntime.extension}`));
   await cp(join(auditSenderRuntime.source, `runtime/config/logging-storage-config.${auditSenderRuntime.extension}`), join(directory, `app/src/runtime/config/logging-storage-config.${auditSenderRuntime.extension}`));
-  // The storage opener composes the tenant registry of SO-04 and the provisioning store of SO-06 on the same SQL
-  // runtime, so it imports these modules.
-  await mkdir(join(directory, 'app/src/tenancy/tenants'), { recursive: true });
-  for (const name of ['pg-tenant-registry-store', 'tenant-lookup', 'tenant-requests', 'pg-tenant-provisioning-store', 'pg-tenant-claim']) {
-    await cp(join(auditSenderRuntime.source, `tenancy/tenants/${name}.${auditSenderRuntime.extension}`), join(directory, `app/src/tenancy/tenants/${name}.${auditSenderRuntime.extension}`));
-  }
+  // The storage opener composes the tenant registry and its stores on the same SQL runtime; the import closure at the
+  // end copies them.
   await cp(join(auditSenderRuntime.support, `processes/audit-capture-export-probe.${auditSenderRuntime.extension}`), join(directory, `app/test/support/processes/audit-capture-export-probe.${auditSenderRuntime.extension}`));
   await cp(join(auditSenderRuntime.support, `processes/audit-sender-probe.${auditSenderRuntime.extension}`), join(directory, `app/test/support/processes/audit-sender-probe.${auditSenderRuntime.extension}`));
   await cp(join(auditSenderRuntime.support, `processes/audit-destination-test-probe.${auditSenderRuntime.extension}`), join(directory, `app/test/support/processes/audit-destination-test-probe.${auditSenderRuntime.extension}`));
@@ -115,7 +111,37 @@ async function prepareFiles(directory: string): Promise<void> {
     await cp(join(auditSenderRuntime.support, `drivers/browser/${name}.${auditSenderRuntime.extension}`), join(directory, `app/test/support/drivers/browser/${name}.${auditSenderRuntime.extension}`));
   }
   await cp(join(auditSenderRuntime.support, `container/audit-tls-receiver.${auditSenderRuntime.extension}`), join(directory, `app/test/support/container/audit-tls-receiver.${auditSenderRuntime.extension}`));
+  await copyImportClosure(directory);
   await cp(join(directory, 'package.json'), join(directory, 'app/package.json'));
+}
+
+// A relative specifier after `from`, after `import` of a side effect, or in a dynamic import with a literal path.
+const RELATIVE_IMPORT = /(?:\bfrom\s*|\bimport\s*\(?\s*)['"](\.{1,2}\/[^'"]+)['"]/g;
+
+// The modules above are seeds. This copies each module that a copied module imports from the same source or support
+// tree, also through a literal dynamic import, so a new import of the hosted storage needs no new entry in the lists.
+async function copyImportClosure(directory: string): Promise<void> {
+  const trees = [
+    { fixture: join(directory, 'app/src'), repository: auditSenderRuntime.source },
+    { fixture: join(directory, 'app/test/support'), repository: auditSenderRuntime.support },
+  ];
+  const pending = (await readdir(join(directory, 'app'), { recursive: true, withFileTypes: true }))
+    .filter((entry) => entry.isFile() && entry.name.endsWith(`.${auditSenderRuntime.extension}`))
+    .map((entry) => join(entry.parentPath, entry.name));
+  const seen = new Set(pending);
+  for (let file = pending.pop(); file !== undefined; file = pending.pop()) {
+    for (const match of (await readFile(file, 'utf8')).matchAll(RELATIVE_IMPORT)) {
+      const target = resolve(dirname(file), match[1] ?? '');
+      const tree = trees.find(({ fixture }) => target.startsWith(`${fixture}/`));
+      if (seen.has(target) || tree === undefined) continue;
+      seen.add(target);
+      const original = join(tree.repository, relative(tree.fixture, target));
+      if (!(await stat(original).then((found) => found.isFile(), () => false))) continue;
+      await mkdir(dirname(target), { recursive: true });
+      await cp(original, target);
+      pending.push(target);
+    }
+  }
 }
 
 function collectorConfig(): string {

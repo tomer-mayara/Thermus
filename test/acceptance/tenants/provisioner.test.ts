@@ -165,7 +165,7 @@ test('Given two services with the name of the row, when the loop searches, then 
   await harness.runUntil(isFailed(harness, organizationA), 'a failed row');
 
   assert.deepEqual(harness.createBodies(), []);
-  assert.match(harness.store.row(organizationA).failureReason ?? '', new RegExp(`2 Render services have the name ${name}`));
+  assert.match(harness.store.row(organizationA).failureReason ?? '', new RegExp(`2 services of the platform have the name ${name}`));
   const errors = harness.errorLines();
   assert.equal(errors.length, 1, errors.join('\n'));
   assert.match(errors[0] ?? '', new RegExp(`Tenant provisioning failed.*${organizationA}`));

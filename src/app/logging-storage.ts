@@ -9,19 +9,24 @@ import type { SystemLog } from '../logs/system/system-logger.ts';
 import type { DestinationSettingsStore } from '../logs/audit/destination-settings-store.ts';
 import type { RemovalOperationStore } from '../accounts/organizations/removal-operation-store.ts';
 import type { BoundedSqlRuntime } from '../runtime/sql/bounded-sql-runtime.ts';
+import { PgTenantFleetStore } from '../tenancy/tenants/pg-tenant-fleet-store.ts';
 import { PgTenantProvisioningStore } from '../tenancy/tenants/pg-tenant-provisioning-store.ts';
 import { PgTenantRegistryStore } from '../tenancy/tenants/pg-tenant-registry-store.ts';
+import type { TenantFleetStore } from '../tenancy/tenants/tenant-fleet-store.ts';
 import type { TenantGatewayStore } from '../tenancy/tenants/tenant-gateway-store.ts';
 import { TenantLookup } from '../tenancy/tenants/tenant-lookup.ts';
 import type { TenantProvisioningStore } from '../tenancy/tenants/tenant-provisioning-store.ts';
 import { TenantRequests } from '../tenancy/tenants/tenant-requests.ts';
 
 // One private SQL runtime owns destination settings, membership-removal intent, and the tenant registry with its
-// provisioning statements and the writes of the MCP gateway.
+// provisioning statements, the writes of the MCP gateway, and the fleet statements.
 export interface HostedLoggingStorage {
   readonly store: DestinationSettingsStore;
   readonly removalStore?: RemovalOperationStore;
-  readonly tenants?: { readonly requests: TenantRequests; readonly lookup: TenantLookup; readonly provisioning: TenantProvisioningStore; readonly gateway: TenantGatewayStore };
+  readonly tenants?: {
+    readonly requests: TenantRequests; readonly lookup: TenantLookup; readonly provisioning: TenantProvisioningStore; readonly gateway: TenantGatewayStore;
+    readonly fleet: TenantFleetStore;
+  };
   readonly service?: DestinationSettingsService;
   readonly dispatch?: RevisionBoundAuditSink;
   close(): Promise<void>;
@@ -47,7 +52,10 @@ export async function openLoggingStorage(environment: Readonly<Record<string, st
 
 function tenantRegistry(runtime: BoundedSqlRuntime, freeTenantLimit: number): NonNullable<HostedLoggingStorage['tenants']> {
   const store = new PgTenantRegistryStore(runtime);
-  return { requests: new TenantRequests(store, freeTenantLimit), lookup: new TenantLookup(store), provisioning: new PgTenantProvisioningStore(runtime), gateway: store };
+  return {
+    requests: new TenantRequests(store, freeTenantLimit), lookup: new TenantLookup(store), provisioning: new PgTenantProvisioningStore(runtime), gateway: store,
+    fleet: new PgTenantFleetStore(runtime),
+  };
 }
 
 /** Test and customer export share the sender's native DNS, TLS, and HTTP admission. */

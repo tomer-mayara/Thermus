@@ -1,10 +1,12 @@
 import type {
-  AddressRead, DeployRead, PlatformService, ServiceCreation, ServiceDeletion, ServiceSearch, TenantPlatform, TenantServiceRequest,
+  AddressRead, DeployRead, DeployStart, MemoryRead, PlatformService, RestartRead, ServiceChange, ServiceCreation, ServiceDeletion, ServiceSearch,
+  TenantPlatform, TenantServiceRequest, TimeWindow,
 } from '../../../../src/tenancy/tenants/tenant-platform.ts';
 
 // A fake (Meszaros) of the tenant platform with the services that it made. Each queue holds the next answers of one
-// operation; an empty queue gives the normal answer: the services of the name, a new service, a live deploy, and
-// http://<name>:8080. calls records each operation in order, and requests the create requests.
+// operation; an empty queue gives the normal answer: the services of the name, a new service, a live deploy,
+// http://<name>:8080, a deleted service, a started deploy, an accepted suspend or resume, no memory point, and no
+// restart. calls records each operation in order, and requests the create requests.
 export class TenantPlatformFake implements TenantPlatform {
   readonly calls: string[] = [];
   readonly requests: TenantServiceRequest[] = [];
@@ -13,6 +15,13 @@ export class TenantPlatformFake implements TenantPlatform {
   readonly creations: ServiceCreation[] = [];
   readonly deploys: DeployRead[] = [];
   readonly addresses: AddressRead[] = [];
+  readonly deletions: ServiceDeletion[] = [];
+  readonly deployStarts: DeployStart[] = [];
+  readonly changes: ServiceChange[] = [];
+  readonly memoryReads: MemoryRead[] = [];
+  readonly restartReads: RestartRead[] = [];
+  /** The windows of the memory and restart reads, in order. */
+  readonly windows: TimeWindow[] = [];
   /** Runs at the start of each operation, so a test can stop the caller or change the registry at that point. */
   onCall: (call: string) => void = () => {};
   #sequence = 0;
@@ -42,7 +51,34 @@ export class TenantPlatformFake implements TenantPlatform {
 
   async deleteService(serviceId: string, signal: AbortSignal): Promise<ServiceDeletion> {
     this.call(`delete ${serviceId}`, signal);
-    return { status: 'deleted' };
+    return this.deletions.shift() ?? { status: 'deleted' };
+  }
+
+  async deployImage(serviceId: string, image: string, signal: AbortSignal): Promise<DeployStart> {
+    this.call(`deploy-image ${serviceId} ${image}`, signal);
+    return this.deployStarts.shift() ?? { status: 'started' };
+  }
+
+  async suspendService(serviceId: string, signal: AbortSignal): Promise<ServiceChange> {
+    this.call(`suspend ${serviceId}`, signal);
+    return this.changes.shift() ?? { status: 'accepted' };
+  }
+
+  async resumeService(serviceId: string, signal: AbortSignal): Promise<ServiceChange> {
+    this.call(`resume ${serviceId}`, signal);
+    return this.changes.shift() ?? { status: 'accepted' };
+  }
+
+  async memoryUse(serviceIds: readonly string[], window: TimeWindow, signal: AbortSignal): Promise<MemoryRead> {
+    this.call(`memory ${serviceIds.join(',')}`, signal);
+    this.windows.push(window);
+    return this.memoryReads.shift() ?? { status: 'found', services: new Map() };
+  }
+
+  async restartCount(serviceId: string, window: TimeWindow, signal: AbortSignal): Promise<RestartRead> {
+    this.call(`restarts ${serviceId}`, signal);
+    this.windows.push(window);
+    return this.restartReads.shift() ?? { status: 'found', restarts: 0 };
   }
 
   private call(call: string, signal: AbortSignal): void {

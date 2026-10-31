@@ -18,8 +18,16 @@ export function newestDeployOf(json: unknown): PlatformDeploy | null | undefined
   const deploys = json.map((item) => deployOf(recordOf(item).deploy));
   if (!deploys.every((deploy) => deploy !== undefined)) return undefined;
   const newest = deploys.reduce<DatedDeploy | null>((latest, deploy) => latest === null || deploy.createdAt > latest.createdAt ? deploy : latest, null);
-  if (newest === null) return null;
-  const { createdAt: _createdAt, ...deploy } = newest;
+  return newest === null ? null : undated(newest);
+}
+
+/** The deploy of a deploy answer, such as the 201 of a deploy call, or undefined for an invalid one. */
+export function deployOfAnswer(json: unknown): PlatformDeploy | undefined {
+  const dated = deployOf(json);
+  return dated === undefined ? undefined : undated(dated);
+}
+
+function undated({ createdAt: _createdAt, ...deploy }: DatedDeploy): PlatformDeploy {
   return deploy;
 }
 

@@ -60,10 +60,62 @@ export type ServiceDeletion = {
     readonly status: 'refused' | 'unavailable';
     readonly reason: string;
 };
+export type DeployStart = {
+    readonly status: 'started';
+    readonly deploy?: PlatformDeploy;
+} | {
+    readonly status: 'rate-limited';
+    readonly retryAfterMs: number;
+} | {
+    readonly status: 'refused' | 'unknown';
+    readonly reason: string;
+} | {
+    readonly status: 'gone';
+};
+export type ServiceChange = {
+    readonly status: 'accepted';
+} | {
+    readonly status: 'rate-limited';
+    readonly retryAfterMs: number;
+} | {
+    readonly status: 'refused' | 'unknown';
+    readonly reason: string;
+} | {
+    readonly status: 'gone';
+};
+export interface TimeWindow {
+    readonly startMs: number;
+    readonly endMs: number;
+}
+export interface MemoryUse {
+    readonly peakBytes: number;
+    readonly limitBytes?: number;
+}
+export type MemoryRead = {
+    readonly status: 'found';
+    readonly services: ReadonlyMap<string, MemoryUse>;
+} | {
+    readonly status: 'unavailable';
+    readonly reason: string;
+};
+export type RestartRead = {
+    readonly status: 'found';
+    readonly restarts: number;
+} | {
+    readonly status: 'gone';
+} | {
+    readonly status: 'unavailable';
+    readonly reason: string;
+};
 export interface TenantPlatform {
     findServices(name: string, signal: AbortSignal): Promise<ServiceSearch>;
     createService(request: TenantServiceRequest, signal: AbortSignal): Promise<ServiceCreation>;
     newestDeploy(serviceId: string, signal: AbortSignal): Promise<DeployRead>;
     internalAddress(serviceId: string, signal: AbortSignal): Promise<AddressRead>;
     deleteService(serviceId: string, signal: AbortSignal): Promise<ServiceDeletion>;
+    deployImage(serviceId: string, image: string, signal: AbortSignal): Promise<DeployStart>;
+    suspendService(serviceId: string, signal: AbortSignal): Promise<ServiceChange>;
+    resumeService(serviceId: string, signal: AbortSignal): Promise<ServiceChange>;
+    memoryUse(serviceIds: readonly string[], window: TimeWindow, signal: AbortSignal): Promise<MemoryRead>;
+    restartCount(serviceId: string, window: TimeWindow, signal: AbortSignal): Promise<RestartRead>;
 }

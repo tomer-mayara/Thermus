@@ -8,6 +8,7 @@ import { TenantProvisioner } from '../tenancy/tenants/tenant-provisioner.ts';
 import type { TenantProvisioningStore } from '../tenancy/tenants/tenant-provisioning-store.ts';
 import type { HostedLoggingStorage } from './logging-storage.ts';
 import { systemClock } from './system-clock.ts';
+import { startTenantSweeps, type TenantSweepsParts } from './tenant-sweeps.ts';
 
 export interface TenantProvisioningParts {
   readonly settings: TenantProvisioningSettings;
@@ -26,7 +27,7 @@ export interface TenantProvisioning {
 }
 
 /** The Render adapter of the control plane, with the write guard of the tenant registry. */
-export function tenantPlatformOf(parts: Pick<TenantProvisioningParts, 'settings' | 'store' | 'fetch' | 'clock'>): TenantPlatform {
+export function tenantPlatformOf(parts: Pick<TenantProvisioningParts, 'settings' | 'fetch' | 'clock'> & { readonly store: Pick<TenantProvisioningStore, 'ownsService'> }): TenantPlatform {
   const { apiKey, ownerId, registryCredentialId, tenantImage } = parts.settings.render;
   return new RenderTenantPlatform({
     apiKey, ownerId, registryCredentialId, image: tenantImage, clock: parts.clock ?? systemClock,
@@ -55,13 +56,15 @@ function provisionerOf(parts: TenantProvisioningParts): TenantProvisioner {
 }
 
 /**
- * The hosted storage with the provisioner loop. The loop needs the tenant registry, so the switch stops the start
- * without the private hosted storage. The loop closes before the shared SQL runtime.
+ * The hosted storage with the provisioner loop and the tenant sweeps. Both need the tenant registry, so the switch stops
+ * the start without the private hosted storage. Both close before the shared SQL runtime.
  */
-export function withTenantProvisioning(storage: HostedLoggingStorage | undefined, parts: Omit<TenantProvisioningParts, 'store'>): HostedLoggingStorage {
+export function withTenantProvisioning(storage: HostedLoggingStorage | undefined, parts: Omit<TenantProvisioningParts, 'store'> & Pick<TenantSweepsParts, 'workos' | 'sweepClock'>): HostedLoggingStorage {
   if (storage?.tenants === undefined) {
     throw new DeploymentConfigError('MCP_TENANTS_ENABLED=true needs the tenant registry: DATABASE_URL and LOGGING_DESTINATION_ENCRYPTION_KEY must be valid.');
   }
-  const provisioning = startTenantProvisioning({ ...parts, store: storage.tenants.provisioning });
-  return { ...storage, close: async () => { await provisioning.close(); await storage.close(); } };
+  const { provisioning: store, fleet } = storage.tenants;
+  const provisioning = startTenantProvisioning({ ...parts, store });
+  const sweeps = startTenantSweeps({ ...parts, platform: tenantPlatformOf({ ...parts, store }), fleet });
+  return { ...storage, close: async () => { await Promise.all([provisioning.close(), sweeps.close()]); await storage.close(); } };
 }

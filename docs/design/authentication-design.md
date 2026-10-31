@@ -1308,7 +1308,10 @@ also of another process, send one. A failed resume sets the row back to
 next call tries again. The provisioner of SO-06 watches the newest deploy of a
 `deploying` row and records `live`. Until SO-10 connects the resume operation
 to the Render API, each resume fails with "The resume operation is not
-connected yet (SO-10)."; no tenant is suspended before the idle sweep of SO-10.
+connected yet (SO-10).". Since SO-09 the operator can suspend a tenant with the
+fleet script; until SO-10, only the `resume` command of the fleet script brings
+it back, and each MCP call of the organization gets the `503` above and writes
+one operator report (owner decision of 31 October 2026).
 
 **The forward.** The gateway is a light streaming proxy (record SO-01d):
 

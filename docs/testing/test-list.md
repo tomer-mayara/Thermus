@@ -1,5 +1,56 @@
 # Test inventory
 
+## Current SO-09 inventory scope
+
+SO-09 of the [self on-boarding plan](../implementation/self-onboarding-plan.md#slice-2-free-tier-end-to-end)
+adds the tenant sweeps of the control plane (the weekly organization sweep and
+the daily fleet summary), the fleet statements of the tenant registry, the
+fleet operations of the tenant platform with their Render adapter, and the
+organization inventory with its WorkOS adapter. The fleet script
+`script/fleet/fleet.ts` is a script, so it has no test under `test/`: the
+[SO-09 record](../implementation/self-onboarding-s1.md#so-09-fleet-script-and-organization-sweep)
+gives its manual steps. Inventory presence is not a passing result; the pull
+request records the runs.
+
+- `test/acceptance/tenants/organization-sweep.test.ts` has the four sweep cases
+  of the ticket and two more: an organization that WorkOS no longer lists loses
+  its service and its row becomes `deleted`; listed organizations keep their
+  tenants; a failed list page deletes nothing; a deleted tenant has one log
+  line; an organization that the list leaves out but a read by ID finds keeps
+  its tenant; a day that is not Monday runs the summary and no sweep. Three
+  cases check the bound of the deletion authority (manager review of 28 October
+  2026): three absent organizations delete nothing and give one stop line with
+  the counts, two are both removed, and an empty list deletes nothing. They run
+  the sweeps as app composes them (`startTenantSweeps`), with the WorkOS fake
+  `test/support/doubles/workos/workos-fake.ts` (now with the organization list,
+  removed organizations, and the lag of the list), the Render fake, the
+  registry fake `test/support/doubles/tenants/tenant-fleet-store-fake.ts`, and a
+  wall clock double that gives one tick.
+- `test/acceptance/tenants/fleet-summary.test.ts` has four cases of the daily
+  summary line: the count and the cost of each state and plan, a membership with
+  only the default role, the restarts and the memory of the live tenants, and a
+  failed platform read that the line names.
+- `test/integration/tenants/organization-sweep.runtime.ts` runs the sweep, the
+  revive of a deleted row inside the cap, and the fleet statements with their
+  start states on the real registry store on disposable PostgreSQL 17. One case
+  replaces a live row by a delete, a revive, and a new provision with another
+  service; then the stale delete, suspend, resume, and live record of the old
+  service are moved, and the row stays with the new service (manager decision of
+  31 October 2026). It runs in `npm run test:logging:postgres`.
+- `test/unit/tenants/organization-sweep.test.ts`, `fleet-summary.test.ts`,
+  `tenant-sweeps.test.ts`, `tenant-removal.test.ts`, `pg-tenant-fleet-store.test.ts`,
+  `fleet-deploy-wait.test.ts` and `fleet-image-deploy.test.ts` (the deploy
+  wait that the upgrade and the resume of the fleet script share, and one
+  upgrade deploy), and the revive cases of `tenant-requests.test.ts`;
+  `test/unit/render/render-fleet-operations.test.ts`;
+  `test/unit/auth-workos/workos-organization-inventory.test.ts`; and
+  `test/unit/config/tenant-sweep-config.test.ts` with the new cases of
+  `mcp-tenants-config.test.ts`. `test/acceptance/auth/hosted-startup.test.ts`
+  refuses an invalid `TENANT_SWEEP_HOUR_UTC` at the start of the built server.
+
+The runtime file needs Docker Engine and OpenSSL. The other files are in the
+ordinary suite, and the hosted offline build selects the two acceptance files.
+
 ## Admin Quick start
 
 The [approved specification](../design/admin-quick-start/spec.md) defines the
@@ -1132,6 +1183,7 @@ Only the hosted edition reads `MCP_TENANTS_ENABLED`, and only with `true` the te
 [V] Gives off for no value, an empty value, and `false`, and on for `true`; each other value, such as `TRUE`, `yes`, `1`, or ` true`, stops with `MCP_TENANTS_ENABLED must be exactly true or false.`
 [V] Gives the Render key, workspace, registry credential, tenant image, free plan, the default name prefix `thermus-tenant-`, the gateway public keys, and the origin of `CONTROL_PLANE_INTERNAL_URL`; a set prefix, two keys, and a final slash are kept or normalized
 [V] A missing or empty required setting stops with `<setting> is required when MCP_TENANTS_ENABLED is true.`; an invalid value stops with the rule of the setting and without the value, also an RSA or private key and a URL with a path, a password, or a query
+[V] `TENANT_SWEEP_HOUR_UTC` gives the hour of the daily tick of the tenant sweeps, 4 when it is missing or empty, and each whole number from 0 to 23; `24`, `04`, and each other value stop with `TENANT_SWEEP_HOUR_UTC must be a whole number from 0 to 23.` (also `test/unit/config/tenant-sweep-config.test.ts`); `TENANT_NAME_PREFIX` alone has the rule of the settings, for the fleet script
 
 **Tenant provisioner** (`test/unit/tenants/provisioner.test.ts`, `pg-tenant-provisioning-store.test.ts`)
 
@@ -1141,9 +1193,9 @@ A fake of the tenant platform, the registry fake, a virtual clock, and a spy of 
 [V] One service of the name is taken without a create; two services, a refused create, and a failed deploy give `failed` with the reason and one operator report
 [V] A create without a clear answer waits 30 s and searches by name before another create; a rate-limited create waits the given time, at most one hour; three attempts without a service, or three unavailable service lists, give `failed`
 [V] The newest deploy is read every 5 s for at most 15 minutes, 180 reads; a live deploy waits for the internal address; a gone service fails the row
-[V] A `deploying` row after a resume goes `live` without a create; a `deploying` row without a service ID fails
+[V] A `deploying` row after a resume goes `live` without a create; a `deploying` row without a service ID fails; a row that another writer gave a new service during the watch is left with that service, and the live deploy of the old service records nothing
 [V] An idle loop reads the registry every 5 s; an unreadable registry, a failed write, and an unexpected failure log one error and wait 60 s; a row that changed elsewhere is left; a failure that the registry cannot record is reported once it is recorded; a stop leaves the row for the next start
-[V] The claim selects with `FOR UPDATE SKIP LOCKED` in one transaction and moves the oldest requested row to `creating` with its name and plan; a resumed row keeps its name; each record names the state that it starts from; a failure reason is bounded to 1000 characters; the write guard owns a service ID only when a row has it
+[V] The claim selects with `FOR UPDATE SKIP LOCKED` in one transaction and moves the oldest requested row to `creating` with its name and plan; a resumed row keeps its name; each record names the state that it starts from, and the live record the service of the work too; a failure reason is bounded to 1000 characters; the write guard owns a service ID only when a row has it
 
 **Render adapter** (`test/unit/render/render-tenant-platform.test.ts`)
 
@@ -1154,8 +1206,39 @@ A stub of `fetch` gives the answers; a virtual clock gives the waits.
 [V] The newest deploy is the one with the latest creation time, with its progress and its digest; the internal address is `http://` with the host of `serviceDetails.url` and the first TCP port of `serviceDetails.openPorts`, else pending
 [V] A read or the delete has up to 3 attempts after a `429`, a `5xx`, or no answer; a delete is refused before any request for the production service, a service that the registry does not own, or a bad ID; no result holds the key, and a stop of the caller rejects the call
 
+**Fleet operations of the Render adapter** (`test/unit/render/render-fleet-operations.test.ts`)
+
+The same stub of `fetch` and virtual clock, in `test/unit/render/fixtures/render-fetch-stub.ts`.
+
+[V] A deploy sends one POST with `imageUrl`: `201` gives the new deploy with its progress and digest, `202` a started deploy without its ID, `429` the wait of `Retry-After`, else `Ratelimit-Reset`, `404` and `410` gone, another `4xx` refused, a `5xx` or no answer unknown; it is never sent again; an image that is not a reference by digest is refused before any request
+[V] A suspend and a resume send one POST without a body each; `202` gives accepted, and the other answers as for a deploy
+[V] Each deploy, suspend, and resume is refused before any request for the production service, a service that the registry does not own, or a bad ID
+[V] The memory read names each service in one memory read and one memory-limit read for the window, with a point every 600 s, and gives the peak and the limit of each service; no service makes no request; a failed, invalid, or not-bytes answer is unavailable
+[V] The restart count reads the events of the window, follows the cursor of a full page up to 10 pages, and counts `server_failed` and `server_restarted` inside the window only; a `404` is gone
+
+**Tenant sweeps and fleet statements** (`test/unit/tenants/organization-sweep.test.ts`, `fleet-summary.test.ts`, `tenant-sweeps.test.ts`, `tenant-removal.test.ts`, `pg-tenant-fleet-store.test.ts`, `tenant-requests.test.ts`, `fleet-deploy-wait.test.ts`, `fleet-image-deploy.test.ts`)
+
+A fake of the tenant platform, a fake of the organization inventory, the fleet registry fake, and a spy of the operator log; the SQL adapter runs on the real bounded runtime over a client double.
+
+[V] The sweep compares the rows that are not deleted with a complete list, reads each left-out organization by ID, and removes the tenant only when the read says absent: the platform deletes the service first, then the row becomes `deleted` from the state and the service that the sweep read, with one `Tenant removal record:` line
+[V] An empty list, or more than 2 absent rows that are not deleted (also `creating` and `deploying` rows), stops the sweep before any read by ID, delete, or row change, with one `Organization sweep stopped:` line with `reason`, `rows`, `organizations`, and `absent`; also an empty list without a row; two absent rows are both removed
+[V] A list that is not complete or a registry that cannot be read deletes nothing and gives one `Organization sweep stopped:` line; a deleted row is not read or deleted again; a found, unreadable, `creating`, or `deploying` row stays; a failed removal is reported and the next row goes on; a row that moved, also a replacement with a new service in the same state, is left for the next sweep; the sweep runs on the Monday tick only
+[V] The summary counts the rows that are not deleted by state and plan with 7 USD a month for a running free tenant and 25 USD for another plan, reads the memory of all live tenants in one read and the restarts of each, names each read that failed, counts the default-role memberships and lists the first 50, and gives no record without the registry
+[V] The runner ticks each day at the hour in UTC, runs the steps of that day in their order, reports a failed step and runs the next one, and ends at the stop
+[V] The fleet statements name their start states and the service that the caller read: deleted from the state and the service that the caller read (the route goes; a row without a service binds to none), live to suspended and suspended to deploying on that service, the digest of a live row on its service, and the revive of a deleted row under the registry lock inside the cap as a new request; a removal whose row a delete, a revive, and a new provision replaced with another service in the same state is moved, and the replacement stays
+[V] The deploy wait of the fleet writes follows the deploy that a `201` answer names until it is live or failed, and a newer deploy with another ID superseded it; after a `202` answer, and after a resume, it takes the first deploy other than the newest one before the write, with an unconfirmed identity; the deploy from before the write, a failed read, and no deploy are pending; a gone service ends it, and it stops after 15 minutes with the last state seen
+[V] An upgrade deploy may record its digest only when the live deploy names the requested digest; a live deploy without a digest or with another digest stops the upgrade and the registry keeps its digest; a failed read before the write, or a deploy call that the platform does not take, starts nothing and gives the reason
+
+**Organization inventory of WorkOS** (`test/unit/auth-workos/workos-organization-inventory.test.ts`)
+
+The pinned SDK on the local WorkOS fake.
+
+[V] The list reads each page in order; a removed organization is left out; a failed page, a repeated cursor, or no answer makes the list unavailable
+[V] A read by ID gives present, absent for a `404`, or unavailable for another failure; a left-out organization that still exists is present
+[V] The default-role read lists each active membership whose roles hold neither `user` nor `admin`, follows its pages, and is unavailable after a failed page; a stopped caller rejects before any request
+
 ```sh
-npm run build && node --test dist/test/unit/tenants/*.test.js dist/test/unit/render/*.test.js dist/test/unit/config/mcp-tenants-config.test.js
+npm run build && node --test dist/test/unit/tenants/*.test.js dist/test/unit/render/*.test.js dist/test/unit/config/mcp-tenants-config.test.js dist/test/unit/config/tenant-sweep-config.test.js dist/test/unit/auth-workos/workos-organization-inventory.test.js
 ```
 
 **Local authentication migrations** (`test/unit/auth-better-auth/local-auth-migrations.test.ts`)

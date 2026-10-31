@@ -1,6 +1,7 @@
 // A fake (Meszaros) of the Render API v1 for the calls of the tenant platform: list the services of a name, create an
-// image-backed private service, read a service and its deploys, and delete a service. It keeps services and deploys
-// in memory, with the answer shapes and rate-limit headers that record SO-01c measured. A new deploy shows
+// image-backed private service, read a service and its deploys, delete a service, and read the memory metrics and the
+// events of the sweeps. It keeps services, deploys, memory points, and events in memory, with the answer shapes and
+// rate-limit headers that records SO-01c and SO-01e measured. A new deploy shows
 // update_in_progress for deployReads reads of the deploy list and then ends with deployOutcome. The fake makes the
 // slug as the SO-06 live runs measured: Render keeps a short name whole, shortens a long name at the last separator
 // before a limit, and gives a second service with the same shortened start a unique suffix. So a long name gets a
@@ -8,7 +9,7 @@
 // Saboteur entries (failNext) replace the next answer of a route with a status, a network failure before Render sees
 // the request, or a lost answer after Render did the work.
 
-export type RenderRoute = 'list services' | 'create service' | 'read service' | 'list deploys' | 'delete service';
+export type RenderRoute = 'list services' | 'create service' | 'read service' | 'list deploys' | 'delete service' | 'memory metrics' | 'memory limit metrics' | 'list events';
 
 // A limit between the longest whole slug that the live runs saw (33 characters) and the shortest shortened name (42).
 const SLUG_LIMIT = 40;
@@ -58,6 +59,11 @@ export interface FakeService {
   readonly envVars: ReadonlyMap<string, string>;
   readonly deploys: FakeDeploy[];
   openPorts: number[];
+  /** The memory points of the service, in bytes, and the memory limit of its plan. */
+  readonly memory: { readonly at: string; readonly bytes: number }[];
+  memoryLimitBytes?: number;
+  /** The events of the service, such as server_failed or deploy_started. */
+  readonly events: { readonly type: string; readonly at: string }[];
 }
 
 interface Account {
@@ -66,12 +72,13 @@ interface Account {
   readonly now?: () => number;
 }
 
-type ServiceInput = Omit<FakeService, 'id' | 'slug' | 'ownerId' | 'deploys' | 'openPorts'>;
+type ServiceInput = Omit<FakeService, 'id' | 'slug' | 'ownerId' | 'deploys' | 'openPorts' | 'memory' | 'memoryLimitBytes' | 'events'>;
 type Answer = { readonly status: number; readonly body?: unknown; readonly headers?: Readonly<Record<string, string>> };
 
 const SERVER_PORT = 8080;
 const ENDED = new Set(['live', 'build_failed', 'update_failed', 'canceled', 'pre_deploy_failed', 'deactivated']);
 const readLimits = { 'Ratelimit-Limit': '400', 'Ratelimit-Remaining': '399', 'Ratelimit-Reset': '30' };
+const metricsLimits = { 'Ratelimit-Limit': '30', 'Ratelimit-Remaining': '29', 'Ratelimit-Reset': '50' };
 const deleteLimits = { 'Ratelimit-Limit': '100', 'Ratelimit-Remaining': '99', 'Ratelimit-Reset': '22' };
 const notFound: Answer = { status: 404, body: { message: 'Not Found' } };
 
@@ -166,16 +173,43 @@ export class RenderFake {
     return index === -1 ? undefined : this.#faults.splice(index, 1)[0]?.fault;
   }
 
+  // The answer of each route; the service ID is the path part after /services/, empty for a route without it.
+  readonly #routes: Readonly<Record<RenderRoute, (request: RenderRequest, id: string) => Answer>> = {
+    'list services': (request) => this.listServices(request.query),
+    'create service': (request) => this.createService(request.body),
+    'read service': (_request, id) => this.readService(id),
+    'list deploys': (request, id) => this.listDeploys(id, request.query),
+    'delete service': (_request, id) => this.deleteService(id),
+    'memory metrics': (request) => this.metrics(request.query, memoryPointsOf),
+    'memory limit metrics': (request) => this.metrics(request.query, memoryLimitPointsOf),
+    'list events': (request, id) => this.listEvents(id, request.query),
+  };
+
   private handle(request: RenderRequest): Answer {
-    const id = /^\/services\/([^/]+)/.exec(request.path)?.[1] ?? '';
-    switch (request.route) {
-      case 'list services': return this.listServices(request.query);
-      case 'create service': return this.createService(request.body);
-      case 'read service': return this.readService(id);
-      case 'list deploys': return this.listDeploys(id, request.query);
-      case 'delete service': return this.deleteService(id);
-      default: return notFound;
-    }
+    if (request.route === 'unknown') return notFound;
+    return this.#routes[request.route](request, /^\/services\/([^/]+)/.exec(request.path)?.[1] ?? '');
+  }
+
+  // One series for each named service with points in the window, labelled as SO-01e measured, in bytes.
+  private metrics(query: URLSearchParams, pointsOf: (service: FakeService, window: MetricsWindow) => readonly unknown[]): Answer {
+    const window = { startMs: Date.parse(query.get('startTime') ?? ''), endMs: Date.parse(query.get('endTime') ?? '') };
+    if (!Number.isFinite(window.startMs) || !Number.isFinite(window.endMs)) return { status: 400, body: { message: 'invalid filter parameter' }, headers: metricsLimits };
+    const series = query.getAll('resource').flatMap((id) => {
+      const service = this.#services.get(id);
+      const values = service === undefined ? [] : pointsOf(service, window);
+      return values.length === 0 ? [] : [{ labels: [{ field: 'resource', value: id }, { field: 'service', value: id }, { field: 'instance', value: `${id}-x7k2p` }], unit: 'bytes', values }];
+    });
+    return { status: 200, body: series, headers: metricsLimits };
+  }
+
+  // The events of the window, the newest first, at most limit of them.
+  private listEvents(id: string, query: URLSearchParams): Answer {
+    const service = this.#services.get(id);
+    if (service === undefined) return notFound;
+    const window = { startMs: Date.parse(query.get('startTime') ?? ''), endMs: Date.parse(query.get('endTime') ?? '') };
+    const events = service.events.filter(({ at }) => inWindow(at, window)).toSorted((first, second) => second.at.localeCompare(first.at));
+    const items = events.slice(0, Number(query.get('limit') ?? '20')).map(({ type, at }, index) => ({ event: { id: `evt-${id}-${index}`, timestamp: at, serviceId: id, type, details: {} }, cursor: `cursor-${index}` }));
+    return { status: 200, body: items, headers: readLimits };
   }
 
   private listServices(query: URLSearchParams): Answer {
@@ -236,7 +270,7 @@ export class RenderFake {
   }
 
   private makeService(input: ServiceInput): FakeService {
-    const service: FakeService = { ...input, id: this.nextId('srv'), slug: this.slugOf(input.name), ownerId: this.#account.ownerId, deploys: [], openPorts: [] };
+    const service: FakeService = { ...input, id: this.nextId('srv'), slug: this.slugOf(input.name), ownerId: this.#account.ownerId, deploys: [], openPorts: [], memory: [], events: [] };
     this.#services.set(service.id, service);
     return service;
   }
@@ -272,11 +306,38 @@ export class RenderFake {
   }
 }
 
+const READ_ROUTES: readonly (readonly [RegExp, RenderRoute])[] = [
+  [/^\/v1\/services\/[^/]+\/deploys$/, 'list deploys'],
+  [/^\/v1\/services\/[^/]+\/events$/, 'list events'],
+  [/^\/v1\/metrics\/memory$/, 'memory metrics'],
+  [/^\/v1\/metrics\/memory-limit$/, 'memory limit metrics'],
+];
+
 function routeOf(method: string, path: string): RenderRoute | 'unknown' {
   if (path === '/v1/services') return method === 'GET' ? 'list services' : method === 'POST' ? 'create service' : 'unknown';
   if (/^\/v1\/services\/[^/]+$/.test(path)) return method === 'GET' ? 'read service' : method === 'DELETE' ? 'delete service' : 'unknown';
-  if (/^\/v1\/services\/[^/]+\/deploys$/.test(path) && method === 'GET') return 'list deploys';
-  return 'unknown';
+  const read = READ_ROUTES.find(([pattern]) => pattern.test(path));
+  return read !== undefined && method === 'GET' ? read[1] : 'unknown';
+}
+
+interface MetricsWindow {
+  readonly startMs: number;
+  readonly endMs: number;
+}
+
+function inWindow(at: string, window: MetricsWindow): boolean {
+  const time = Date.parse(at);
+  return time >= window.startMs && time <= window.endMs;
+}
+
+// The memory points of a service in the window.
+function memoryPointsOf(service: FakeService, window: MetricsWindow): readonly unknown[] {
+  return service.memory.filter(({ at }) => inWindow(at, window)).map(({ at, bytes }) => ({ timestamp: at, value: bytes }));
+}
+
+// The memory limit of a service: one point at the end of the window, or none without a limit.
+function memoryLimitPointsOf(service: FakeService, window: MetricsWindow): readonly unknown[] {
+  return service.memoryLimitBytes === undefined ? [] : [{ timestamp: new Date(window.endMs).toISOString(), value: service.memoryLimitBytes }];
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

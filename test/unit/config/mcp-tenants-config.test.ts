@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { generateKeyPairSync } from 'node:crypto';
 import { test } from 'node:test';
 import { DeploymentConfigError } from '../../../src/runtime/config/deployment-config.ts';
-import { loadMcpTenantsEnabled, loadTenantProvisioningSettings } from '../../../src/runtime/config/mcp-tenants-config.ts';
+import { loadMcpTenantsEnabled, loadTenantNamePrefix, loadTenantProvisioningSettings } from '../../../src/runtime/config/mcp-tenants-config.ts';
 
 const ed25519 = (): string => generateKeyPairSync('ed25519').publicKey.export({ type: 'spki', format: 'pem' }).toString();
 const gatewayKey = ed25519();
@@ -50,7 +50,20 @@ test('Given valid tenant settings, when they are loaded, then they give the Rend
     namePrefix: 'thermus-tenant-',
     gatewayPublicKey: gatewayKey,
     controlPlaneInternalUrl: 'http://thermus-control-plane:8080',
+    sweepHourUtc: 4,
   });
+});
+
+test('Given TENANT_SWEEP_HOUR_UTC, when the settings are loaded, then they give the hour of the daily tick, and an invalid hour stops with its rule', () => {
+  assert.equal(loadTenantProvisioningSettings({ ...valid, TENANT_SWEEP_HOUR_UTC: '0' }).sweepHourUtc, 0);
+  assert.equal(loadTenantProvisioningSettings({ ...valid, TENANT_SWEEP_HOUR_UTC: '23' }).sweepHourUtc, 23);
+  refusal({ ...valid, TENANT_SWEEP_HOUR_UTC: '24' }, 'TENANT_SWEEP_HOUR_UTC must be a whole number from 0 to 23.');
+});
+
+test('Given TENANT_NAME_PREFIX alone, when the prefix is loaded for the fleet script, then it follows the rule of the provisioning settings', () => {
+  assert.equal(loadTenantNamePrefix({}), 'thermus-tenant-');
+  assert.equal(loadTenantNamePrefix({ TENANT_NAME_PREFIX: 'thermus-spike-tenant-' }), 'thermus-spike-tenant-');
+  assert.throws(() => loadTenantNamePrefix({ TENANT_NAME_PREFIX: 'Thermus_' }), /^DeploymentConfigError: TENANT_NAME_PREFIX must start with a lowercase letter/);
 });
 
 test('Given TENANT_NAME_PREFIX, two gateway keys, and an internal URL with a final slash, when the settings are loaded, then they keep the prefix and the keys and give the origin', () => {

@@ -10,7 +10,7 @@ const nextRow = /^SELECT organization_id, state, service_name, render_service_id
 const claimRequested = /^UPDATE thermus_admin\.tenants SET state = 'creating', service_name = \$2, plan = \$3, updated_at = now\(\)\s+WHERE organization_id = \$1 AND state = 'requested'$/;
 const nameResumed = /^UPDATE thermus_admin\.tenants SET service_name = \$2 WHERE organization_id = \$1 AND service_name IS NULL$/;
 const recordService = /^UPDATE thermus_admin\.tenants SET state = 'deploying', render_service_id = \$2, updated_at = now\(\)\s+WHERE organization_id = \$1 AND state = 'creating' RETURNING organization_id$/;
-const recordLive = /^UPDATE thermus_admin\.tenants SET state = 'live', internal_url = \$2, image_digest = COALESCE\(\$3::text, image_digest\), applied_plan = plan,\s+failure_reason = NULL, updated_at = now\(\) WHERE organization_id = \$1 AND state = 'deploying' RETURNING organization_id$/;
+const recordLive = /^UPDATE thermus_admin\.tenants SET state = 'live', internal_url = \$3, image_digest = COALESCE\(\$4::text, image_digest\), applied_plan = plan,\s+failure_reason = NULL, updated_at = now\(\) WHERE organization_id = \$1 AND state = 'deploying' AND render_service_id = \$2 RETURNING organization_id$/;
 const recordFailed = /^UPDATE thermus_admin\.tenants SET state = 'failed', failure_reason = \$2, updated_at = now\(\)\s+WHERE organization_id = \$1 AND state IN \('creating', 'deploying'\) RETURNING organization_id$/;
 const ownsService = 'SELECT 1 AS owned FROM thermus_admin.tenants WHERE render_service_id = $1';
 const claim = { serviceNameOf: (organizationId: string) => `thermus-tenant-${organizationId.toLowerCase().replace(/[^a-z0-9-]/g, '-')}`, plan: '0.5c-512mb' };
@@ -87,13 +87,13 @@ test('Given a creating row, when the service is recorded, then one guarded updat
   assert.deepEqual(queries.map(({ values }) => values), [['org_01A', 'srv-a']]);
 });
 
-test('Given a deploying row, when live is recorded, then one guarded update sets the internal address, the digest when known, and the applied plan', async (t) => {
+test('Given a deploying row on the service of the work, when live is recorded, then one guarded update names that service and sets the internal address, the digest when known, and the applied plan', async (t) => {
   const { store, queries } = provisioningStore(t, (text) => recordLive.test(text) ? [{ organization_id: 'org_01A' }] : new Error('unexpected statement'));
-  assert.deepEqual(await store.recordLive('org_01A', { internalUrl: 'http://thermus-tenant-org-01a:8080', imageDigest: `sha256:${'a'.repeat(64)}` }), { status: 'recorded' });
-  assert.deepEqual(await store.recordLive('org_01A', { internalUrl: 'http://thermus-tenant-org-01a:8080' }), { status: 'recorded' });
+  assert.deepEqual(await store.recordLive('org_01A', 'srv-a', { internalUrl: 'http://thermus-tenant-org-01a:8080', imageDigest: `sha256:${'a'.repeat(64)}` }), { status: 'recorded' });
+  assert.deepEqual(await store.recordLive('org_01A', 'srv-a', { internalUrl: 'http://thermus-tenant-org-01a:8080' }), { status: 'recorded' });
   assert.deepEqual(queries.map(({ values }) => values), [
-    ['org_01A', 'http://thermus-tenant-org-01a:8080', `sha256:${'a'.repeat(64)}`],
-    ['org_01A', 'http://thermus-tenant-org-01a:8080', null],
+    ['org_01A', 'srv-a', 'http://thermus-tenant-org-01a:8080', `sha256:${'a'.repeat(64)}`],
+    ['org_01A', 'srv-a', 'http://thermus-tenant-org-01a:8080', null],
   ]);
 });
 
@@ -108,14 +108,14 @@ test('Given a row in creating or deploying, when a failure is recorded, then one
 test('Given a row in another state, when a change is recorded, then nothing changes and the result says that the row moved', async (t) => {
   const { store } = provisioningStore(t, () => []);
   assert.deepEqual(await store.recordService('org_01A', 'srv-a'), { status: 'moved' });
-  assert.deepEqual(await store.recordLive('org_01A', { internalUrl: 'http://a:8080' }), { status: 'moved' });
+  assert.deepEqual(await store.recordLive('org_01A', 'srv-a', { internalUrl: 'http://a:8080' }), { status: 'moved' });
   assert.deepEqual(await store.recordFailed('org_01A', 'reason'), { status: 'moved' });
 });
 
 test('Given a failed write, when a change is recorded, then the result is unavailable', async (t) => {
   const { store } = provisioningStore(t, () => new Error('private storage details'));
   assert.deepEqual(await store.recordService('org_01A', 'srv-a'), { status: 'unavailable' });
-  assert.deepEqual(await store.recordLive('org_01A', { internalUrl: 'http://a:8080' }), { status: 'unavailable' });
+  assert.deepEqual(await store.recordLive('org_01A', 'srv-a', { internalUrl: 'http://a:8080' }), { status: 'unavailable' });
   assert.deepEqual(await store.recordFailed('org_01A', 'reason'), { status: 'unavailable' });
 });
 

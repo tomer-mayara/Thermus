@@ -1,0 +1,88 @@
+import type { BoundedSqlRuntime } from '../../runtime/sql/bounded-sql-runtime.ts';
+import { COUNT_ROWS, LOCK_REGISTRY, registryCount } from './pg-tenant-registry-store.ts';
+import type { FleetRead, FleetRow, FleetWrite, RemovableState, ReviveResult, TenantFleetStore } from './tenant-fleet-store.ts';
+import type { RegistryCount, TenantState } from './tenant-registry-store.ts';
+
+const READ_FLEET = `SELECT organization_id, state, plan, applied_plan, render_service_id, service_name, internal_url, image_digest,
+  failure_reason, last_active_at, created_at, updated_at FROM thermus_admin.tenants ORDER BY organization_id`;
+// Each change names the state and the service that it starts from, so a row that another writer changed stays as it is.
+// A replacement row of the same organization has a new service, so a stale change moves instead of changing it. A row
+// without a service binds to NULL.
+const MARK_DELETED = `UPDATE thermus_admin.tenants SET state = 'deleted', internal_url = NULL, updated_at = now()
+  WHERE organization_id = $1 AND state = $2 AND state <> 'deleted' AND render_service_id IS NOT DISTINCT FROM $3 RETURNING organization_id`;
+const MARK_SUSPENDED = `UPDATE thermus_admin.tenants SET state = 'suspended', updated_at = now()
+  WHERE organization_id = $1 AND state = 'live' AND render_service_id = $2 RETURNING organization_id`;
+const MARK_RESUMED = `UPDATE thermus_admin.tenants SET state = 'deploying', updated_at = now()
+  WHERE organization_id = $1 AND state = 'suspended' AND render_service_id = $2 RETURNING organization_id`;
+const RECORD_DIGEST = `UPDATE thermus_admin.tenants SET image_digest = $3, updated_at = now()
+  WHERE organization_id = $1 AND render_service_id = $2 AND state = 'live' RETURNING organization_id`;
+// A revived row is a new request: the provisioner names it again at its claim and creates a new service.
+const REVIVE_DELETED = `UPDATE thermus_admin.tenants SET state = 'requested', render_service_id = NULL, service_name = NULL, internal_url = NULL,
+  plan = NULL, applied_plan = NULL, image_digest = NULL, last_active_at = NULL, failure_reason = NULL, created_at = now(), updated_at = now()
+  WHERE organization_id = $1 AND state = 'deleted'`;
+
+/** The fleet statements of the tenants table, on the shared SQL runtime. */
+export class PgTenantFleetStore implements TenantFleetStore {
+  private readonly runtime: BoundedSqlRuntime;
+
+  constructor(runtime: BoundedSqlRuntime) { this.runtime = runtime; }
+
+  async readFleet(): Promise<FleetRead> {
+    const result = await this.runtime.run(async (session) => (await session.query(READ_FLEET)).map(fleetRowOf));
+    return result.status === 'complete' ? { status: 'complete', rows: result.value } : { status: 'unavailable' };
+  }
+
+  markDeleted(organizationId: string, from: RemovableState, serviceId: string | null): Promise<FleetWrite> {
+    return this.change(MARK_DELETED, [organizationId, from, serviceId]);
+  }
+
+  // A failure before COMMIT destroys the client, so PostgreSQL rolls the transaction back and frees the lock.
+  async reviveDeleted(organizationId: string, admit: (count: RegistryCount) => boolean): Promise<ReviveResult> {
+    const result = await this.runtime.run(async (session) => {
+      await session.query('BEGIN');
+      await session.query(LOCK_REGISTRY);
+      const count = registryCount(await session.query(COUNT_ROWS, [organizationId]));
+      const revived = admit(count);
+      if (revived) await session.query(REVIVE_DELETED, [organizationId], true);
+      await session.query('COMMIT', [], revived);
+      return revived ? { status: 'revived' as const } : { status: 'refused' as const, count };
+    });
+    return result.status === 'complete' ? result.value : result;
+  }
+
+  markSuspended(organizationId: string, serviceId: string): Promise<FleetWrite> {
+    return this.change(MARK_SUSPENDED, [organizationId, serviceId]);
+  }
+
+  markResumed(organizationId: string, serviceId: string): Promise<FleetWrite> {
+    return this.change(MARK_RESUMED, [organizationId, serviceId]);
+  }
+
+  recordDigest(organizationId: string, serviceId: string, imageDigest: string): Promise<FleetWrite> {
+    return this.change(RECORD_DIGEST, [organizationId, serviceId, imageDigest]);
+  }
+
+  // No changed row: the row is no longer in the start state or on the service of the change, because another writer moved it.
+  private async change(text: string, values: unknown[]): Promise<FleetWrite> {
+    const result = await this.runtime.run(async (session) => (await session.query(text, values, true)).length > 0);
+    if (result.status !== 'complete') return { status: 'unavailable' };
+    return { status: result.value ? 'recorded' : 'moved' };
+  }
+}
+
+function fleetRowOf(row: Record<string, unknown>): FleetRow {
+  return {
+    organizationId: row.organization_id as string, state: row.state as TenantState,
+    plan: row.plan as string | null, appliedPlan: row.applied_plan as string | null,
+    serviceId: row.render_service_id as string | null, serviceName: row.service_name as string | null,
+    internalUrl: row.internal_url as string | null, imageDigest: row.image_digest as string | null,
+    failureReason: row.failure_reason as string | null, lastActiveAt: timeOf(row.last_active_at),
+    createdAt: timeOf(row.created_at) ?? '', updatedAt: timeOf(row.updated_at) ?? '',
+  };
+}
+
+// pg gives a timestamptz as a Date.
+function timeOf(value: unknown): string | null {
+  if (value instanceof Date) return value.toISOString();
+  return typeof value === 'string' ? value : null;
+}

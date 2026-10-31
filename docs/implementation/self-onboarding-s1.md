@@ -1,10 +1,11 @@
 # Self on-boarding Slice 1 evidence
 
 This record keeps the evidence of the Slice 1 tickets of the self on-boarding
-plan ([PR #259](https://github.com/tomer-mayara/Thermus/pull/259)), and of three
+plan ([PR #259](https://github.com/tomer-mayara/Thermus/pull/259)), and of four
 Slice 2 tickets: SO-03, the private address of the control plane; SO-02, which
-makes the workflow of SO-01b the release path; and SO-06, the live runs of the
-Render adapter of the tenant provisioner. Each ticket or probe adds one section:
+makes the workflow of SO-01b the release path; SO-06, the live runs of the
+Render adapter of the tenant provisioner; and SO-09, the manual steps of the
+fleet script and one real run of the organization sweep. Each ticket or probe adds one section:
 what ran and where, the durations and limits, and what a client saw. The record
 holds no secret.
 
@@ -3423,3 +3424,123 @@ The slug by the length of the name, with the measurements of SO-01d and SO-03:
   API.
 - Run 4 measured two services of one shortened start, not more; the shape of
   further suffixes is not measured.
+
+## SO-09: fleet script and organization sweep
+
+Date: 28 October 2026 (UTC). Ticket SO-09 of Slice 2 (board ticket bdbf1b),
+branch `self-ob-s2-so-09-fleet-script-bdbf1b`, on main `106a4221`. The fleet
+script [`script/fleet/fleet.ts`](../../script/fleet/fleet.ts) ran at commit
+`e34d0925` for steps 1 to 13, and at `e3d88956` for the guard checks of step
+14; the two differ in the fleet script only. [`script/README.md`](../../script/README.md#operate-the-tenant-fleet)
+gives the commands.
+
+Setup, from the session scratchpad, not from the branch:
+
+- The registry: one disposable PostgreSQL 17 container,
+  `thermus-settings-5f3dbd49-7c72-4344-a12f-9f31ae37de82`, with the
+  `thermus_admin` migrations, verified test TLS, and the runtime role
+  `thermus_logging`, made by the site of the PostgreSQL gate
+  ([`postgres-settings-site.ts`](../../test/support/in-process/postgres-settings-site.ts)).
+  The script read it through `DATABASE_URL` and `DATABASE_CA_CERT_PATH`.
+- Render: the owner's key `RENDER_API_KEY` from the git-ignored `.env.local` of
+  the main checkout, the workspace Thermus AI (`RENDER_OWNER_ID=tea-db8i6ceq1p3s73dev9og`),
+  and `TENANT_NAME_PREFIX=thermus-spike-tenant-`. A read at 03:14 UTC listed
+  only the production service in Thermus AI.
+- WorkOS Staging, through the launcher: run `20261028031548` made the
+  organizations A `org_01M6083G1Q3CJ0G8ZTHXRQZHJT` and B
+  `org_01M6083G9ZE32C8890YXWQPPQJ`, the user `user_01M6083GGH6B4W700AM8YWCBSG`,
+  and its membership `om_01M6083GP4K84FZHGJBEZ67788` in A with no role, so
+  WorkOS gave it the default role `member`.
+- The tenants: the provisioner loop of `src`
+  ([`startTenantProvisioning`](../../src/app/tenant-provisioning.ts)) on the
+  same registry, with the image of main `a421afc0`
+  (`sha256:565153c5c1501dd773818f03b6cedd1c2c97caea351fc4ea68510e95358891a2`),
+  which has the tenant role of SO-03. A request needs the provisioner, so the
+  tenants got the tenant environment of the provisioner, not the placeholder
+  environment of SO-01c: a fresh Ed25519 public key, the control plane address
+  `http://thermus-spike-control:8080`, which no service has, and the AuthKit
+  issuer of the test fixtures. No MCP call reached a tenant.
+
+| Step (UTC) | Command or action | Result |
+| --- | --- | --- |
+| 1, 03:16:00 | `request` for A, answer `no` | "No yes: nothing changed.", exit code 0; `list` showed 0 rows. |
+| 2, 03:16:15 | `request` for A and for B, answer `yes`; `request` for `org_01M60000000000000000000000` | A and B `requested`. The unknown organization: "WorkOS has no organization …", exit code 1, no row. |
+| 3, 03:17:32 to 03:20:09 | The provisioner loop of `src` (creates 1 and 2 of 4) | A `srv-dbgmijmgekts738bnvo0`: `deploying` 2.7 s after the create call, `live` 81.4 s after it, address `http://thermus-spike-tenant-org:8080`. B `srv-dbgmj7oae00c73ct0fh0`: `live` 74.1 s after its create call, address `http://thermus-spike-tenant-org-7wmt:8080`. Both with the digest `565153c5…`. |
+| 4, 03:21:25 | `status` for A | The row, the newest deploy `dep-dbgmijugekts738bo050` `live` with `565153c5…`, and the address. |
+| 5, 03:21:37 to 03:22:12 | `upgrade --all` to D3 of SO-02 (`sha256:0cff4e4a…`, commit `72015de3`, tenant role) | One batch of two. A `dep-dbgmkhei0phs73aqhbn0` `live` 21.0 s and B `dep-dbgmkibbc2fs73b4t3ig` `live` 26.2 s after the wait began; Render: 22.2 s each, trigger `api`. The registry recorded D3 for both. Exit code 0. |
+| 6, 03:22:56 to 03:23:22 | `upgrade --all --batch-size 1` to D1 of SO-02 (`sha256:9c034b74…`, commit `a0f94659`, before the tenant role) | Batch 1: A `dep-dbgml59srm7s73e94khg` ended as `update_failed` (Render: 17.1 s). The script stopped after batch 1 with exit code 1: no tenant ran D1, and the tenant of batch 2 did not start. B kept D3 as its newest deploy, and the registry kept D3 for both. The D3 deploy of A stayed `live`. |
+| 7, 03:23:51 to 03:24:22 | `upgrade --organization A` to the digest of `a421afc0` | `dep-dbgmlj1srm7s73e95db0` `live` after 26.0 s; the registry recorded the digest. |
+| 8, 03:24:30 | `suspend` for A | The service `suspended`, suspender `user`, within 1 s; the row `suspended`. |
+| 9, 03:24:44 to 03:25:01 | `resume` for A | The row `deploying`; the resume deploy `dep-dbgmlv9srm7s73e964j0` (trigger `service_resumed`, Render 12.3 s) `live` 15.7 s after the wait began; the row `live`. |
+| 10, 03:25:19 | `summary`, through the launcher | One line in 2 s: 2 tenants, 14 USD, `live` and `0.5c-512mb` 2 rows, the default-role membership `om_01M6083GP4K84FZHGJBEZ67788` of A, 0 restarts, memory A 129,777,660 of 536,870,900 bytes (0.242) and B 75,988,990 bytes (0.142), nothing unavailable. |
+| 11, 03:25:34 to 03:25:43 | WorkOS delete of B; then one run of the organization sweep of `src` with the WorkOS inventory, the Render adapter, and the registry | 8 s after the delete, the list (3 organizations) left B out, and its read by ID answered `404`. The sweep deleted `srv-dbgmj7oae00c73ct0fh0` and the row in 1.1 s, with one `Tenant removal record:` line and `Organization sweep: {"rows":2,"organizations":3,"deleted":1,…}`. Render then listed A and the production service only. |
+| 12, 03:26:01 and 03:26:10 | `delete` for A, answer `no`, then `yes` | `no`: nothing changed, the row `live`. `yes`: `srv-dbgmijmgekts738bnvo0` deleted, the row `deleted`. Render then listed the production service only. |
+| 13, 03:26:25 and 03:26:35 | `request` for A, answer `yes`; `delete` for A, answer `yes` | The deleted row became `requested` without its old service ("move the deleted row back to requested"); no provisioner ran, so nothing was created. The `delete` of a row without a service: "no service to delete", the row `deleted`. |
+| 14, about 03:27 | Guard checks | With `RENDER_OWNER_ID=tea-d3mlbrvdiees73ca4rdg`, `status` stopped with exit code 2 before any call. A row that named `srv-db8mnqg473hc739d529g`, put into the registry by hand: `delete` stopped with exit code 2 before any call. Before the fix of `e3d88956`, `upgrade --all` listed that row: the adapter refused its deploy before any write, but the script first read its deploy list one time (`GET /v1/services/srv-db8mnqg473hc739d529g/deploys?limit=20`), a read only. After the fix, the selection leaves such a row out, and `list` names it as a fault of the registry. |
+| 15, 03:28:29 to 03:28:33 | Cleanup | WorkOS: the membership, the user, and A deleted, each `404` at read 1 or 2 (A 2.2 s after the delete); B was gone already. The registry container and its certificate folder removed. |
+
+Render writes in Thermus AI with the owner's key: 2 creates, 4 deploys, 1
+suspend, 1 resume, and 2 deletes. The live interface command of SO-06 then ran
+one time on `e3d88956` for the changed adapter, 03:30:38 to 03:33:30 UTC: pass,
+1 of 1; `srv-dbgmoo5g1s2s73bqe8lg` (`thermus-spike-tenant-org-01a20261028033038`,
+`live` 88.4 s after the create call, slug `thermus-spike-tenant-org`) and
+`srv-dbgmpe0u01pc73aj2m40` (`…-01b20261028033038`, 80.8 s, slug
+`thermus-spike-tenant-org-i2us`), both deleted after 0.5 and 0.6 s; creates 3
+and 4 of the ticket. After it, the Render list of Thermus AI held only the
+production service.
+
+### Findings for Slice 2
+
+- A failed API deploy with `imageUrl` also sets the image setting `imagePath`
+  of the service. After step 6, the D3 deploy of A served, but `imagePath`
+  named D1. A resume or a later deploy without `imageUrl` would deploy D1. So
+  after an upgrade stops, deploy the digest that the registry records for that
+  tenant again, as step 7 did, before a resume.
+- While a service is suspended, its last deploy keeps the status `live`; it
+  became `deactivated` only when the resume deploy was `live` (03:24:58). The
+  resume deploy came 1.8 s after the resume call. So a read of the newest deploy
+  right after a resume can give the deploy from before the suspend. The fleet
+  script waits for a deploy with a new ID; the provisioner watch of a resumed
+  `deploying` row reads the newest deploy only (open point for SO-10).
+- A deploy that reached `live` took 12 to 22 s in Render times, and 16 to 26 s
+  from the start of the wait of the script.
+- The memory and memory-limit reads with two `resource` parameters, and the
+  event read with ISO 8601 `startTime` and `endTime`, answered `200`. The limit
+  of `0.5c-512mb` was 536,870,900 bytes, as in SO-01e.
+- The WorkOS lists did not lag in step 11: 8 s after the delete, the list and
+  the read by ID both left B out. The read by ID stays the rule that decides.
+- The two names of 51 characters got the hostnames `thermus-spike-tenant-org`
+  and `thermus-spike-tenant-org-7wmt`, as SO-06 measured for long names.
+
+### Limits
+
+- One run, two tenants, one region. The batch of three was not filled; the stop
+  rule was shown with `--batch-size 1` and a digest that cannot start in the
+  tenant role.
+- No MCP call and no health probe reached a tenant: a deploy that reaches
+  `live` counts as healthy (answer 1 of 27 October 2026).
+- Render reported no restart in the window of step 10. SO-01e showed that
+  Render does not report each restart, so the summary counts the restarts that
+  Render reports.
+- The default-role read covered each organization of WorkOS Staging; only the
+  membership of this run had the default role alone.
+- Step 11 ran before the bound of the deletion authority (manager review of 28
+  October 2026): the sweep now deletes nothing when the list is empty or leaves
+  out more than 2 rows that are not deleted. Step 11 had one absent row, inside
+  the bound; the acceptance and unit cases check the stops, and no manual run
+  showed them.
+- The run came before two manager decisions of 31 October 2026. First, each
+  fleet change now names the state and the service that it starts from, and
+  the live record of a resume names the service too, so a stale write cannot
+  change a replacement row with a new service. Second, an upgrade now follows
+  the deploy that the `201` answer names, stops on a newer deploy with another
+  ID, and records the digest only when the live deploy names it; after a `202`
+  answer, and after each resume, the wait takes the first new deploy and calls
+  its identity unconfirmed. Steps 5 to 9, 11, and 12 ran the earlier code. The
+  unit cases and the PostgreSQL runtime case check the new rules, and no live
+  run showed them.
+- Until SO-10 connects the resume operation of the gateway, only `resume` of
+  the fleet script brings back a tenant that `suspend` stopped: each MCP call
+  of that organization gets a `503` with `Retry-After: 60` and writes one
+  operator report (owner decision of 31 October 2026). No MCP call reached a
+  tenant in this run.

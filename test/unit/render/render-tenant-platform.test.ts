@@ -1,52 +1,10 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { RenderTenantPlatform } from '../../../src/tenancy/providers/render/render-tenant-platform.ts';
-import { VirtualClock } from '../../support/doubles/tenants/virtual-clock.ts';
+import { apiKey, deployJson, image, json, ownerId, platformWith, productionServiceId, serviceJson, signal } from './fixtures/render-fetch-stub.ts';
 
 // The Render adapter with a stub of fetch: the request of each call from the SO-01c probe, the reading of each answer,
 // the retry rule of reads and the delete, the single send of a create, the rate-limit headers, and the write guard.
 
-const apiKey = 'rnd_unitTestKey0123456789';
-const ownerId = 'tea-db8i6ceq1p3s73dev9og';
-const image = `ghcr.io/tomer-mayara/thermus-hosted@sha256:${'ab'.repeat(32)}`;
-const productionServiceId = 'srv-db8mnqg473hc739d529g';
-const signal = new AbortController().signal;
-
-type Scripted = Response | Error;
-
-interface Sent {
-  readonly url: string;
-  readonly method: string;
-  readonly headers: Headers;
-  readonly body: unknown;
-}
-
-function json(status: number, body: unknown, headers: Readonly<Record<string, string>> = {}): Response {
-  return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json', ...headers } });
-}
-
-function platformWith(answers: Scripted[], owned: (serviceId: string) => boolean = () => true) {
-  const sent: Sent[] = [];
-  const guarded: string[] = [];
-  const clock = new VirtualClock();
-  const fetchStub: typeof fetch = async (input, init = {}) => {
-    sent.push({ url: String(input), method: init.method ?? 'GET', headers: new Headers(init.headers), body: typeof init.body === 'string' ? JSON.parse(init.body) as unknown : undefined });
-    const answer = answers.shift();
-    if (answer === undefined) throw new Error('No scripted answer');
-    if (answer instanceof Error) throw answer;
-    return answer;
-  };
-  const platform = new RenderTenantPlatform({
-    apiKey, ownerId, registryCredentialId: 'rgc-dbg1h0142hec73da9ra0', image, clock, fetch: fetchStub,
-    ownsService: async (serviceId) => { guarded.push(serviceId); return owned(serviceId); },
-  });
-  return { platform, sent, guarded, clock };
-}
-
-const serviceJson = (id: string, name: string, details: Record<string, unknown> = {}) => ({ id, name, slug: name, type: 'private_service', serviceDetails: { url: `${name}:10000`, openPorts: [{ port: 8080, protocol: 'TCP' }], ...details } });
-const deployJson = (deploy: { readonly id: string; readonly status: string; readonly createdAt: string; readonly sha?: string }) => ({
-  id: deploy.id, status: deploy.status, trigger: 'manual', createdAt: deploy.createdAt, image: { ref: image, ...(deploy.sha === undefined ? {} : { sha: deploy.sha }) },
-});
 const request = { name: 'thermus-tenant-org-01a', plan: '0.5c-512mb', environment: new Map([['THERMUS_ROLE', 'tenant'], ['OPERATION_CAPACITY', '5']]) };
 
 test('Given a name, when the services are found, then one read lists the private services of the owner with that name and keeps only the exact name', async () => {

@@ -13,8 +13,9 @@ export interface TenantPublicSettings {
 
 /**
  * The name of the service of an organization: the prefix and the organization ID in lower case, with each character
- * outside a-z, 0-9, and hyphen as a hyphen, so the name is DNS-safe (27 October 2026). Render shortens a long name
- * into the hostname and keeps hostnames unique, so the private address comes from Render, never from this name.
+ * outside a-z, 0-9, and hyphen as a hyphen, so the name is DNS-safe (27 October 2026). The platform can shorten a long
+ * name into the hostname and keep hostnames unique (SO-06), so the private address comes from the platform, never from
+ * this name.
  */
 export function serviceNameOf(prefix: string, organizationId: string): string {
   return `${prefix}${organizationId.toLowerCase().replace(/[^a-z0-9-]/g, '-')}`;
@@ -22,7 +23,7 @@ export function serviceNameOf(prefix: string, organizationId: string): string {
 
 /**
  * The variables of the first deploy of a free tenant. The create call starts that deploy, so the call holds each
- * tenant setting. The list is closed: no WorkOS secret, database setting, Render setting, or Stripe setting can enter
+ * tenant setting. The list is closed: no WorkOS secret, database setting, platform setting, or Stripe setting can enter
  * it (decision D-14).
  */
 export function freeTenantEnvironment(organizationId: string, settings: TenantPublicSettings): ReadonlyMap<string, string> {

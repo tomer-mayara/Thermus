@@ -53,8 +53,8 @@ export class CreateWindow {
   }
 }
 
-// Retry-After comes first: it is the answer for this call, and the reset time is the end of the whole window.
-function limitWaitOf(limits: RenderLimits): number {
+/** The wait after a 429. Retry-After comes first: it is the answer for this call, and the reset time is the end of the whole window. */
+export function limitWaitOf(limits: RenderLimits): number {
   const seconds = limits.retryAfterSeconds ?? limits.resetSeconds;
   return seconds === undefined ? DEFAULT_LIMIT_WAIT_MS : seconds * 1_000;
 }

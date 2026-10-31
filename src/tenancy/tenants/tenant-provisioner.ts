@@ -10,7 +10,7 @@ export interface TenantProvisionerOptions extends RowParts {
 
 /**
  * The provisioning loop of the control plane (plan section 4.2). It works on one row at a time: it claims the row,
- * finds or creates its Render service, watches the newest deploy, and records live or failed. It moves rows only from
+ * finds or creates its tenant service on the platform, watches the newest deploy, and records live or failed. It moves rows only from
  * requested to live and, after a resume, from deploying to live. Each step can repeat after a restart, because the
  * service is found by its name and the newest deploy is read again. The caller owns the lifetime: run ends when its
  * signal stops it.
