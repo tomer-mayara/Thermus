@@ -9,8 +9,11 @@ export type ResumeMark =
 export interface TenantGatewayStore {
   /** suspended to deploying, before the one resume call (answer 3 of 27 October 2026). */
   markResuming(organizationId: string): Promise<ResumeMark>;
-  /** deploying to suspended, after a failed resume call, so that the next call tries again. */
-  restoreSuspended(organizationId: string): Promise<GatewayWrite>;
+  /**
+   * deploying to suspended on serviceId, the service of the mark, after a failed resume call, so that the next call
+   * tries again. A row that another writer gave a new service is moved.
+   */
+  restoreSuspended(organizationId: string, serviceId: string): Promise<GatewayWrite>;
   /** last_active_at to the time of the database, for the idle sweep. The state stays as it is. */
   recordActive(organizationId: string): Promise<GatewayWrite>;
 }

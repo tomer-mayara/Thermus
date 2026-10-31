@@ -103,7 +103,7 @@ test('Given a failed read, when the routes are read, then the result is unavaila
 const markResuming = `UPDATE thermus_admin.tenants SET state = 'deploying', updated_at = now()
   WHERE organization_id = $1 AND state = 'suspended' AND render_service_id IS NOT NULL RETURNING render_service_id`;
 const restoreSuspended = `UPDATE thermus_admin.tenants SET state = 'suspended', updated_at = now()
-  WHERE organization_id = $1 AND state = 'deploying' RETURNING organization_id`;
+  WHERE organization_id = $1 AND state = 'deploying' AND render_service_id = $2 RETURNING organization_id`;
 const recordActive = 'UPDATE thermus_admin.tenants SET last_active_at = now() WHERE organization_id = $1 RETURNING organization_id';
 
 test('Given a suspended row, when the gateway marks it resuming, then one write moves only a suspended row with a service ID to deploying and gives that service ID', async (t) => {
@@ -116,14 +116,14 @@ test('Given a suspended row, when the gateway marks it resuming, then one write 
 test('Given no row in the state that a gateway write starts from, when the gateway writes, then the result is moved', async (t) => {
   const { store } = registryStore(t, () => []);
   assert.deepEqual(await store.markResuming('org_A'), { status: 'moved' });
-  assert.deepEqual(await store.restoreSuspended('org_A'), { status: 'moved' });
+  assert.deepEqual(await store.restoreSuspended('org_A', 'srv-a'), { status: 'moved' });
   assert.deepEqual(await store.recordActive('org_A'), { status: 'moved' });
 });
 
-test('Given a deploying row after a failed resume, when the gateway restores it, then one write moves only a deploying row back to suspended', async (t) => {
+test('Given a deploying row after a failed resume, when the gateway restores it, then one write moves only a deploying row on the service of the mark back to suspended', async (t) => {
   const { store, queries } = registryStore(t, (text) => text === restoreSuspended ? [{ organization_id: 'org_A' }] : new Error('unexpected statement'));
-  assert.deepEqual(await store.restoreSuspended('org_A'), { status: 'recorded' });
-  assert.deepEqual(queries, [{ text: restoreSuspended, values: ['org_A'] }]);
+  assert.deepEqual(await store.restoreSuspended('org_A', 'srv-a'), { status: 'recorded' });
+  assert.deepEqual(queries, [{ text: restoreSuspended, values: ['org_A', 'srv-a'] }]);
 });
 
 test('Given a row, when the gateway records its use, then one write sets last_active_at to the database time and keeps the state and updated_at', async (t) => {
@@ -135,6 +135,6 @@ test('Given a row, when the gateway records its use, then one write sets last_ac
 test('Given a failed write, when the gateway writes, then the result is unavailable without the cause', async (t) => {
   const { store } = registryStore(t, () => new Error('private storage details'));
   assert.deepEqual(await store.markResuming('org_A'), { status: 'unavailable' });
-  assert.deepEqual(await store.restoreSuspended('org_A'), { status: 'unavailable' });
+  assert.deepEqual(await store.restoreSuspended('org_A', 'srv-a'), { status: 'unavailable' });
   assert.deepEqual(await store.recordActive('org_A'), { status: 'unavailable' });
 });

@@ -27,14 +27,26 @@ test('Given a suspended row, when two pools mark it resuming at the same time, t
 
   const marks = await Promise.all([first.markResuming('org_A'), second.markResuming('org_A')]);
   const deployingSince = await site.ownerQuery("SELECT state || ' ' || (updated_at > now() - interval '1 minute') FROM thermus_admin.tenants WHERE organization_id = 'org_A'");
-  const restored = await first.restoreSuspended('org_A');
-  const restoredAgain = await second.restoreSuspended('org_A');
+  const restored = await first.restoreSuspended('org_A', 'srv-d0tenantaaaaaaaaaaaa');
+  const restoredAgain = await second.restoreSuspended('org_A', 'srv-d0tenantaaaaaaaaaaaa');
 
   assert.deepEqual(marks.map((mark) => mark.status).sort(), ['moved', 'resuming']);
   assert.deepEqual(marks.find((mark) => mark.status === 'resuming'), { status: 'resuming', serviceId: 'srv-d0tenantaaaaaaaaaaaa' });
   assert.equal(deployingSince, 'deploying true');
   assert.deepEqual([restored, restoredAgain], [{ status: 'recorded' }, { status: 'moved' }]);
   assert.deepEqual(await tenantRows(site), ['org_A suspended']);
+});
+
+// Each state-only write names the observed service (manager decision of 31 October 2026), so a failed resume of an old
+// service cannot restore a row that another writer gave a new service.
+test('Given a deploying row that another writer gave a new service, when a restore after a failed resume names the old service, then the row stays deploying on its new service', { timeout: 60_000 }, async (t) => {
+  const site = await postgresSettingsSite(t);
+  const store = storeOn(t, site);
+  assert.deepEqual(await new TenantRequests(store, 25).request('org_A'), { status: 'requested' });
+  await site.ownerQuery("UPDATE thermus_admin.tenants SET state = 'deploying', render_service_id = 'srv-d0tenantnewaaaaaaa' WHERE organization_id = 'org_A'");
+
+  assert.deepEqual(await store.restoreSuspended('org_A', 'srv-d0tenantoldaaaaaaa'), { status: 'moved' });
+  assert.equal(await site.ownerQuery("SELECT state || ' ' || render_service_id FROM thermus_admin.tenants WHERE organization_id = 'org_A'"), 'deploying srv-d0tenantnewaaaaaaa');
 });
 
 test('Given a suspended row without a service ID, or a row in another state, when the gateway marks it resuming, then nothing changes', { timeout: 60_000 }, async (t) => {
@@ -46,7 +58,7 @@ test('Given a suspended row without a service ID, or a row in another state, whe
 
   assert.deepEqual(await store.markResuming('org_A'), { status: 'moved' });
   assert.deepEqual(await store.markResuming('org_B'), { status: 'moved' });
-  assert.deepEqual(await store.restoreSuspended('org_B'), { status: 'moved' });
+  assert.deepEqual(await store.restoreSuspended('org_B', 'srv-d0tenantaaaaaaaaaaaa'), { status: 'moved' });
   assert.deepEqual(await tenantRows(site), ['org_A suspended', 'org_B requested']);
 });
 

@@ -6,6 +6,7 @@ import type { ProvisioningClock } from '../tenancy/tenants/provisioning-clock.ts
 import type { TenantPlatform } from '../tenancy/tenants/tenant-platform.ts';
 import { TenantProvisioner } from '../tenancy/tenants/tenant-provisioner.ts';
 import type { TenantProvisioningStore } from '../tenancy/tenants/tenant-provisioning-store.ts';
+import { platformResumeOf, type TenantResume } from '../tenancy/tenants/tenant-resume.ts';
 import type { HostedLoggingStorage } from './logging-storage.ts';
 import { systemClock } from './system-clock.ts';
 import { startTenantSweeps, type TenantSweepsParts } from './tenant-sweeps.ts';
@@ -53,16 +54,30 @@ function provisionerOf(parts: TenantProvisioningParts): TenantProvisioner {
   });
 }
 
+/** The tenant work of the control plane: the hosted storage with its loop and sweeps, and the resume call of the gateway. */
+export interface ControlPlaneTenancy {
+  /** The hosted storage, whose close stops the loop and the sweeps before the shared SQL runtime closes. */
+  readonly storage: HostedLoggingStorage;
+  /** The resume operation of the MCP gateway on the Render adapter (SO-10). */
+  readonly resume: TenantResume;
+}
+
 /**
- * The hosted storage with the provisioner loop and the tenant sweeps. Both need the tenant registry, so the switch stops
- * the start without the private hosted storage. Both close before the shared SQL runtime.
+ * The hosted storage with the provisioner loop and the tenant sweeps, and the resume operation of the gateway. The loop
+ * and the sweeps need the tenant registry, so the switch stops the start without the private hosted storage. Both
+ * close before the shared SQL runtime. The sweeps and the resume share one Render adapter with the write guard of the
+ * registry.
  */
-export function withTenantProvisioning(storage: HostedLoggingStorage | undefined, parts: Omit<TenantProvisioningParts, 'store'> & Pick<TenantSweepsParts, 'workos' | 'sweepClock'>): HostedLoggingStorage {
+export function withTenantProvisioning(storage: HostedLoggingStorage | undefined, parts: Omit<TenantProvisioningParts, 'store'> & Pick<TenantSweepsParts, 'workos' | 'sweepClock'>): ControlPlaneTenancy {
   if (storage?.tenants === undefined) {
     throw new DeploymentConfigError('MCP_TENANTS_ENABLED=true needs the tenant registry: DATABASE_URL and LOGGING_DESTINATION_ENCRYPTION_KEY must be valid.');
   }
   const { provisioning: store, fleet } = storage.tenants;
+  const platform = tenantPlatformOf({ ...parts, store });
   const provisioning = startTenantProvisioning({ ...parts, store });
-  const sweeps = startTenantSweeps({ ...parts, platform: tenantPlatformOf({ ...parts, store }), fleet });
-  return { ...storage, close: async () => { await Promise.all([provisioning.close(), sweeps.close()]); await storage.close(); } };
+  const sweeps = startTenantSweeps({ ...parts, platform, fleet });
+  return {
+    storage: { ...storage, close: async () => { await Promise.all([provisioning.close(), sweeps.close()]); await storage.close(); } },
+    resume: platformResumeOf(platform),
+  };
 }

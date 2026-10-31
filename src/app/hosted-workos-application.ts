@@ -72,11 +72,12 @@ export async function openWorkOSApplication(config: RouteConfig, logger: SystemL
   const { openLoggingStorage } = await import('./logging-storage.ts');
   await using resources = new AsyncDisposableStack();
   const opened = await openLoggingStorage(environment, logger, gateway.freeTenantLimit);
-  const loggingStorage = provisioningSettings === undefined ? opened : (await import('./tenant-provisioning.ts')).withTenantProvisioning(opened, {
+  const tenancy = provisioningSettings === undefined ? undefined : (await import('./tenant-provisioning.ts')).withTenantProvisioning(opened, {
     settings: provisioningSettings, publicBaseUrl: config.publicBaseUrl, authkitIssuer: connection.settings.authkitIssuer, logger, workos: connection.workos,
   });
+  const loggingStorage = tenancy?.storage ?? opened;
   if (loggingStorage !== undefined) resources.defer(() => loggingStorage.close());
-  const application = await composeWorkOSApplication(config, connection, { logger, toolOperations: operations, signup, loggingStorage, gateway: gateway.partsOn(loggingStorage) });
+  const application = await composeWorkOSApplication(config, connection, { logger, toolOperations: operations, signup, loggingStorage, gateway: gateway.partsOn(tenancy) });
   resources.move();
   return portal.withApplication(application);
 }

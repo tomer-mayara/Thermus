@@ -155,7 +155,7 @@ test('Given production storage settings with the switch on, when a tenant is req
   const render = renderFake();
   // The sweeps of this control plane never reach their daily tick: their clock waits until the close.
   const sweepClock = { now: () => 0, sleep: (_ms: number, signal: AbortSignal) => new Promise<void>((_resolve, reject) => signal.addEventListener('abort', () => reject(signal.reason), { once: true })) };
-  const storage = withTenantProvisioning(await openLoggingStorage(environment, log, 25), {
+  const { storage } = withTenantProvisioning(await openLoggingStorage(environment, log, 25), {
     settings, publicBaseUrl: controlPlanePublicBaseUrl, authkitIssuer: controlPlaneAuthkitIssuer, logger: log, fetch: render.fetch, clock: new VirtualClock(10),
     workos: workosClientFor(await WorkOSFakeApi.start(t)), sweepClock,
   });

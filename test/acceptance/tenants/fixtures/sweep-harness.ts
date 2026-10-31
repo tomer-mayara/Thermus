@@ -22,9 +22,19 @@ export const organizationD = 'org_01JSWEEPDDDDDDDDDDDDDDDDDD';
 // Monday 2 November 2026, one minute before the default sweep hour of 04:00 UTC: the first tick is a sweep day.
 export const mondayBeforeTheSweep = Date.parse('2026-11-02T03:59:00Z');
 export const tuesdayBeforeTheSweep = Date.parse('2026-11-03T03:59:00Z');
+export const wednesdayBeforeTheSweep = Date.parse('2026-11-04T03:59:00Z');
+export const freePlan = '0.5c-512mb';
 
 const REAL_WAIT_LIMIT_MS = 10_000;
-const freePlan = '0.5c-512mb';
+// A live tenant served its last call on Sunday 1 November 2026, so the idle sweep of these days leaves it.
+const recentUse = '2026-11-01T12:00:00.000Z';
+
+/** The facts of a live tenant row that a test can choose: its plan, its last use, and its creation. */
+export interface LiveTenantRow {
+  readonly plan?: string;
+  readonly lastActiveAt?: string | null;
+  readonly createdAt?: string;
+}
 
 export function serviceNameOf(organizationId: string): string {
   return `thermus-tenant-${organizationId.toLowerCase().replace(/[^a-z0-9-]/g, '-')}`;
@@ -47,13 +57,15 @@ export class SweepHarness {
     return new SweepHarness(await WorkOSFake.start(t, controlPlanePublicBaseUrl, organizations));
   }
 
-  /** A live tenant of the organization: its Render service and its registry row. */
-  liveTenant(organizationId: string): FakeService {
+  /** A live tenant of the organization: its Render service and its registry row, a free tenant with a recent call unless the row says else. */
+  liveTenant(organizationId: string, row: LiveTenantRow = {}): FakeService {
     const name = serviceNameOf(organizationId);
     const service = this.render.addService(name);
+    const plan = row.plan ?? freePlan;
     this.store.put({
       organizationId, state: 'live', serviceName: name, serviceId: service.id, internalUrl: `http://${service.slug}:8080`,
-      plan: freePlan, appliedPlan: freePlan, imageDigest: tenantImageDigest,
+      plan, appliedPlan: plan, imageDigest: tenantImageDigest, lastActiveAt: row.lastActiveAt === undefined ? recentUse : row.lastActiveAt,
+      ...(row.createdAt === undefined ? {} : { createdAt: row.createdAt }),
     });
     return service;
   }

@@ -11,6 +11,7 @@ import type { RegistryCount } from '../../../src/tenancy/tenants/tenant-registry
 type Rows = Record<string, unknown>[];
 
 const readFleet = /^SELECT organization_id, state, plan, applied_plan, render_service_id, service_name, internal_url, image_digest,\s+failure_reason, last_active_at, created_at, updated_at FROM thermus_admin\.tenants ORDER BY organization_id$/;
+const readIdle = /^SELECT organization_id, state, plan, applied_plan, render_service_id, service_name, internal_url, image_digest,\s+failure_reason, last_active_at, created_at, updated_at FROM thermus_admin\.tenants\s+WHERE state = 'live' AND render_service_id IS NOT NULL AND plan = \$1 AND COALESCE\(last_active_at, created_at\) <= \$2::timestamptz\s+ORDER BY organization_id$/;
 const markDeleted = /^UPDATE thermus_admin\.tenants SET state = 'deleted', internal_url = NULL, updated_at = now\(\)\s+WHERE organization_id = \$1 AND state = \$2 AND state <> 'deleted' AND render_service_id IS NOT DISTINCT FROM \$3 RETURNING organization_id$/;
 const markSuspended = /^UPDATE thermus_admin\.tenants SET state = 'suspended', updated_at = now\(\)\s+WHERE organization_id = \$1 AND state = 'live' AND render_service_id = \$2 RETURNING organization_id$/;
 const markResumed = /^UPDATE thermus_admin\.tenants SET state = 'deploying', updated_at = now\(\)\s+WHERE organization_id = \$1 AND state = 'suspended' AND render_service_id = \$2 RETURNING organization_id$/;
@@ -68,6 +69,29 @@ test('Given a registry that cannot be read, when the fleet is read, then the rea
   const { store, releases } = fleetStore(t, () => new Error('connection refused'));
   assert.deepEqual(await store.readFleet(), { status: 'unavailable' });
   assert.deepEqual(releases, [true]);
+});
+
+test('Given a free plan and a cutoff, when the idle rows are read, then one SELECT gives the live rows of that plan with a service whose last use, or creation without a use, is at or before the cutoff', async (t) => {
+  const { store, queries } = fleetStore(t, (text) => readIdle.test(text) ? [{
+    organization_id: 'org_01A', state: 'live', plan: '0.5c-512mb', applied_plan: '0.5c-512mb', render_service_id: 'srv-a', service_name: 'thermus-tenant-org-01a',
+    internal_url: 'http://thermus-tenant-org-01a:8080', image_digest: null, failure_reason: null,
+    last_active_at: null, created_at: new Date('2026-10-01T08:00:00Z'), updated_at: new Date('2026-10-01T08:02:00Z'),
+  }] : []);
+
+  const idle = await store.readIdle('0.5c-512mb', '2026-10-20T04:00:00.000Z');
+
+  assert.deepEqual(idle, {
+    status: 'complete',
+    rows: [{
+      organizationId: 'org_01A', state: 'live', plan: '0.5c-512mb', appliedPlan: '0.5c-512mb', serviceId: 'srv-a', serviceName: 'thermus-tenant-org-01a',
+      internalUrl: 'http://thermus-tenant-org-01a:8080', imageDigest: null, failureReason: null,
+      lastActiveAt: null, createdAt: '2026-10-01T08:00:00.000Z', updatedAt: '2026-10-01T08:02:00.000Z',
+    }],
+  });
+  assert.equal(queries.length, 1);
+  assert.deepEqual(queries[0]?.values, ['0.5c-512mb', '2026-10-20T04:00:00.000Z']);
+  const failed = fleetStore(t, () => new Error('connection refused'));
+  assert.deepEqual(await failed.store.readIdle('0.5c-512mb', '2026-10-20T04:00:00.000Z'), { status: 'unavailable' });
 });
 
 test('Given a row in the state and on the service that the caller read, when it is marked deleted, then one UPDATE from that state and that service ends its route', async (t) => {

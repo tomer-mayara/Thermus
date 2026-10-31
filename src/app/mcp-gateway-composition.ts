@@ -28,6 +28,11 @@ interface TenantsSettings {
   readonly gateway: GatewaySettings;
 }
 
+export interface GatewayTenancy {
+  readonly storage: Pick<HostedLoggingStorage, 'tenants'>;
+  readonly resume: TenantResume;
+}
+
 export interface GatewayStart {
   readonly freeTenantLimit: number;
   /**
@@ -35,7 +40,7 @@ export interface GatewayStart {
    * key of GATEWAY_SIGNING_KEY. With the switch off, it checks nothing.
    */
   requireSigningKeyIn(gatewayPublicKey: string | undefined): void;
-  partsOn(storage: Pick<HostedLoggingStorage, 'tenants'> | undefined): GatewayParts | undefined;
+  partsOn(tenancy: GatewayTenancy | undefined): GatewayParts | undefined;
 }
 
 export interface GatewayRoutes {
@@ -57,7 +62,7 @@ export function gatewayStartOf(environment: Readonly<Record<string, string | und
   return {
     freeTenantLimit: settings.freeTenantLimit,
     requireSigningKeyIn: (gatewayPublicKey) => { requireSigningKeyIn(settings.gateway, gatewayPublicKey ?? ''); },
-    partsOn: (storage) => gatewayPartsOf(settings.gateway, storage),
+    partsOn: (tenancy) => gatewayPartsOf(settings.gateway, tenancy),
   };
 }
 
@@ -74,20 +79,13 @@ export function gatewayRoutesOf(parts: GatewayParts, composition: { readonly aut
   return { forward: gatewayForwardOf(parts, composition.logger), internalRoutes: auditRelayRouteOf(parts.settings, composition) };
 }
 
-/**
- * The resume operation until SO-10 connects it to the Render API: each call fails with one log line, and the row goes
- * back to suspended. No tenant is suspended before the idle sweep of SO-10 runs.
- */
-const unconnectedResume: TenantResume = {
-  resume: async () => ({ status: 'failed', reason: 'The resume operation is not connected yet (SO-10).' }),
-};
-
-function gatewayPartsOf(settings: GatewaySettings, storage: Pick<HostedLoggingStorage, 'tenants'> | undefined, resume: TenantResume = unconnectedResume): GatewayParts {
-  if (storage?.tenants === undefined) {
+function gatewayPartsOf(settings: GatewaySettings, tenancy: GatewayTenancy | undefined): GatewayParts {
+  const tenants = tenancy?.storage.tenants;
+  if (tenancy === undefined || tenants === undefined) {
     throw new DeploymentConfigError('MCP_TENANTS_ENABLED=true needs the tenant registry: DATABASE_URL and LOGGING_DESTINATION_ENCRYPTION_KEY must be valid.');
   }
-  const { lookup, requests, gateway } = storage.tenants;
-  return { settings, tenants: gatewayTenantsOf({ lookup, requests, resumes: new TenantResumes(gateway, resume), activity: new TenantActivity(gateway) }) };
+  const { lookup, requests, gateway } = tenants;
+  return { settings, tenants: gatewayTenantsOf({ lookup, requests, resumes: new TenantResumes(gateway, tenancy.resume), activity: new TenantActivity(gateway) }) };
 }
 
 export function gatewayTenantsOf(registry: GatewayRegistry): GatewayTenants {
