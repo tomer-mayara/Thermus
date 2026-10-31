@@ -7,48 +7,35 @@
     "deployment": false,
     "crossCutting": false,
     "component": false,
-    "internalInterface": false,
+    "internalInterface": true,
     "sensitiveBehavior": false,
     "dependencyRisk": false,
-    "policy": true,
+    "policy": false,
     "uncertain": false
   },
   "architecture": {
     "modelUpdated": false,
-    "summary": "The habit-hooks cleanup, parts 1 and 2: #297 is merged into this pull request, so the candidate holds both. Part 1 removes comments that the code does not need, in two passes (a first pass and a stricter pass), in src/, test/, and script/. It changes no code: for each of the 307 changed TypeScript files, the print without comments is the same at the merge base and at HEAD. Comments that main rewrote after the classification stay. The declaration snapshots have no comments (removeComments in tsconfig.api-surface.json), so the 16 touched public modules keep identical declarations. Part 2 changes the habit-hooks configuration only: .habit-hooks/config.toml and .habit-hooks/eslint.config.mjs. The line-count sensor gets a limit of 300 lines instead of 200 and skips test/ and the four WorkOS legal-text bundles, which hold data that a SHA-256 pins. no-unused-vars ignores a using declaration, because its binding exists for its dispose (src/index.ts). The five ESLint import-boundary blocks for src/auth, src/mcp, src/hosted-admin, src/page-fetch, and src/search-pipeline go: #214 removed those folders, so the blocks matched no file. The phase-one/import-context rule still applies the component graph of the rules file to each src file, and the dependency_graph of the PR checker guards the same boundaries at review. The policy flag is set: part 2 relaxes what habit-hooks enforces. The protected policy paths (script/pr-review/** and .habit-hooks/**) and twelve security guarantee files select T1 Team review. No component, dependency edge, public module, declaration, contract, external dependency, composition, build output, or deployment relationship changes, and no behavior of the product or of the PR checker changes. The component registry describes the runtime system only; its prose and all 21 views remain accurate and unchanged.",
+    "summary": "PR 3 of the habit-hooks cleanup stack corrects each remaining enforced habit-hooks finding in code, and the advisory non-null assertions, without a change of behavior: 51 high-complexity, 29 too-many-parameters, 4 oversized-function, 1 oversized-file, and 35 non-null-assertion findings at the parent. Functions get named steps, values that travel together become one value, and workos-organizations.ts (448 lines) keeps WorkOSOrganizations (262 lines) and moves its answer rules, invitations, and membership reads to three modules of the same workos component. Two declarations of public modules change (fact d), so internalInterface is set. DestinationSettingsService.test of audit-logs takes the tenant and the actor as one TestRequester value; its one production caller, the Audit logs route of web, builds it from the same trusted Admin context as before. The WebsiteFetchLaunchError constructor of website-fetcher derives its launch diagnostic from its cause instead of an optional parameter; its one production caller passed that same value. No component, dependency edge, public module, external dependency, client contract, composition, build output, or deployment relationship changes. The security files workos-signup.ts and css-animation-declarations.ts keep the same checks in the same order. The component registry describes components and their collaboration, not files or signatures; its prose and all 21 views remain accurate and unchanged.",
     "views": [
       "Context",
       "C4 containers: hosted edition",
       "C4 containers: local edition",
       "Selected C4 components: tool processing in the Node server",
       "Selected C4 components: hosted authentication in the Node server",
-      "Selected C4 components: tenant role in the hosted image",
       "Selected C4 components: hosted membership removal in the Node server",
       "Selected C4 components: hosted Audit logs settings and delivery in the Node server",
-      "Selected C4 components: hosted tenant registry, provisioning, and sweeps in the Node server",
-      "Selected C4 components: MCP gateway and audit relay in the Node server",
       "Selected C4 components: system and audit logs in the Node server",
-      "Selected C4 components: local authentication in the Node server",
       "Collaboration overview",
       "Scenario: MCP page fetch and renderer cancellation",
-      "Scenario: hosted MCP call through the gateway",
-      "Scenario: hosted default sign-in landing",
-      "Scenario: hosted member read",
-      "Scenario: tenant provisioning",
-      "Scenario: weekly organization sweep",
-      "Self-hosted Compose",
-      "Recorded hosted Render target"
+      "Scenario: hosted member read"
     ],
     "evidence": [
+      "docs/api-surface/src/logs/audit/destination-settings-service.d.ts and docs/api-surface/src/pipelines/providers/website-fetcher/website-fetcher.d.ts (the two changed declaration snapshots)",
+      "src/interfaces/web/account/logging-routes.ts (the one production caller of DestinationSettingsService.test)",
+      "src/pipelines/providers/website-fetcher/website-fetcher-lightpanda.ts (the one production caller of the WebsiteFetchLaunchError constructor)",
       "architecture/components.md (21 Mermaid views, unchanged)",
-      "tsconfig.api-surface.json (removeComments: true)",
-      "docs/api-surface/ (declaration snapshots, unchanged)",
-      ".habit-hooks/config.toml",
-      ".habit-hooks/eslint.config.mjs",
-      ".habit-hooks/import-context.mjs (the component graph rule that stays)",
-      "docs/implementation/pr-review-rules.yaml (dependency_graph, protected_paths.policy, and protected_paths.security)",
-      "Validation comment of #296: the comment-only proof, npm test, typecheck, and the portal build",
-      "Validation comment of #297: the two full habit-hooks scans and the ESLint comparison"
+      "docs/implementation/pr-review-rules.yaml (public_surface and dependency_graph, unchanged)",
+      "Validation comment of this pull request: npm test, the production gates, the metrics, and habit-hooks"
     ]
   }
 }
