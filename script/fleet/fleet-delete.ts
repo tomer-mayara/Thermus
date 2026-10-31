@@ -1,6 +1,6 @@
 // The delete command: the Render service of the tenant first, through the adapter and its write guard, then the row
-// deleted from the state that the command read (answer 7 of 27 October 2026). It is the removal that the weekly
-// organization sweep of the control plane uses too.
+// deleted from the state and the service that the command read (answer 7 of 27 October 2026, manager decision of 31
+// October 2026). It is the removal that the weekly organization sweep of the control plane uses too.
 import { removeTenant } from '../../src/tenancy/tenants/tenant-removal.ts';
 import { confirmed } from './fleet-confirm.ts';
 import type { CommandParts } from './fleet-reads.ts';

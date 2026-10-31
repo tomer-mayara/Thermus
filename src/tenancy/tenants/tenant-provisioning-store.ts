@@ -34,8 +34,11 @@ export interface TenantProvisioningStore {
   claimNext(request: ClaimRequest): Promise<ClaimResult>;
   /** creating to deploying, with the ID of the service. */
   recordService(organizationId: string, serviceId: string): Promise<RecordResult>;
-  /** deploying to live, with the internal address and the digest of the live deploy. */
-  recordLive(organizationId: string, live: LiveRecord): Promise<RecordResult>;
+  /**
+   * deploying to live on serviceId, the service of the work, with the internal address and the digest of the live deploy.
+   * A row that another writer gave a new service, such as after a delete, a revive, and a new provision, is moved.
+   */
+  recordLive(organizationId: string, serviceId: string, live: LiveRecord): Promise<RecordResult>;
   /** creating or deploying to failed, with the reason. */
   recordFailed(organizationId: string, reason: string): Promise<RecordResult>;
   /** True when a row of the registry has this service ID. An unreadable registry gives false. */

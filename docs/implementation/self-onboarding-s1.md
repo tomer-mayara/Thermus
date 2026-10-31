@@ -3529,3 +3529,18 @@ production service.
   out more than 2 rows that are not deleted. Step 11 had one absent row, inside
   the bound; the acceptance and unit cases check the stops, and no manual run
   showed them.
+- The run came before two manager decisions of 31 October 2026. First, each
+  fleet change now names the state and the service that it starts from, and
+  the live record of a resume names the service too, so a stale write cannot
+  change a replacement row with a new service. Second, an upgrade now follows
+  the deploy that the `201` answer names, stops on a newer deploy with another
+  ID, and records the digest only when the live deploy names it; after a `202`
+  answer, and after each resume, the wait takes the first new deploy and calls
+  its identity unconfirmed. Steps 5 to 9, 11, and 12 ran the earlier code. The
+  unit cases and the PostgreSQL runtime case check the new rules, and no live
+  run showed them.
+- Until SO-10 connects the resume operation of the gateway, only `resume` of
+  the fleet script brings back a tenant that `suspend` stopped: each MCP call
+  of that organization gets a `503` with `Retry-After: 60` and writes one
+  operator report (owner decision of 31 October 2026). No MCP call reached a
+  tenant in this run.

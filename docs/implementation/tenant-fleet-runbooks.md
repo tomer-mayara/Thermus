@@ -90,7 +90,7 @@ production service in the Render Dashboard for the prefix of the line.
 | `Tenant provisioning failed unexpectedly:` | ERROR | `tenant-provisioner.ts` | A defect. The loop tries again in 60 s. |
 | `Logging storage is unavailable:` | ERROR | [`src/app/logging-storage.ts`](../../src/app/logging-storage.ts) | At the start: `DATABASE_URL`, `LOGGING_DESTINATION_ENCRYPTION_KEY`, or `DATABASE_CA_CERT_PATH` is missing or invalid. |
 | `MCP gateway tenant restart: {json}` | ERROR | [`src/interfaces/mcp/mcp-gateway-refusals.ts`](../../src/interfaces/mcp/mcp-gateway-refusals.ts) | A live tenant stopped during a call. The fields are `organizationId`, `phase` (`before-answer` or `during-answer`), and `cause` (`http-502` or `connection`). |
-| `MCP gateway refusal: {json}` | INFO, or ERROR for an operator report | `mcp-gateway-refusals.ts` | The gateway answered by itself, with `503` or with the search busy words. The fields are `organizationId`, `reason`, and, when they apply, `state`, `resume`, and `resumeFailure`. The operator reports are the first refusal of a `failed` tenant and a failed resume. |
+| `MCP gateway refusal: {json}` | INFO, or ERROR for an operator report | `mcp-gateway-refusals.ts` | The gateway answered by itself, with `503` or with the search busy words. The fields are `organizationId`, `reason`, and, when they apply, `state`, `resume`, and `resumeFailure`. The operator reports are the first refusal of a `failed` tenant and a failed resume. Until SO-10 connects the resume operation, each call of a `suspended` tenant gives a failed resume with `resumeFailure` "The resume operation is not connected yet (SO-10).", and the tenant stays suspended: `fleet.ts resume --organization <organization ID>` brings it back. |
 | `Audit relay refusal: {json}` | ERROR | [`src/app/mcp-gateway-composition.ts`](../../src/app/mcp-gateway-composition.ts) | The relay route refused an audit event of a tenant, so the event is not exported. The fields are `reason` (`body`, `event`, `organization`, `context`, `actor`, or `memory`), `detail` (the reason of a refused context, for example `signature`), and `organizationId` when it is known. The line never shows the context or the event. |
 | `The tenant sweeps run each day at` | INFO | [`src/app/tenant-sweeps.ts`](../../src/app/tenant-sweeps.ts) | The start began the tenant sweeps. The line names the hour of `TENANT_SWEEP_HOUR_UTC`. |
 | `Tenant fleet summary: {json}` | INFO | [`src/tenancy/tenants/fleet-summary.ts`](../../src/tenancy/tenants/fleet-summary.ts) | Once a day at the tick, the daily summary. The fields are in [the summary fields](#the-summary-fields). |
@@ -363,7 +363,9 @@ runbook gives this order and the registry rows.
 2. Run `fleet.ts delete --organization <organization ID>`. It prints the row,
    the service ID, and the service name. Check them, then answer `yes`.
    The command deletes the Render service through the adapter, then sets the
-   row `deleted` from the state that it read.
+   row `deleted` from the state and the service that it read. A row that
+   another writer changed meanwhile, also a new provision of the organization
+   with a new service, stays as it is, and the command says so.
 3. Check: `fleet.ts status --organization <organization ID>` shows the row
    `deleted`, and the Render Dashboard does not list the service. A service
    that Render no longer has counts as deleted, so a repeat of step 2 is safe.
@@ -529,8 +531,9 @@ the digest is the current one.
    `fleet.ts upgrade --all --image ghcr.io/tomer-mayara/thermus-hosted@<current digest>`,
    and answer `yes`. For a tenant on another digest, run
    `fleet.ts upgrade --organization <organization ID> --image ghcr.io/tomer-mayara/thermus-hosted@<its digest>`.
-   Check: each deploy reaches `live`; the upgrade stops after the first batch
-   with a deploy that does not, and the later batches do not start. Then read
+   Check: each deploy reaches `live` with the digest, and its line ends with
+   `digest recorded`; the upgrade stops after the first batch with a deploy
+   that does not, and the later batches do not start. Then read
    `GATEWAY_PUBLIC_KEY` of each tenant service again: each one has both keys.
 4. Switch. Set `GATEWAY_SIGNING_KEY` of the production service to the new
    private key. Deploy the control plane. Check: the deploy is `live`, the

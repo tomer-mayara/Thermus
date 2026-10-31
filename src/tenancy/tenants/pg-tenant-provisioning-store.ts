@@ -5,9 +5,10 @@ import type { ClaimRequest, ClaimResult, LiveRecord, RecordResult, TenantProvisi
 // Each change names the state that it starts from, so a row that another writer changed stays as it is.
 const RECORD_SERVICE = `UPDATE thermus_admin.tenants SET state = 'deploying', render_service_id = $2, updated_at = now()
   WHERE organization_id = $1 AND state = 'creating' RETURNING organization_id`;
-// The platform does not always give the digest of a deploy; the row then keeps the digest that it has.
-const RECORD_LIVE = `UPDATE thermus_admin.tenants SET state = 'live', internal_url = $2, image_digest = COALESCE($3::text, image_digest), applied_plan = plan,
-  failure_reason = NULL, updated_at = now() WHERE organization_id = $1 AND state = 'deploying' RETURNING organization_id`;
+// The platform does not always give the digest of a deploy; the row then keeps the digest that it has. The record names
+// the service of the work too, so the live deploy of an old service never records a replacement row.
+const RECORD_LIVE = `UPDATE thermus_admin.tenants SET state = 'live', internal_url = $3, image_digest = COALESCE($4::text, image_digest), applied_plan = plan,
+  failure_reason = NULL, updated_at = now() WHERE organization_id = $1 AND state = 'deploying' AND render_service_id = $2 RETURNING organization_id`;
 const RECORD_FAILED = `UPDATE thermus_admin.tenants SET state = 'failed', failure_reason = $2, updated_at = now()
   WHERE organization_id = $1 AND state IN ('creating', 'deploying') RETURNING organization_id`;
 const OWNS_SERVICE = 'SELECT 1 AS owned FROM thermus_admin.tenants WHERE render_service_id = $1';
@@ -29,8 +30,8 @@ export class PgTenantProvisioningStore implements TenantProvisioningStore {
     return this.change(RECORD_SERVICE, [organizationId, serviceId]);
   }
 
-  recordLive(organizationId: string, live: LiveRecord): Promise<RecordResult> {
-    return this.change(RECORD_LIVE, [organizationId, live.internalUrl, live.imageDigest ?? null]);
+  recordLive(organizationId: string, serviceId: string, live: LiveRecord): Promise<RecordResult> {
+    return this.change(RECORD_LIVE, [organizationId, serviceId, live.internalUrl, live.imageDigest ?? null]);
   }
 
   recordFailed(organizationId: string, reason: string): Promise<RecordResult> {

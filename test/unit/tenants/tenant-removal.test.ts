@@ -60,6 +60,20 @@ test('Given a row that another writer moved during the removal, when the row is 
   assert.deepEqual(await removeTenant({ platform, store }, { ...row, state: 'suspended' }, signal), { status: 'deleted' });
 });
 
+test('Given a row that a delete, a revive, and a new provision replace with another service in the same state, when the stale removal marks it, then the result is moved, and the row stays live with the new service', async () => {
+  const platform = new TenantPlatformFake();
+  const { store, row } = fleetOf('live');
+  store.beforeChange = () => {
+    store.put({ organizationId: 'org_A', state: 'live', serviceId: 'srv-b', serviceName: 'thermus-tenant-org-a', internalUrl: 'http://thermus-tenant-org-a-b:8080' });
+  };
+
+  assert.deepEqual(await removeTenant({ platform, store }, row, signal), { status: 'moved' });
+
+  assert.deepEqual(platform.calls, ['delete srv-a']);
+  const replacement = store.row('org_A');
+  assert.deepEqual([replacement.state, replacement.serviceId, replacement.internalUrl], ['live', 'srv-b', 'http://thermus-tenant-org-a-b:8080']);
+});
+
 test('Given a registry that does not take the deleted state, when the tenant is removed, then the result is failed and names the deleted service', async () => {
   const platform = new TenantPlatformFake();
   const { store, row } = fleetOf('failed');

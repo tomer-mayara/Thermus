@@ -148,6 +148,22 @@ test('Given a row that another writer moves during its removal, when the sweep r
   ]);
 });
 
+test('Given a row that a new provision replaces with another service in the same state during its removal, when the sweep marks it, then the replacement stays live, and the row counts as moved', async () => {
+  const { store, platform, log, sweep } = sweepOf({ org_A: 'live' }, listed);
+  store.beforeChange = () => {
+    store.put({ organizationId: 'org_A', state: 'live', serviceId: 'srv-new', serviceName: 'thermus-tenant-org_a', internalUrl: 'http://thermus-tenant-new:8080' });
+  };
+
+  await sweep.run(monday, signal);
+
+  assert.deepEqual(platform.calls, ['delete srv-orga']);
+  assert.deepEqual([store.stateOf('org_A'), store.row('org_A').serviceId, store.row('org_A').internalUrl], ['live', 'srv-new', 'http://thermus-tenant-new:8080']);
+  assert.deepEqual(log.lines, [
+    'INFO The organization sweep leaves organization org_A: its row changed during the removal. The next sweep removes it.',
+    tally({ rows: 1, organizations: 1, moved: 1 }),
+  ]);
+});
+
 // The bound of the deletion authority (manager decision of 28 October 2026): an empty list, or more than two rows that
 // are not deleted and are absent from the list, stops the sweep before any read by ID, delete, or row change.
 

@@ -8,8 +8,8 @@ const CREATED_AT = '2026-10-01T08:00:00.000Z';
 
 /**
  * The registry fake of the provisioner (a fake) with the statements of the fleet commands and the sweeps. Each change
- * names the state that it starts from, as the guarded updates of the SQL adapter do; changes lists each state that a
- * row takes, in order. An operation in fleetUnavailable stands in for a storage failure of that operation, and
+ * names the state and the service that it starts from, as the guarded updates of the SQL adapter do; changes lists each
+ * state that a row takes, in order. An operation in fleetUnavailable stands in for a storage failure of that operation, and
  * beforeChange runs before each change, so a test can play another writer at that moment.
  */
 export class TenantFleetStoreFake extends TenantProvisioningStoreFake implements TenantFleetStore {
@@ -21,8 +21,8 @@ export class TenantFleetStoreFake extends TenantProvisioningStoreFake implements
     return { status: 'complete', rows: [...this.rows.values()].map(fleetRowOf) };
   }
 
-  async markDeleted(organizationId: string, from: RemovableState): Promise<FleetWrite> {
-    return this.fleetMove('deleted', organizationId, [from], (row) => {
+  async markDeleted(organizationId: string, from: RemovableState, serviceId: string | null): Promise<FleetWrite> {
+    return this.fleetMove('deleted', organizationId, { from: [from], serviceId }, (row) => {
       this.moveTo(row, 'deleted');
       row.internalUrl = null;
     });
@@ -38,20 +38,16 @@ export class TenantFleetStoreFake extends TenantProvisioningStoreFake implements
     return { status: 'revived' };
   }
 
-  async markSuspended(organizationId: string): Promise<FleetWrite> {
-    return this.fleetMove('suspended', organizationId, ['live'], (row) => this.moveTo(row, 'suspended'));
+  async markSuspended(organizationId: string, serviceId: string): Promise<FleetWrite> {
+    return this.fleetMove('suspended', organizationId, { from: ['live'], serviceId }, (row) => this.moveTo(row, 'suspended'));
   }
 
-  async markResumed(organizationId: string): Promise<FleetWrite> {
-    return this.fleetMove('resumed', organizationId, ['suspended'], (row) => this.moveTo(row, 'deploying'));
+  async markResumed(organizationId: string, serviceId: string): Promise<FleetWrite> {
+    return this.fleetMove('resumed', organizationId, { from: ['suspended'], serviceId }, (row) => this.moveTo(row, 'deploying'));
   }
 
   async recordDigest(organizationId: string, serviceId: string, imageDigest: string): Promise<FleetWrite> {
-    return this.fleetMove('digest', organizationId, ['live'], (row) => {
-      if (row.serviceId !== serviceId) return false;
-      row.imageDigest = imageDigest;
-      return true;
-    });
+    return this.fleetMove('digest', organizationId, { from: ['live'], serviceId }, (row) => { row.imageDigest = imageDigest; });
   }
 
   /** The state of the row of the organization, or undefined without a row. */
@@ -59,12 +55,14 @@ export class TenantFleetStoreFake extends TenantProvisioningStoreFake implements
     return this.rows.get(organizationId)?.state;
   }
 
-  private fleetMove(operation: FleetOperation, organizationId: string, from: readonly TenantState[], apply: (row: FakeTenantRow) => boolean | void): FleetWrite {
+  // A change applies only to a row in one of its start states and on the service that the caller read.
+  private fleetMove(operation: FleetOperation, organizationId: string, start: { readonly from: readonly TenantState[]; readonly serviceId: string | null }, apply: (row: FakeTenantRow) => void): FleetWrite {
     this.beforeChange(operation, organizationId);
     if (this.fleetUnavailable.has(operation)) return { status: 'unavailable' };
     const row = this.rows.get(organizationId);
-    if (row === undefined || !from.includes(row.state)) return { status: 'moved' };
-    return { status: apply(row) === false ? 'moved' : 'recorded' };
+    if (row === undefined || !start.from.includes(row.state) || row.serviceId !== start.serviceId) return { status: 'moved' };
+    apply(row);
+    return { status: 'recorded' };
   }
 
   private moveTo(row: FakeTenantRow, state: TenantState): void {

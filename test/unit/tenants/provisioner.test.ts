@@ -246,6 +246,21 @@ test('Given a deploying row after a resume, when the loop claims it, then it wat
   assert.match(log.lines[0] ?? '', /"state":"deploying".*"resumed":true/);
 });
 
+test('Given a deploying row whose service another writer replaces while the loop watches, when the old deploy is live, then the loop leaves the row with the new service', async () => {
+  const { platform, store, log, runUntil } = provisionerWith();
+  platform.onCall = (call) => {
+    if (call === 'address srv-resumed') store.put({ organizationId: organization, state: 'deploying', serviceName: name, serviceId: 'srv-other' });
+  };
+  store.put({ organizationId: organization, state: 'deploying', serviceName: name, serviceId: 'srv-resumed', internalUrl: 'http://slug-of-srv-resumed:8080' });
+
+  await runUntil(() => log.lines.some((line) => line.includes('leaves')));
+
+  const row = store.row(organization);
+  assert.equal(row.serviceId, 'srv-other');
+  assert.notEqual(row.internalUrl, 'http://slug-of-srv-resumed:8080', 'The live record of the old service never reaches the new row');
+  assert.ok(log.lines.every((line) => !line.includes('"serviceId":"srv-resumed","internalUrl"')), 'No live record line names the old service');
+});
+
 test('Given a deploying row without a service ID, when the loop claims it, then the row fails without a platform call', async () => {
   const { platform, store, runUntil, stateOf } = provisionerWith();
   store.put({ organizationId: organization, state: 'deploying', serviceName: name });

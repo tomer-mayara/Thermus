@@ -111,16 +111,49 @@ test('Given live and suspended rows on the real registry, when the fleet stateme
 
   assert.deepEqual(await fleet.recordDigest('org_01JSTATES', 'srv-other', newer), { status: 'moved' }, 'Another service of the row records nothing');
   assert.deepEqual(await fleet.recordDigest('org_01JSTATES', serviceId, newer), { status: 'recorded' });
-  assert.deepEqual(await fleet.markSuspended('org_01JSTATES'), { status: 'recorded' });
-  assert.deepEqual(await fleet.markSuspended('org_01JSTATES'), { status: 'moved' });
+  assert.deepEqual(await fleet.markSuspended('org_01JSTATES', serviceId), { status: 'recorded' });
+  assert.deepEqual(await fleet.markSuspended('org_01JSTATES', serviceId), { status: 'moved' });
   assert.deepEqual(await fleet.recordDigest('org_01JSTATES', serviceId, digest), { status: 'moved' }, 'A suspended row keeps its digest');
-  assert.deepEqual(await fleet.markResumed('org_01JSTATES'), { status: 'recorded' });
-  assert.deepEqual(await fleet.markDeleted('org_01JSTATES', 'live'), { status: 'moved' }, 'The delete starts from the state that the caller read');
-  assert.deepEqual(await fleet.markDeleted('org_01JSTATES', 'deploying'), { status: 'recorded' });
+  assert.deepEqual(await fleet.markResumed('org_01JSTATES', serviceId), { status: 'recorded' });
+  assert.deepEqual(await fleet.markDeleted('org_01JSTATES', 'live', serviceId), { status: 'moved' }, 'The delete starts from the state that the caller read');
+  assert.deepEqual(await fleet.markDeleted('org_01JSTATES', 'deploying', serviceId), { status: 'recorded' });
 
   const read = await fleet.readFleet();
   assert.equal(read.status, 'complete');
   const [row] = read.status === 'complete' ? read.rows : [];
   assert.deepEqual({ state: row?.state, serviceId: row?.serviceId, internalUrl: row?.internalUrl, imageDigest: row?.imageDigest }, { state: 'deleted', serviceId, internalUrl: null, imageDigest: newer });
   assert.match(row?.updatedAt ?? '', /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
+});
+
+// Each fleet change names the state and the service that it starts from: a replacement row has a new service, so a
+// stale write of a slow operation moves instead of changing it (manager decision of 31 October 2026).
+test('Given a live row on the real registry that a delete, a revive, and a new provision replaced with another service, when a stale change names the old service, then it is moved, and the row stays with the new service', { timeout: 120_000 }, async (t) => {
+  const site = await postgresSettingsSite(t);
+  const render = new RenderFake({ apiKey: settings.render.apiKey, ownerId: settings.render.ownerId });
+  const organizationId = 'org_01JREPLACED';
+  const old = await rowWithService(site, render, organizationId, 'live');
+  const { fleet, provisioning } = storesOn(t, site);
+  assert.deepEqual(await fleet.markDeleted(organizationId, 'live', old), { status: 'recorded' });
+  assert.deepEqual(await reviveTenant(fleet, organizationId, 25), { status: 'revived' });
+  assert.equal((await provisioning.claimNext({ serviceNameOf: nameOf, plan: '0.5c-512mb' })).status, 'claimed');
+  const replacement = render.addService(nameOf(organizationId));
+  const route = `http://${replacement.slug}:8080`;
+  assert.deepEqual(await provisioning.recordService(organizationId, replacement.id), { status: 'recorded' });
+  assert.deepEqual(await provisioning.recordLive(organizationId, replacement.id, { internalUrl: route, imageDigest: digest }), { status: 'recorded' });
+  const rowNow = () => site.ownerQuery(`SELECT concat_ws(' ', state, render_service_id, coalesce(internal_url, 'no-route')) FROM thermus_admin.tenants WHERE organization_id = '${organizationId}'`);
+
+  assert.deepEqual(await fleet.markDeleted(organizationId, 'live', old), { status: 'moved' }, 'A stale removal leaves the replacement');
+  assert.deepEqual(await fleet.markSuspended(organizationId, old), { status: 'moved' }, 'A stale suspend leaves the replacement');
+  assert.equal(await rowNow(), `live ${replacement.id} ${route}`);
+
+  assert.deepEqual(await fleet.markSuspended(organizationId, replacement.id), { status: 'recorded' });
+  assert.deepEqual(await fleet.markResumed(organizationId, old), { status: 'moved' }, 'A stale resume leaves the suspended replacement');
+  assert.deepEqual(await fleet.markResumed(organizationId, replacement.id), { status: 'recorded' });
+  assert.deepEqual(await provisioning.recordLive(organizationId, old, { internalUrl: 'http://stale:8080' }), { status: 'moved' }, 'A stale live record leaves the resumed replacement');
+  assert.deepEqual(await provisioning.recordLive(organizationId, replacement.id, { internalUrl: route }), { status: 'recorded' });
+  assert.equal(await rowNow(), `live ${replacement.id} ${route}`);
+
+  await site.ownerQuery("INSERT INTO thermus_admin.tenants (organization_id, state) VALUES ('org_01JNOSERVICE', 'requested')");
+  assert.deepEqual(await fleet.markDeleted('org_01JNOSERVICE', 'requested', old), { status: 'moved' }, 'A row without a service does not match a service');
+  assert.deepEqual(await fleet.markDeleted('org_01JNOSERVICE', 'requested', null), { status: 'recorded' }, 'A row without a service binds to no service');
 });

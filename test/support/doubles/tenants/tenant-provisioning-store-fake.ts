@@ -77,13 +77,16 @@ export class TenantProvisioningStoreFake implements TenantProvisioningStore {
     });
   }
 
-  async recordLive(organizationId: string, live: LiveRecord): Promise<RecordResult> {
+  // The live record names the service of the work, as the guarded update of the SQL adapter does.
+  async recordLive(organizationId: string, serviceId: string, live: LiveRecord): Promise<RecordResult> {
     return this.move('live', organizationId, (row) => {
+      if (row.serviceId !== serviceId) return false;
       this.change(row, 'live');
       row.internalUrl = live.internalUrl;
       row.imageDigest = live.imageDigest ?? row.imageDigest;
       row.appliedPlan = row.plan;
       row.failureReason = null;
+      return true;
     });
   }
 
@@ -98,12 +101,12 @@ export class TenantProvisioningStoreFake implements TenantProvisioningStore {
     return [...this.rows.values()].some((row) => row.serviceId === serviceId);
   }
 
-  private move(operation: Exclude<StoreOperation, 'claim'>, organizationId: string, apply: (row: FakeTenantRow) => void): RecordResult {
+  // apply gives false when the row is in a start state but on another service.
+  private move(operation: Exclude<StoreOperation, 'claim'>, organizationId: string, apply: (row: FakeTenantRow) => boolean | void): RecordResult {
     if (this.unavailable.has(operation)) return { status: 'unavailable' };
     const row = this.rows.get(organizationId);
     if (row === undefined || !FROM_STATES[operation].includes(row.state)) return { status: 'moved' };
-    apply(row);
-    return { status: 'recorded' };
+    return { status: apply(row) === false ? 'moved' : 'recorded' };
   }
 
   private change(row: FakeTenantRow, state: TenantState): void {

@@ -11,9 +11,9 @@ import type { RegistryCount } from '../../../src/tenancy/tenants/tenant-registry
 type Rows = Record<string, unknown>[];
 
 const readFleet = /^SELECT organization_id, state, plan, applied_plan, render_service_id, service_name, internal_url, image_digest,\s+failure_reason, last_active_at, created_at, updated_at FROM thermus_admin\.tenants ORDER BY organization_id$/;
-const markDeleted = /^UPDATE thermus_admin\.tenants SET state = 'deleted', internal_url = NULL, updated_at = now\(\)\s+WHERE organization_id = \$1 AND state = \$2 AND state <> 'deleted' RETURNING organization_id$/;
-const markSuspended = /^UPDATE thermus_admin\.tenants SET state = 'suspended', updated_at = now\(\)\s+WHERE organization_id = \$1 AND state = 'live' RETURNING organization_id$/;
-const markResumed = /^UPDATE thermus_admin\.tenants SET state = 'deploying', updated_at = now\(\)\s+WHERE organization_id = \$1 AND state = 'suspended' AND render_service_id IS NOT NULL RETURNING organization_id$/;
+const markDeleted = /^UPDATE thermus_admin\.tenants SET state = 'deleted', internal_url = NULL, updated_at = now\(\)\s+WHERE organization_id = \$1 AND state = \$2 AND state <> 'deleted' AND render_service_id IS NOT DISTINCT FROM \$3 RETURNING organization_id$/;
+const markSuspended = /^UPDATE thermus_admin\.tenants SET state = 'suspended', updated_at = now\(\)\s+WHERE organization_id = \$1 AND state = 'live' AND render_service_id = \$2 RETURNING organization_id$/;
+const markResumed = /^UPDATE thermus_admin\.tenants SET state = 'deploying', updated_at = now\(\)\s+WHERE organization_id = \$1 AND state = 'suspended' AND render_service_id = \$2 RETURNING organization_id$/;
 const recordDigest = /^UPDATE thermus_admin\.tenants SET image_digest = \$3, updated_at = now\(\)\s+WHERE organization_id = \$1 AND render_service_id = \$2 AND state = 'live' RETURNING organization_id$/;
 const lock = 'LOCK TABLE thermus_admin.tenants IN SHARE ROW EXCLUSIVE MODE';
 const count = /^SELECT state, count\(\*\)::integer AS rows, bool_or\(organization_id = \$1\) AS current\s+FROM thermus_admin\.tenants GROUP BY state$/;
@@ -70,30 +70,32 @@ test('Given a registry that cannot be read, when the fleet is read, then the rea
   assert.deepEqual(releases, [true]);
 });
 
-test('Given a row in the state that the caller read, when it is marked deleted, then one UPDATE from that state ends its route', async (t) => {
+test('Given a row in the state and on the service that the caller read, when it is marked deleted, then one UPDATE from that state and that service ends its route', async (t) => {
   const { store, queries } = fleetStore(t, changed(markDeleted));
-  assert.deepEqual(await store.markDeleted('org_01A', 'suspended'), { status: 'recorded' });
+  assert.deepEqual(await store.markDeleted('org_01A', 'suspended', 'srv-a'), { status: 'recorded' });
   assert.match(queries[0]?.text ?? '', markDeleted);
-  assert.deepEqual(queries[0]?.values, ['org_01A', 'suspended']);
+  assert.deepEqual(queries[0]?.values, ['org_01A', 'suspended', 'srv-a']);
+  assert.deepEqual(await store.markDeleted('org_01A', 'requested', null), { status: 'recorded' }, 'A row without a service binds to no service');
+  assert.deepEqual(queries[1]?.values, ['org_01A', 'requested', null]);
 });
 
 test('Given a row that another writer moved, or a write that fails, when it is marked deleted, then the result is moved or unavailable', async (t) => {
   const moved = fleetStore(t, () => []);
-  assert.deepEqual(await moved.store.markDeleted('org_01A', 'live'), { status: 'moved' });
+  assert.deepEqual(await moved.store.markDeleted('org_01A', 'live', 'srv-a'), { status: 'moved' });
   const failed = fleetStore(t, () => new Error('connection reset'));
-  assert.deepEqual(await failed.store.markDeleted('org_01A', 'live'), { status: 'unavailable' });
+  assert.deepEqual(await failed.store.markDeleted('org_01A', 'live', 'srv-a'), { status: 'unavailable' });
 });
 
-test('Given a live row, when it is marked suspended, and a suspended row with a service, when it is marked resumed, then each UPDATE names its start state', async (t) => {
+test('Given a live row, when it is marked suspended, and a suspended row, when it is marked resumed, then each UPDATE names its start state and the service that the caller read', async (t) => {
   const suspended = fleetStore(t, changed(markSuspended));
-  assert.deepEqual(await suspended.store.markSuspended('org_01A'), { status: 'recorded' });
-  assert.deepEqual(suspended.queries[0]?.values, ['org_01A']);
+  assert.deepEqual(await suspended.store.markSuspended('org_01A', 'srv-a'), { status: 'recorded' });
+  assert.deepEqual(suspended.queries[0]?.values, ['org_01A', 'srv-a']);
   const resumed = fleetStore(t, changed(markResumed));
-  assert.deepEqual(await resumed.store.markResumed('org_01A'), { status: 'recorded' });
-  assert.deepEqual(resumed.queries[0]?.values, ['org_01A']);
+  assert.deepEqual(await resumed.store.markResumed('org_01A', 'srv-a'), { status: 'recorded' });
+  assert.deepEqual(resumed.queries[0]?.values, ['org_01A', 'srv-a']);
   const notLive = fleetStore(t, () => []);
-  assert.deepEqual(await notLive.store.markSuspended('org_01A'), { status: 'moved' });
-  assert.deepEqual(await notLive.store.markResumed('org_01A'), { status: 'moved' });
+  assert.deepEqual(await notLive.store.markSuspended('org_01A', 'srv-a'), { status: 'moved' });
+  assert.deepEqual(await notLive.store.markResumed('org_01A', 'srv-a'), { status: 'moved' });
 });
 
 test('Given a live row on the service of the upgrade, when the digest is recorded, then one UPDATE names the service and the live state', async (t) => {

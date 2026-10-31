@@ -323,18 +323,28 @@ commands of the answers of 27 October 2026:
 | `list` | One line for each row of the registry whose service name starts with `TENANT_NAME_PREFIX`, or that has no service yet: the organization, the state, the plan, the service, the digest, the last use, the update time, and the failure reason. | none |
 | `status --organization <id>` | The row of the organization, its newest deploy on Render, and its internal address. | none |
 | `request --organization <id>` | Reads the organization in WorkOS and refuses an organization that WorkOS does not have. Without a row, it inserts a `requested` row inside `FREE_TENANT_LIMIT`, as signup and the gateway do. A `deleted` row becomes `requested` again inside the cap, as a new request without its old service: the repair "delete, then request". A row in another state stays as it is. The provisioner of the control plane then creates the service. | the registry |
-| `upgrade --image <reference@sha256:...> (--organization <id> \| --all) [--batch-size 1..3]` | Deploys the image by digest to the live tenants of the prefix with the Render API deploy with `imageUrl`, in batches of at most three (default three). The deploys of a batch go one after the other, then the batch waits until each deploy is live or failed, every 5 s for at most 15 minutes. A deploy that reaches `live` counts as healthy, and the registry records its digest. The upgrade stops after the first batch with a deploy that does not reach live; later batches do not start. A suspended tenant is left as it is. | Render, the registry |
-| `suspend --organization <id>` | Suspends the service of a `live` tenant, then sets the row `suspended`. | Render, the registry |
-| `resume --organization <id>` | Resumes the service of a `suspended` tenant, sets the row `deploying`, waits until the deploy of the resume is live, and sets the row `live`. | Render, the registry |
-| `delete --organization <id>` | Deletes the Render service of the tenant through the adapter, then sets the row `deleted` from the state that it read. A row without a service only becomes `deleted`. The weekly organization sweep of the control plane uses the same removal. | Render, the registry |
+| `upgrade --image <reference@sha256:...> (--organization <id> \| --all) [--batch-size 1..3]` | Deploys the image by digest to the live tenants of the prefix with the Render API deploy with `imageUrl`, in batches of at most three (default three). The deploys of a batch go one after the other, then the batch waits until each deploy is live or failed, every 5 s for at most 15 minutes. The wait follows the deploy that Render names in its `201` answer; a newer deploy with another ID superseded it, which stops the upgrade. After a `202` answer without the deploy, the wait takes the first new deploy, and the line says that its identity is unconfirmed. A deploy that reaches `live` counts as healthy, and the registry records the digest only when that deploy names the requested digest. A live deploy without a digest (`digest unconfirmed`) or with another digest leaves the registry digest as it is. The upgrade stops after the first batch with a deploy that does not reach live with the requested digest; later batches do not start. A suspended tenant is left as it is. | Render, the registry |
+| `suspend --organization <id>` | Suspends the service of a `live` tenant, then sets the row `suspended` from `live` on that service. A suspended tenant costs nothing. Until SO-10 connects the resume operation of the gateway, only `resume` brings it back: each MCP call of the organization gets `503` with `Retry-After: 60`, and its failed resume writes one operator report (`MCP gateway refusal:` with `resumeFailure`). | Render, the registry |
+| `resume --organization <id>` | Resumes the service of a `suspended` tenant, sets the row `deploying` on that service, waits until the first new deploy after the resume is live, and sets the row `live` on that service. Render names no deploy in the answer of a resume, so the line says that the identity of that deploy is unconfirmed. Until SO-10, this is the only way back for a suspended tenant. | Render, the registry |
+| `delete --organization <id>` | Deletes the Render service of the tenant through the adapter, then sets the row `deleted` from the state and the service that it read. A row that another writer changed meanwhile, also a new provision of the organization with a new service, stays as it is. A row without a service only becomes `deleted`. The weekly organization sweep of the control plane uses the same removal. | Render, the registry |
 | `summary` | Prints the line of the daily summary of the control plane, `Tenant fleet summary: <JSON>`, made now from this registry, Render, and WorkOS. | none |
 
 Each write command prints what it will do and waits for one answer. Only the
 exact answer `yes` lets the write go; another answer, or the end of the
 input, writes nothing. A write that the platform refuses or cannot do changes
 no row. The registry follows the platform: the service changes first, and
-then the row changes only from the state that the command read, so a change
-of the provisioner or the gateway at the same time is not overwritten.
+then the row changes only from the state and the service that the command
+read, so a change of the provisioner or the gateway at the same time is not
+overwritten. A delete, a revive, and a new provision give the row a new
+service, so a slow command cannot change the replacement row, also when it is
+in the same state again (manager decision of 31 October 2026).
+
+A suspended tenant stays suspended until the operator runs `resume`. The MCP
+gateway tries one resume for each call of a suspended tenant, but until SO-10
+connects its resume operation to the Render API, that resume fails: the row
+goes back to `suspended`, the client gets `503` with `Retry-After: 60`, and the
+system log gets one operator report. So suspend a tenant only when its
+organization can wait for the operator (owner decision of 31 October 2026).
 
 Settings, from the environment. Each refusal names the variable, never its
 value, and the script never prints a key:

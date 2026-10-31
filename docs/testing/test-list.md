@@ -32,11 +32,15 @@ request records the runs.
   failed platform read that the line names.
 - `test/integration/tenants/organization-sweep.runtime.ts` runs the sweep, the
   revive of a deleted row inside the cap, and the fleet statements with their
-  start states on the real registry store on disposable PostgreSQL 17. It runs
-  in `npm run test:logging:postgres`.
+  start states on the real registry store on disposable PostgreSQL 17. One case
+  replaces a live row by a delete, a revive, and a new provision with another
+  service; then the stale delete, suspend, resume, and live record of the old
+  service are moved, and the row stays with the new service (manager decision of
+  31 October 2026). It runs in `npm run test:logging:postgres`.
 - `test/unit/tenants/organization-sweep.test.ts`, `fleet-summary.test.ts`,
   `tenant-sweeps.test.ts`, `tenant-removal.test.ts`, `pg-tenant-fleet-store.test.ts`,
-  and the revive cases of `tenant-requests.test.ts`;
+  `fleet-deploy-wait.test.ts` (the deploy wait that the upgrade and the resume
+  of the fleet script share), and the revive cases of `tenant-requests.test.ts`;
   `test/unit/render/render-fleet-operations.test.ts`;
   `test/unit/auth-workos/workos-organization-inventory.test.ts`; and
   `test/unit/config/tenant-sweep-config.test.ts` with the new cases of
@@ -1188,9 +1192,9 @@ A fake of the tenant platform, the registry fake, a virtual clock, and a spy of 
 [V] One service of the name is taken without a create; two services, a refused create, and a failed deploy give `failed` with the reason and one operator report
 [V] A create without a clear answer waits 30 s and searches by name before another create; a rate-limited create waits the given time, at most one hour; three attempts without a service, or three unavailable service lists, give `failed`
 [V] The newest deploy is read every 5 s for at most 15 minutes, 180 reads; a live deploy waits for the internal address; a gone service fails the row
-[V] A `deploying` row after a resume goes `live` without a create; a `deploying` row without a service ID fails
+[V] A `deploying` row after a resume goes `live` without a create; a `deploying` row without a service ID fails; a row that another writer gave a new service during the watch is left with that service, and the live deploy of the old service records nothing
 [V] An idle loop reads the registry every 5 s; an unreadable registry, a failed write, and an unexpected failure log one error and wait 60 s; a row that changed elsewhere is left; a failure that the registry cannot record is reported once it is recorded; a stop leaves the row for the next start
-[V] The claim selects with `FOR UPDATE SKIP LOCKED` in one transaction and moves the oldest requested row to `creating` with its name and plan; a resumed row keeps its name; each record names the state that it starts from; a failure reason is bounded to 1000 characters; the write guard owns a service ID only when a row has it
+[V] The claim selects with `FOR UPDATE SKIP LOCKED` in one transaction and moves the oldest requested row to `creating` with its name and plan; a resumed row keeps its name; each record names the state that it starts from, and the live record the service of the work too; a failure reason is bounded to 1000 characters; the write guard owns a service ID only when a row has it
 
 **Render adapter** (`test/unit/render/render-tenant-platform.test.ts`)
 
@@ -1211,16 +1215,18 @@ The same stub of `fetch` and virtual clock, in `test/unit/render/fixtures/render
 [V] The memory read names each service in one memory read and one memory-limit read for the window, with a point every 600 s, and gives the peak and the limit of each service; no service makes no request; a failed, invalid, or not-bytes answer is unavailable
 [V] The restart count reads the events of the window, follows the cursor of a full page up to 10 pages, and counts `server_failed` and `server_restarted` inside the window only; a `404` is gone
 
-**Tenant sweeps and fleet statements** (`test/unit/tenants/organization-sweep.test.ts`, `fleet-summary.test.ts`, `tenant-sweeps.test.ts`, `tenant-removal.test.ts`, `pg-tenant-fleet-store.test.ts`, `tenant-requests.test.ts`)
+**Tenant sweeps and fleet statements** (`test/unit/tenants/organization-sweep.test.ts`, `fleet-summary.test.ts`, `tenant-sweeps.test.ts`, `tenant-removal.test.ts`, `pg-tenant-fleet-store.test.ts`, `tenant-requests.test.ts`, `fleet-deploy-wait.test.ts`)
 
 A fake of the tenant platform, a fake of the organization inventory, the fleet registry fake, and a spy of the operator log; the SQL adapter runs on the real bounded runtime over a client double.
 
-[V] The sweep compares the rows that are not deleted with a complete list, reads each left-out organization by ID, and removes the tenant only when the read says absent: the platform deletes the service first, then the row becomes `deleted` from the state that the sweep read, with one `Tenant removal record:` line
+[V] The sweep compares the rows that are not deleted with a complete list, reads each left-out organization by ID, and removes the tenant only when the read says absent: the platform deletes the service first, then the row becomes `deleted` from the state and the service that the sweep read, with one `Tenant removal record:` line
 [V] An empty list, or more than 2 absent rows that are not deleted (also `creating` and `deploying` rows), stops the sweep before any read by ID, delete, or row change, with one `Organization sweep stopped:` line with `reason`, `rows`, `organizations`, and `absent`; also an empty list without a row; two absent rows are both removed
-[V] A list that is not complete or a registry that cannot be read deletes nothing and gives one `Organization sweep stopped:` line; a deleted row is not read or deleted again; a found, unreadable, `creating`, or `deploying` row stays; a failed removal is reported and the next row goes on; a row that moved is left for the next sweep; the sweep runs on the Monday tick only
+[V] A list that is not complete or a registry that cannot be read deletes nothing and gives one `Organization sweep stopped:` line; a deleted row is not read or deleted again; a found, unreadable, `creating`, or `deploying` row stays; a failed removal is reported and the next row goes on; a row that moved, also a replacement with a new service in the same state, is left for the next sweep; the sweep runs on the Monday tick only
 [V] The summary counts the rows that are not deleted by state and plan with 7 USD a month for a running free tenant and 25 USD for another plan, reads the memory of all live tenants in one read and the restarts of each, names each read that failed, counts the default-role memberships and lists the first 50, and gives no record without the registry
 [V] The runner ticks each day at the hour in UTC, runs the steps of that day in their order, reports a failed step and runs the next one, and ends at the stop
-[V] The fleet statements name their start states: deleted from the state that the caller read (the route goes), live to suspended, suspended to deploying, the digest of a live row on its service, and the revive of a deleted row under the registry lock inside the cap as a new request
+[V] The fleet statements name their start states and the service that the caller read: deleted from the state and the service that the caller read (the route goes; a row without a service binds to none), live to suspended and suspended to deploying on that service, the digest of a live row on its service, and the revive of a deleted row under the registry lock inside the cap as a new request; a removal whose row a delete, a revive, and a new provision replaced with another service in the same state is moved, and the replacement stays
+[V] The deploy wait of the fleet writes follows the deploy that a `201` answer names until it is live or failed, and a newer deploy with another ID superseded it; after a `202` answer, and after a resume, it takes the first deploy other than the newest one before the write, with an unconfirmed identity; the deploy from before the write, a failed read, and no deploy are pending; a gone service ends it, and it stops after 15 minutes with the last state seen
+[V] An upgrade deploy may record its digest only when the live deploy names the requested digest; a live deploy without a digest or with another digest stops the upgrade and the registry keeps its digest; a failed read before the write, or a deploy call that the platform does not take, starts nothing and gives the reason
 
 **Organization inventory of WorkOS** (`test/unit/auth-workos/workos-organization-inventory.test.ts`)
 

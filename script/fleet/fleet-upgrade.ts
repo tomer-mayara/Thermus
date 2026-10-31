@@ -1,14 +1,16 @@
 // The upgrade command: one or all live tenants of the prefix deploy one image by digest, in batches of at most three
 // (answer 5 of 27 October 2026). The deploys of a batch go one after the other, then the batch waits until each deploy
-// is live or failed. A deploy that reaches live counts as healthy, and the registry records its digest. The upgrade
-// stops at the first batch with a deploy that does not reach live: the later batches do not start, and nothing is
-// deployed again. A suspended tenant is left as it is.
+// is live or failed. The wait follows the deploy that the answer of Render names; after an answer without the deploy,
+// it takes the first new deploy, whose identity stays unconfirmed (manager decision of 31 October 2026). A deploy that
+// reaches live counts as healthy, but the registry records its digest only when that deploy names the requested digest.
+// The upgrade stops at the first batch with a deploy that does not reach live, that a newer deploy superseded, or that
+// names no digest or another digest: the later batches do not start, and nothing is deployed again. A suspended tenant
+// is left as it is.
 import { systemClock } from '../../src/app/system-clock.ts';
 import { isImageByDigest } from '../../src/tenancy/providers/render/render-changes.ts';
+import { finishImageDeploy, imageDigestOf, startImageDeploy } from '../../src/tenancy/tenants/fleet-deploy-wait.ts';
 import type { FleetRow } from '../../src/tenancy/tenants/tenant-fleet-store.ts';
-import type { DeployStart } from '../../src/tenancy/tenants/tenant-platform.ts';
 import { confirmed } from './fleet-confirm.ts';
-import { newDeployOf, newestDeployId } from './fleet-deploys.ts';
 import type { CommandParts } from './fleet-reads.ts';
 import { counted, existingRow, FleetStepError, rowsOfPrefix, shortDigest } from './fleet-rows.ts';
 import { FleetUsageError } from './fleet-settings.ts';
@@ -27,13 +29,13 @@ type Upgraded = { readonly row: LiveRow; readonly ok: boolean; readonly text: st
 export async function upgradeTenants(parts: CommandParts, request: UpgradeRequest): Promise<void> {
   if (!isImageByDigest(request.image)) throw new FleetUsageError('--image must be an image reference by digest, such as ghcr.io/owner/name@sha256:<64 hexadecimal digits>.');
   const { live, suspended } = await targetsOf(parts, request);
-  const digest = request.image.slice(request.image.lastIndexOf('@') + 1);
+  const digest = imageDigestOf(request.image);
   const batches = batchesOf(live, request.batchSize);
   const plan = [
     `Upgrade ${counted(live.length, 'live tenant', 'live tenants')} of the prefix ${parts.prefix} to ${request.image}, in ${counted(batches.length, 'batch', 'batches')} of at most ${request.batchSize}:`,
     ...batches.flatMap((batch, index) => batch.map((row) => `  batch ${index + 1}: ${row.organizationId} ${row.serviceId} ${shortDigest(row.imageDigest)} -> ${shortDigest(digest)}`)),
     ...(suspended.length === 0 ? [] : [`Left as they are: ${counted(suspended.length, 'suspended tenant', 'suspended tenants')} (${suspended.join(', ')}). A resume deploys the image of the service settings.`]),
-    'Each deploy also sets the image of its service. The upgrade stops after the first batch with a deploy that does not reach live.',
+    'Each deploy also sets the image of its service. The upgrade stops after the first batch with a deploy that does not reach live with the requested digest.',
   ];
   if (live.length === 0) {
     plan.forEach((text) => parts.io.line(text));
@@ -41,7 +43,7 @@ export async function upgradeTenants(parts: CommandParts, request: UpgradeReques
     return;
   }
   if (!await confirmed(parts.io, plan)) return;
-  await runBatches(parts, batches, request.image, digest);
+  await runBatches(parts, batches, request.image);
 }
 
 async function targetsOf({ context, prefix }: CommandParts, request: UpgradeRequest): Promise<{ readonly live: readonly LiveRow[]; readonly suspended: readonly string[] }> {
@@ -55,11 +57,12 @@ async function targetsOf({ context, prefix }: CommandParts, request: UpgradeRequ
   return { live: rows.filter((row): row is LiveRow => row.state === 'live' && row.serviceId !== null), suspended: rows.filter((row) => row.state === 'suspended').map((row) => row.organizationId) };
 }
 
-async function runBatches(parts: CommandParts, batches: readonly (readonly LiveRow[])[], image: string, digest: string): Promise<void> {
+async function runBatches(parts: CommandParts, batches: readonly (readonly LiveRow[])[], image: string): Promise<void> {
+  const digest = imageDigestOf(image);
   let upgraded = 0;
   for (const [index, batch] of batches.entries()) {
     const started: (() => Promise<Upgraded>)[] = [];
-    for (const row of batch) started.push(await startDeploy(parts, row, image, digest));
+    for (const row of batch) started.push(await startDeploy(parts, row, image));
     const results = await Promise.all(started.map((wait) => wait()));
     for (const result of results) parts.io.line(`batch ${index + 1}: ${result.row.organizationId} ${result.row.serviceId}: ${result.text}`);
     upgraded += results.filter((result) => result.ok).length;
@@ -72,27 +75,19 @@ async function runBatches(parts: CommandParts, batches: readonly (readonly LiveR
 }
 
 // The deploy call of one tenant now, and the wait for its deploy later, so the deploys of a batch run at the same time.
-async function startDeploy({ context, signal }: CommandParts, row: LiveRow, image: string, digest: string): Promise<() => Promise<Upgraded>> {
+async function startDeploy({ context, signal }: CommandParts, row: LiveRow, image: string): Promise<() => Promise<Upgraded>> {
   const platform = await context.platform();
-  const previous = await newestDeployId(platform, row.serviceId, signal);
-  if ('failure' in previous) return async () => ({ row, ok: false, text: `not deployed: ${previous.failure}` });
-  const start = await platform.deployImage(row.serviceId, image, signal);
-  if (start.status !== 'started') return async () => ({ row, ok: false, text: `not deployed: ${startFailureOf(start)}` });
+  const start = await startImageDeploy(platform, { serviceId: row.serviceId, image }, signal);
+  if (start.status === 'not-started') return async () => ({ row, ok: false, text: `not deployed: ${start.reason}` });
+  const { started } = start;
   return async () => {
-    const deploy = await newDeployOf({ platform, clock: systemClock }, row.serviceId, previous.id, signal);
-    if (deploy.status === 'failed') return { row, ok: false, text: `did not reach live: ${deploy.reason}` };
-    const runs = deploy.deploy.imageDigest ?? digest;
-    if (runs !== digest) return { row, ok: false, text: `${deploy.deploy.id} is live with ${shortDigest(runs)}, not with ${shortDigest(digest)}` };
-    const recorded = await (await context.stores()).fleet.recordDigest(row.organizationId, row.serviceId, digest);
-    if (recorded.status !== 'recorded') return { row, ok: false, text: `${deploy.deploy.id} is live after ${deploy.seconds} s, but the registry did not record the digest (${recorded.status})` };
-    return { row, ok: true, text: `${deploy.deploy.id} live after ${deploy.seconds} s; digest recorded` };
+    const end = await finishImageDeploy({ platform, clock: systemClock }, started, signal);
+    if (end.status === 'stopped') return { row, ok: false, text: end.reason };
+    const live = `${end.deploy.id} live after ${end.seconds} s${end.identity === 'confirmed' ? '' : ' (Render answered without the deploy: identity unconfirmed)'}`;
+    const recorded = await (await context.stores()).fleet.recordDigest(row.organizationId, row.serviceId, started.digest);
+    if (recorded.status !== 'recorded') return { row, ok: false, text: `${live}, but the registry did not record the digest (${recorded.status})` };
+    return { row, ok: true, text: `${live}; digest recorded` };
   };
-}
-
-function startFailureOf(start: Exclude<DeployStart, { readonly status: 'started' }>): string {
-  if (start.status === 'gone') return 'the tenant service no longer exists';
-  if (start.status === 'rate-limited') return `Render limits the deploys of the service for ${Math.ceil(start.retryAfterMs / 1_000)} s`;
-  return start.status === 'unknown' ? `the deploy call got no clear answer (${start.reason}); a deploy can run, so read the status first` : start.reason;
 }
 
 function batchesOf<T>(items: readonly T[], size: number): readonly (readonly T[])[] {
