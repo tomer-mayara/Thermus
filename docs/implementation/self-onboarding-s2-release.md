@@ -112,15 +112,25 @@ Part B runs these checks on a clean checkout of `fa787be4` before the
 rehearsal. They follow the ticket and the
 [test gate policy](test-gate-policy.md#production-gates-for-source-changes).
 
+The manager ran the full set on 31 October 2026 on `3050d706`, the head of
+[#295](https://github.com/tomer-mayara/Thermus/pull/295) that the squash merge
+made into `fa787be4`: the
+[manager verification](https://github.com/tomer-mayara/Thermus/pull/295#issuecomment-6547815686) and the
+[Validation comment](https://github.com/tomer-mayara/Thermus/pull/295#issuecomment-6541269914) of #295. Part B checked the tree identity:
+`git rev-parse 3050d706^{tree}` and `git rev-parse fa787be4^{tree}` both give
+`081f5311b622a67dd33136aae9221b1599006798`. So that run is the run of the
+candidate, and part B did not repeat it. Part B ran only the Render interface
+gate, before step R1.
+
 | Check | Note | Result (UTC) |
 | --- | --- | --- |
-| `npm test`, `npm run typecheck`, `npm run build:user-portal` | The ordinary suite and the build checks. | — |
-| `npm run test:container` | The self-hosted container gate. | — |
-| `npm run build:hosted`, `npm run test:container:hosted` | Native AMD64. | Passed in run 41232469232: see [1.2](#12-release-candidate). |
-| `npm run test:hosted-live` | Through the WorkOS Staging launcher, with `LIGHTPANDA_BIN` of the pinned renderer. Never during the rehearsal ([3.2](#32-rules-of-the-rehearsal)). | — |
-| `npm run test:logging:postgres` | Includes the runtime files of SO-04 to SO-10. | — |
-| `npm run test:logging:collector` | The test gate policy asks for it for the Slice 2 release. | — |
-| `npm run test:interface:render` | The live interface command of SO-06. It makes real Render writes, and its preflight refuses to start while a `thermus-spike-*` service exists. Run it before step R1 or after the cleanup. | — |
+| `npm test`, `npm run typecheck`, `npm run build:user-portal` | The ordinary suite and the build checks. | Passed, manager round, 18:36:51 to 18:43:29: `npm run typecheck`; `npm test` 6,037 of 6,037 and portal 87 of 87, with 0 fail, cancelled, skipped, or todo. `npm run build:user-portal` ran in `npm run check` of `npm run build:hosted`. |
+| `npm run test:container` | The self-hosted container gate. | Passed, manager round, 18:43:29 to 18:44:57: 11 of 11. |
+| `npm run build:hosted`, `npm run test:container:hosted` | Native AMD64. | Passed in run 41232469232: see [1.2](#12-release-candidate). The manager round also ran `npm run build:hosted` on the Mac, 18:44:57 to 18:47:24: unit 3,962, portal 59 and 28, integration 1,260, selection 222, renderer 13. |
+| `npm run test:hosted-live` | Through the WorkOS Staging launcher, with `LIGHTPANDA_BIN` of the pinned renderer. Never during the rehearsal ([3.2](#32-rules-of-the-rehearsal)). | Passed, manager round, 18:49:42 to 19:01:29: 30 of 30 in 9 suites, 704 s. Part B did not run it. |
+| `npm run test:logging:postgres` | Includes the runtime files of SO-04 to SO-10. | Passed, manager round, 18:47:38 to 18:49:42: 60 of 60. |
+| `npm run test:logging:collector` | The test gate policy asks for it for the Slice 2 release. | Passed, manager round, 18:47:24 to 18:47:38: 10 of 10. |
+| `npm run test:interface:render` | The live interface command of SO-06. It makes real Render writes, and its preflight refuses to start while a `thermus-spike-*` service exists. Run it before step R1 or after the cleanup. | Passed, part B, 20:26:45 to 20:29:21: 1 of 1, as `npm run build` and then `node --env-file=<main checkout>/.env.local --test dist/test/interface/render/render-tenant-platform.live.js`. Two creates answered `201` after 2.6 and 2.8 s; the deploys were `live` 71.2 and 79.4 s after the create calls; the slugs were `thermus-spike-tenant-org` and `thermus-spike-tenant-org-5efd`; the deletes took 0.5 and 0.9 s. |
 
 ## 2. Before production
 
@@ -141,11 +151,11 @@ that hosted early access is free, with no payment card.
 | Input | State |
 | --- | --- |
 | Staging database | Done on 31 October 2026: see [3.3](#33-resources). |
-| CA certificate of the staging database | The manager gives part B the path of the PEM file. It is outside the repository. |
-| WorkOS Staging redirect URI of the staging control plane | Open. The owner adds `https://<public host>/callback` in the WorkOS dashboard when part B gives the public host (step R3). |
+| CA certificate of the staging database | The manager gives part B the path of the PEM file. It is outside the repository. Done: part B checked the SHA-256 fingerprint of the file against [3.3](#33-resources), and its database reads verified TLS with it. |
+| WorkOS Staging redirect URI of the staging control plane | Open. The owner adds `https://<public host>/callback` in the WorkOS dashboard when part B gives the public host (step R3). The first run of 31 October 2026 got the host `thermus-spike-control.onrender.com` and stopped at R1, before R3. |
 | Render key of the staging control plane | The fleet key: `RENDER_API_KEY` in `/Users/tomermayara/git/Thermus/.env.local` (owner decision of 31 October 2026). |
 | Axiom token of the staging system log | `AXIOM_API_KEY` in the same file, which the OTel logger tests use to ingest into `system-log-test`. If the owner wants a token for `system-log-test` only, the owner adds it to the same file under a new name. |
-| A time window | The owner confirms that no hosted live gate, work slice, probe, or Render interface gate runs during the rehearsal ([3.2](#32-rules-of-the-rehearsal)). |
+| A time window | The owner confirms that no hosted live gate, work slice, probe, or Render interface gate runs during the rehearsal ([3.2](#32-rules-of-the-rehearsal)). Done on 31 October 2026: the owner wrote "Yes. No hosted live gate, work slice, or probe runs until the rehearsal ends." |
 
 ### 3.2 Rules of the rehearsal
 
@@ -449,6 +459,157 @@ Do the cleanup at the end, and also after a failure. Order:
 | Registry rows | Before step 5 of the cleanup: `SELECT state, count(*) FROM thermus_admin.tenants GROUP BY state` gives `deleted` only. After it: the Supabase dashboard of the organization "Thermus" lists no project `thermus-staging-rehearsal`. |
 | Secrets | No key file, token file, or `.env` file of the rehearsal is left on disk outside `.env.local`; the record and the pull requests hold no secret. |
 
+### 3.7 Part B findings
+
+Part B ran two times on 31 October 2026 (UTC). It used the helper
+[`rehearsal.ts`](../../script/release/rehearsal/rehearsal.ts)
+([Rehearse the SO-12 release](../../script/README.md#rehearse-the-so-12-release))
+for the calls that the fleet script, the release workflow, and the probes do
+not make. The [record](#7-record) has the result of each step, with the run.
+
+- **Run 1**, run ID `20261031-2029`: R0 passed, and R1 failed (item 1 below).
+  Steps R2 to R14 did not run, and the cleanup ran.
+- **Run 2**, run ID `20261031-2052`, in the changed order of the manager
+  decision below.
+
+**Manager decision of 31 October 2026.** Run the rehearsal again in this order:
+
+1. R1': create `thermus-spike-control` as a Git build, as R1 says, with the
+   same variables, the secret file, and `autoDeploy: no`, and record the
+   service ID, the `slug`, the public host, and the first deploy ID. Do not
+   wait for the Git build, and do not depend on it: the check of R1 on the Git
+   build is dropped for this run. The case of item 1 depends on the timing of
+   the builder of Render; a fix of the case is a separate source pull request
+   that the manager proposes to the owner. If the first deploy is still
+   building at R4, cancel it with
+   `POST /v1/services/<ID>/deploys/<deploy ID>/cancel`, and record that.
+2. R4 at once, with the same checks.
+3. R5.
+4. R2: correct the host variables if the public host differs from the guess,
+   and deploy again with the workflow, or record that nothing changed.
+5. R3: the owner adds the redirect URI
+   `https://thermus-spike-control.onrender.com/callback` before part B reaches
+   R3. If the redirect list holds the URI of the actual public host, part B
+   records it and goes on with R3b without a stop; else part B stops and names
+   the URI.
+6. R6 to R14 and the cleanup, as written. The check that the sign-in of the
+   portal starts with the redirect URI of the public host moves from R2 to the
+   first sign-in of R6.
+
+The consequence: run 2 does not rehearse a live Git build of the staging
+control plane. Production runs a Git build today, and item 1 stands. R14 still
+measures the switch back to the Git build, as a measure only.
+
+What differed from the expected values:
+
+1. **R1 stopped run 1.** The first Git build of `main` (`c40b9912`, the
+   candidate and the documents of part A) ended as `build_failed` 262 s after
+   the create call. The check stage of `Dockerfile.hosted`
+   (`npm run build:hosted` under `--network=none`) failed one test of the 222
+   tests of its acceptance selection: in `hosted-tenant-capacity.test.js`, the
+   case of `OPERATION_CAPACITY=5` got two `busy` events at the relay, not one.
+   The same commit passed the same build in the hosted image run
+   [41237416820](https://github.com/tomer-mayara/Thermus/actions/runs/41237416820)
+   on GitHub (20:07 to 20:13 UTC). The candidate `fa787be4`, with the same
+   source and tests, passed `npm run build:hosted` in run 41232469232 and in
+   the manager round. So the case depends on the timing of the build machine:
+   on the builder of Render it took 11.6 s. The effects:
+   - In run 1, steps R2 to R14 did not run, and the cleanup ran. Run 2 used
+     the changed order of the manager decision above.
+   - Production builds from Git today, with the same `Dockerfile.hosted`. A Git
+     deploy of production can fail in the same way until step 5 moves
+     production to the image. A rollback to a Git build meets the same check.
+   - A new run of R1 can pass, because the case passed in the other
+     environments, but the result of one build is not certain. A change of the
+     case is a source change outside this documents-only pull request:
+     [#302](https://github.com/tomer-mayara/Thermus/pull/302), merged on
+     31 October 2026, now counts the relayed events of the case one time for
+     each operation ID.
+2. **Many measured values match.** The Render interface gate passed, with
+   deploys `live` 71.2 and 79.4 s after their create calls, and the tenants
+   of run 2 were `live` about 77 s (A) and 90 s (B) after their create calls
+   (expected 71 to 104 s). Each image deploy of the staging control plane
+   was `live` 24.6 to 29.6 s after its call (expected 30 to 36 s), and each
+   health check answered `200` at the first request, with no `502`. The public host was
+   the guessed host `thermus-spike-control.onrender.com` in both runs, so R2
+   changed nothing. The fleet upgrade deploys were `live` after 21 to 46.8 s.
+   A deleted organization answered `404` 7.2 s after its delete (expected
+   6.6 s, once 77 s).
+3. **`.env.local` holds the WorkOS values of another environment.** Its
+   `WORKOS_CLIENT_ID` is the client of WorkOS Production
+   (`client_01M4VDKC291XX3CDEFP5ZKY5KP`). The WorkOS Staging launcher sets the
+   Staging values first, and `node --env-file` keeps them. A command that runs
+   with `node --env-file` but without the launcher gets the values of the file.
+   The helper refuses each client ID and issuer that is not of WorkOS Staging.
+   Run the fleet commands `request` and `summary` of the rehearsal only through
+   the launcher, as [Operate the tenant fleet](../../script/README.md#operate-the-tenant-fleet)
+   says.
+4. **The words of `https://example.com/` changed.** In run 2, each answer
+   was 957 characters and started "This domain is for use in documentation
+   examples"; "Example Domain" was absent. The helper uses the marker of the
+   hosted image gate (`documentation examples|illustrative examples|Example Domain`),
+   as [`hosted-image.test.ts`](../../test/acceptance/auth/hosted-image.test.ts)
+   does. The manager decided on 31 October 2026 that each check of R6 to R14
+   that names "Example Domain" counts as passed with this marker. The same
+   pull request corrects the expected words of the test call in the
+   [free subscription guide](../free-subscription-guide.md#4-test-a-real-thermus-call)
+   and in the check of step 8. The checks of [3.5](#35-runbook) keep the
+   words with which the rehearsal ran.
+5. **A new tenant refuses calls for about 75 s after `live`.** In R8, the
+   row of A was `live` at 21:15:36, and four calls from 21:15:47 to 21:16:37
+   got `MCP gateway tenant restart:` lines at the level ERROR, with
+   `"cause":"connection"`; the call at 21:16:52 answered. SO-03 measured the
+   same window for the private address of a new web service: refused 16.5 s
+   after `live`, answered 76.4 s after it. The effects:
+   - The Axiom monitor Tenant restart of
+     [runbook 7.3](tenant-fleet-runbooks.md#73-axiom-monitors) matches each
+     of these lines, so the first calls of a new tenant can send emails that
+     do not mean a restart.
+   - Connect shows the connection guide when the row is `live`, about 10 s
+     later, so a new member can connect in the window and get "Server
+     restarted. Try again in a minute.". For the discovery request of the
+     MCP client, the gateway gives a JSON-RPC error, which the client of the
+     helper reported as a failed protocol negotiation.
+   - After a resume (R11), the calls 1.4 s and 12 s after `live` answered,
+     with no restart line.
+6. **Two provisioner loops run during a deploy of the control plane.** Render
+   stopped the old instance about 120 s after the new deploy was `live`
+   (21:21:51.9 after 21:19:52.2 in R9, and 21:36:08.4 after 21:34:08.7 in
+   R14), not 60 s as [runbook 5.2](tenant-fleet-runbooks.md#52-gateway-key-pair)
+   step 5 says. In R9, both instances ran the provisioner: the new one
+   recorded the service of B at 21:20:29.8, and the old one claimed the same
+   row 0.4 s later (`deploying`, `resumed`); the new one recorded `live`, and
+   no second service came. The claim takes a `creating` row, and a
+   `deploying` row without an address, at once, so a claim during the create
+   call of the other loop can make a second service with the same name; the
+   provisioner then stops the row with `2 services of the platform have the
+   name`. [Plan section 7](self-onboarding-plan.md#7-risks-and-limits) counts
+   one instance of the control plane and says that a second instance needs a
+   shared claim for the loops; each deploy of the control plane runs two
+   instances for about 2 minutes. In R14, the old instance with the switch on
+   also ran its loop and its sweeps for 2 minutes after the deploy that turned
+   the switch off.
+7. **Render calls of steps 5 and 6.** R4 showed that Render accepts the
+   switch of a Git build service to the image with one `PATCH` and starts no
+   deploy; the release workflow then deploys the image. So item 12 of
+   [section 6](#6-owner-steps-outstanding) needs no decision. R14 showed that
+   Render also accepts the switch back to the Git build, and starts no deploy;
+   the next Git deploy would meet item 1. In R7, the 16 variable updates went
+   through the API in a bucket of 100 writes, and Render started no deploy in
+   180 s, so the deploy after them is a step of its own.
+8. **Resume times.** The resume deploys of R11 were `live` 39 s and 22.8 s
+   after the resume (expected 12 to 29 s). The first answer came 46 s and
+   40.6 s after the first call; the `Retry-After: 60` of the gateway covers
+   both. In R9, the connection guide showed 103.5 s after **Create
+   organization**, inside the "about two minutes" of the setup words.
+9. **R3a needed a second entry.** After the owner reported the redirect URI,
+   the redirect list of the Staging application did not hold it, and AuthKit
+   answered the sign-in start with `/redirect-uri-invalid`. Run 2 stopped at
+   R3a, and the manager added the URI through the WorkOS connector
+   (`redir_01M69WDTZHN880TX6KV645D8P8`). In a later rehearsal, read the
+   redirect list of the Staging application and try the sign-in start once
+   before R3b.
+
 ## 4. Production order
 
 Each step starts only after the owner's go-ahead. Write the go-ahead and the
@@ -570,8 +731,10 @@ The new settings are read only with the switch on (answer 6 of 27 October
   reads the `slug` of the production service and checks the start.
 - **Before:** items 1, 4, 9, and 10 of [section 6](#6-owner-steps-outstanding).
 - **Action:** in one save of the Environment page of the production service,
-  set these variables, then select **Save and deploy** (step R7 recorded
-  whether a variable update starts a deploy by itself):
+  set these variables, then select **Save and deploy**. Step R7 showed that a
+  variable update through the API starts no deploy ([3.7](#37-part-b-findings),
+  item 7): so the owner uses **Save and deploy** in the dashboard, or the agent
+  dispatches the workflow deploy of the current digest again after the save.
 
   | Variable | Value |
   | --- | --- |
@@ -599,13 +762,22 @@ The new settings are read only with the switch on (answer 6 of 27 October
   `Listening on` line in `system-log`, and the Render log has no
   `System log export failed:` line. Then the owner makes the monitor Tenant
   restart ([runbook 7.4](tenant-fleet-runbooks.md#74-owner-steps-for-the-alerts),
-  step 4).
+  step 4). A new tenant refuses calls for about 75 s after its row is `live`,
+  and it writes `MCP gateway tenant restart:` lines at the level ERROR in that
+  window ([3.7](#37-part-b-findings), item 5). So the owner expects an email
+  of this monitor for each new tenant, until the monitor or the gateway is
+  changed ([section 6](#6-owner-steps-outstanding), item 15).
 - **Go-ahead:** —
 - **Result:** —
 
 ### Step 7. One real MCP call for each kept organization
 
 - **Who:** the owner, with a member of each kept organization.
+- **Before:** the old instance of the control plane has stopped, about two
+  minutes after the deploy of step 6 is `live`. Until then, two provisioner
+  loops run, and in R9 the old loop claimed a row a second time
+  ([3.7](#37-part-b-findings), item 6). The Render log shows
+  `Stopping after SIGTERM` for the old instance.
 - **Action:** a member of each kept organization makes one MCP call. The first
   call gets `503` with `Retry-After: 15`, and the provisioner makes the tenant.
   The member calls again after about two minutes. A portal visit of a member
@@ -633,8 +805,11 @@ The new settings are read only with the switch on (answer 6 of 27 October
   client and call the tool, as sections 3 and 4 of the guide say.
 - **Check:** Quick start opens. Connect shows the setup words, then the
   connection guide. The organization has a `live` tenant, and the MCP call
-  answers "Example Domain". The owner decides to keep or remove the canary
-  organization ([runbook 4](tenant-fleet-runbooks.md#4-deletion-of-a-tenant)).
+  answers with the Markdown of example.com: today it starts with "This domain
+  is for use in documentation examples". The hosted image gate accepts
+  "documentation examples", "illustrative examples", or "Example Domain"
+  ([3.7](#37-part-b-findings), item 4). The owner decides to keep or remove
+  the canary organization ([runbook 4](tenant-fleet-runbooks.md#4-deletion-of-a-tenant)).
 - **Go-ahead:** —
 - **Result:** —
 
@@ -712,9 +887,10 @@ publishes the revert.
 | 9 | Set the Render failure emails ([runbook 7.2](tenant-fleet-runbooks.md#72-render-failure-emails)). Make the Axiom email notifier and the three monitors in the order of [runbook 7.4](tenant-fleet-runbooks.md#74-owner-steps-for-the-alerts) and [7.3](tenant-fleet-runbooks.md#73-axiom-monitors). | Emails before step 5; notifier at step 6; monitors at steps 6 and 10 |
 | 10 | Make the gateway key pair on the Mac of the owner, and enter it in the Render dashboard ([runbook 5.2](tenant-fleet-runbooks.md#52-gateway-key-pair), step 1). Delete the key files after step 6. | Step 6 |
 | 11 | Decide the window of the signup switch around step 8. | Step 8 |
-| 12 | If step R4 shows that Render cannot switch a Git build to an image, decide the path of step 5. | Step 5 |
+| 12 | If step R4 shows that Render cannot switch a Git build to an image, decide the path of step 5. Answered by run 2 of the rehearsal: Render accepts the switch ([3.7](#37-part-b-findings), item 7), so no decision is needed. | Step 5 |
 | 13 | Review the copy of the marketing pull request, and give the go-ahead for its merge at step 9. | Step 9 |
 | 14 | At the monthly GHCR pruning, keep the candidate digest `sha256:8025ae1b…`, the rollback digest `sha256:bbee3f89…`, and the upgrade digest `sha256:fd8d747e…` until the release is complete ([runbook 5.5](tenant-fleet-runbooks.md#55-monthly-ghcr-pruning)). | Each pruning |
+| 15 | Open follow-ups of the rehearsal ([3.7](#37-part-b-findings), items 5 and 6). (a) A new tenant refuses calls for about 75 s after its row is `live` and writes `MCP gateway tenant restart:` lines at the level ERROR, so the monitor Tenant restart sends an email for each new tenant: change the monitor or the gateway. (b) During each deploy of the control plane, the old instance runs its provisioner loop for about two minutes, and in R9 it claimed a row a second time: decide a shared claim of the rows, which [plan section 7](self-onboarding-plan.md#7-risks-and-limits) names for a second instance. Until then, step 7 waits for the old instance to stop. | Open; no step of section 4 waits for it |
 
 ## 7. Record
 
@@ -723,23 +899,23 @@ no secret.
 
 | Step | Time (UTC) | Result | Evidence |
 | --- | --- | --- | --- |
-| 1.4 Application checks | — | — | — |
-| R0 Preflight | — | — | — |
-| R1 Git build of `thermus-spike-control` | — | — | — |
-| R2 Host settings | — | — | — |
-| R3 WorkOS Staging entries | — | — | — |
-| R4 Switch to the image | — | — | — |
-| R5 Deploy of the candidate | — | — | — |
-| R6 Organization A and the call with the switch off | — | — | — |
-| R7 Switch on | — | — | — |
-| R8 Provisioning of A | — | — | — |
-| R9 Signup of B | — | — | — |
-| R10 Suspend | — | — | — |
-| R11 Resume | — | — | — |
-| R12 Fleet upgrade | — | — | — |
-| R13 Organization removal | — | — | — |
-| R14 Rollback steps | — | — | — |
-| Cleanup | — | — | — |
+| 1.4 Application checks | 18:36:51 to 19:01:29 (manager round); 20:26:45 to 20:29:21 (Render interface gate) | Passed | [1.4](#14-application-checks-of-the-candidate-part-b): the manager round on `3050d706`, the same tree as `fa787be4` ([verification](https://github.com/tomer-mayara/Thermus/pull/295#issuecomment-6547815686)), and the Render interface gate of part B before step R1. |
+| R0 Preflight | Run 1: 20:29:59 to 20:30:32. Run 2: 20:53:01 to 20:53:05 | Passed in both runs. Run IDs `20261031-2029` and `20261031-2052`. | Run 2: the service list, the objects with the run ID, the OAuth resources, and the five tables gave the same answers as in run 1. Run 1: the owner confirmed the window ([3.1](#31-inputs-for-part-b)). The service list of Thermus AI held only `srv-db8mnqg473hc739d529g`. `rgc-dbg1h0142hec73da9ra0` (`ghcr-thermus-hosted-read`) has the registry `GITHUB` and the user `tomer-mayara`. WorkOS Staging, kept for the cleanup check: the redirect URIs `https://localhost:24443/callback` (default, `redir_01M5YQXX5MZ202HY1SJAXBR180`) and `https://localhost:46443/callback` (`redir_01M5Z30C8MKYE38WW92WNB2VR6`); the sign-out URIs `https://localhost:24443/` (default) and `https://localhost:46443/`; the initiate-login URI `https://localhost:24443/login`; the OAuth resources `https://localhost:24443/mcp` (`authkit_oauth_resource_01M5YQXZ9GZ4VVYFQYQZZXTP41`) and `https://localhost:46443/mcp` (`authkit_oauth_resource_01M5Z30RTN19ZAJGV5TR7HFPEM`). No organization, user, or Connect application held the run ID. With `STAGING_DATABASE_URL` and the CA, with verified TLS, the five tables of `thermus_admin` had 0 rows. The production variable `PORT` is `8080` (one read at 20:30:32). |
+| R1 Git build of `thermus-spike-control` | Run 1: 20:30:40 (create) to 20:35:04 (`build_failed`). Run 2 (R1'): 20:53:10 (create) to 20:53:21 (cancel) | Run 1: failed, the first deploy ended as `build_failed`, and run 1 stopped here. Run 2: R1' as the manager decision of 31 October 2026 says ([3.7](#37-part-b-findings)): created, the Git build canceled, and its check dropped. | Run 2: `POST /v1/services` answered `201` after 1.6 s, with `Ratelimit-Remaining` 16 of 20 and `Ratelimit-Reset` 409 s: service `srv-dbj5advf3r2c73f08rf0`, slug `thermus-spike-control`, public host `thermus-spike-control.onrender.com` (the guessed host), first deploy `dep-dbj5ae7f3r2c73f08sbg` (trigger `manual`, commit `c40b9912`, `build_in_progress`). `POST /v1/services/srv-dbj5advf3r2c73f08rf0/deploys/dep-dbj5ae7f3r2c73f08sbg/cancel` answered `200` after 0.2 s at 20:53:21; the deploy is `canceled`, finished at 20:53:21.4. Events: `build_started` and `deploy_started` at 20:53:12, `deploy_ended` and `build_ended` at 20:53:21. Run 1: `POST /v1/services` answered `201` after 2.3 s, with `Ratelimit-Remaining` 17 of 20 and `Ratelimit-Reset` 1,759 s: service `srv-dbj4vs6c6qcc73bfrgv0`, slug `thermus-spike-control`, public URL `https://thermus-spike-control.onrender.com` (the guessed host), first deploy `dep-dbj4vsmc6qcc73bfri00` (trigger `manual`, commit `c40b9912`). The create call held the 13 variables of R1 and the secret file `supabase-ca.crt`. The build ran `RUN --network=none npm run build:hosted` of `Dockerfile.hosted`: `npm run check` and the integration run (1,260 of 1,260) passed, and the acceptance selection failed 1 of 222: `dist/test/acceptance/mcp/hosted-tenant-capacity.test.js:59`, "Given OPERATION_CAPACITY=5 and 5 running calls, when a 6th call arrives, then it gets Server busy with completion busy and the relay receives its busy event" (11.6 s). The relay statuses were `busy, busy, success, success, success, success`, not one `busy` and five `success`. Events: `deploy_started` and `build_started` at 20:30:42, `build_ended` at 20:35:03, `deploy_ended` at 20:35:04. See [3.7](#37-part-b-findings). |
+| R2 Host settings | Run 2: 20:57 | Run 2: passed; nothing changed. | The public host is the guessed host `thermus-spike-control.onrender.com`, so `PUBLIC_BASE_URL` and `WORKOS_REDIRECT_URI` of R1 stay, and no deploy was needed. The check of the sign-in moved to R6 (manager decision). Run 1: not run. |
+| R3 WorkOS Staging entries | Run 2: 20:57:40 to 21:04:48 | Run 2: passed after one stop at R3a. | R3a: at 20:57:40 and 21:01:45, the redirect list of the default AuthKit application of Staging (`app_01M4VDKBBVBVZJCQJRE60RCMAQ`) held only the two redirect URIs of R0, and the sign-in start of the staging control plane ended at the AuthKit page `/redirect-uri-invalid` in 13 tries from 20:58:16 to 21:01:26, so part B stopped and named the URI. The manager then added `https://thermus-spike-control.onrender.com/callback` through the WorkOS connector (`redir_01M69WDTZHN880TX6KV645D8P8`, not the default). The read at 21:04 lists it with the two entries of the gate; the default redirect URI, the sign-out URIs, and the initiate-login URI did not change. At 21:04:38 the sign-in start went from `/login` to `api.workos.com/user_management/authorize` with `redirect_uri=https://thermus-spike-control.onrender.com/callback`, then to the AuthKit sign-in page. R3b: `POST /user_management/authkit_oauth_resources` answered `201` at 21:04:47 with `authkit_oauth_resource_01M69WF050ZR1JTAN4QZW41XYD` for `https://thermus-spike-control.onrender.com/mcp`; the list holds it and the two resources of the gate. Run 1: not run. |
+| R4 Switch to the image | Run 2: 20:53:27 (update) to 20:55:44 (end of the watch) | Run 2: passed. Render accepts the switch of a Git build service to the image, and it starts no deploy. | `PATCH /v1/services/srv-dbj5advf3r2c73f08rf0` with `image.ownerId`, `image.imagePath` of the candidate, `image.registryCredentialId`, and `serviceDetails.runtime` `image` answered `200` after 1.3 s, with `Ratelimit-Remaining` 9 of 10. The answer and `GET /v1/services/srv-dbj5advf3r2c73f08rf0` show the runtime `image`, `imagePath` `ghcr.io/tomer-mayara/thermus-hosted@sha256:8025ae1b…`, the credential `rgc-dbg1h0142hec73da9ra0` (`ghcr-thermus-hosted-read`), no `repo` and no `branch`, and `autoDeploy` `no`. Render started no deploy in the 120 s after the update: a watch of the deploys and the events every 10 s, to 20:55:44, showed only the canceled Git build and no new event. Run 1: not run. |
+| R5 Deploy of the candidate | Run 2: 20:56:07 (dispatch) to 20:57:21 | Run 2: passed. | Run [41241201078](https://github.com/tomer-mayara/Thermus/actions/runs/41241201078): the job summary says "Deploy: live". Deploy `dep-dbj5c48473hc73b75bug` was `live` 29.6 s after the deploy call (Render: createdAt 20:56:49.9, finishedAt 20:57:11.8); the live deploy and `imagePath` name the candidate digest; `GET https://thermus-spike-control.onrender.com/healthz` answered `200` with `ok` at the first request, with no `502`. The log of the start has `Listening on http://0.0.0.0:8080` at 20:57:04, and no `Logging storage is unavailable:` line, no tenant provisioner line, and no `FATAL` line. Run 1: not run. |
+| R6 Organization A and the call with the switch off | Run 2: 21:04:57 to 21:08:55 | Run 2: passed, with another marker word (item 4 of [3.7](#37-part-b-findings)). | Client owner organization `org_01M69WF8FWHWPH8AWRMTS7PBJY` and organization A `org_01M69WF8TCW2C4BMH73PAXVY19` ("Thermus live 20261031-2052 A"); user A `user_01M69WF92892WD69EPY5E8NPQZ` with the Admin membership `om_01M69WF9FDKQ6H34JZ9KSKWKEH`; Connect application `connect_app_01M69WF9MP9N9V7546H6FXT2XQ` of the client owner organization, with the loopback callback `http://127.0.0.1:24490/callback`. The first sign-in of the portal (the check moved from R2) started at `/login` with the redirect URI of the public host and ended at `/` of the staging control plane at 21:06:51; Connect showed the connection guide and "You have product access in organization org_01M69WF8TCW2C4BMH73PAXVY19. Roles: admin." The Connect token for the resource of R3b came in 5.3 s, with the audience of the resource, the organization and the user of A, and a lifetime of 300 s. `getURLAsMarkdown` with `https://example.com/` answered 957 characters at 21:07:37, 21:07:56, and 21:08:55: the page starts "This domain is for use in documentation examples", and "Example Domain" is absent. The control plane served the calls itself: its log has `mcp.tool.completed` for user A, Render lists no tenant service, and `thermus_admin.tenants` has no row. Run 1: not run. |
+| R7 Switch on | Run 2: 21:09:14 (first update) to 21:13:30 (deploy live) | Run 2: passed. A variable update starts no deploy. | 16 `PUT /v1/services/srv-dbj5advf3r2c73f08rf0/env-vars/<name>` from 21:09:14.3 to 21:09:16.2, each `200`, in a bucket of 100 writes (`Ratelimit-Limit` 100), with `TENANT_SWEEP_HOUR_UTC` `6` and `MCP_TENANTS_ENABLED` last. Render started no deploy and wrote no event in a watch from 21:09:10 to 21:12:19, which covers 60 s after the first update. Run [41242522775](https://github.com/tomer-mayara/Thermus/actions/runs/41242522775) then deployed the same digest: "Deploy: live", deploy `dep-dbj5jo8ae00c73d9ge5g` `live` 24.6 s after the call, `/healthz` `200` at the first request. The log of the start: `The tenant provisioner runs: Render workspace tea-db8i6ceq1p3s73dev9og, image ghcr.io/tomer-mayara/thermus-hosted@sha256:8025ae1b…, plan 0.5c-512mb, name prefix thermus-spike-tenant-.`, `The tenant sweeps run each day at 06:00 UTC`, and `Listening on`, with no `FATAL` line and no `System log export failed:` line. The query of runbook 7.3 on `system-log-test` shows the `Listening on` line at 21:13:16.428, instance `srv-dbj5advf3r2c73f08rf0-68899565b-tdzxs`. Run 1: not run. |
+| R8 Provisioning of A | Run 2: 21:14:12 (first call) to 21:17:49 | Run 2: passed, with a window of tenant restart answers after `live` (item 5 of [3.7](#37-part-b-findings)). | The first call got `503` with `Retry-After: 15` and "Your workspace is not ready yet. Try again in 15 seconds."; so did five more calls to 21:15:31. The log: `MCP gateway refusal:` with `"reason":"starting"`, then `Tenant provisioning record:` `creating` at 21:14:17.4, `deploying` with `serviceId` `srv-dbj5kajbc2fs73bt71j0` at 21:14:19.9, and `live` with `internalUrl` `http://thermus-spike-tenant-org:8080` and the digest at 21:15:36.4: about 77 s from the create call to `live` (the deploy `dep-dbj5karbc2fs73bt724g`, created 21:14:19.8, finished 21:15:36.0). Four calls from 21:15:47 to 21:16:37 then got `MCP gateway tenant restart:` lines at the level ERROR, with `"phase":"before-answer"` and `"cause":"connection"`, and the MCP client reported a failed protocol negotiation. The call at 21:16:52, 75.6 s after `live` and 162.4 s after the first call, answered with the page. `fleet.ts list` and `fleet.ts status` show the row `live` with the digest `sha256:8025ae1b37b1…`, the newest deploy `live`, and the address `http://thermus-spike-tenant-org:8080`. The tenant service has the 7 variable names of [3.3](#33-resources) and `OPERATION_CAPACITY` `5`. Run 1: not run. |
+| R9 Signup of B | Run 2: 21:18:53 (switch) to 21:23:22 (answer) | Run 2: passed. | `PUT SELF_SERVE_SIGNUP_ENABLED=true` at 21:18:53, then run [41243009421](https://github.com/tomer-mayara/Thermus/actions/runs/41243009421): "Deploy: live", deploy `dep-dbj5mogae00c73d9ods0` `live` 29.6 s after the call, at 21:19:52. User B `user_01M69X98QQEP00EENP5V7XPAQC` (verified, without memberships) signed in at the staging control plane and landed on `/organizations`; at `/signup?tier=free` part B named "Thermus live 20261031-2052 B", accepted the agreement, and selected **Create organization** at 21:20:23.7. Quick start opened 3.0 s later. Organization B is `org_01M69XBJYWXGDYV7V82G7K723J`. Connect showed "Setting up your workspace. This takes about two minutes." with a meta refresh of 5 s at 21:20:29, and the connection guide at 21:22:07.2: 103.5 s after **Create organization**. The row: `creating` at 21:20:27.0, `deploying` with `srv-dbj5n77b9u1s73d47ndg` at 21:20:29.8, `live` at 21:21:56.8, with the address `http://thermus-spike-tenant-org-6lgd:8080`. The call for B at 21:23:20 answered with the page. During the deploy of this step, the old instance of the control plane claimed the same row a second time (item 6 of [3.7](#37-part-b-findings)). Run 1: not run. |
+| R10 Suspend | Run 2: 21:24:22 and 21:28:11 (two times) | Run 2: passed. | `fleet.ts suspend --organization org_01M69XBJYWXGDYV7V82G7K723J` with `yes`: "Done: srv-dbj5n77b9u1s73d47ndg is suspended, and the row is suspended." Render shows `suspended` (event `service_suspended` at 21:24:23.4, 1 s after the command started), and the row is `suspended`. Connect for B at 21:24:47 showed "Your workspace was paused after 14 days without use. It restarts on the next request, which can take about a minute." above the connection guide. Part B suspended B a second time at 21:28:11, because the helper had read the Connect view of the first resume too late (R11). Run 1: not run. |
+| R11 Resume | Run 2: 21:25:17 to 21:26:04, and 21:28:21 to 21:29:02 | Run 2: passed. | Second resume: the first call at 21:28:21.96 got `503` with `Retry-After: 60` and "Your workspace is restarting after a pause. Try again in a minute."; the log has `MCP gateway refusal:` with `"reason":"resuming"` and `"resume":"sent"`. Render: `service_resumed` at 21:28:22.6, the resume deploy `dep-dbj5qtss728c738tjc0g` (trigger `service_resumed`) from 21:28:23.4 to 21:28:45.4. Connect at 21:28:31 showed the setup words with a meta refresh of 5 s, and no pause notice. The row: `deploying` (`resumed`) at 21:28:37.9, `live` at 21:28:48.3. A call at 21:28:44.9 got the same `503`; the call at 21:29:00.5 answered: 40.6 s from the first call to the first answer. First resume: the same `503` at 21:25:17.9, the resume deploy from 21:25:19.4 to 21:25:57.9 (39 s, above the expected 12 to 29 s), `live` at 21:26:00.6, the answer at 21:26:04: 46 s; the helper read Connect only 4 s after the call, when the registry copy of the portal still said `suspended`. Run 1: not run. |
+| R12 Fleet upgrade | Run 2: 21:29:32 to 21:31:29 | Run 2: passed. | `fleet.ts upgrade --all --image ghcr.io/tomer-mayara/thermus-hosted@sha256:fd8d747e…` with `yes`: one batch of 2; A `dep-dbj5rgetlv9c73cahs3g` `live` after 21 s and B `dep-dbj5rhbbc2fs73btp220` after 26.5 s, each line ending with `digest recorded` (21:29:32 to 21:30:08). Calls for A and B answered at 21:30:15 and 21:30:17. The same command with the candidate digest: A `dep-dbj5ruajnfac73c7kimg` after 41.7 s and B `dep-dbj5rvflk1mc738bcbjg` after 46.8 s, each `digest recorded` (21:30:28 to 21:31:24). Calls for A and B answered at 21:31:24 and 21:31:27. Run 1: not run. |
+| R13 Organization removal | Run 2: 21:31:41 to 21:32:02 | Run 2: passed. | A new token of A at 21:31:37, then the delete of organization A `org_01M69WF8TCW2C4BMH73PAXVY19` at 21:31:41.4: the read by ID answered `404` at read 4, 7.2 s after the delete. `fleet.ts delete --organization org_01M69WF8TCW2C4BMH73PAXVY19` with `yes` at 21:31:57: "Done: srv-dbj5kajbc2fs73bt71j0 is deleted, and the row of org_01M69WF8TCW2C4BMH73PAXVY19 is deleted." Render no longer lists the service, and `fleet.ts status` shows the row `deleted`, the newest deploy `gone`, and the address `unavailable`. The call with the token of A at 21:31:59 got `403` with `access_denied` ("Access denied. Open https://thermus-spike-control.onrender.com/signup to check free signup availability. ...") in 0.3 s; the control plane forwarded nothing. Run 1: not run. |
+| R14 Rollback steps | Run 2: 21:33:18 to 21:37:43 | Run 2: passed. Render also accepts the switch back to the Git build. | 1: `PUT MCP_TENANTS_ENABLED=false` and `PUT SELF_SERVE_SIGNUP_ENABLED=false` at 21:33:18 (each `200`), then run [41244137060](https://github.com/tomer-mayara/Thermus/actions/runs/41244137060): "Deploy: live", deploy `dep-dbj5teks728c738tpln0` `live` 29.6 s after the call, `/healthz` `200`. The new start has `Listening on` and no `The tenant provisioner runs:` line. The call for B at 21:34:37 answered, and the control plane served it: its log has `mcp.tool.completed` for user B, and the registry kept the last use of B at 21:31:28. `/signup?tier=free` showed "Activation is closed" at 21:34:40. 2: the service of B stayed `not_suspended`, and its row `live`. 3: run [41244265833](https://github.com/tomer-mayara/Thermus/actions/runs/41244265833) deployed `sha256:bbee3f89…`: "Deploy: live", deploy `dep-dbj5u7ks728c738trjl0` `live` 24.8 s after the call, the digest in the live deploy and in `imagePath`, `/healthz` `200` at the first request, and a start with no error line. The call for B at 21:36:14 answered, served by the rollback image. The measure: `PATCH /v1/services/srv-dbj5advf3r2c73f08rf0` with `repo`, `branch` `main`, and the runtime `docker` with `./Dockerfile.hosted` answered `200` after 0.9 s at 21:36:38; the service then shows the runtime `docker`, the repository, and no `imagePath` or credential. Render started no deploy in the 60 s after it, and the deploy of the rollback image stayed `live`. Run 1: not run. |
+| Cleanup | Run 1: 20:40:10 to 20:40:48. Run 2: 21:37:58 to 21:38:57 | Done. The manager removes the redirect URI `redir_01M69WDTZHN880TX6KV645D8P8` through the WorkOS connector, and the owner deletes the Supabase project `thermus-staging-rehearsal` (two `deleted` rows in `tenants`, the other four tables empty). | Run 2. Step 1: `fleet.ts delete --organization org_01M69XBJYWXGDYV7V82G7K723J` with `yes` at 21:37:59 deleted the service of B and set its row `deleted`; then `SELECT state, count(*) FROM thermus_admin.tenants GROUP BY state` gives `deleted 2`. Step 2: `DELETE /v1/services/srv-dbj5advf3r2c73f08rf0` answered `204` at 21:38:09, and the service list at 21:38:10 held only `srv-db8mnqg473hc739d529g`. Step 3: the Connect application, users A and B, the client owner organization, and organization B were deleted (organization A was gone already), and the OAuth resource `authkit_oauth_resource_01M69WF050ZR1JTAN4QZW41XYD` (`204`); each read by ID answered `404` within 4.8 s. No organization, user, or Connect application holds the run ID. In run 2, WorkOS Staging made only the client owner organization (21:04:56) and organization B (21:20:24); no organization of another party came in the signup window, 21:19:46 to 21:36:08. The OAuth resources equal those of R0. Step 4: the redirect URI `redir_01M69WDTZHN880TX6KV645D8P8` stays for the manager, who removes it through the WorkOS connector after this cleanup; the other redirect URIs, the sign-out URIs, and the initiate-login URI equal those of R0. Step 5 (owner): delete the Supabase project `thermus-staging-rehearsal`; its tenant registry holds the two `deleted` rows, and the other four tables have 0 rows. Step 6: the private state folder (the IDs, the passwords of the test users, and the Connect tokens) was deleted at 21:38:57; no key file, token file, or `.env` file of the rehearsal is left; the cookie password, the settings key, and the gateway key pair were made in memory only. Run 1. Step 1: the registry had no row. Step 2: `DELETE /v1/services/srv-dbj4vs6c6qcc73bfrgv0` answered `204` at 20:40:16, and the service list at 20:40:17 held only `srv-db8mnqg473hc739d529g`. Step 3: the run made no WorkOS object and no OAuth resource. No organization, user, or Connect application holds the run ID, WorkOS Staging made no organization after 20:29, and the OAuth resources, the redirect URIs, the sign-out URIs, and the initiate-login URI equal those of R0. Step 4: the owner added no redirect URI, so none is to be removed. Step 5 (owner): the Supabase project `thermus-staging-rehearsal` stays until the manager decides about a new run; its five tables have 0 rows. Step 6: the private state folder of the run, which held only the service IDs, was deleted at 20:40:48. |
 | 1 WorkOS inventory and D-10 cleanup | — | — | — |
 | 2 Release holds | — | — | — |
 | 3 Database migration | — | — | — |
