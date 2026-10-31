@@ -402,3 +402,57 @@ rules. [`deploy-request.ts`](release/deploy-request.ts) holds the request rules,
 [`public-health.ts`](release/public-health.ts) the health check. Verify changes
 with type, lint, and manual checks, and with a dispatch against a disposable
 `thermus-spike-*` web service.
+
+# Rehearse the SO-12 release
+
+[`release/rehearsal/rehearsal.ts`](release/rehearsal/rehearsal.ts) is the helper
+of the SO-12 rehearsal, part B of the
+[release record](../docs/implementation/self-onboarding-s2-release.md#3-rehearsal).
+It makes the calls that the fleet script, the release workflow, and the probes
+do not make: the create of the staging control plane `thermus-spike-control` as
+a Git build with its variables and the secret file of the database CA (R1), the
+host settings (R2), the switch to the image (R4), the variables of the gateway
+switch (R7) and of the rollback (R14), the OAuth resource of the staging control
+plane (R3b), the WorkOS Staging objects of the run (R6, R9, R13), the Connect
+tokens and the MCP calls, the browser steps of the portal, the reads of the
+staging database, and the cleanup of the WorkOS objects. It also cancels a Git
+build and watches the deploys and the events after an update (the changed order
+of the manager decision of 31 October 2026). The deploys go through the release
+workflow, and the tenants through the fleet script: `fleet -- <command>` runs
+`fleet/fleet.ts` with `DATABASE_URL` from `STAGING_DATABASE_URL`, the CA, the
+workspace Thermus AI, and the prefix `thermus-spike-tenant-`. The MCP call
+accepts the marker words of the hosted image gate, because the words of
+`https://example.com/` changed.
+
+Guards:
+
+- Each Render call to a service goes through the guarded client of the Render
+  probes: it names `thermus-spike-control` or a `thermus-spike-tenant-*`
+  service that the command found by its name first, and never the production
+  service `srv-db8mnqg473hc739d529g`.
+- Each WorkOS command needs the values of the WorkOS Staging launcher. The
+  helper refuses each other client ID or issuer, because `.env.local` holds
+  the WorkOS values of another environment.
+- The database reads need `STAGING_DATABASE_URL` with the user
+  `thermus_logging.kgiidcbufczoyifzxvtf` on the pooler of the staging project,
+  and verify TLS with the CA of `REHEARSAL_CA_PATH`.
+- The helper makes each new secret (the cookie password, the settings key, and
+  the gateway key pair) in memory and sends it to Render in the body of the
+  call only. It prints each secret variable as its length only.
+- The IDs of the run, the passwords of its test users, and its Connect tokens
+  are in `state.json` in the folder of `REHEARSAL_STATE_DIR`, which must have
+  mode 700. The cleanup deletes the folder.
+
+Run it from the repository root, through the WorkOS Staging launcher, with the
+fleet key file of the main checkout:
+
+```sh
+REHEARSAL_STATE_DIR=<private folder, mode 700> REHEARSAL_CA_PATH=<CA PEM file> REHEARSAL_RUN_ID=<YYYYMMDD-HHMM> \
+  node ~/.config/thermus/with-workos-staging.cjs node --env-file=/Users/tomermayara/git/Thermus/.env.local \
+  script/release/rehearsal/rehearsal.ts <command> [options]
+```
+
+`node script/release/rehearsal/rehearsal.ts` without a command prints the
+commands. Exit code 0: the command ended. 1: a step failed. 2: a usage error
+or a refused setting. Verify changes with type, lint, and manual checks on
+`thermus-spike-*` services in Thermus AI and WorkOS Staging.

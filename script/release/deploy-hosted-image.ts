@@ -151,7 +151,7 @@ async function deployAndReport(request: DeployRequest): Promise<number> {
   report.add('Image to deploy', `\`${request.imageUrl}\``);
   try {
     const key = process.env.RENDER_API_KEY ?? '';
-    if (key === '') throw new Error('RENDER_API_KEY is empty. The deploy job reads it from the repository secret RENDER_API_KEY.');
+    if (key === '') throw new Error('RENDER_API_KEY is empty. The deploy job reads it from the secret RENDER_API_KEY of the GitHub environment production.');
     await deploy(new RenderApi(key), request, report);
     report.write('Deploy: live');
     return 0;
