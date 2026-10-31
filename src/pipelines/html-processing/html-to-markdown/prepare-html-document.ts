@@ -34,11 +34,7 @@ export class PreparedHtmlDocument {
       normalizeFragmentCode(document, codeStartMarker);
     }
     prepareLocalExtraction(document, this.originalUrl);
-    const hasScriptContent = [...document.querySelectorAll('script:not([type="application/ld+json"])')]
-      .some((script) => script.textContent?.trim());
-    const extractionUrl = this.isFragment || (preserveSuppliedContent && !hasScriptContent)
-      ? 'about:blank' : this.originalUrl;
-    const result = await Defuddle(document, extractionUrl, {
+    const result = await Defuddle(document, this.extractionUrl(preserveSuppliedContent), {
       markdown: true,
       useAsync: false,
       processExtractedDom: (root) => {
@@ -52,12 +48,13 @@ export class PreparedHtmlDocument {
       removeLowScoring: !preserveSuppliedContent,
       contentSelector: preserveSuppliedContent ? 'body' : undefined,
     });
-    return {
-      content: (result.content ?? '')
-        .replace(new RegExp(`^[\\t >]*${codeStartMarker}`, 'gm'), '')
-        .replaceAll(codeStartMarker.trimEnd(), ''),
-      title: result.title ?? '',
-    };
+    return { content: withoutCodeStartMarkers(result.content ?? '', codeStartMarker), title: result.title ?? '' };
+  }
+
+  private extractionUrl(preserveSuppliedContent: boolean): string {
+    const hasScriptContent = [...this.document.querySelectorAll('script:not([type="application/ld+json"])')]
+      .some((script) => script.textContent?.trim());
+    return this.isFragment || (preserveSuppliedContent && !hasScriptContent) ? 'about:blank' : this.originalUrl;
   }
 
   private inlineSearchLinkLabels(root: Parameters<typeof sanitizeHtmlDocument>[0]): void {
@@ -70,6 +67,12 @@ export class PreparedHtmlDocument {
       block.replaceWith(inline);
     }
   }
+}
+
+function withoutCodeStartMarkers(content: string, codeStartMarker: string): string {
+  return content
+    .replace(new RegExp(`^[\\t >]*${codeStartMarker}`, 'gm'), '')
+    .replaceAll(codeStartMarker.trimEnd(), '');
 }
 
 function ensureDocumentRoot(document: HtmlDocument): void {
