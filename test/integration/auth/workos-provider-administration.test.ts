@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import { describe, test, type TestContext } from 'node:test';
 import { GenericServerException } from '@workos-inc/node';
 import { WorkOSAuthProvider } from '../../../src/accounts/providers/workos/workos-auth-provider.ts';
-import { WorkOSOrganizations, workosMembershipReads } from '../../../src/accounts/providers/workos/workos-organizations.ts';
+import { WorkOSOrganizations } from '../../../src/accounts/providers/workos/workos-organizations.ts';
+import { workosMembershipReads } from '../../../src/accounts/providers/workos/workos-membership-reads.ts';
 import { workosAuthority } from '../../../src/accounts/providers/workos/workos-settings.ts';
 import { UnconfirmedChangeError, type ChangeOutcome, type ChangeRecord, type ChangeResult } from '../../../src/accounts/organizations/change-records.ts';
 import {

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { WorkOSOrganizations, workosMembershipReads } from '../../../src/accounts/providers/workos/workos-organizations.ts';
+import { WorkOSOrganizations } from '../../../src/accounts/providers/workos/workos-organizations.ts';
+import { workosMembershipReads } from '../../../src/accounts/providers/workos/workos-membership-reads.ts';
 import { workosAuthority } from '../../../src/accounts/providers/workos/workos-settings.ts';
 import { WorkOSFake } from '../../support/doubles/workos/workos-fake.ts';
 import { membershipJson } from '../../support/doubles/workos/workos-fake-wire.ts';

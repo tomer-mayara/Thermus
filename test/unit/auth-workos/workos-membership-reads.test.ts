@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { workosMembershipReads } from '../../../src/accounts/providers/workos/workos-organizations.ts';
+import { workosMembershipReads } from '../../../src/accounts/providers/workos/workos-membership-reads.ts';
 
 const wire = {
   id: 'om_01ALICE', user_id: 'user_01ALICE', organization_id: 'org_01ACME', organization_name: 'Acme', status: 'active',

@@ -5,7 +5,8 @@ import type { AuthenticatedUser, RequestContext } from '../../../src/accounts/id
 import type { AccountFailureReport } from '../../../src/interfaces/web/account/account-routes.ts';
 import { WorkOSAuthProvider } from '../../../src/accounts/providers/workos/workos-auth-provider.ts';
 import { WorkOSBrowserSession } from '../../../src/accounts/providers/workos/workos-browser-session.ts';
-import { WorkOSOrganizations, workosMembershipReads } from '../../../src/accounts/providers/workos/workos-organizations.ts';
+import { WorkOSOrganizations } from '../../../src/accounts/providers/workos/workos-organizations.ts';
+import { workosMembershipReads } from '../../../src/accounts/providers/workos/workos-membership-reads.ts';
 import { WorkOSSessionRoutes } from '../../../src/interfaces/web/auth/workos/workos-session-routes.ts';
 import { workosAuthority } from '../../../src/accounts/providers/workos/workos-settings.ts';
 import { BillingFree } from '../../../src/accounts/billing/billing-free.ts';

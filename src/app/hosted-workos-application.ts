@@ -150,7 +150,8 @@ async function billingOf(parts: WorkOSApplicationParts): Promise<Billing> {
 }
 
 async function workosProviderParts(config: RouteConfig, connection: WorkOSConnection, parts: WorkOSApplicationParts & { readonly billing: Billing; readonly audit: AuditLog }): Promise<HostedProviderParts & { readonly organizations: WorkOSOrganizations }> {
-  const { WorkOSOrganizations, workosMembershipReads } = await import('../accounts/providers/workos/workos-organizations.ts');
+  const { WorkOSOrganizations } = await import('../accounts/providers/workos/workos-organizations.ts');
+  const { workosMembershipReads } = await import('../accounts/providers/workos/workos-membership-reads.ts');
   const { WorkOSAuthProvider } = await import('../accounts/providers/workos/workos-auth-provider.ts');
   const { WorkOSBrowserSession } = await import('../accounts/providers/workos/workos-browser-session.ts');
   const { WorkOSSessionRoutes } = await import('../interfaces/web/auth/workos/workos-session-routes.ts');
