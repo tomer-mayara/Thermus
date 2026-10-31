@@ -22,7 +22,7 @@ export type CreationPlatform = Pick<TenantPlatform, 'findServices' | 'createServ
  * answer never makes a second service, and two services with the name stop the row, because the provisioner cannot
  * tell which one is the tenant. The claim of the row renews right before the create: then no other loop can claim the
  * row for 60 s, longer than the 30 s bound of a create call, so its search sees the service of this create. A claim
- * that did not renew sends no create.
+ * that did not renew sends no create, and a stop during the search renews nothing.
  */
 export async function attemptService(platform: CreationPlatform, request: TenantServiceRequest, work: RowWork): Promise<Attempt> {
   const search = await platform.findServices(request.name, work.signal);
@@ -30,6 +30,7 @@ export async function attemptService(platform: CreationPlatform, request: Tenant
   if (search.services.length > 1) return { status: 'failed', reason: `${search.services.length} services of the platform have the name ${request.name}` };
   const [service] = search.services;
   if (service !== undefined) return { status: 'service', serviceId: service.id };
+  work.signal.throwIfAborted();
   const held = await work.renew();
   if (held.status !== 'recorded') return { status: 'lost', claim: held };
   return outcomeOf(await platform.createService(request, work.signal));

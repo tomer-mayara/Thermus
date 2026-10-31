@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { FinishingPlatform } from '../../../src/tenancy/tenants/finishing-platform.ts';
 import { serviceNameOf } from '../../../src/tenancy/tenants/tenant-environment.ts';
 import { TenantProvisioner } from '../../../src/tenancy/tenants/tenant-provisioner.ts';
 import { OperatorLogSpy } from '../../support/doubles/application/operator-log-spy.ts';
@@ -479,4 +480,41 @@ test('Given an unexpected failure of a collaborator, when the loop meets it, the
 
   assert.deepEqual(errors(), ['ERROR Tenant provisioning failed unexpectedly: private platform failure. It tries again in 60 s.']);
   assert.equal(clock.waits[0], 60_000);
+});
+
+test('Given a stop while the search of the loop is in flight, when the search ends, then the loop renews no claim and sends no create, so the creating row keeps the lease end of its claim', async () => {
+  const { platform, store, clock, log } = provisionerWith();
+  const stop = new AbortController();
+  const renewals: string[] = [];
+  const renewClaim = store.renewClaim.bind(store);
+  store.renewClaim = async (row) => { renewals.push(row.organizationId); return renewClaim(row); };
+  platform.onCall = (call) => { if (call.startsWith('find ')) stop.abort(); };
+  const finishing = new FinishingPlatform(platform, new AbortController().signal);
+  const provisioner = new TenantProvisioner({ platform: finishing, store, clock, log, tenant, namePrefix: 'thermus-tenant-', freePlan: '0.5c-512mb', holder });
+  store.request(organization);
+
+  await provisioner.run(stop.signal);
+
+  assert.deepEqual(platform.calls, [`find ${name}`], 'The search in flight ended; nothing started after the stop');
+  assert.deepEqual(renewals, []);
+  assert.deepEqual([store.row(organization).state, store.row(organization).claimedBy], ['creating', holder]);
+});
+
+test('Given a stop while a read of the deploy is in flight, when the read ends, then the loop renews no claim, reads no more, and frees the deploying row', async () => {
+  const { platform, store, clock, log } = provisionerWith();
+  const stop = new AbortController();
+  const renewals: string[] = [];
+  const renewClaim = store.renewClaim.bind(store);
+  store.renewClaim = async (row) => { renewals.push(row.organizationId); return renewClaim(row); };
+  platform.deploys.push(inProgress, live);
+  platform.onCall = (call) => { if (call.startsWith('deploy ')) stop.abort(); };
+  const finishing = new FinishingPlatform(platform, new AbortController().signal);
+  const provisioner = new TenantProvisioner({ platform: finishing, store, clock, log, tenant, namePrefix: 'thermus-tenant-', freePlan: '0.5c-512mb', holder });
+  store.request(organization);
+
+  await provisioner.run(stop.signal);
+
+  assert.deepEqual(platform.calls, [`find ${name}`, `create ${name}`, 'deploy srv-new1']);
+  assert.deepEqual(renewals, [organization, organization], 'One renewal before the create and one before the read that was in flight');
+  assert.deepEqual([store.row(organization).state, store.row(organization).claimedBy], ['deploying', null]);
 });
