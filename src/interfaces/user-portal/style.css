@@ -160,6 +160,7 @@ marker path { fill: none; stroke-width: 2; }
 .access-details { margin-top: 24px; color: #b4bac0; font-size: 14px; overflow-wrap: anywhere; }
 .access-details summary { cursor: pointer; }
 .access-details .product-access { margin-bottom: 0; }
+.workspace-status { padding: 16px 20px; background: #1c1d23; border-left: 3px solid #e8552a; border-radius: 6px; }
 .auth-container section { margin-top: 32px; }
 .auth-container section p { margin-top: 16px; }
 .auth-container section h2 { font-size: 24px; line-height: 1.3; }

@@ -23,6 +23,7 @@ import type { GoogleOnboardingSettings } from '../accounts/providers/workos/work
 import type { WorkOSSettings } from '../accounts/providers/workos/workos-settings.ts';
 import type { WorkOSOrganizations } from '../accounts/providers/workos/workos-organizations.ts';
 import type { SignupDocuments } from '../accounts/organizations/signup-activation.ts';
+import type { SignupTenants } from '../interfaces/web/auth/workos/workos-signup-tenants.ts';
 import { portalAccessOperation, PRODUCT_ACCESS, type PortalReads } from '../interfaces/web/account/portal-access.ts';
 import { MCPServer, type RequestServerBuilder } from '../interfaces/mcp/mcp-server.ts';
 
@@ -131,7 +132,10 @@ export async function composeWorkOSApplication(config: RouteConfig, connection: 
     loggingStorage = { ...storage, close: () => { snapshots.close(); return storage.close(); } };
   }
   const billing = await billingOf(parts);
-  const providerParts = await workosProviderParts(config, connection, { ...parts, buildServer, billing, audit });
+  // Signup and the portal follow the tenant of each organization through the registry rules of the gateway (SO-07).
+  const { workspacePartsOf } = await import('./workspace-composition.ts');
+  const workspaces = workspacePartsOf({ gateway: parts.gateway, storage: parts.loggingStorage, logger: parts.logger });
+  const providerParts = await workosProviderParts(config, connection, { ...parts, buildServer, billing, audit, signupTenants: workspaces.signup });
   const application = composeHostedApplication(config, providerParts, {
     reportFailure: accountFailureReporter(parts.logger),
     changeRecords: accountChangeRecorder(parts.logger),
@@ -139,6 +143,7 @@ export async function composeWorkOSApplication(config: RouteConfig, connection: 
     billing,
     operation: portalAccessOperation(config.publicBaseUrl, config.mcpResourceUrl, portalReads(providerParts.organizations, billing)),
     signupUrl: new URL('signup', config.publicBaseUrl).href,
+    workspaces: workspaces.statuses,
   }, loggingStorage);
   owned.move();
   return application;
@@ -158,7 +163,7 @@ async function billingOf(parts: WorkOSApplicationParts): Promise<Billing> {
   return new BillingFree();
 }
 
-async function workosProviderParts(config: RouteConfig, connection: WorkOSConnection, parts: WorkOSApplicationParts & { readonly billing: Billing; readonly audit: AuditLog }): Promise<HostedProviderParts & { readonly organizations: WorkOSOrganizations }> {
+async function workosProviderParts(config: RouteConfig, connection: WorkOSConnection, parts: WorkOSApplicationParts & { readonly billing: Billing; readonly audit: AuditLog; readonly signupTenants?: SignupTenants }): Promise<HostedProviderParts & { readonly organizations: WorkOSOrganizations }> {
   const { WorkOSOrganizations, workosMembershipReads } = await import('../accounts/providers/workos/workos-organizations.ts');
   const { WorkOSAuthProvider } = await import('../accounts/providers/workos/workos-auth-provider.ts');
   const { WorkOSBrowserSession } = await import('../accounts/providers/workos/workos-browser-session.ts');
@@ -202,6 +207,7 @@ async function workosProviderParts(config: RouteConfig, connection: WorkOSConnec
     session,
     activation: new WorkOSSignup({ authority, workos, directory: organizations }),
     reportFailure: (message) => logger.error(message),
+    ...(parts.signupTenants === undefined ? {} : { tenants: parts.signupTenants }),
   });
   const browserRoutes = {
     handles: (path: string) => signupRoutes.handles(path) || sessionRoutes.handles(path),

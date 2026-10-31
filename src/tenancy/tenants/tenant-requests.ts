@@ -27,6 +27,15 @@ export class TenantRequests {
     if (result.status !== 'refused') return { status: 'unavailable' };
     return result.count.current === undefined ? { status: 'full' } : { status: 'present', state: result.count.current };
   }
+
+  /**
+   * Whether a new organization finds a place under the cap in the row counts of a registry copy. Signup asks before
+   * the agreement (plan section 4.2). The insert checks the cap again under the registry lock; the race between the
+   * two is accepted, with no reservation (answer 4 of 27 October 2026).
+   */
+  hasPlaceIn(rowsByState: ReadonlyMap<TenantState, number>): boolean {
+    return placesTaken({ rowsByState }) < this.freeTenantLimit;
+  }
 }
 
 /** absent: the organization has no row, so a request inserts one. present: its row is not deleted and stays. */

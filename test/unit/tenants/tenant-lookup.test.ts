@@ -107,3 +107,37 @@ test('Given asks at the same time after the bound, when the refresh is slow, the
   clock.now = 61_000;
   assert.deepEqual(await lookup.find('org_A'), { status: 'unavailable' }, 'The copy read from 1 s is 60 s old at 61 s');
 });
+
+test('Given rows in several states, when signup asks for the row counts, then the copy gives the number of rows in each state, from the same read as the gateway', async () => {
+  const store = liveRegistry();
+  store.rows.set('org_B', { state: 'requested', internalUrl: null });
+  store.rows.set('org_C', { state: 'requested', internalUrl: null });
+  store.rows.set('org_D', { state: 'failed', internalUrl: null });
+  const { lookup, clock } = lookupOf(store);
+  assert.deepEqual(await lookup.find('org_A'), { status: 'found', state: 'live', internalUrl: address });
+
+  const counted = await lookup.countByState();
+
+  assert.deepEqual(counted, { status: 'counted', rowsByState: new Map([['live', 1], ['requested', 2], ['failed', 1]]) });
+  assert.equal(store.reads, 1);
+  store.rows.set('org_E', { state: 'deploying', internalUrl: null });
+  clock.now = 11_000;
+  assert.deepEqual(await lookup.countByState(), { status: 'counted', rowsByState: new Map([['live', 1], ['requested', 2], ['failed', 1], ['deploying', 1]]) });
+  assert.equal(store.reads, 2);
+});
+
+test('Given an empty registry, a copy that is too old, or no copy, when signup asks for the row counts, then it gets no rows or a failure', async () => {
+  const empty = new TenantRegistryStoreFake();
+  assert.deepEqual(await lookupOf(empty).lookup.countByState(), { status: 'counted', rowsByState: new Map() });
+  const store = liveRegistry();
+  const { lookup, clock } = lookupOf(store);
+  await lookup.countByState();
+  store.readFailure = true;
+  clock.now = 60_999;
+  assert.deepEqual(await lookup.countByState(), { status: 'counted', rowsByState: new Map([['live', 1]]) });
+  clock.now = 61_000;
+  assert.deepEqual(await lookup.countByState(), { status: 'unavailable' });
+  const failing = new TenantRegistryStoreFake();
+  failing.readFailure = true;
+  assert.deepEqual(await lookupOf(failing).lookup.countByState(), { status: 'unavailable' });
+});

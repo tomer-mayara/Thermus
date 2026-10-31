@@ -34,6 +34,7 @@ export interface Setup {
   readonly administration?: AdministrationSetup;
   readonly withOperation?: boolean;
   readonly operationAnswer?: OperationAnswer;
+  readonly workspaces?: HostedAccountRoutesOptions['workspaces'];
 }
 
 export function serve(setup: Setup) {
@@ -53,6 +54,7 @@ export function serve(setup: Setup) {
     logging: setup.logging,
     audit: setup.audit,
     operation,
+    workspaces: setup.workspaces,
   });
   return { routes, session, resolver, organizations, operations, failures };
 }

@@ -6,6 +6,7 @@ import { validateSignupDocuments } from '../../../../accounts/providers/workos/w
 import { signupRequestIn } from './workos-signup-form.ts';
 import { signupClosedPage, signupContinuePage, signupFailurePage, signupFormPage, signupRequestNotice, signupSignInPage } from './workos-signup-pages.ts';
 import type { SignupActivation, SignupDocuments, SignupResult } from '../../../../accounts/organizations/signup-activation.ts';
+import { SignupTenantHandoff, type RequestOperation, type SignupTenants } from './workos-signup-tenants.ts';
 
 export interface WorkOSSignupRoutesOptions {
   readonly publicBaseUrl: string;
@@ -15,6 +16,8 @@ export interface WorkOSSignupRoutesOptions {
   readonly activation: SignupActivation;
   readonly reportFailure: (message: string) => void;
   readonly clock?: () => number;
+  // Without the tenant registry, signup checks no cap and requests no tenant.
+  readonly tenants?: SignupTenants;
 }
 
 // Process-local admission only: eight concurrent POSTs, three attempts per subject per minute, at most 1,024
@@ -23,8 +26,6 @@ const MAX_CONCURRENT_POSTS = 8;
 const MAX_SUBJECTS = 1024;
 const ATTEMPTS_PER_MINUTE = 3;
 const WINDOW_MS = 60_000;
-
-type RequestOperation = <T>(start: () => Promise<T>) => Promise<T>;
 
 export class WorkOSSignupRoutes {
   private readonly options: WorkOSSignupRoutesOptions;
@@ -35,6 +36,7 @@ export class WorkOSSignupRoutes {
   private readonly quickStartDestination: URL;
   private readonly login: string;
   private readonly clock: () => number;
+  private readonly handoff?: SignupTenantHandoff;
   private readonly attempts = new Map<string, { until: number; count: number }>();
   private pending = 0;
 
@@ -54,6 +56,7 @@ export class WorkOSSignupRoutes {
     login.searchParams.set('return_to', this.path);
     this.login = login.pathname + login.search;
     this.clock = options.clock ?? Date.now;
+    if (options.tenants !== undefined) this.handoff = new SignupTenantHandoff(options.tenants, options.reportFailure);
   }
 
   handles(pathname: string): boolean {
@@ -64,12 +67,17 @@ export class WorkOSSignupRoutes {
     request.signal.throwIfAborted();
     if (!this.handles(new URL(request.url).pathname)) return signupRequestNotice(noticePage('notFound'));
     if (!['GET', 'HEAD', 'POST'].includes(request.method)) return signupRequestNotice(noticePage('methodNotAllowed', { Allow: 'GET, HEAD, POST' }));
-    if (request.method === 'HEAD') {
-      const answer = this.options.enabled ? signupFailurePage(200, 'Sign in to start free access.') : signupClosedPage();
-      return new Response(null, { status: answer.status, headers: answer.headers });
-    }
+    // Only the free tier exists, so the route ignores the tier of the marketing link (plan section 4.2).
+    if (request.method === 'HEAD') return this.headAnswer(request);
     if (!this.options.enabled) return signupClosedPage(request.method === 'POST' ? 403 : 200);
     return this.handleEnabled(request);
+  }
+
+  // HEAD gets the headers of the page that GET gives before the session: closed with the switch off or a full cap.
+  private async headAnswer(request: Request): Promise<Response> {
+    const closed = this.options.enabled ? await this.handoff?.closedAnswer(request, (start) => waitForRequest(request.signal, start)) : signupClosedPage();
+    const answer = closed ?? signupFailurePage(200, 'Sign in to start free access.');
+    return new Response(null, { status: answer.status, headers: answer.headers });
   }
 
   private async handleEnabled(request: Request): Promise<Response> {
@@ -97,6 +105,9 @@ export class WorkOSSignupRoutes {
   private async answerSession(request: Request, run: RequestOperation): Promise<Response> {
     let cookies: CookieEffects = [];
     try {
+      // The cap comes before the notice, and a POST reads it inside its admission slot.
+      const closed = this.handoff === undefined ? undefined : await this.handoff.closedAnswer(request, run);
+      if (closed !== undefined) return closed;
       const state = await run(() => this.options.session.authenticate(request.headers.get('Cookie')));
       request.signal.throwIfAborted();
       cookies = state.cookies;
@@ -134,8 +145,10 @@ export class WorkOSSignupRoutes {
     if (typeof creation === 'string') return signupRequestNotice(noticePage(creation));
     const result = await run(() => this.options.activation.activate({ user: state.user, organizationName: creation.organizationName, documents, signal: request.signal }));
     request.signal.throwIfAborted();
-    if (result.status === 'active') return this.openOrganization(request, state, result.organizationId, run);
-    return this.activationAnswer(result);
+    if (result.status !== 'active') return this.activationAnswer(result);
+    // An active result confirms the first Admin membership, so the tenant request comes now, before Quick start opens.
+    await this.handoff?.requestTenant(request, result.organizationId, run);
+    return this.openOrganization(request, state, result.organizationId, run);
   }
 
   private async openOrganization(request: Request, state: SignedInBrowserSession, organizationId: string, run: RequestOperation): Promise<Response> {
