@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test, type TestContext } from 'node:test';
 import { HtmlToMarkdownPipeline } from '../../../src/pipelines/html-processing/html-to-markdown-pipeline.ts';
+import type { AuditRelayRouteSpy } from '../../support/doubles/logging/audit-relay-route-spy.ts';
 import { RendererProcessDouble } from '../../support/doubles/website-fetcher/renderer-process-double.ts';
 import { openTenantSite } from '../../support/in-process/tenant-site.ts';
 import { repositoryRoot } from '../../support/processes/module-paths.ts';
@@ -64,6 +65,17 @@ function assertRefusedAsBusy(result: ToolResult): void {
   assert.deepEqual(result.content, busy);
 }
 
+// The tenant sends a relay again when the answer comes after the 5 s limit of an audit send. On a slow builder, the
+// processing of the released calls can delay the answer to the busy relay past that limit. Then the relay route gets
+// the same event again. The control plane keeps one event for each operation ID (SO-05), and so do these checks.
+function relayedStatuses(relay: AuditRelayRouteSpy): unknown[] {
+  return [...new Map(relay.received.map(({ event }) => [event.operationId, event.status] as const)).values()];
+}
+
+async function untilRelayedOperations(relay: AuditRelayRouteSpy, count: number): Promise<void> {
+  while (relayedStatuses(relay).length < count) await relay.untilReceived(relay.received.length + 1);
+}
+
 test('Given OPERATION_CAPACITY=5 and 5 running calls, when a 6th call arrives, then it gets Server busy with completion busy and the relay receives its busy event', { timeout: 30_000 }, async (t) => {
   const { site, work, client } = await openHeldTenant(t, { OPERATION_CAPACITY: '5' });
   const running = await work.startCalls(client, 5);
@@ -71,12 +83,12 @@ test('Given OPERATION_CAPACITY=5 and 5 running calls, when a 6th call arrives, t
   assertRefusedAsBusy(await client.callTool(fetchCall));
   await site.relay.untilReceived(1);
 
-  assert.deepEqual(site.relay.received.map(({ event }) => event.status), ['busy']);
+  assert.deepEqual(relayedStatuses(site.relay), ['busy']);
   assert.deepEqual(site.completions().map(({ status }) => status), ['busy']);
   work.settleAll();
   for (const result of running) assert.notEqual((await result).isError, true);
-  await site.relay.untilReceived(6);
-  assert.deepEqual(site.relay.received.map(({ event }) => event.status).toSorted(), ['busy', 'success', 'success', 'success', 'success', 'success']);
+  await untilRelayedOperations(site.relay, 6);
+  assert.deepEqual(relayedStatuses(site.relay).toSorted(), ['busy', 'success', 'success', 'success', 'success', 'success']);
 });
 
 test('Given no OPERATION_CAPACITY and 10 running calls, when an 11th call arrives, then it gets Server busy: the default stays 10', { timeout: 30_000 }, async (t) => {
