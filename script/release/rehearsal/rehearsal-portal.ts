@@ -43,11 +43,23 @@ export async function signIn(browser: LiveBrowser, { settings, origin, user, org
   return page;
 }
 
-export async function connectView(page: Page): Promise<ConnectView> {
+// The portal renders after its reads of the session, the product access, and the workspace status, so a view waits
+// until the status line no longer says that it checks, and then briefly for the Connect section.
+async function settle(page: Page): Promise<string> {
   await page.waitForLoadState('domcontentloaded');
+  await page.getByRole('heading', { name: /^Welcome, / }).waitFor({ timeout: 20_000 }).catch(() => undefined);
+  const status = page.locator('.product-access');
+  await status.filter({ hasNotText: 'Checking' }).waitFor({ state: 'attached', timeout: 20_000 }).catch(() => undefined);
+  await page.getByRole('heading', { name: 'Connect your MCP client' }).waitFor({ timeout: 5_000 }).catch(() => undefined);
+  return ((await status.textContent({ timeout: 1_000 }).catch(() => null)) ?? 'no status line').trim().slice(0, 120);
+}
+
+export async function connectView(page: Page): Promise<ConnectView & { readonly access: string }> {
+  const access = await settle(page);
   const count = async (selector: ReturnType<Page['locator']>): Promise<boolean> => (await selector.count()) > 0;
   return {
     at: utcNow(),
+    access,
     heading: await count(page.getByRole('heading', { name: 'Connect your MCP client' })),
     settingUp: await count(page.getByText(SETTING_UP, { exact: true })),
     paused: await count(page.getByText(PAUSED, { exact: true })),
@@ -56,8 +68,9 @@ export async function connectView(page: Page): Promise<ConnectView> {
   };
 }
 
-export function viewLine(view: ConnectView): string {
-  return `${view.at} Connect: heading ${view.heading ? 'yes' : 'no'}; setup words ${view.settingUp ? 'yes' : 'no'}; pause notice ${view.paused ? 'yes' : 'no'}; connection guide ${view.guide ? 'yes' : 'no'}; meta refresh ${view.refresh ?? 'none'}`;
+export function viewLine(view: ConnectView & { readonly access?: string }): string {
+  const access = view.access === undefined ? '' : `; status line "${view.access}"`;
+  return `${view.at} Connect: heading ${view.heading ? 'yes' : 'no'}; setup words ${view.settingUp ? 'yes' : 'no'}; pause notice ${view.paused ? 'yes' : 'no'}; connection guide ${view.guide ? 'yes' : 'no'}; meta refresh ${view.refresh ?? 'none'}${access}`;
 }
 
 /** R9: the signup of organization B at /signup?tier=free, then the Connect view until the connection guide shows. */

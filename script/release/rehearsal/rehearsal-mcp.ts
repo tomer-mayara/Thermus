@@ -7,7 +7,10 @@ import { PROTOCOL_VERSION } from '../../spike/gateway-proxy/client.ts';
 import { utcNow } from './rehearsal-settings.ts';
 
 const TARGET = 'https://example.com/';
-const MARKER = 'Example Domain';
+// The words of example.com changed: on 31 October 2026 the page starts "This domain is for use in documentation
+// examples". The marker is the one of the hosted image gate (test/acceptance/auth/hosted-image.test.ts), which accepts
+// the older words "Example Domain" too.
+const MARKER = /documentation examples|illustrative examples|Example Domain/i;
 const REASON = 'Rehearse the SO-12 release of the free tier on the staging control plane';
 const CALL_TIMEOUT_MS = 120_000;
 const CONNECT_TIMEOUT_MS = 30_000;
@@ -46,8 +49,10 @@ function tapFetch(refusals: Refusal[]): typeof fetch {
 function resultText(result: CallToolResult): { readonly answered: boolean; readonly text: string } {
   const text = result.content.flatMap((item) => (item.type === 'text' ? [item.text] : [])).join('');
   if (result.isError === true) return { answered: false, text: `tool error: ${text.slice(0, WORDS_LIMIT)}` };
-  const found = text.includes(MARKER);
-  return { answered: found, text: `answer of ${text.length} characters; "${MARKER}" ${found ? 'present' : 'absent'}` };
+  const match = MARKER.exec(text);
+  // Without the marker, the start of the answer shows what came back: the public page, converted to Markdown.
+  const start = match === null ? `; it starts with ${JSON.stringify(text.slice(0, 2 * WORDS_LIMIT))}` : '';
+  return { answered: match !== null, text: `answer of ${text.length} characters; marker ${match === null ? 'absent' : `"${match[0]}" present`}; "Example Domain" ${text.includes('Example Domain') ? 'present' : 'absent'}${start}` };
 }
 
 /** One call: connect, then tools/call. A refusal, a transport error, or a tool error gives answered false. */
