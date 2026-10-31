@@ -10,41 +10,27 @@
     "internalInterface": false,
     "sensitiveBehavior": false,
     "dependencyRisk": false,
-    "policy": false,
+    "policy": true,
     "uncertain": false
   },
   "architecture": {
     "modelUpdated": false,
-    "summary": "PR 1 of the habit-hooks cleanup stack removes comments that the code does not need, in two passes (a first pass and a stricter pass), in src/, test/, and script/. It changes no code: for each of the 307 changed TypeScript files, the print without comments is the same at the merge base and at HEAD. Comments that main rewrote after the classification stay. No component, dependency edge, public module, declaration, contract, external dependency, composition, build output, or deployment relationship changes. The declaration snapshots have no comments (removeComments in tsconfig.api-surface.json), so the 16 touched public modules keep identical declarations. No flag applies: the change removes comments only and changes no behavior of the product or of the policy tools. The protected policy paths (script/pr-review/**) and twelve security guarantee files select T1 Team review. The component registry describes the runtime system only; its prose and all 21 views remain accurate and unchanged.",
+    "summary": "PR 2 of the habit-hooks cleanup stack changes the habit-hooks configuration only: .habit-hooks/config.toml and .habit-hooks/eslint.config.mjs. The line-count sensor gets a limit of 300 lines instead of 200 and skips test/ and the four WorkOS legal-text bundles, which hold data that a SHA-256 pins. no-unused-vars ignores a using declaration, because its binding exists for its dispose (src/index.ts). The five ESLint import-boundary blocks for src/auth, src/mcp, src/hosted-admin, src/page-fetch, and src/search-pipeline go: #214 removed those folders, so the blocks matched no file. The phase-one/import-context rule still applies the component graph of the rules file to each src file, and the dependency_graph of the PR checker guards the same boundaries at review. On all 1,415 tracked source files, ESLint gives the same messages with the old and the new configuration (120 and 119), except the using declaration in src/index.ts. The full scan has 1 oversized file instead of 87 (workos-organizations.ts, 448 lines, which PR 3 splits). The policy flag is set: the change relaxes what habit-hooks enforces. No production code, test, contract, dependency, composition, build output, or deployment relationship changes: nothing in src/, test/, the runtime images, or the workflows reads these files. The component registry describes the runtime system only; its prose and all 21 views remain accurate and unchanged.",
     "views": [
       "Context",
       "C4 containers: hosted edition",
       "C4 containers: local edition",
-      "Selected C4 components: tool processing in the Node server",
-      "Selected C4 components: hosted authentication in the Node server",
-      "Selected C4 components: tenant role in the hosted image",
-      "Selected C4 components: hosted membership removal in the Node server",
-      "Selected C4 components: hosted Audit logs settings and delivery in the Node server",
-      "Selected C4 components: hosted tenant registry, provisioning, and sweeps in the Node server",
-      "Selected C4 components: MCP gateway and audit relay in the Node server",
-      "Selected C4 components: system and audit logs in the Node server",
-      "Selected C4 components: local authentication in the Node server",
       "Collaboration overview",
-      "Scenario: MCP page fetch and renderer cancellation",
-      "Scenario: hosted MCP call through the gateway",
-      "Scenario: hosted default sign-in landing",
-      "Scenario: hosted member read",
-      "Scenario: tenant provisioning",
-      "Scenario: weekly organization sweep",
       "Self-hosted Compose",
       "Recorded hosted Render target"
     ],
     "evidence": [
+      ".habit-hooks/config.toml",
+      ".habit-hooks/eslint.config.mjs",
+      ".habit-hooks/import-context.mjs (the component graph rule that stays)",
+      "docs/implementation/pr-review-rules.yaml (dependency_graph and protected_paths.policy)",
       "architecture/components.md (21 Mermaid views, unchanged)",
-      "tsconfig.api-surface.json (removeComments: true)",
-      "docs/api-surface/ (declaration snapshots, unchanged)",
-      "docs/implementation/pr-review-rules.yaml (protected_paths.policy and protected_paths.security)",
-      "Validation comment of this pull request: the comment-only proof, npm test, typecheck, and the portal build"
+      "Validation comment of this pull request: the two full habit-hooks scans and the ESLint comparison"
     ]
   }
 }

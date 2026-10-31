@@ -26,3 +26,16 @@ args = ["--config", ".habit-hooks/eslint.config.mjs"]
 
 [sensors.jscpd]
 disabled = true
+
+# A split of a 201- to 300-line file gives new files below MI 85, which block merge, so the limit is 300 lines.
+# Test files have no file-size limit. The four document bundles hold legal text that a SHA-256 pins: data, not logic.
+[sensors.line-count]
+args = ["--max", "300"]
+files = [
+  "**/*",
+  "!test/**",
+  "!src/accounts/providers/workos/workos-approved-organization-documents.ts",
+  "!src/accounts/providers/workos/workos-approved-signup-documents.ts",
+  "!src/accounts/providers/workos/workos-organization-audit-documents.ts",
+  "!src/accounts/providers/workos/workos-organization-removal-documents.ts",
+]
