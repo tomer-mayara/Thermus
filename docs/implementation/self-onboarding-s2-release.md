@@ -151,8 +151,8 @@ that hosted early access is free, with no payment card.
 | Input | State |
 | --- | --- |
 | Staging database | Done on 31 October 2026: see [3.3](#33-resources). |
-| CA certificate of the staging database | The manager gives part B the path of the PEM file. It is outside the repository. |
-| WorkOS Staging redirect URI of the staging control plane | Open. The owner adds `https://<public host>/callback` in the WorkOS dashboard when part B gives the public host (step R3). |
+| CA certificate of the staging database | The manager gives part B the path of the PEM file. It is outside the repository. Done: part B checked the SHA-256 fingerprint of the file against [3.3](#33-resources), and its database reads verified TLS with it. |
+| WorkOS Staging redirect URI of the staging control plane | Open. The owner adds `https://<public host>/callback` in the WorkOS dashboard when part B gives the public host (step R3). The first run of 31 October 2026 got the host `thermus-spike-control.onrender.com` and stopped at R1, before R3. |
 | Render key of the staging control plane | The fleet key: `RENDER_API_KEY` in `/Users/tomermayara/git/Thermus/.env.local` (owner decision of 31 October 2026). |
 | Axiom token of the staging system log | `AXIOM_API_KEY` in the same file, which the OTel logger tests use to ingest into `system-log-test`. If the owner wants a token for `system-log-test` only, the owner adds it to the same file under a new name. |
 | A time window | The owner confirms that no hosted live gate, work slice, probe, or Render interface gate runs during the rehearsal ([3.2](#32-rules-of-the-rehearsal)). Done on 31 October 2026: the owner wrote "Yes. No hosted live gate, work slice, or probe runs until the rehearsal ends." |
@@ -459,6 +459,54 @@ Do the cleanup at the end, and also after a failure. Order:
 | Registry rows | Before step 5 of the cleanup: `SELECT state, count(*) FROM thermus_admin.tenants GROUP BY state` gives `deleted` only. After it: the Supabase dashboard of the organization "Thermus" lists no project `thermus-staging-rehearsal`. |
 | Secrets | No key file, token file, or `.env` file of the rehearsal is left on disk outside `.env.local`; the record and the pull requests hold no secret. |
 
+### 3.7 Part B findings
+
+Part B ran on 31 October 2026 (UTC), with the run ID `20261031-2029`. It used
+the helper [`rehearsal.ts`](../../script/release/rehearsal/rehearsal.ts)
+([Rehearse the SO-12 release](../../script/README.md#rehearse-the-so-12-release))
+for the calls that the fleet script, the release workflow, and the probes do
+not make. The [record](#7-record) has the result of each step.
+
+What differed from the expected values:
+
+1. **R1 stopped the rehearsal.** The first Git build of `main` (`c40b9912`, the
+   candidate and the documents of part A) ended as `build_failed` 262 s after
+   the create call. The check stage of `Dockerfile.hosted`
+   (`npm run build:hosted` under `--network=none`) failed one test of the 222
+   tests of its acceptance selection: in `hosted-tenant-capacity.test.js`, the
+   case of `OPERATION_CAPACITY=5` got two `busy` events at the relay, not one.
+   The same commit passed the same build in the hosted image run
+   [41237416820](https://github.com/tomer-mayara/Thermus/actions/runs/41237416820)
+   on GitHub (20:07 to 20:13 UTC). The candidate `fa787be4`, with the same
+   source and tests, passed `npm run build:hosted` in run 41232469232 and in
+   the manager round. So the case depends on the timing of the build machine:
+   on the builder of Render it took 11.6 s. The effects:
+   - Steps R2 to R14 did not run, and the cleanup ran. The expected values of
+     R4 (the switch of a Git build to the image), R7 (a deploy after a variable
+     update), and R14 (the switch back to the Git build) stay unmeasured.
+     Item 12 of [section 6](#6-owner-steps-outstanding) stays open.
+   - Production builds from Git today, with the same `Dockerfile.hosted`. A Git
+     deploy of production can fail in the same way until step 5 moves
+     production to the image. A rollback to a Git build meets the same check.
+   - A new run of R1 can pass, because the case passed in the other
+     environments, but the result of one build is not certain. A change of the
+     case is a source change outside this documents-only pull request.
+2. **The other measured values match.** The Render interface gate passed, with
+   deploys `live` 71.2 and 79.4 s after their create calls (expected 71 to
+   104 s). The create of the staging control plane answered `201` in 2.3 s.
+   The public host was the guessed host `thermus-spike-control.onrender.com`,
+   so R2 needs no change of the host variables in a new run with the same
+   name, if Render gives the same host again.
+3. **`.env.local` holds the WorkOS values of another environment.** Its
+   `WORKOS_CLIENT_ID` is the client of WorkOS Production
+   (`client_01M4VDKC291XX3CDEFP5ZKY5KP`). The WorkOS Staging launcher sets the
+   Staging values first, and `node --env-file` keeps them. A command that runs
+   with `node --env-file` but without the launcher gets the values of the file.
+   The helper refuses each client ID and issuer that is not of WorkOS Staging.
+   Run the fleet commands `request` and `summary` of the rehearsal only through
+   the launcher, as [Operate the tenant fleet](../../script/README.md#operate-the-tenant-fleet)
+   says.
+
 ## 4. Production order
 
 Each step starts only after the owner's go-ahead. Write the go-ahead and the
@@ -735,21 +783,21 @@ no secret.
 | --- | --- | --- | --- |
 | 1.4 Application checks | 18:36:51 to 19:01:29 (manager round); 20:26:45 to 20:29:21 (Render interface gate) | Passed | [1.4](#14-application-checks-of-the-candidate-part-b): the manager round on `3050d706`, the same tree as `fa787be4` ([verification](https://github.com/tomer-mayara/Thermus/pull/295#issuecomment-6547815686)), and the Render interface gate of part B before step R1. |
 | R0 Preflight | 20:29:59 to 20:30:32 | Passed. Run ID `20261031-2029`. | The owner confirmed the window ([3.1](#31-inputs-for-part-b)). The service list of Thermus AI held only `srv-db8mnqg473hc739d529g`. `rgc-dbg1h0142hec73da9ra0` (`ghcr-thermus-hosted-read`) has the registry `GITHUB` and the user `tomer-mayara`. WorkOS Staging, kept for the cleanup check: the redirect URIs `https://localhost:24443/callback` (default, `redir_01M5YQXX5MZ202HY1SJAXBR180`) and `https://localhost:46443/callback` (`redir_01M5Z30C8MKYE38WW92WNB2VR6`); the sign-out URIs `https://localhost:24443/` (default) and `https://localhost:46443/`; the initiate-login URI `https://localhost:24443/login`; the OAuth resources `https://localhost:24443/mcp` (`authkit_oauth_resource_01M5YQXZ9GZ4VVYFQYQZZXTP41`) and `https://localhost:46443/mcp` (`authkit_oauth_resource_01M5Z30RTN19ZAJGV5TR7HFPEM`). No organization, user, or Connect application held the run ID. With `STAGING_DATABASE_URL` and the CA, with verified TLS, the five tables of `thermus_admin` had 0 rows. The production variable `PORT` is `8080` (one read at 20:30:32). |
-| R1 Git build of `thermus-spike-control` | — | — | — |
-| R2 Host settings | — | — | — |
-| R3 WorkOS Staging entries | — | — | — |
-| R4 Switch to the image | — | — | — |
-| R5 Deploy of the candidate | — | — | — |
-| R6 Organization A and the call with the switch off | — | — | — |
-| R7 Switch on | — | — | — |
-| R8 Provisioning of A | — | — | — |
-| R9 Signup of B | — | — | — |
-| R10 Suspend | — | — | — |
-| R11 Resume | — | — | — |
-| R12 Fleet upgrade | — | — | — |
-| R13 Organization removal | — | — | — |
-| R14 Rollback steps | — | — | — |
-| Cleanup | — | — | — |
+| R1 Git build of `thermus-spike-control` | 20:30:40 (create) to 20:35:04 (`build_failed`) | Failed: the first deploy ended as `build_failed`. The rehearsal stopped here. | `POST /v1/services` answered `201` after 2.3 s, with `Ratelimit-Remaining` 17 of 20 and `Ratelimit-Reset` 1,759 s: service `srv-dbj4vs6c6qcc73bfrgv0`, slug `thermus-spike-control`, public URL `https://thermus-spike-control.onrender.com` (the guessed host), first deploy `dep-dbj4vsmc6qcc73bfri00` (trigger `manual`, commit `c40b9912`). The create call held the 13 variables of R1 and the secret file `supabase-ca.crt`. The build ran `RUN --network=none npm run build:hosted` of `Dockerfile.hosted`: `npm run check` and the integration run (1,260 of 1,260) passed, and the acceptance selection failed 1 of 222: `dist/test/acceptance/mcp/hosted-tenant-capacity.test.js:59`, "Given OPERATION_CAPACITY=5 and 5 running calls, when a 6th call arrives, then it gets Server busy with completion busy and the relay receives its busy event" (11.6 s). The relay statuses were `busy, busy, success, success, success, success`, not one `busy` and five `success`. Events: `deploy_started` and `build_started` at 20:30:42, `build_ended` at 20:35:03, `deploy_ended` at 20:35:04. See [3.7](#37-part-b-findings). |
+| R2 Host settings | — | Not run: the rehearsal stopped at the failed check of R1 ([3.2](#32-rules-of-the-rehearsal)). | — |
+| R3 WorkOS Staging entries | — | Not run: the rehearsal stopped at the failed check of R1 ([3.2](#32-rules-of-the-rehearsal)). | — |
+| R4 Switch to the image | — | Not run: the rehearsal stopped at the failed check of R1 ([3.2](#32-rules-of-the-rehearsal)). | — |
+| R5 Deploy of the candidate | — | Not run: the rehearsal stopped at the failed check of R1 ([3.2](#32-rules-of-the-rehearsal)). | — |
+| R6 Organization A and the call with the switch off | — | Not run: the rehearsal stopped at the failed check of R1 ([3.2](#32-rules-of-the-rehearsal)). | — |
+| R7 Switch on | — | Not run: the rehearsal stopped at the failed check of R1 ([3.2](#32-rules-of-the-rehearsal)). | — |
+| R8 Provisioning of A | — | Not run: the rehearsal stopped at the failed check of R1 ([3.2](#32-rules-of-the-rehearsal)). | — |
+| R9 Signup of B | — | Not run: the rehearsal stopped at the failed check of R1 ([3.2](#32-rules-of-the-rehearsal)). | — |
+| R10 Suspend | — | Not run: the rehearsal stopped at the failed check of R1 ([3.2](#32-rules-of-the-rehearsal)). | — |
+| R11 Resume | — | Not run: the rehearsal stopped at the failed check of R1 ([3.2](#32-rules-of-the-rehearsal)). | — |
+| R12 Fleet upgrade | — | Not run: the rehearsal stopped at the failed check of R1 ([3.2](#32-rules-of-the-rehearsal)). | — |
+| R13 Organization removal | — | Not run: the rehearsal stopped at the failed check of R1 ([3.2](#32-rules-of-the-rehearsal)). | — |
+| R14 Rollback steps | — | Not run: the rehearsal stopped at the failed check of R1 ([3.2](#32-rules-of-the-rehearsal)). | — |
+| Cleanup | 20:40:10 to 20:40:48 | Done, except the owner step 5. | Step 1: the registry had no row. Step 2: `DELETE /v1/services/srv-dbj4vs6c6qcc73bfrgv0` answered `204` at 20:40:16, and the service list at 20:40:17 held only `srv-db8mnqg473hc739d529g`. Step 3: the run made no WorkOS object and no OAuth resource. No organization, user, or Connect application holds the run ID, WorkOS Staging made no organization after 20:29, and the OAuth resources, the redirect URIs, the sign-out URIs, and the initiate-login URI equal those of R0. Step 4: the owner added no redirect URI, so none is to be removed. Step 5 (owner): the Supabase project `thermus-staging-rehearsal` stays until the manager decides about a new run; its five tables have 0 rows. Step 6: the private state folder of the run, which held only the service IDs, was deleted at 20:40:48. |
 | 1 WorkOS inventory and D-10 cleanup | — | — | — |
 | 2 Release holds | — | — | — |
 | 3 Database migration | — | — | — |
