@@ -37,7 +37,7 @@ cached. `pnpm exec node --version` must report `v24.20.0`. For direct `npm` or
 | Hosted image | `npm run test:container:hosted` | `dist/test/acceptance/auth/hosted-image.test.js` only | Docker Engine with Buildx and a Linux AMD64 builder/runtime, native or emulated. Image build needs network access or cached pinned inputs; the renderer test needs HTTPS egress to `https://example.com/`. No live WorkOS or Axiom credential. |
 | Hosted live | `npm run test:hosted-live` | `hosted.live.js` and `hosted-removal.live.js`, in sequence after a build of the portal | A WorkOS staging environment with its settings and dashboard configuration, absolute pinned `LIGHTPANDA_BIN`, public network access, Playwright Chromium, OpenSSL, Docker Engine for the disposable PostgreSQL of the scoped removal proof and of the SO-07 signup scenario, and free local ports 24443 and 24480. The [hosted live gate](#hosted-live-gate-auth-06) gives the details. |
 | Search live | `npm run test:mcp:search:live` | `dist/test/acceptance/mcp/search-pipeline.live.js` only | Absolute pinned `LIGHTPANDA_BIN` and public Brave access. No API key or Axiom credential. |
-| Private PostgreSQL | `npm run test:logging:postgres` | Settings and removal-store integration, settings and hosted storage-failure acceptance, membership-removal overlap/restart and integrated hosted acceptance, tenant registry store, tenant provisioner, and organization sweep integration, and tenant registry acceptance `.runtime.js` files | Docker Engine and OpenSSL. Uses disposable local PostgreSQL 17 with verified test TLS and the scoped runtime role; no Supabase or other live credentials. |
+| Private PostgreSQL | `npm run test:logging:postgres` | Settings and removal-store integration, settings and hosted storage-failure acceptance, membership-removal overlap/restart and integrated hosted acceptance, tenant registry store, tenant provisioner, organization sweep, and idle sweep integration, and tenant registry acceptance `.runtime.js` files | Docker Engine and OpenSSL. Uses disposable local PostgreSQL 17 with verified test TLS and the scoped runtime role; no Supabase or other live credentials. |
 | Members browser | `npm run build:user-portal && npm run build && node --test dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js` | Labelled member rows and distinct counts; short closed desktop rows at most 72px with 48px actions; quiet self/other actions, keyboard Cancel and one confirmation at 320px/1280px without JavaScript; expanded-row reflow at 481px/600px/860px/861px; shared Members/Audit navigation, focus, text resize and Save/Test with JavaScript on/off; Audit width at 800px/860px; closed/open invitation, typed Cancel, native validation, User/Admin send and last-Admin guidance; counted zero/nonzero pending disclosure, compact long rows, UTC expiry, section order and protected keyboard Resend/Revoke, with JavaScript on/off | Playwright Chromium, OpenSSL and the built portal assets. Uses a temporary loopback HTTPS bridge to the local HTTP site and provider doubles; no live credentials. |
 | Renderer | `npm run test:mcp:renderer` | `dist/test/acceptance/mcp/get-url-as-markdown.runtime.js` and `dist/test/acceptance/mcp/search-pipeline.runtime.js` | `LIGHTPANDA_BIN` with the absolute path of the pinned Lightpanda 1.0.0 executable. No public network access and no Axiom credentials: the pages are local fixtures on `127.0.0.1`. |
 
@@ -475,13 +475,15 @@ then runs these emitted files directly, without another build:
    `dist/test/acceptance/mcp/hosted-gateway.test.js`,
    `dist/test/acceptance/mcp/hosted-gateway-states.test.js`,
    `dist/test/acceptance/mcp/hosted-gateway-forward.test.js`,
+   `dist/test/acceptance/mcp/hosted-gateway-resume.test.js`,
    `dist/test/acceptance/logging/audit/audit-relay.test.js`,
    `dist/test/acceptance/mcp/search-lifecycle.test.js`,
    `dist/test/acceptance/mcp/hosted-process-shutdown.test.js`,
    `dist/test/acceptance/mcp/server-only-modules.test.js`,
    `dist/test/acceptance/tenants/provisioner.test.js`,
    `dist/test/acceptance/tenants/organization-sweep.test.js`,
-   `dist/test/acceptance/tenants/fleet-summary.test.js`, and
+   `dist/test/acceptance/tenants/fleet-summary.test.js`,
+   `dist/test/acceptance/tenants/idle-suspension.test.js`, and
    `dist/test/interface/hosted-renderer-startup.test.js`.
 3. `dist/test/acceptance/mcp/get-url-as-markdown.runtime.js` and
    `dist/test/acceptance/mcp/search-pipeline.runtime.js`: both real local
@@ -523,6 +525,14 @@ setup state until the row is `live`, and the denials. It is offline too: the
 WorkOS fake with its signup fake and the real registry rules over an in-memory
 registry stand in for WorkOS and PostgreSQL, and a case moves a row as the
 provisioner would.
+
+The idle suspension and gateway resume files, added by SO-10, run the daily
+idle sweep as the SO-09 files run the sweeps, and the resume of a suspended
+tenant through the control plane as app composes it with the switch on: the
+gateway parts, the provisioner loop, and the resume operation on the Render
+adapter, over one in-memory registry. The fake of the Render API gives the
+service of the tenant the address `localhost` with the port of the fake tenant
+upstream, so the resumed tenant serves the next call on loopback.
 
 The exact selection is in `package.json`. It includes the current emitted
 integration glob and explicit, nonempty acceptance and interface paths. It

@@ -18,12 +18,9 @@ resource first. Keep notes in the private operator record, outside Git, as the
 ## How to use these runbooks
 
 The provisioner of SO-06, the release path of SO-02, the MCP gateway of SO-05,
-the fleet script and the tenant sweeps of SO-09, and the signup handoff and
-workspace status of SO-07 are on `main`. The idle suspension of SO-10 is not
-on `main` yet. A step that needs it has a marker, for example **Waits for
-SO-10.** Until that
-ticket is on `main` and in production, do the fallback of the step if it has
-one, or do not do the step.
+the fleet script and the tenant sweeps of SO-09, the signup handoff and
+workspace status of SO-07, and the idle suspension and the resume of SO-10 are
+on `main`.
 The tenant sweeps run only with `MCP_TENANTS_ENABLED` on.
 [Operate the tenant fleet](../../script/README.md#operate-the-tenant-fleet)
 gives the fleet commands, their settings, and their guards. Each write command
@@ -97,12 +94,12 @@ prefix too. A tenant writes to standard error only.
 | `Tenant provisioning failed unexpectedly:` | ERROR | `tenant-provisioner.ts` | A defect. The loop tries again in 60 s. |
 | `Logging storage is unavailable:` | ERROR | [`src/app/logging-storage.ts`](../../src/app/logging-storage.ts) | At the start: `DATABASE_URL`, `LOGGING_DESTINATION_ENCRYPTION_KEY`, or `DATABASE_CA_CERT_PATH` is missing or invalid. |
 | `MCP gateway tenant restart: {json}` | ERROR | [`src/interfaces/mcp/mcp-gateway-refusals.ts`](../../src/interfaces/mcp/mcp-gateway-refusals.ts) | A live tenant stopped during a call. The fields are `organizationId`, `phase` (`before-answer` or `during-answer`), and `cause` (`http-502` or `connection`). |
-| `MCP gateway refusal: {json}` | INFO, or ERROR for an operator report | `mcp-gateway-refusals.ts` | The gateway answered by itself, with `503` or with the search busy words. The fields are `organizationId`, `reason`, and, when they apply, `state`, `resume`, and `resumeFailure`. The operator reports are the first refusal of a `failed` tenant and a failed resume. Until SO-10 connects the resume operation, each call of a `suspended` tenant gives a failed resume with `resumeFailure` "The resume operation is not connected yet (SO-10).", and the tenant stays suspended: `fleet.ts resume --organization <organization ID>` brings it back. |
+| `MCP gateway refusal: {json}` | INFO, or ERROR for an operator report | `mcp-gateway-refusals.ts` | The gateway answered by itself, with `503` or with the search busy words. The fields are `organizationId`, `reason`, and, when they apply, `state`, `resume`, and `resumeFailure`. The operator reports are the first refusal of a `failed` tenant and a failed resume. The first call of a `suspended` tenant sends one resume call to Render (`"resume":"sent"`); the other calls until the tenant is live have `"resume":"pending"`, or `"state":"deploying"` with `"reason":"resuming"`. A failed resume, also a `429`, gives `resumeFailure` with the reason, for example "The platform did not take the resume: the platform limits the calls of the service for 30 s", and the row is `suspended` again, so the next call tries again. A resume that fails again and again needs a check: `fleet.ts status --organization <organization ID>`. |
 | `Workspace setup failed: {json}` | ERROR | [`src/interfaces/web/account/workspace-status.ts`](../../src/interfaces/web/account/workspace-status.ts) | The portal read the status of a `failed` tenant. The field is `organizationId`. One line for each organization, until its row leaves `failed`. |
 | `Hosted signup could not read the free-tenant cap.` | ERROR | [`src/interfaces/web/auth/workos/workos-signup-tenants.ts`](../../src/interfaces/web/auth/workos/workos-signup-tenants.ts) | With the switch on, the database does not answer and the registry copy of the gateway is 60 s old, so signup cannot check the cap and answers "Activation is temporarily unavailable. Try again later.". |
 | `Hosted signup could not request the tenant of the new organization.` | ERROR | `workos-signup-tenants.ts` | The tenant request after a signup failed. The organization exists; its first workspace status read requests the tenant again. |
 | `Audit relay refusal: {json}` | ERROR | [`src/app/mcp-gateway-composition.ts`](../../src/app/mcp-gateway-composition.ts) | The relay route refused an audit event of a tenant, so the event is not exported. The fields are `reason` (`body`, `event`, `organization`, `context`, `actor`, or `memory`), `detail` (the reason of a refused context, for example `signature`), and `organizationId` when it is known. The line never shows the context or the event. |
-| `The tenant sweeps run each day at` | INFO | [`src/app/tenant-sweeps.ts`](../../src/app/tenant-sweeps.ts) | The start began the tenant sweeps. The line names the hour of `TENANT_SWEEP_HOUR_UTC`. |
+| `The tenant sweeps run each day at` | INFO | [`src/app/tenant-sweeps.ts`](../../src/app/tenant-sweeps.ts) | The start began the tenant sweeps. The line names the hour of `TENANT_SWEEP_HOUR_UTC` and the days of `FREE_TENANT_IDLE_DAYS`. |
 | `Tenant fleet summary: {json}` | INFO | [`src/tenancy/tenants/fleet-summary.ts`](../../src/tenancy/tenants/fleet-summary.ts) | Once a day at the tick, the daily summary. The fields are in [the summary fields](#the-summary-fields). |
 | `Tenant fleet summary stopped: {json}` | ERROR | `fleet-summary.ts` | The tick could not read the registry, so no summary line came. The field is `reason`. |
 | `Organization sweep: {json}` | INFO | [`src/tenancy/tenants/organization-sweep.ts`](../../src/tenancy/tenants/organization-sweep.ts) | On Mondays at the tick, the counts of the organization sweep: `rows` (not deleted), `organizations` (in the WorkOS list), `deleted`, `foundOnRead` (left out by the list, found by the read by ID), `unreadable`, `inFlight` (`creating` or `deploying`, left for the next sweep), `moved`, and `failed`. |
@@ -110,6 +107,11 @@ prefix too. A tenant writes to standard error only.
 | `Tenant removal record: {json}` | INFO | `organization-sweep.ts` | The sweep deleted one tenant. The fields are `organizationId`, `state` (`deleted`), `from`, `serviceId`, `serviceName`, and `cause` (`organization-absent`). |
 | `Tenant removal failed: {json}` | ERROR | `organization-sweep.ts` | The removal of one tenant failed. The fields are `organizationId`, `serviceId`, and `reason`. The next sweep tries again. |
 | `The organization sweep keeps the tenant of organization` | INFO | `organization-sweep.ts` | The read by ID of a left-out organization failed, so its tenant stays until the next sweep. |
+| `Idle sweep: {json}` | INFO | [`src/tenancy/tenants/idle-sweep.ts`](../../src/tenancy/tenants/idle-sweep.ts) | Each day at the tick, after the organization sweep, the counts of the idle sweep: `idle` (live free tenants without an MCP call for `FREE_TENANT_IDLE_DAYS`, or since their creation when they never served one), `suspended`, `moved`, and `failed`. |
+| `Idle sweep stopped: {json}` | ERROR | `idle-sweep.ts` | The tick could not read the registry, so no tenant was suspended. The field is `reason`. The next tick tries again. |
+| `Tenant suspension record: {json}` | INFO | `idle-sweep.ts` | The sweep suspended one tenant. The fields are `organizationId`, `state` (`suspended`), `from` (`live`), `serviceId`, `serviceName`, `idleSince` (the last use, or the creation of a tenant that never served a call), and `cause` (`idle`). Its next MCP call resumes it. |
+| `Tenant suspension failed: {json}` | ERROR | `idle-sweep.ts` | The suspension of one tenant failed; the row stays `live`, and the next sweep tries again. The fields are `organizationId`, `serviceId`, and `reason`. For a refused or limited call, Render changed nothing. When the reason says that the registry did not take the suspended state, the service is suspended while the row is `live`: run `fleet.ts suspend --organization <organization ID>`, which suspends again and records the row, before the next call of the organization meets the stopped service. |
+| `The idle sweep leaves organization` | INFO | `idle-sweep.ts` | Another writer changed the row during the suspension, for example a delete, so the sweep left it. |
 | `Tenant sweep step failed: {json}` | ERROR | [`src/tenancy/tenants/tenant-sweeps.ts`](../../src/tenancy/tenants/tenant-sweeps.ts) | A defect in a step of the tick. The fields are `step` and `reason`. The next step runs. |
 | `System log export failed:` | ERROR | [`src/app/system-log-failure-line.ts`](../../src/app/system-log-failure-line.ts) | An export to Axiom failed, after the retries of the exporter, and its lines are not in `system-log`; standard error still has them. The line names the cause: an HTTP status such as `HTTP 401` (a refused token) or `HTTP 403`, an error code such as `ECONNREFUSED`, or `no answer in time`. It comes at most once a minute and counts the failures that had no line. It is on standard error only: Axiom never gets it, so the [precondition check](#73-axiom-monitors) reads the Render log. |
 
@@ -341,9 +343,12 @@ the database, so 7 days without use can pause the project.
   cannot apply a status. Stripe sends a failed webhook again, and the
   reconciliation corrects each status within a day after the resume.
 - The daily sweeps. The fleet summary gives no line but
-  `Tenant fleet summary stopped:`, and the organization sweep of a Monday
-  deletes nothing and gives `Organization sweep stopped:`. **Waits for
-  SO-10:** the idle suspension.
+  `Tenant fleet summary stopped:`, the idle sweep suspends nothing and gives
+  `Idle sweep stopped:`, and the organization sweep of a Monday deletes
+  nothing and gives `Organization sweep stopped:`.
+- Resumes. The gateway cannot move a `suspended` row, so the MCP calls of a
+  suspended tenant get `503` with `Retry-After: 15` and
+  `"reason":"registry-unavailable"`, and no resume goes to Render.
 
 The tenant services keep running, and they keep their cost. The sign-in and
 the pages that need no storage keep working.
@@ -442,7 +447,7 @@ the user of the control plane
 
 | Key | Used by | Where it lives |
 | --- | --- | --- |
-| Control plane key | The provisioner, the organization sweep, and the daily summary. **Waits for SO-10:** the resume of the gateway. | The Render secret variable `RENDER_API_KEY` of the production service. |
+| Control plane key | The provisioner, the organization sweep, the idle sweep, the daily summary, and the resume of the gateway. | The Render secret variable `RENDER_API_KEY` of the production service. |
 | Release key | The deploy job of [`hosted-image.yml`](../../.github/workflows/hosted-image.yml) ([Hosted release](../../README.md#hosted-release)). | The GitHub repository secret `RENDER_API_KEY`, or the GitHub environment that SO-12 can add. |
 | Fleet key | The fleet script, the probes, and the Render interface gate. It is the key of the owner's Render user. | The variable `RENDER_API_KEY` in the git-ignored `.env.local` of the main checkout. |
 

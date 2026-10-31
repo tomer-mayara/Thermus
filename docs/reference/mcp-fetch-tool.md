@@ -251,7 +251,7 @@ gives the rules.
 | Condition | Answer |
 | --- | --- |
 | The tenant is requested, being created, or deploying; or the organization has no tenant yet, and the gateway requests one | HTTP `503`, `Retry-After: 15`, `error_description` "Your workspace is not ready yet. Try again in 15 seconds." |
-| The tenant was suspended, and the gateway tries to resume it; until SO-10 connects that resume, the tenant stays suspended until the operator resumes it | HTTP `503`, `Retry-After: 60`, "Your workspace is restarting after a pause. Try again in a minute." |
+| The tenant was suspended after an idle period: a free tenant without an MCP call for `FREE_TENANT_IDLE_DAYS` (14 by default), or an operator suspend. The first call resumes it, and each call gets this answer until the tenant is live again, for about a minute | HTTP `503`, `Retry-After: 60`, "Your workspace is restarting after a pause. Try again in a minute." |
 | The setup of the tenant failed | HTTP `503`, "Workspace setup failed. We have been notified and will fix it." |
 | The tenant was deleted | HTTP `503`, "Your workspace is not available. Contact Thermus support." |
 | No free tenant place is left | HTTP `503`, "All free workspaces are in use. Try again later." |
