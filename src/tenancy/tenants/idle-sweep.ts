@@ -1,13 +1,13 @@
 import type { SystemLog } from '../../logs/system/system-logger.ts';
+import { IdleSweepLog, type IdleRow } from './idle-sweep-log.ts';
 import { serviceChangeReason } from './service-change-reason.ts';
-import type { FleetRow, TenantFleetStore } from './tenant-fleet-store.ts';
+import type { FleetRow, FleetWrite, TenantFleetStore } from './tenant-fleet-store.ts';
 import type { TenantPlatform } from './tenant-platform.ts';
 import type { SweepStep } from './tenant-sweeps.ts';
 
 const DAY_MS = 86_400_000;
 
 type RowResult = 'suspended' | 'moved' | 'failed';
-type IdleRow = FleetRow & { readonly serviceId: string };
 
 export interface IdleSweepParts {
   readonly store: Pick<TenantFleetStore, 'readIdle' | 'markSuspended'>;
@@ -31,52 +31,49 @@ export interface IdleSweepParts {
 export class IdleSweep implements SweepStep {
   readonly name = 'idle sweep';
   private readonly parts: IdleSweepParts;
+  private readonly lines: IdleSweepLog;
 
   constructor(parts: IdleSweepParts) {
     this.parts = parts;
+    this.lines = new IdleSweepLog(parts.log);
   }
 
+  // Each day: a tick that falls while the control plane is down waits until the next day.
   runsAt(_tickMs: number): boolean {
     return true;
   }
 
   async run(tickMs: number, signal: AbortSignal): Promise<void> {
-    const { store, freePlan, idleDays, log } = this.parts;
-    const idle = await store.readIdle(freePlan, new Date(tickMs - idleDays * DAY_MS).toISOString());
-    if (idle.status !== 'complete') {
-      log.error(`Idle sweep stopped: ${JSON.stringify({ reason: 'The tenant registry cannot be read' })}`);
-      return;
-    }
-    const counts: Record<'idle' | RowResult, number> = { idle: idle.rows.length, suspended: 0, moved: 0, failed: 0 };
+    const cutoff = new Date(tickMs - this.parts.idleDays * DAY_MS).toISOString();
+    const idle = await this.parts.store.readIdle(this.parts.freePlan, cutoff);
+    if (idle.status !== 'complete') return this.lines.stopped();
+    const counts = { idle: idle.rows.length, suspended: 0, moved: 0, failed: 0 };
     for (const row of idle.rows.filter(hasService)) {
+      // A stop of the control plane ends the sweep between two rows, with no count line.
       signal.throwIfAborted();
       counts[await this.suspend(row, signal)] += 1;
     }
-    log.info(`Idle sweep: ${JSON.stringify(counts)}`);
+    this.lines.counts(counts);
   }
 
+  // The platform first: a refused or limited suspend changes no row.
   private async suspend(row: IdleRow, signal: AbortSignal): Promise<RowResult> {
-    const { organizationId, serviceId } = row;
-    const change = await this.parts.platform.suspendService(serviceId, signal);
-    if (change.status !== 'accepted') return this.failed(row, `The platform did not take the suspend: ${serviceChangeReason(change)}`);
-    const marked = await this.parts.store.markSuspended(organizationId, serviceId);
-    if (marked.status === 'unavailable') {
-      return this.failed(row, `The platform suspended the tenant service ${serviceId}, but the tenant registry did not take the suspended state. The next sweep suspends it again.`);
-    }
-    if (marked.status === 'moved') {
-      this.parts.log.info(`The idle sweep leaves organization ${organizationId}: its row changed during the suspension.`);
-      return 'moved';
-    }
-    const record = { organizationId, state: 'suspended', from: 'live', serviceId, serviceName: row.serviceName, idleSince: row.lastActiveAt ?? row.createdAt, cause: 'idle' };
-    this.parts.log.info(`Tenant suspension record: ${JSON.stringify(record)}`);
-    return 'suspended';
-  }
-
-  private failed(row: IdleRow, reason: string): RowResult {
-    this.parts.log.error(`Tenant suspension failed: ${JSON.stringify({ organizationId: row.organizationId, serviceId: row.serviceId, reason })}`);
+    const change = await this.parts.platform.suspendService(row.serviceId, signal);
+    if (change.status === 'accepted') return this.marked(row, await this.parts.store.markSuspended(row.organizationId, row.serviceId));
+    this.lines.failed(row, `The platform did not take the suspend: ${serviceChangeReason(change)}`);
     return 'failed';
   }
+
+  // The mark names the state and the service that the sweep read, so a row of another writer is moved.
+  private marked(row: IdleRow, mark: FleetWrite): RowResult {
+    if (mark.status === 'recorded') this.lines.suspended(row);
+    else if (mark.status === 'moved') this.lines.left(row);
+    else this.lines.failed(row, `The platform suspended the tenant service ${row.serviceId}, but the tenant registry did not take the suspended state. The next sweep suspends it again.`);
+    return MARK_RESULTS[mark.status];
+  }
 }
+
+const MARK_RESULTS: Readonly<Record<FleetWrite['status'], RowResult>> = { recorded: 'suspended', moved: 'moved', unavailable: 'failed' };
 
 function hasService(row: FleetRow): row is IdleRow {
   return row.serviceId !== null;
