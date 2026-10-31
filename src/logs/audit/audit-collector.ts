@@ -1,8 +1,8 @@
 import type { RevisionBoundAuditEvent, RevisionBoundAuditSink } from './audit-snapshots.ts';
 import type { DestinationSettingsService } from './destination-settings-service.ts';
 import type { AuditSendAttempt, AuditSendOutcome, TrackedAuditSender } from './audit-send.ts';
-import { boundedCollectorText, collectorBounds, RetryBackoff } from './audit-collector-state.ts';
-import type { AuditCollectorBounds, CollectorItem, CollectorTenant } from './audit-collector-state.ts';
+import { boundedCollectorText, collectorBounds, retryDelay } from './audit-collector-state.ts';
+import type { AuditCollectorBounds, CollectorItem, CollectorTenant, RetryBackoff } from './audit-collector-state.ts';
 import { detachedAuditEvent } from './audit-snapshot-state.ts';
 
 export type { AuditCollectorBounds } from './audit-collector-state.ts';
@@ -23,7 +23,7 @@ export class AuditCollector implements RevisionBoundAuditSink {
   constructor(private readonly authorizer: Pick<DestinationSettingsService, 'authorizeExport'>, private readonly sender: TrackedAuditSender, options: AuditCollectorOptions = {}) {
     this.bounds = collectorBounds(options.bounds ?? {});
     this.now = options.now ?? (() => performance.now());
-    this.retries = new RetryBackoff(this.bounds, options.random ?? Math.random);
+    this.retries = { bounds: this.bounds, random: options.random ?? Math.random };
   }
 
   admit(captured: RevisionBoundAuditEvent): boolean {
@@ -123,7 +123,7 @@ export class AuditCollector implements RevisionBoundAuditSink {
 
   private backoff(item: CollectorItem, outcome: AuditSendOutcome | 'unavailable'): void {
     if (item.disposed) return;
-    const delay = this.retries.delayAfter(outcome, item.attempts);
+    const delay = retryDelay(outcome, item.attempts, this.retries);
     if (delay === undefined || this.now() + delay >= item.until) this.dispose(item);
     else item.nextAt = this.now() + delay;
   }

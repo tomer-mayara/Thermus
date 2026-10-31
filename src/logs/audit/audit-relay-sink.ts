@@ -1,5 +1,5 @@
 import type { AuditEvent, AuditEventSink } from './audit-log.ts';
-import { collectorBounds, RetryBackoff, type AuditCollectorBounds } from './audit-collector-state.ts';
+import { collectorBounds, type AuditCollectorBounds } from './audit-collector-state.ts';
 import { relayItemOf, type RelayClock, type RelayRoute } from './audit-relay-item.ts';
 import { RelayQueue } from './audit-relay-queue.ts';
 import { postAuditRelay } from './audit-relay-request.ts';
@@ -57,5 +57,5 @@ export class AuditRelaySink {
 function relayRouteOf(target: URL, options: AuditRelayOptions): RelayRoute {
   const clock = { now: options.now ?? (() => performance.now()), random: options.random ?? Math.random, post: options.post ?? postAuditRelay };
   const bounds = collectorBounds(options.bounds ?? {});
-  return { target, clock, bounds, retries: new RetryBackoff(bounds, clock.random) };
+  return { target, clock, bounds, retries: { bounds, random: clock.random } };
 }

@@ -1,5 +1,5 @@
 import type { AuditEvent } from './audit-log.ts';
-import { boundedCollectorText, type AuditCollectorBounds, type RetryBackoff } from './audit-collector-state.ts';
+import { boundedCollectorText, retryDelay, type AuditCollectorBounds, type RetryBackoff } from './audit-collector-state.ts';
 import type { AuditSendOutcome } from './audit-send.ts';
 import type { AuditRelay } from './audit-relay-request.ts';
 
@@ -57,7 +57,7 @@ export async function attemptRelay(item: RelayItem, route: RelayRoute): Promise<
   item.controller = new AbortController();
   try {
     const outcome = await route.clock.post({ target: route.target, context: item.context, body: item.body ?? '' }, item.controller.signal);
-    const delay = item.disposed ? undefined : route.retries.delayAfter(outcome, item.attempts);
+    const delay = item.disposed ? undefined : retryDelay(outcome, item.attempts, route.retries);
     return delay === undefined || route.clock.now() + delay >= item.until ? undefined : delay;
   } catch {
     return undefined;

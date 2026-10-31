@@ -18,9 +18,7 @@ export interface LoggingRoutesOptions {
 }
 
 type LoggingAction = DestinationChange['action'];
-
 interface LoggingScope extends Pick<RequestContext, 'tenantId' | 'user'> { readonly csrfToken: string }
-
 interface SettingsView { readonly settings: PublicDestinationSettings; readonly notice?: LoggingNotice; readonly saved: boolean }
 
 const unavailable: LoggingNotice = { title: 'Audit logs unavailable', message: 'Audit logs settings are unavailable. Read saved settings before making another change.', status: 503 };
