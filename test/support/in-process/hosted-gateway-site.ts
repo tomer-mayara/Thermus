@@ -76,10 +76,8 @@ export async function openHostedGatewaySite(t: TestContext, options: HostedGatew
     gateway: options.tenantsEnabled === false ? undefined : {
       settings: { signingKey: keys.privateKey, verifyingKey: createPublicKey(keys.publicKeyPem), controlPlaneInternalUrl: internalUrl },
       tenants: gatewayTenantsOf({
-        lookup: new TenantLookup(registry, clock),
-        requests: new TenantRequests(registry, options.freeTenantLimit ?? 25),
-        resumes: new TenantResumes(registry, resume),
-        activity: new TenantActivity(registry, clock),
+        lookup: new TenantLookup(registry, clock), requests: new TenantRequests(registry, options.freeTenantLimit ?? 25),
+        resumes: new TenantResumes(registry, resume), activity: new TenantActivity(registry, clock),
       }),
     },
   }));
