@@ -356,22 +356,22 @@ export class RenderFake {
   }
 }
 
-const READ_ROUTES: readonly (readonly [RegExp, RenderRoute])[] = [
-  [/^\/v1\/services\/[^/]+\/deploys$/, 'list deploys'],
-  [/^\/v1\/services\/[^/]+\/events$/, 'list events'],
-  [/^\/v1\/metrics\/memory$/, 'memory metrics'],
-  [/^\/v1\/metrics\/memory-limit$/, 'memory limit metrics'],
+// Each route of the fake: its method, its path, and its name.
+const ROUTES: readonly (readonly [string, RegExp, RenderRoute])[] = [
+  ['GET', /^\/v1\/services$/, 'list services'],
+  ['POST', /^\/v1\/services$/, 'create service'],
+  ['GET', /^\/v1\/services\/[^/]+$/, 'read service'],
+  ['DELETE', /^\/v1\/services\/[^/]+$/, 'delete service'],
+  ['POST', /^\/v1\/services\/[^/]+\/suspend$/, 'suspend service'],
+  ['POST', /^\/v1\/services\/[^/]+\/resume$/, 'resume service'],
+  ['GET', /^\/v1\/services\/[^/]+\/deploys$/, 'list deploys'],
+  ['GET', /^\/v1\/services\/[^/]+\/events$/, 'list events'],
+  ['GET', /^\/v1\/metrics\/memory$/, 'memory metrics'],
+  ['GET', /^\/v1\/metrics\/memory-limit$/, 'memory limit metrics'],
 ];
 
-const CHANGE_ROUTES: Readonly<Record<string, RenderRoute>> = { suspend: 'suspend service', resume: 'resume service' };
-
 function routeOf(method: string, path: string): RenderRoute | 'unknown' {
-  if (path === '/v1/services') return method === 'GET' ? 'list services' : method === 'POST' ? 'create service' : 'unknown';
-  if (/^\/v1\/services\/[^/]+$/.test(path)) return method === 'GET' ? 'read service' : method === 'DELETE' ? 'delete service' : 'unknown';
-  const change = /^\/v1\/services\/[^/]+\/(suspend|resume)$/.exec(path)?.[1];
-  if (change !== undefined) return method === 'POST' ? CHANGE_ROUTES[change] ?? 'unknown' : 'unknown';
-  const read = READ_ROUTES.find(([pattern]) => pattern.test(path));
-  return read !== undefined && method === 'GET' ? read[1] : 'unknown';
+  return ROUTES.find(([routeMethod, pattern]) => routeMethod === method && pattern.test(path))?.[2] ?? 'unknown';
 }
 
 interface MetricsWindow {
