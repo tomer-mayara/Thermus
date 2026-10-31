@@ -17,7 +17,6 @@ import { answer, portalFiles, portalHeaders, type PortalSite } from './portal-fr
 import { browserRedirectUri, localOrigin, localSitePort, type HostedLiveSettings } from './settings.ts';
 
 const publicBaseUrl = `${localOrigin}/`;
-// Writes key.pem and cert.pem into the directory and gives their PEM contents.
 export async function selfSignedCertificate(directory: string): Promise<{ key: Buffer; cert: Buffer }> {
   const key = join(directory, 'key.pem');
   const cert = join(directory, 'cert.pem');

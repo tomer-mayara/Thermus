@@ -15,7 +15,6 @@ import { tenantMcpHandler } from './tenant-requests.ts';
 
 type TenantConfig = Extract<DeploymentConfig, { role: 'tenant' }>;
 
-/** The collaborators of the MCP resource of a tenant. */
 export interface TenantMcpParts {
   readonly logger: SystemLog;
   readonly operations: ToolOperations;

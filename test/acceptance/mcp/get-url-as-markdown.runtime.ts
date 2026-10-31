@@ -66,8 +66,6 @@ interface RuntimeSite {
   readonly pipelineRuns: { mock: { calls: { arguments: unknown[] }[] } };
 }
 
-// A fresh installation with one account, its client, and a real access token, served in this process with the
-// pinned renderer and trusted rules.
 async function openRuntimeSite(t: TestContext, executable: string): Promise<RuntimeSite> {
   const directory = dataDirectory(t);
   const operator = operatorOn(t, directory);

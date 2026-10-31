@@ -16,7 +16,6 @@ export function tenantHeaders(headers: Headers, context: string): Headers {
   return forwarded;
 }
 
-/** The headers of the answer of the tenant that reach the client. */
 export function answerHeaders(headers: Headers): Headers {
   return withoutHeaders(headers, [...HOP_BY_HOP, ...SET_BY_BRIDGE]);
 }

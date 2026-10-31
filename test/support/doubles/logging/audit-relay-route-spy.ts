@@ -44,7 +44,6 @@ export class AuditRelayRouteSpy {
     return this.#origin;
   }
 
-  // The relay requests that have no answer.
   get open(): number {
     return this.#held.size;
   }

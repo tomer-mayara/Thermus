@@ -13,7 +13,6 @@ export class ProvisioningLog {
     this.log = log;
   }
 
-  /** The state that a row takes, with the facts of that state. */
   record(row: ProvisioningRow, state: string, details: Readonly<Record<string, unknown>>): void {
     this.log.info(`Tenant provisioning record: ${JSON.stringify({ organizationId: row.organizationId, state, serviceName: row.serviceName, ...details })}`);
   }

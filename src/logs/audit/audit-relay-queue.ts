@@ -20,7 +20,6 @@ export class RelayQueue {
     return true;
   }
 
-  /** The head of each tenant whose head does not run. */
   waitingHeads(): RelayItem[] {
     return [...this.tenants.values()].flatMap((items) => items.slice(0, 1)).filter((head) => !head.active);
   }

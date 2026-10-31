@@ -13,7 +13,6 @@ export interface RelayClock {
   readonly post: AuditRelayPost;
 }
 
-/** The route of the relays of a sink: the target, the clock, and the bounds of the audit collector. */
 export interface RelayRoute {
   readonly target: URL;
   readonly clock: RelayClock;

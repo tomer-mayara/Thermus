@@ -9,7 +9,6 @@ export interface ProvisioningRow {
 export interface ClaimRequest {
   /** The name of the service of an organization, for a row that has no name yet. */
   serviceNameOf(organizationId: string): string;
-  /** The plan that a newly claimed row wants. */
   readonly plan: string;
 }
 

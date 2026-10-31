@@ -71,7 +71,6 @@ export function tokenAnswer(token: string, refreshToken: string): FakeAnswer {
   return { status: 200, body };
 }
 
-// The Cookie header that a browser sends after it stored these Set-Cookie values.
 export function cookieHeaderOf(setCookies: readonly string[]): string {
   return setCookies.map((setCookie) => setCookie.split(';')[0]).join('; ');
 }

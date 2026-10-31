@@ -57,7 +57,6 @@ function closes(fence: Fence, line: string): boolean {
   return match !== null && match[1][0] === fence.marker[0] && match[1].length >= fence.marker.length;
 }
 
-// The number of views that have no equal view left on the other side.
 function surplusOf(views: readonly string[], others: readonly string[]): number {
   const left = [...others];
   let surplus = 0;

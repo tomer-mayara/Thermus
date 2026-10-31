@@ -2,8 +2,6 @@ import type { AuthenticatedUser, RoleGrant } from '../../../src/accounts/identit
 import type { MembershipRecord } from '../doubles/organizations/membership-directory-double.ts';
 import { adminGrant, memberRole, userGrant } from './hosted-roles.ts';
 
-// The users and the memberships of the offline hosted organization and administration tests.
-
 export const authority = 'hosted-provider-double';
 const organizationNames: Readonly<Record<string, string>> = { 'org-a': 'Acme', 'org-b': 'Globex', 'org-c': 'Initech', 'org-d': 'Umbrella', 'org-e': 'Hooli' };
 

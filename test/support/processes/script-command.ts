@@ -23,7 +23,6 @@ export interface ScriptLine {
   readonly stop?: ScriptStop;
 }
 
-// Runs a command under script/ in a child Node process and collects its exit status and output.
 export async function runScript(t: TestContext, script: string, line: ScriptLine = {}): Promise<ScriptResult> {
   const child = spawn(process.execPath, [script, ...(line.args ?? [])], {
     cwd: line.cwd,

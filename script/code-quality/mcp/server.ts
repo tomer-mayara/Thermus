@@ -1,7 +1,6 @@
 import type { CallToolRequestParams, Client, RequestOptions, Tool } from '@modelcontextprotocol/client';
 import { CommandError } from '../shared/repository.ts';
 
-// What the work of withAstMetricsServer can ask: tool gives the answer text of a tool, and tools gives the tool list.
 export interface AstMetricsServer {
   tool(name: string, args: Readonly<Record<string, unknown>>): Promise<string>;
   tools(): Promise<Tool[]>;

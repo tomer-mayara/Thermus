@@ -39,7 +39,6 @@ export interface HostedGatewaySiteOptions {
   readonly freeTenantLimit?: number;
 }
 
-// One HTTP exchange of the SDK client: what the client sent and the status that it got.
 export interface WireExchange {
   readonly httpMethod: string;
   readonly rpcMethod: string | undefined;
@@ -116,7 +115,6 @@ export async function openHostedGatewaySite(t: TestContext, options: HostedGatew
       registry.live(organizationId, other.origin);
       return { tenant: other, token: tokenOf(otherUser, organizationId) };
     },
-    // An SDK client of the public MCP URL. Its fetch records each exchange.
     connect: async (token: string, era: McpProtocolEra = '2026-07-28') => {
       const tap = async (input: string | URL | Request, init?: RequestInit): Promise<Response> => {
         const response = await fetch(input, init);

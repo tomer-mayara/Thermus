@@ -104,7 +104,6 @@ async function contextAt(browser: HostedBrowser, path: string): Promise<RequestC
   return (JSON.parse(answer.body) as { context: RequestContext }).context;
 }
 
-// The WorkOS requests of the site, without the reads of the browser key set.
 function workosRequests(site: Site): string[] {
   return site.world.fake.takeRequests().map(({ method, path }) => `${method} ${path}`).filter((line) => !line.startsWith('GET /sso/jwks/'));
 }

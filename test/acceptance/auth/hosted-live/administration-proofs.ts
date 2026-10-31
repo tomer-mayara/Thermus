@@ -76,7 +76,6 @@ function withPagesOfTwo(memberships: MembershipReads, reads: MembershipListRead[
   return paged;
 }
 
-// Every page of one member read of the directory, in order.
 async function everyMemberPage(directory: OrganizationDirectory, organizationId: string, statuses: readonly MembershipStatus[]): Promise<OrganizationMember[]> {
   const members: OrganizationMember[] = [];
   let cursor: string | undefined;
@@ -114,7 +113,6 @@ export function describeAdministrationProofs(run: LiveRun): void {
     return (await workos.userManagement.listInvitations({ organizationId, limit: 100 })).autoPagination();
   }
 
-  // A member read in pages of two, which must give exactly the memberships of a direct WorkOS read with the same statuses.
   async function checkedPagedRead(t: TestContext, organizationId: string, statuses: readonly MembershipStatus[]): Promise<PagedMemberRead> {
     const reads: MembershipListRead[] = [];
     const members = await everyMemberPage(pagedDirectory(reads), organizationId, statuses);
@@ -134,7 +132,6 @@ export function describeAdministrationProofs(run: LiveRun): void {
     return invitation;
   }
 
-  // The states under which a directory read of one state lists the invitation.
   async function statesListing(organizationId: string, invitationId: string): Promise<InvitationState[]> {
     const listed: InvitationState[] = [];
     for (const state of invitationStates) {

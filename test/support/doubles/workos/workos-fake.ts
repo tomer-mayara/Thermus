@@ -66,7 +66,6 @@ export class WorkOSFake implements DirectoryView, OrganizationView, InvitationVi
   // Each next membership page starts with this many records from the end of the page before, as WorkOS can give
   // during concurrent changes.
   membershipPageOverlap = 0;
-  // The authentication method of each new sign-in.
   authenticationMethod = 'Password';
   // Set to an answer, such as a 500, to make reads fail: each membership read, only the membership pages after the
   // first, each invitation read, or the refreshes.

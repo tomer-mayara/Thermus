@@ -13,7 +13,6 @@ export interface ContextSigner {
   sign(claims: AccessContextClaims, bearerToken: string): Promise<string>;
 }
 
-/** The parts of the live forward: the signer of the context, the activity write, and the answers of the gateway. */
 interface ForwardParts {
   readonly signer: ContextSigner;
   readonly tenants: Pick<GatewayTenants, 'recordActive'>;
@@ -27,7 +26,6 @@ interface ForwardParts {
 export class LiveForward {
   /** The search places of all tenants together. */
   private readonly searches = new GatewaySearches();
-  /** The signer of the context, the activity write, and the answers of the gateway. */
   private readonly parts: ForwardParts;
 
   constructor(parts: ForwardParts) {
@@ -64,7 +62,6 @@ export class LiveForward {
     return answer.response;
   }
 
-  /** The call with the context that the gateway signs for the access and the bearer token of the request. */
   private async signedCall(forwarded: McpForwardedRequest, call: TenantCall): Promise<TenantAnswer> {
     const context = await this.parts.signer.sign(claimsOf(forwarded.context), forwarded.bearerToken);
     return callTenant({ ...call, headers: tenantHeaders(call.headers, context) }, forwarded.lifetime.signal);

@@ -2,7 +2,6 @@ import { ACCESS_CONTEXT_HEADER } from '../../accounts/identity/signed-access-con
 import { AUDIT_SEND_LIMITS, type AuditSendOutcome } from './audit-send.ts';
 import { retryAfterMs } from './otlp-audit-response.ts';
 
-/** One relay of one audit event: the route of the control plane, the access context of the request, and the event JSON. */
 export interface AuditRelay {
   readonly target: URL;
   readonly context: string;

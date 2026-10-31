@@ -22,7 +22,6 @@ const memberGrant: RoleGrant = { role: 'member', permissions: [] };
 
 type GrantAnswer = readonly RoleGrant[] | undefined | Error;
 
-// Answers the grant read of each organization and records each read.
 class GrantReaderDouble {
   readonly reads: { userId: string; organizationId: string }[] = [];
   private readonly answers: ReadonlyMap<string, GrantAnswer>;

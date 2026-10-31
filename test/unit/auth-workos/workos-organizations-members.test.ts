@@ -19,7 +19,6 @@ const bob = membership({ id: 'om_02BOB', userId: 'user_02BOB', status: 'inactive
 const carol = membership({ id: 'om_03CAROL', userId: 'user_03CAROL', status: 'pending', roles: roles('user') });
 const everyStatus: readonly MembershipStatus[] = ['active', 'inactive', 'pending'];
 
-// WorkOS with these memberships on one page, each also readable by its ID, and the users of Alice, Bob, and Carol.
 function doubleWith(records: readonly MembershipRecord[], after: string | null = null): WorkOSOrganizationsDouble {
   const double = new WorkOSOrganizationsDouble();
   double.membershipList = { data: records, after };

@@ -38,7 +38,6 @@ interface Choice {
   readonly notes: readonly string[];
 }
 
-// The label of the report row, and the file of its check result.
 export function namesOf(target: Target): { readonly label: string; readonly file: string } {
   if (target.kind === 'pull-request') return { label: String(target.number), file: `check-${target.number}.json` };
   const fileNamePart = (ref: string) => ref.replace(/[^\w.-]/gu, '_');

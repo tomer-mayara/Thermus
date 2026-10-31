@@ -86,7 +86,6 @@ export class AuthKitSignIn {
     return { status: 'signed-in', facts: completed, returnTo: pending.returnTo, cookies: [this.signInCookie.clearCookie(), this.sessionCookie.setCookie(session)] };
   }
 
-  // The checks before the code exchange: the sign-in of this browser, the answer of AuthKit, and its state.
   private pending({ query, cookieHeader }: SignInCallback): PendingSignIn | SignInRefusal {
     const signIn = this.signInCookie.contentOf(cookieHeader);
     if (signIn === undefined) return 'sign-in-missing';

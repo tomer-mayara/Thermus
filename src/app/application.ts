@@ -56,7 +56,6 @@ export interface HostedProviderParts {
 
 export interface HostedAccountParts {
   readonly reportFailure: AccountFailureReporter;
-  // Keeps the basic records of the privileged account changes.
   readonly changeRecords: ChangeRecorder;
   readonly audit?: Pick<AuditLog, 'administrationChanged' | 'destinationChanged'>;
   // The one billing of the hosted organizations: BillingFree until a payment provider implementation replaces it.

@@ -17,7 +17,6 @@ export class TenantRegistryFake implements TenantRegistryStore, TenantGatewaySto
   readFailure = false;
   reads = 0;
 
-  // A live row with the internal address of the tenant and a service ID.
   live(organizationId: string, internalUrl: string): void {
     this.rows.set(organizationId, { state: 'live', internalUrl, serviceId: `srv-${organizationId.toLowerCase().replace(/[^a-z0-9]/g, '')}` });
   }

@@ -144,7 +144,6 @@ export async function composeWorkOSApplication(config: RouteConfig, connection: 
   return application;
 }
 
-// The portal reads the name of the active organization of the member and the billing state of that organization.
 function portalReads(organizations: WorkOSOrganizations, billing: Billing): PortalReads {
   return {
     organizationNameOf: (user, organizationId) => organizations.activeOrganizationName(user, organizationId),

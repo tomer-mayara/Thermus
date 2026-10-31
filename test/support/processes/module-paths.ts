@@ -15,7 +15,6 @@ function containerModule(name: string): string {
   return fileURLToPath(new URL(`../container/${name}.${extension}`, import.meta.url));
 }
 
-// The folder of package.json.
 export const repositoryRoot = new URL(fromSource ? '../../../' : '../../../../', import.meta.url);
 
 // The portal build that the local HTTPS site serves. It exists only after npm run build:user-portal.

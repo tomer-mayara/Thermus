@@ -42,7 +42,6 @@ export interface TrendRecord {
   readonly crap?: TrendCrapBasis;
 }
 
-// The numbers of one row of the trend table.
 export type TrendNumbers = Pick<TrendRecord, 'commit' | 'date' | 'title' | 'tool' | 'modularity' | 'crossShare' | 'cycles' | 'maintainability' | 'functionsOver30' | 'crap' | 'components'>;
 
 // The CRAP of each file of the snapshot, by path, as the CRAP delta gives it.

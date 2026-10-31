@@ -20,7 +20,6 @@ function serviceOf(value: unknown): PlatformService | undefined {
   return typeof id === 'string' && isServiceId(id) && typeof name === 'string' ? { id, name } : undefined;
 }
 
-/** The service of a create answer. */
 export function createdServiceOf(json: unknown): PlatformService | undefined {
   return serviceOf(recordOf(json).service);
 }

@@ -49,7 +49,6 @@ export async function openTenantSite(t: TestContext, settings: Readonly<Record<s
       { sub: tenantUser, client_id: 'client_01TENANTMCP', sid: 'app_consent_01TENANT', scope: 'openid', org_id: tenantOrganizationId, ...claims },
       { issuer: workOSSettings.WORKOS_AUTHKIT_ISSUER, audience: config.mcpResourceUrl },
     ),
-    // An SDK client that reaches the tenant through the gateway of the test.
     connect: async (token: string, era: McpProtocolEra = '2026-07-28') => {
       const transport = new StreamableHTTPClientTransport(mcpUrl, { authProvider: { token: async () => token }, fetch: gateway.fetchFor(token) });
       const client = await connectMcpClient(t, transport, { era, probe: era === '2026-07-28' });

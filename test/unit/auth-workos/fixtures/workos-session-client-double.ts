@@ -28,7 +28,6 @@ interface ClientCall {
   readonly input: unknown;
 }
 
-// A narrow double of the WorkOS SDK client. Each test sets the answers it needs; each call is recorded in order.
 export class WorkOSSessionClientDouble implements WorkOSSessionClient {
   readonly calls: ClientCall[] = [];
   authorization = { url: 'https://api.workos.example/user_management/authorize?state=state-1', state: 'state-1', codeVerifier: 'verifier-1' };
@@ -94,7 +93,6 @@ export function unsignedToken(claims: Readonly<Record<string, unknown>>): string
   return `${part({ alg: 'RS256', typ: 'JWT' })}.${part({ sub: ada.id, exp: 1, ...claims })}.signature`;
 }
 
-// The Cookie header that a browser sends after it stored these Set-Cookie values.
 export function cookieHeaderOf(setCookies: readonly string[]): string {
   return setCookies.map((setCookie) => setCookie.split(';')[0]).join('; ');
 }

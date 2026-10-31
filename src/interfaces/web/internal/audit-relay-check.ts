@@ -11,7 +11,6 @@ export interface RelayRefusal {
   readonly organizationId?: string;
 }
 
-/** A relay that passed its check, or the refusal of the check. */
 export type CheckedRelay = { readonly event: RelayedToolCompletion; readonly context: VerifiedAccessContext } | { readonly refusal: RelayRefusal };
 
 export interface RelayCheckRule {

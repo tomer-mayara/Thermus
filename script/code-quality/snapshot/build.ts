@@ -1,4 +1,3 @@
-// Assemble a snapshot from native measurements and their exact source text.
 import { dependenciesOf } from '../dependencies/source.ts';
 import { snapshotCommunitiesOf } from './communities.ts';
 import { functionEvidenceOf } from '../identity/source.ts';

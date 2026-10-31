@@ -96,7 +96,6 @@ interface Access {
   readonly permissions: readonly string[];
 }
 
-// The access that a Connect token gives now: the provider verifies the token and resolves the current WorkOS grants.
 async function accessWith(site: Site, token: string): Promise<Access | string> {
   const decision = await site.provider.resolve((await site.provider.verifyAccessToken(token)).user);
   return decision.allowed ? { roles: decision.context.grants.map(({ role }) => role), permissions: decision.context.permissions } : decision.reason;

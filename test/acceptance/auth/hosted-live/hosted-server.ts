@@ -237,7 +237,6 @@ async function activeSessionsOf(run: LiveRun, userId: string): Promise<number> {
   return sessions.filter(({ status }) => status === 'active').length;
 }
 
-// The operator ends each active browser session of the user through the WorkOS API.
 async function revokeActiveSessionsOf(run: LiveRun, userId: string): Promise<number> {
   const sessions = await (await run.workos.userManagement.listSessions(userId)).autoPagination();
   const active = sessions.filter(({ status }) => status === 'active');

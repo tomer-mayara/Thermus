@@ -72,7 +72,6 @@ export async function refusalOf(response: Response) {
   return { status: response.status, retryAfter: response.headers.get('Retry-After'), body: await response.json() as Record<string, unknown> };
 }
 
-// A body stream whose chunks the test sends, and whose cancel the test sees.
 export function controlledBody() {
   let controller: ReadableStreamDefaultController<Uint8Array> | undefined;
   const cancelled = Promise.withResolvers<unknown>();

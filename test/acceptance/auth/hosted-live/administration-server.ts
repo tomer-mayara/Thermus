@@ -105,7 +105,6 @@ export function describeAdministrationServerCases(run: LiveRun): void {
   // The administrator keeps its session from one case to the next.
   const administrator = once(async () => signInThroughPortal(run, (await run.administrationFixtures()).users['c-administrator']));
 
-  // A person opens the page and submits the form with this button.
   async function submitFrom(page: Page, path: string, label: string): Promise<ServerAnswer> {
     return submit(page, formLabelled((await shownPage(run, page, path)).forms, label));
   }

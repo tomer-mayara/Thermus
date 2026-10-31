@@ -69,7 +69,6 @@ export function parseInputs(args: readonly string[]): ProbeInputs {
   return Object.freeze(inputs);
 }
 
-// The steps that a step needs, with the reason that its usage error gives.
 const NEEDED_STEPS: Readonly<Partial<Record<StepId, { readonly steps: readonly StepId[]; readonly reason?: string }>>> = {
   job: { steps: ['private', 'web'], reason: 'the job runs on the web service and requests the private service' },
   'control-plane': { steps: ['private', 'web'], reason: 'the job runs on the private service and requests the web service' },

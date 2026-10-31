@@ -84,7 +84,6 @@ export interface WorkOSOrganizationsOptions {
 const MEMBERSHIP_READ_LIMIT = 10;
 // The largest page that WorkOS gives.
 const PAGE_SIZE = 100;
-// The page limit bounds the read of the memberships of one user.
 const MEMBERSHIP_PAGE_LIMIT = 10;
 const NO_MEMBERSHIPS: readonly OrganizationMembership[] = Object.freeze([]);
 const APPLIED = Object.freeze({ outcome: 'applied' as const });

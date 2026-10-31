@@ -34,7 +34,6 @@ export class ProvisioningHarness {
     return tenantPlatformOf({ settings: this.settings, store: this.store, fetch: this.render.fetch, clock: this.clock });
   }
 
-  /** Runs the provisioner loop until the condition holds, then stops it as the application close does. */
   async runUntil(condition: () => boolean, what: string): Promise<void> {
     const provisioning = startTenantProvisioning({
       settings: this.settings, publicBaseUrl: controlPlanePublicBaseUrl, authkitIssuer: controlPlaneAuthkitIssuer,
@@ -47,12 +46,10 @@ export class ProvisioningHarness {
     }
   }
 
-  /** Runs the loop until the virtual clock passes the given time. */
   runFor(virtualMs: number): Promise<void> {
     return this.runUntil(() => this.clock.now() >= virtualMs, `${virtualMs} ms of virtual time`);
   }
 
-  /** The body of each create call that the fake Render API received. */
   createBodies(): Record<string, unknown>[] {
     return this.render.requestsOf('create service').map((request) => request.body as Record<string, unknown>);
   }

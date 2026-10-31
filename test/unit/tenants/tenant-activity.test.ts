@@ -4,7 +4,6 @@ import { setImmediate } from 'node:timers/promises';
 import { TenantActivity } from '../../../src/tenancy/tenants/tenant-activity.ts';
 import type { GatewayWrite } from '../../../src/tenancy/tenants/tenant-gateway-store.ts';
 
-// A spy of the activity write with a clock double: the test moves the time.
 function activityOf(answer: (organizationId: string) => Promise<GatewayWrite> = async () => ({ status: 'recorded' })) {
   let now = 1_000;
   const writes: string[] = [];

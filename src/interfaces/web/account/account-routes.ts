@@ -97,7 +97,6 @@ export class HostedAccountRoutes {
     return this.tenantOperation(request, session, path);
   }
 
-  // The administration pages and changes come first; another path goes to the account operation.
   private async tenantOperation(request: Request, session: SignedInBrowserSession, path: string): Promise<Response> {
     const decision = await waitForRequest(request.signal, () => this.accessResolver.resolve(session.user));
     request.signal.throwIfAborted();

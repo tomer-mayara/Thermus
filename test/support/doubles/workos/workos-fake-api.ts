@@ -137,7 +137,6 @@ export class WorkOSFakeApi {
   }
 }
 
-// The decoded ID segment of a route that fits the pattern, or undefined.
 function idIn(pattern: readonly string[], route: readonly string[]): string | undefined {
   if (pattern.length !== route.length) return undefined;
   let id: string | undefined;

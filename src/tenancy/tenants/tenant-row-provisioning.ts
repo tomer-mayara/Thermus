@@ -11,7 +11,6 @@ export interface RowParts extends CreationParts {
   readonly store: TenantProvisioningStore;
 }
 
-/** The work on one claimed row: its service, its first deploy or the deploy of a resume, and its end state. */
 export class RowProvisioning {
   private readonly parts: RowParts;
   private readonly records: RowRecords;

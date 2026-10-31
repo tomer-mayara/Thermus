@@ -20,7 +20,6 @@ const STATE_REFUSALS: Readonly<Record<Exclude<GatewayTenantState, 'suspended' | 
   requested: 'starting', creating: 'starting', deploying: 'starting', live: 'registry-unavailable', deleted: 'deleted',
 };
 
-// The refusal of a tenant request for an organization without a row.
 const REQUEST_REFUSALS: Readonly<Record<Exclude<GatewayTenantRequest['status'], 'present'>, Refusal>> = {
   requested: { reason: 'starting', state: 'requested' },
   full: { reason: 'capacity' },
@@ -34,16 +33,12 @@ const REQUEST_REFUSALS: Readonly<Record<Exclude<GatewayTenantRequest['status'], 
  * method, and the tool name of each JSON-RPC message, for its own answers and for the search limit.
  */
 export class McpGateway {
-  /** The registry port that app composes on the tenants owner. */
   private readonly tenants: GatewayTenants;
-  /** The answers of the gateway itself, with their log lines. */
   private readonly refusals: GatewayRefusals;
-  /** The forward to a live tenant. */
   private readonly live: LiveForward;
   /** The refusal of each row that is not live, with the one report of each failed row. */
   private readonly states = new StateRefusals();
 
-  /** The answers of the gateway and of its live forward share one refusals object and one logger. */
   constructor(options: McpGatewayOptions) {
     this.tenants = options.tenants;
     this.refusals = new GatewayRefusals(options.logger);

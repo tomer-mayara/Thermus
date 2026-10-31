@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { readBoundedBody } from '../../../src/runtime/http/bounded-body.ts';
 
-// A request body that the test sends in chunks and that records each cancel and each read.
 function streamedRequest(chunks: readonly string[], headers: Record<string, string> = {}) {
   const sent = { reads: 0, cancels: [] as unknown[] };
   const queue = chunks.map((chunk) => new TextEncoder().encode(chunk));

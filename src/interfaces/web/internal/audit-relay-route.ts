@@ -27,7 +27,6 @@ const STATUS_OF: Readonly<Record<RelayRefusal['reason'], number>> = { body: 400,
  * under /internal/ gets 404.
  */
 export class AuditRelayRoute {
-  /** The rule of the relay check, the capture, and the report of each refusal. */
   private readonly options: AuditRelayRouteOptions;
   /** The host of the internal origin, in lower case. */
   private readonly internalHost: string;

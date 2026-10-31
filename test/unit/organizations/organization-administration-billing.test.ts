@@ -69,7 +69,6 @@ describe('OrganizationAdministration billing state', () => {
 });
 
 
-// The number of change records that were kept when each seat update of billing started.
 describe('OrganizationAdministration invitation billing behavior', () => {
   test('Given an Admin, when it sends, resends, and revokes User invitations, then each is applied, and billing gets no update, because an invitation is no seat', async () => {
     const { billing, administration } = invitationsWith();

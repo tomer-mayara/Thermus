@@ -1,7 +1,6 @@
 // The tenant registry as the MCP gateway needs it. App composes this port on the tenants owner, so mcp imports no
 // registry module.
 
-/** The states of a tenant row, as the registry copy gives them. */
 export type GatewayTenantState = 'requested' | 'creating' | 'deploying' | 'live' | 'suspended' | 'failed' | 'deleted';
 
 /** The row of an organization in the registry copy: its state and its internal address, no row, or no usable copy. */

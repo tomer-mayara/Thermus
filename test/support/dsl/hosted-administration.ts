@@ -43,7 +43,6 @@ interface FilledForm {
   readonly filled: Readonly<Record<string, string>>;
 }
 
-// Opens the page, as a person does, and submits the form with this button, with its visible fields filled in.
 export async function submitOnPage(browser: HostedBrowser, path: string, choice: string | FilledForm): Promise<BrowserAnswer> {
   const { label, filled } = typeof choice === 'string' ? { label: choice, filled: {} } : choice;
   const { answer, forms } = await shownPage(browser, path);

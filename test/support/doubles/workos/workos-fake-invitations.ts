@@ -3,7 +3,6 @@ import type { FakeInvitation, FakeMembership, FakeUser } from './workos-fake.ts'
 import { changeMembership, currentStatus, effectiveRoles, membershipIdAt, isKnownRole, matches, queryOf } from './workos-fake-directory.ts';
 import { invitationJson, listAnswer, notFound, refusal, type ShownInvitation } from './workos-fake-wire.ts';
 
-// What the invitation routes read and change in the fake.
 export interface InvitationView {
   readonly fake: WorkOSFakeApi;
   invitations: readonly FakeInvitation[];
@@ -40,7 +39,6 @@ function sameAddress(first: string, second: string): boolean {
   return first.toLowerCase() === second.toLowerCase();
 }
 
-// The routes of the invitations of the organization administration.
 export class WorkOSFakeInvitations {
   readonly #view: InvitationView;
   // The number of changes of each invitation, by ID. The update times come from them.

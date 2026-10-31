@@ -110,12 +110,10 @@ export function invitation(changes: Partial<InvitationRecord> = {}): InvitationR
   };
 }
 
-// The error of the SDK for a WorkOS 404.
 export function notFound(): NotFoundException {
   return new NotFoundException({ code: 'entity_not_found', message: 'The entity was not found.', path: '/user_management/entity', requestID: 'request_01' });
 }
 
-// The error of the SDK for a WorkOS refusal with this status and code, such as 400.
 export function refusal(code: string, status = 400): GenericServerException {
   return new GenericServerException(status, `WorkOS refused the request with ${code}.`, { code, message: `WorkOS refused the request with ${code}.` }, 'request_01');
 }
@@ -130,7 +128,6 @@ export class WorkOSOrganizationsDouble {
   membershipList: ListAnswer<MembershipRecord> = { data: [], after: null };
   invitationList: ListAnswer<InvitationRecord> = { data: [], after: null };
   organizationRoles: readonly RoleRecord[] = stagingRoles();
-  // The organizations that the organization reads give, by ID.
   readonly organizationRecords = new Map<string, OrganizationRecord>([
     [acme, { id: acme, externalId: acmeExternalId }],
     [globex, { id: globex, externalId: null }],
@@ -162,7 +159,6 @@ export class WorkOSOrganizationsDouble {
     getOrganization: async (id: string) => this.answer('getOrganization', id, () => this.organizationRecords.get(id) ?? missing()),
   };
 
-  // The directory under test. The default clock gives the fixed time.
   directory(clock: () => Date = () => new Date(now)): WorkOSOrganizations {
     const { userManagement, authorization } = this;
     return new WorkOSOrganizations({ authority, memberships: userManagement, userManagement, authorization, clock });

@@ -21,7 +21,6 @@ const eve = invitation({ id: 'invitation_04EVE', email: 'eve@example.com', state
 const fay = invitation({ id: 'invitation_05FAY', email: 'fay@example.com', expiresAt: '2026-10-14T11:59:59.999Z' });
 const credentials = /invitation-token|invitation_token|auth\.example/;
 
-// WorkOS with these invitations on one page, each also readable by its ID.
 function doubleWith(records: readonly InvitationRecord[], after: string | null = null): WorkOSOrganizationsDouble {
   const double = new WorkOSOrganizationsDouble();
   double.invitationList = { data: records, after };

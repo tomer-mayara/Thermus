@@ -8,7 +8,6 @@ export type TenantAnswer =
   | { readonly status: 'answered'; readonly response: Response; readonly ended: Promise<StreamEnd> }
   | { readonly status: 'restarted'; readonly cause: RestartCause };
 
-/** One forwarded request to the internal address of a tenant. */
 export interface TenantCall {
   readonly target: URL;
   readonly method: string;

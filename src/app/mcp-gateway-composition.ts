@@ -44,13 +44,11 @@ export interface GatewayStart {
   partsOn(storage: Pick<HostedLoggingStorage, 'tenants'> | undefined): GatewayParts | undefined;
 }
 
-/** The parts that the gateway gives the hosted composition: the forward step of MCPServer and the internal routes. */
 export interface GatewayRoutes {
   readonly forward: McpForwardStep;
   readonly internalRoutes: AuditRelayRoute;
 }
 
-/** The registry rules of the tenants owner that the gateway uses. */
 export interface GatewayRegistry {
   readonly lookup: Pick<TenantLookup, 'find'>;
   readonly requests: Pick<TenantRequests, 'request'>;
@@ -78,7 +76,6 @@ function tenantsSettingsOf(environment: Readonly<Record<string, string | undefin
   return { freeTenantLimit: loadFreeTenantLimit(environment), gateway: loadGatewaySettings(environment) };
 }
 
-/** The forward step and the relay route of the gateway parts, for the hosted composition. */
 export function gatewayRoutesOf(parts: GatewayParts, composition: { readonly authority: string; readonly audit: Pick<AuditLog, 'relayedToolCompletion' | 'toolRelayed'>; readonly logger: SystemLog }): GatewayRoutes {
   return { forward: gatewayForwardOf(parts, composition.logger), internalRoutes: auditRelayRouteOf(parts.settings, composition) };
 }
@@ -91,7 +88,6 @@ const unconnectedResume: TenantResume = {
   resume: async () => ({ status: 'failed', reason: 'The resume operation is not connected yet (SO-10).' }),
 };
 
-/** The gateway parts of the production control plane: the gateway settings and the registry of the hosted storage. */
 function gatewayPartsOf(settings: GatewaySettings, storage: Pick<HostedLoggingStorage, 'tenants'> | undefined, resume: TenantResume = unconnectedResume): GatewayParts {
   if (storage?.tenants === undefined) {
     throw new DeploymentConfigError('MCP_TENANTS_ENABLED=true needs the tenant registry: DATABASE_URL and LOGGING_DESTINATION_ENCRYPTION_KEY must be valid.');
@@ -100,7 +96,6 @@ function gatewayPartsOf(settings: GatewaySettings, storage: Pick<HostedLoggingSt
   return { settings, tenants: gatewayTenantsOf({ lookup, requests, resumes: new TenantResumes(gateway, resume), activity: new TenantActivity(gateway) }) };
 }
 
-/** The registry port of the gateway, from the lookup copy, the tenant request, the resume, and the activity write. */
 export function gatewayTenantsOf(registry: GatewayRegistry): GatewayTenants {
   return {
     find: (organizationId) => registry.lookup.find(organizationId),
@@ -110,13 +105,11 @@ export function gatewayTenantsOf(registry: GatewayRegistry): GatewayTenants {
   };
 }
 
-/** The forward step of MCPServer: the gateway with the signer of the private key of the settings. */
 function gatewayForwardOf(parts: GatewayParts, logger: SystemLog): McpForwardStep {
   const gateway = new McpGateway({ signer: new AccessContextSigner(parts.settings.signingKey), tenants: parts.tenants, logger });
   return (request, forwarded) => gateway.forward(request, forwarded);
 }
 
-/** The context check of the relay route: the public key of the signing key, for the organization of each relay. */
 export function relayContextCheckOf(verifyingKey: GatewaySettings['verifyingKey']): RelayContextCheck {
   return (context, organizationId) => new AccessContextVerifier({ publicKeys: [verifyingKey], organizationId }).verifyRelay(context);
 }

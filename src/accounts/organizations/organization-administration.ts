@@ -11,7 +11,6 @@ import type { MemberRemovalRequest, RemovalOperationStore, RemovalResult } from 
 
 export type { MemberRemovalRequest, RemovalResult } from './removal-operation-store.ts';
 
-// The person who asks for an administration operation.
 export interface Actor {
   readonly user: AuthenticatedUser;
 }
@@ -145,7 +144,6 @@ export class OrganizationAdministration {
     return this.changeInvitation(actor, request, 'revoke');
   }
 
-  // A resend or a revoke of a pending invitation of the organization, for a role that the actor manages.
   private async changeInvitation(actor: Actor, request: InvitationChangeRequest, change: InvitationChange): Promise<ChangeResult> {
     const entry: ChangeEntry = { actor: actor.user, organizationId: request.organizationId, target: { invitationId: request.invitationId }, action: `${change}-invitation` };
     return this.changes.run(entry, async () => {

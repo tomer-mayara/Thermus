@@ -1,7 +1,6 @@
 import { generateKeyPairSync, type KeyObject } from 'node:crypto';
 import { workOSSettings } from './hosted-placeholder.ts';
 
-// The organization that the tenant of the offline tests serves, and an organization of another tenant.
 export const tenantOrganizationId = 'org_01TENANTA';
 export const otherOrganizationId = 'org_01TENANTB';
 
@@ -16,7 +15,6 @@ export interface GatewayKeyPair {
   readonly privateKey: KeyObject;
 }
 
-// A new Ed25519 key pair of the gateway for each call.
 export function gatewayKeyPairOf(): GatewayKeyPair {
   const { publicKey, privateKey } = generateKeyPairSync('ed25519');
   return { publicKeyPem: publicKey.export({ type: 'spki', format: 'pem' }).toString(), privateKey };

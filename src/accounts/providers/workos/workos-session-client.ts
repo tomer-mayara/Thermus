@@ -1,6 +1,5 @@
 import type { User } from '@workos-inc/node';
 
-// The facts of a WorkOS session check, refresh, or code exchange that the browser session reads.
 export interface SessionFacts {
   readonly user: Pick<User, 'id' | 'email' | 'firstName' | 'lastName'>;
   readonly organizationId?: string;

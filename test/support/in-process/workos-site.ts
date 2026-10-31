@@ -11,7 +11,6 @@ import { listenerTransport, type BrowserTransport } from '../drivers/browser/hos
 import { mcpRequest } from '../drivers/mcp/mcp-http-request.ts';
 import { hostedConfig } from '../fixtures/hosted-config.ts';
 
-// A hosted server that uses the WorkOS provider with the fake WorkOS API of the world.
 export interface WorkOSServerSite {
   readonly world: WorkOSFake;
   readonly transport: BrowserTransport;

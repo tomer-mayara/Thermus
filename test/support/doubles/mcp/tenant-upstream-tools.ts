@@ -51,7 +51,6 @@ export class TenantUpstreamTools {
     this.#relay = new AuditRelaySink(new URL('internal/audit', `${controlPlaneInternalUrl}/`));
   }
 
-  // Each search waits until release().
   holdSearches(): { release(): void } {
     const gate = Promise.withResolvers<void>();
     this.#searchGate = gate.promise;
