@@ -31,18 +31,26 @@ function inputText(value: unknown, points: number): value is string {
 function inputOf(completion: ToolCompletion): ToolInput | undefined {
   const reason = completion.input.reason;
   if (!inputText(reason, 2_000)) return undefined;
-  if (completion.tool === 'search') {
-    const query = completion.input.query;
-    if (!inputText(query, 512) || !query.isWellFormed()) return undefined;
-    return { tool: 'search', input: { query: redactAuditText(query), reason: redactAuditText(reason) } };
-  }
-  if (completion.tool !== 'getURLAsMarkdown') return undefined;
-  const url = completion.input.url;
-  if (!inputText(url, 8_192) || !/^https?:\/\//i.test(url) || /[\u0000-\u0020\u007f]/.test(url)) return undefined;
-  const authority = /^https?:\/\/([^/?#]+)/i.exec(url)?.[1];
-  if (authority === undefined || /[@\\]/.test(authority)) return undefined;
-  try { if (new URL(url).hostname === '') return undefined; } catch { return undefined; }
+  if (completion.tool === 'search') return searchInput(completion.input.query, reason);
+  if (completion.tool === 'getURLAsMarkdown') return urlInput(completion.input.url, reason);
+  return undefined;
+}
+
+function searchInput(query: unknown, reason: string): ToolInput | undefined {
+  if (!inputText(query, 512) || !query.isWellFormed()) return undefined;
+  return { tool: 'search', input: { query: redactAuditText(query), reason: redactAuditText(reason) } };
+}
+
+function urlInput(url: unknown, reason: string): ToolInput | undefined {
+  if (!inputText(url, 8_192) || !auditableUrl(url)) return undefined;
   return { tool: 'getURLAsMarkdown', input: { url: redactAuditUrl(url), reason: redactAuditText(reason) } };
+}
+
+function auditableUrl(url: string): boolean {
+  if (!/^https?:\/\//i.test(url) || /[\u0000-\u0020\u007f]/.test(url)) return false;
+  const authority = /^https?:\/\/([^/?#]+)/i.exec(url)?.[1];
+  if (authority === undefined || /[@\\]/.test(authority)) return false;
+  try { return new URL(url).hostname !== ''; } catch { return false; }
 }
 
 export function projectToolCompletion(completion: ToolCompletion): AuditEvent | undefined {
@@ -107,17 +115,19 @@ export function projectAdministrationChange(change: AdministrationChange): Audit
   return { ...context, eventName: 'organization.changed', action, target, ...(role === undefined ? {} : { role }), outcome };
 }
 
+const targetFields: ReadonlyMap<AdministrationChange['action'], 'email' | 'invitationId' | 'membershipId'> = new Map([
+  ['invite', 'email'],
+  ['resend-invitation', 'invitationId'],
+  ['revoke-invitation', 'invitationId'],
+  ['remove-member', 'membershipId'],
+]);
+
 function administrationTarget(change: AdministrationChange): AdministrationChange['target'] | undefined {
-  if (change.action === 'remove-member') {
-    return 'membershipId' in change.target && metadata(change.target.membershipId) ? { membershipId: change.target.membershipId } : undefined;
-  }
-  if (change.action === 'invite') {
-    return 'email' in change.target && metadata(change.target.email) ? { email: change.target.email } : undefined;
-  }
-  if (change.action === 'resend-invitation' || change.action === 'revoke-invitation') {
-    return 'invitationId' in change.target && metadata(change.target.invitationId) ? { invitationId: change.target.invitationId } : undefined;
-  }
-  return undefined;
+  const field = targetFields.get(change.action);
+  const target: Readonly<Record<string, unknown>> = change.target;
+  if (field === undefined || !(field in target)) return undefined;
+  const value = target[field];
+  return metadata(value) ? { [field]: value } as AdministrationChange['target'] : undefined;
 }
 
 export function projectDestinationChange(change: DestinationChange): AuditEvent | undefined {
