@@ -10,30 +10,25 @@
     "internalInterface": false,
     "sensitiveBehavior": false,
     "dependencyRisk": false,
-    "policy": false,
+    "policy": true,
     "uncertain": false
   },
   "architecture": {
     "modelUpdated": false,
-    "summary": "Correct the first Quick start heading to use 'for AI agents' and replace its lead with the approved instructions to open each provider's admin console, select the organization, and restrict internet access for its agents. The shared content supplies both the Admin page and copied Markdown; the canonical guide contains the same wording. Only explanatory copy changes: routes, authorization, configured links, URL validation, provider operations, callable contracts, dependencies, composition and deployment relationships remain unchanged. The component registry prose and all 20 views remain accurate and unchanged.",
+    "summary": "Add .claude/worktrees/** and ast-report/** to the excluded paths of the habit-hooks source file list in .habit-hooks/config.toml. A full scan (habit-hooks on main, or habit-hooks --all) reads every file under the project folder and ignores .gitignore, so it also scanned the gitignored agent worktrees (11,565 files) and review artifacts (193 files) in addition to the 1,361 tracked source files. The list narrows every mode, so the glob names only .claude/worktrees/: a source file committed elsewhere under .claude/ stays in the required branch check. A branch run takes its paths from git and does not change; hook.config.toml, the ESLint rules, the sensors, and the empty snooze file do not change. No production code, contract, dependency, composition, build output, or deployment relationship changes: nothing in src/, test/, the runtime images, or the workflows reads this file. The component registry describes the runtime system only; its prose and all 20 views remain accurate and unchanged.",
     "views": [
       "Context",
       "C4 containers: hosted edition",
-      "Containers and source owners",
-      "Selected C4 components: hosted authentication in the Node server",
-      "Scenario: hosted default sign-in landing",
-      "Scenario: hosted member read",
-      "Ownership",
-      "Behavior and resource ownership"
+      "C4 containers: local edition",
+      "Collaboration overview",
+      "Self-hosted Compose",
+      "Recorded hosted Render target"
     ],
     "evidence": [
-      "src/interfaces/web/account/quick-start-content.ts",
-      "src/interfaces/web/account/quick-start-page.ts",
-      "test/unit/html/quick-start-content.test.ts",
-      "test/unit/html/quick-start-page.test.ts",
-      "test/acceptance/auth/hosted-quick-start.test.ts",
-      "test/acceptance/auth/hosted-quick-start-browser.runtime.ts",
-      "docs/design/admin-quick-start/guide.md",
+      ".habit-hooks/config.toml",
+      "docs/implementation/pr-review-rules.yaml",
+      "docs/implementation/test-gate-policy.md",
+      "Dockerfile.hosted",
       "architecture/components.md"
     ]
   }
