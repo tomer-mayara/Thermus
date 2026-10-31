@@ -7,35 +7,30 @@
     "deployment": false,
     "crossCutting": false,
     "component": false,
-    "internalInterface": true,
+    "internalInterface": false,
     "sensitiveBehavior": false,
     "dependencyRisk": false,
-    "policy": false,
+    "policy": true,
     "uncertain": false
   },
   "architecture": {
     "modelUpdated": false,
-    "summary": "PR 3 of the habit-hooks cleanup stack corrects each remaining enforced habit-hooks finding in code, and the advisory non-null assertions, without a change of behavior: 51 high-complexity, 29 too-many-parameters, 4 oversized-function, 1 oversized-file, and 35 non-null-assertion findings at the parent. Functions get named steps, values that travel together become one value, and workos-organizations.ts (448 lines) keeps WorkOSOrganizations (262 lines) and moves its answer rules, invitations, and membership reads to three modules of the same workos component. Two declarations of public modules change (fact d), so internalInterface is set. DestinationSettingsService.test of audit-logs takes the tenant and the actor as one TestRequester value; its one production caller, the Audit logs route of web, builds it from the same trusted Admin context as before. The WebsiteFetchLaunchError constructor of website-fetcher derives its launch diagnostic from its cause instead of an optional parameter; its one production caller passed that same value. No component, dependency edge, public module, external dependency, client contract, composition, build output, or deployment relationship changes. The security files workos-signup.ts and css-animation-declarations.ts keep the same checks in the same order. The component registry describes components and their collaboration, not files or signatures; its prose and all 21 views remain accurate and unchanged.",
+    "summary": "The owner turned the habit-hooks comment check off. .habit-hooks/config.toml and .habit-hooks/hook.config.toml disable the smell non-essential-comment ([smells.non-essential-comment] disabled = true). The comment sensor of the typescript plugin gives only this smell, and the smell was advisory (severity suggested), so no enforced check and no exit code changes: a full scan of main exits 0 before and after, with 2,667 comment findings before and none after. The hook configuration keeps its other settings (88 oversized-file findings before and after); nothing in the repository runs it. The policy flag is set: the change removes a check that habit-hooks reported. No production code, test, contract, dependency, composition, build output, or deployment relationship changes: nothing in src/, test/, the runtime images, or the workflows reads these files. The component registry describes the runtime system only; its prose and all 21 views remain accurate and unchanged.",
     "views": [
       "Context",
       "C4 containers: hosted edition",
       "C4 containers: local edition",
-      "Selected C4 components: tool processing in the Node server",
-      "Selected C4 components: hosted authentication in the Node server",
-      "Selected C4 components: hosted membership removal in the Node server",
-      "Selected C4 components: hosted Audit logs settings and delivery in the Node server",
-      "Selected C4 components: system and audit logs in the Node server",
       "Collaboration overview",
-      "Scenario: MCP page fetch and renderer cancellation",
-      "Scenario: hosted member read"
+      "Self-hosted Compose",
+      "Recorded hosted Render target"
     ],
     "evidence": [
-      "docs/api-surface/src/logs/audit/destination-settings-service.d.ts and docs/api-surface/src/pipelines/providers/website-fetcher/website-fetcher.d.ts (the two changed declaration snapshots)",
-      "src/interfaces/web/account/logging-routes.ts (the one production caller of DestinationSettingsService.test)",
-      "src/pipelines/providers/website-fetcher/website-fetcher-lightpanda.ts (the one production caller of the WebsiteFetchLaunchError constructor)",
+      ".habit-hooks/config.toml",
+      ".habit-hooks/hook.config.toml",
+      "habit-hooks 1.3.1: habit_hooks_typescript/sensors/comment.cjs gives only non-essential-comment; habit_hooks/catalogue.py gives it the severity suggested",
+      "docs/implementation/pr-review-rules.yaml (protected_paths.policy)",
       "architecture/components.md (21 Mermaid views, unchanged)",
-      "docs/implementation/pr-review-rules.yaml (public_surface and dependency_graph, unchanged)",
-      "Validation comment of this pull request: npm test, the production gates, the metrics, and habit-hooks"
+      "Validation comment of this pull request: the scans before and after"
     ]
   }
 }
