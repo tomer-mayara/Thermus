@@ -415,8 +415,14 @@ host settings (R2), the switch to the image (R4), the variables of the gateway
 switch (R7) and of the rollback (R14), the OAuth resource of the staging control
 plane (R3b), the WorkOS Staging objects of the run (R6, R9, R13), the Connect
 tokens and the MCP calls, the browser steps of the portal, the reads of the
-staging database, and the cleanup of the WorkOS objects. The deploys go through
-the release workflow, and the tenants through the fleet script.
+staging database, and the cleanup of the WorkOS objects. It also cancels a Git
+build and watches the deploys and the events after an update (the changed order
+of the manager decision of 31 October 2026). The deploys go through the release
+workflow, and the tenants through the fleet script: `fleet -- <command>` runs
+`fleet/fleet.ts` with `DATABASE_URL` from `STAGING_DATABASE_URL`, the CA, the
+workspace Thermus AI, and the prefix `thermus-spike-tenant-`. The MCP call
+accepts the marker words of the hosted image gate, because the words of
+`https://example.com/` changed.
 
 Guards:
 
