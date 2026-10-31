@@ -1110,7 +1110,10 @@ with an owner account; 9. marketing publication; 10. the signup switch. A
 manual dispatch stays the deploy trigger. The search limit of 5 is part of
 SO-05, so the release does not wait for it. Rollback: turn the gateway switch
 off, close signup, keep the tenants running, and redeploy the previous control
-plane release if needed. Size M. Depends on SO-02 to SO-11, and SO-11a.
+plane release if needed. Since 31 October 2026, the
+[release record](self-onboarding-s2-release.md) holds the release candidate,
+the rehearsal runbook, the production order with its checks, and the rollback
+image. Size M. Depends on SO-02 to SO-11, and SO-11a.
 
 ### Slice 3: upgrade to team
 

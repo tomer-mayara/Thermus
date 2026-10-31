@@ -10,6 +10,17 @@ approval and earlier S2-04 release statements in the
 [removal runbook](admin-s2-5-02-removal-runbook.md). It preserves their procedures,
 test provenance and dated limits.
 
+## Update of 31 October 2026
+
+The deployment proof of the approved removal bundle is complete. The
+[PR #260 Validation comment](https://github.com/tomer-mayara/Thermus/pull/260#issuecomment-6421162914)
+records the deployment of `57c99e2b`, live at 19:05:56 UTC on 26 October 2026,
+with the removal, receipt, and audit proofs and the fixture cleanup. It says
+"Slice 2.5 production scope is complete". The pending statements below are
+dated 26 October 2026. Production has run `b0723a0a` since 29 October 2026. The
+[Slice 2 release record](self-onboarding-s2-release.md) cites this proof
+before the free-tier release.
+
 ## Accepted work and current deployment
 
 PRs [#251](https://github.com/tomer-mayara/Thermus/pull/251),
