@@ -1426,6 +1426,101 @@ of both roles; and the start cases of the
 and the key check of the [gateway settings](../../test/unit/config/gateway-settings.test.ts).
 They run offline; they are no proof of Render behavior.
 
+### Signup handoff and workspace status
+
+SO-07 of the [self on-boarding plan](../implementation/self-onboarding-plan.md#42-flows)
+connects free signup and the portal to the tenant of each organization. Web
+imports no registry module: app composes two ports on the registry rules of
+the `tenants` owner in
+[workspace-composition.ts](../../src/app/workspace-composition.ts).
+
+**Signup.** The marketing link is `GET /signup?tier=free`. Only the free tier
+exists, so the [signup route](../../src/interfaces/web/auth/workos/workos-signup-routes.ts)
+ignores the `tier` value: another value and no value give the same page. Its
+[tenant handoff](../../src/interfaces/web/auth/workos/workos-signup-tenants.ts)
+holds the cap check and the tenant request.
+
+1. `SELF_SERVE_SIGNUP_ENABLED` comes first: with the switch off, each `GET`,
+   `HEAD`, and `POST` gets the closed notice, as before.
+2. The free-tenant cap comes next, before the session and the notice. With
+   `MCP_TENANTS_ENABLED` on, signup counts the rows of the registry copy of the
+   gateway lookup, which reads the registry again only when it is 10 s old, so
+   a public page cannot cause a database read for each visit. A place is free
+   while the rows that hold a place (every state except `failed` and `deleted`)
+   stay under `FREE_TENANT_LIMIT`. At a full cap, signup gives the closed
+   notice: `200` for `GET` and `HEAD`, and `403` for a `POST`, which then
+   creates no organization. A `POST` reads the cap inside its admission slot,
+   after the origin check. A copy that cannot be read gives `503` "Activation
+   is temporarily unavailable. Try again later." and the error line `Hosted
+   signup could not read the free-tenant cap.`. With the switch off,
+   `FREE_TENANT_LIMIT` is not read and signup checks no cap.
+3. Sign-in, the agreement, and the organization creation stay as before.
+4. An `active` result of the activation confirms the first Admin membership.
+   Then signup requests the tenant of the new organization (SO-04), before it
+   selects the organization and opens Quick start. The request is the one
+   idempotent insert of a `requested` row inside the cap. A failed request does
+   not stop signup: it writes the error line `Hosted signup could not request
+   the tenant of the new organization. Its first workspace status read requests
+   it again.`. With the switch off, signup only inserts the row, and the
+   provisioner creates the tenant after the switch is on.
+
+The cap can fill between the notice and the creation. Then the request answers
+full, and the new organization has no tenant. This race is accepted, with no
+reservation (answer 4 of 27 October 2026).
+
+**Workspace status.** `GET <base>workspace/status` is an account route of the
+[account routes](../../src/interfaces/web/account/account-routes.ts). It needs
+the session and current access, as each account route does, and then product
+access in the organization that the session selected: the access decision must
+name the session user, its authority, and that organization. A request value
+never names the organization. Without product access, the answer is the `403`
+`{"access":"denied"}` of `portal/access`, and no registry work starts. Another
+method than `GET` and `HEAD` gets `405`.
+
+The [workspace status](../../src/interfaces/web/account/workspace-status.ts)
+reads the state through the registry port of the gateway: the row of the
+lookup copy, else the tenant request inside the cap, the same request path as
+the gateway. So an organization with product access and no row gets its
+tenant on this read, and each read at a full cap requests it again until a
+place frees. The answer is `200` JSON with `Cache-Control: no-store`:
+
+| State | Answer |
+| --- | --- |
+| `requested`, `creating`, `deploying` | `{"state":"<state>","ready":false,"message":"Setting up your workspace. This takes about two minutes."}` |
+| `live`, `suspended` | `{"state":"<state>","ready":true}` |
+| `failed` | `ready` false with "Workspace setup failed. We have been notified and will fix it." The first read writes `Workspace setup failed: {"organizationId":"<id>"}` at the level ERROR; the next report of the organization comes after its row leaves `failed`. |
+| `deleted` | `ready` false with "Your workspace is not available. Contact Thermus support." |
+| No row at a full cap: `full` | `ready` false with "All free workspaces are in use. Try again later." |
+| No usable registry copy: `unavailable` | `ready` false with "The service is temporarily unavailable. Try again in 15 seconds." |
+
+The words are those of the gateway for the same states (answer 2 of
+27 October 2026), except the words of the setup. Web cannot import mcp, so the
+workspace status keeps the second copy. A suspended tenant shows its
+connection guide, because the gateway resumes it at the next MCP call. Until
+SO-10 connects the resume, only the `resume` command of the fleet script
+brings it back, as [the gateway](#mcp-gateway-and-audit-relay) says. SO-10
+adds the notice of the pause. With `MCP_TENANTS_ENABLED` off, the control
+plane serves the tools itself: the route answers `live` and reads no registry.
+
+**Portal.** The [portal](../user-portal.md#workspace-setup-state) reads the
+status after `portal/access`. While `ready` is false, it shows the words as a
+status region in place of the connection guide and adds a meta refresh of 5 s,
+so the browser reloads the page without a script timer (answer 3 of
+27 October 2026). The connection guide appears only when `ready` is true.
+
+The tests: the acceptance specification of the
+[signup handoff and the status](../../test/acceptance/auth/hosted-signup-workspace.test.ts)
+with the WorkOS fake and the real registry rules over an in-memory registry,
+the [signup route](../../test/integration/auth/workos-signup-tenants.test.ts)
+and [status route](../../test/integration/hosted-admin/workspace-status-route.test.ts)
+integrations, the unit tests of the
+[workspace status](../../test/unit/web/workspace-status.test.ts), the
+[ports of app](../../test/unit/app/workspace-composition.test.ts), and the
+[lookup](../../test/unit/tenants/tenant-lookup.test.ts) and
+[request](../../test/unit/tenants/tenant-requests.test.ts) rules, the portal
+specifications, and the SO-07 scenario of the
+[hosted live gate](../implementation/test-gate-policy.md#hosted-live-gate-auth-06).
+
 ### Pinned WorkOS SDK proof
 
 `package.json` pins `@workos-inc/node` at exactly 11.0.0 and `jose` at exactly
@@ -1895,6 +1990,11 @@ organization consent or authority to upgrade a grant. Existing Continue and
 recovery keep their boundaries. See the [S1-03a record](../implementation/admin-s1-03a.md)
 for checks and rollout limits.
 
+SO-07 adds the handoff to the tenant of the new organization: the free-tenant
+cap before the notice, and the tenant request after the confirmed first Admin
+membership. [Signup handoff and workspace status](#signup-handoff-and-workspace-status)
+gives the rules.
+
 The owner selected a server-owned session on 2026-10-14: the server signs in,
 keeps the session, and signs out, and the portal is on the same origin.
 
@@ -1969,8 +2069,8 @@ signed-in session:
   session. These values are display data; they give no access.
 
 The [user portal](../user-portal.md) uses these routes and the protected portal
-request `<base>portal/access`. It keeps no session or token of its own and no
-longer uses the AuthKit JavaScript SDK.
+requests `<base>portal/access` and `<base>workspace/status`. It keeps no session
+or token of its own and no longer uses the AuthKit JavaScript SDK.
 
 The protected response includes the plan, `free` with its member limit or
 `team` (SO-08), and the configured MCP endpoint.

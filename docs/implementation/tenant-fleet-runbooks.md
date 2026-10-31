@@ -18,9 +18,10 @@ resource first. Keep notes in the private operator record, outside Git, as the
 ## How to use these runbooks
 
 The provisioner of SO-06, the release path of SO-02, the MCP gateway of SO-05,
-and the fleet script and the tenant sweeps of SO-09 are on `main`. The signup
-of SO-07 and the idle suspension of SO-10 are not on `main` yet. A step that
-needs one of them has a marker, for example **Waits for SO-10.** Until that
+the fleet script and the tenant sweeps of SO-09, and the signup handoff and
+workspace status of SO-07 are on `main`. The idle suspension of SO-10 is not
+on `main` yet. A step that needs it has a marker, for example **Waits for
+SO-10.** Until that
 ticket is on `main` and in production, do the fallback of the step if it has
 one, or do not do the step.
 The tenant sweeps run only with `MCP_TENANTS_ENABLED` on.
@@ -97,6 +98,9 @@ prefix too. A tenant writes to standard error only.
 | `Logging storage is unavailable:` | ERROR | [`src/app/logging-storage.ts`](../../src/app/logging-storage.ts) | At the start: `DATABASE_URL`, `LOGGING_DESTINATION_ENCRYPTION_KEY`, or `DATABASE_CA_CERT_PATH` is missing or invalid. |
 | `MCP gateway tenant restart: {json}` | ERROR | [`src/interfaces/mcp/mcp-gateway-refusals.ts`](../../src/interfaces/mcp/mcp-gateway-refusals.ts) | A live tenant stopped during a call. The fields are `organizationId`, `phase` (`before-answer` or `during-answer`), and `cause` (`http-502` or `connection`). |
 | `MCP gateway refusal: {json}` | INFO, or ERROR for an operator report | `mcp-gateway-refusals.ts` | The gateway answered by itself, with `503` or with the search busy words. The fields are `organizationId`, `reason`, and, when they apply, `state`, `resume`, and `resumeFailure`. The operator reports are the first refusal of a `failed` tenant and a failed resume. Until SO-10 connects the resume operation, each call of a `suspended` tenant gives a failed resume with `resumeFailure` "The resume operation is not connected yet (SO-10).", and the tenant stays suspended: `fleet.ts resume --organization <organization ID>` brings it back. |
+| `Workspace setup failed: {json}` | ERROR | [`src/interfaces/web/account/workspace-status.ts`](../../src/interfaces/web/account/workspace-status.ts) | The portal read the status of a `failed` tenant. The field is `organizationId`. One line for each organization, until its row leaves `failed`. |
+| `Hosted signup could not read the free-tenant cap.` | ERROR | [`src/interfaces/web/auth/workos/workos-signup-tenants.ts`](../../src/interfaces/web/auth/workos/workos-signup-tenants.ts) | With the switch on, the database does not answer and the registry copy of the gateway is 60 s old, so signup cannot check the cap and answers "Activation is temporarily unavailable. Try again later.". |
+| `Hosted signup could not request the tenant of the new organization.` | ERROR | `workos-signup-tenants.ts` | The tenant request after a signup failed. The organization exists; its first workspace status read requests the tenant again. |
 | `Audit relay refusal: {json}` | ERROR | [`src/app/mcp-gateway-composition.ts`](../../src/app/mcp-gateway-composition.ts) | The relay route refused an audit event of a tenant, so the event is not exported. The fields are `reason` (`body`, `event`, `organization`, `context`, `actor`, or `memory`), `detail` (the reason of a refused context, for example `signature`), and `organizationId` when it is known. The line never shows the context or the event. |
 | `The tenant sweeps run each day at` | INFO | [`src/app/tenant-sweeps.ts`](../../src/app/tenant-sweeps.ts) | The start began the tenant sweeps. The line names the hour of `TENANT_SWEEP_HOUR_UTC`. |
 | `Tenant fleet summary: {json}` | INFO | [`src/tenancy/tenants/fleet-summary.ts`](../../src/tenancy/tenants/fleet-summary.ts) | Once a day at the tick, the daily summary. The fields are in [the summary fields](#the-summary-fields). |
@@ -133,7 +137,9 @@ organization in `thermus_admin.tenants` is in state `failed`. With
 `MCP_TENANTS_ENABLED` on, each MCP call of the organization gets `503` with
 "Workspace setup failed. We have been notified and will fix it.". The first
 one writes an `MCP gateway refusal:` line with `"reason":"failed"` at the
-level ERROR. **Waits for SO-07:** the portal shows the same words.
+level ERROR. Connect in the portal shows the same words in place of the
+connection guide, and the first workspace status read of the organization
+writes a `Workspace setup failed:` line at the level ERROR.
 
 **State and reason.** The provisioner stops a row as `failed` from `creating`
 or `deploying`. It writes the reason to the column `failure_reason`, at most
@@ -210,8 +216,10 @@ the answer `yes` before each write; another answer writes nothing.
 7. Check: the log has three `Tenant provisioning record:` lines for the
    organization: `"state":"creating"`, then `"state":"deploying"` with a
    `serviceId`, then `"state":"live"` with an `internalUrl`. In the recorded
-   runs, a first deploy was live 64 to 104 s after its create call. **Waits for
-   SO-07:** the portal shows the connection guide.
+   runs, a first deploy was live 64 to 104 s after its create call. Then
+   Connect in the portal shows the connection guide within about 15 s: the
+   registry copy is read again after 10 s, and the setup page reloads every
+   5 s.
 8. If the same reason comes back, stop. Do not repeat the repair, and tell the
    owner.
 
@@ -305,7 +313,18 @@ the database, so 7 days without use can pause the project.
   each minute. Each row stays in its state.
 - New tenants. The gateway cannot insert a `requested` row, so the MCP call
   of an organization without a tenant gets the `503` of the next item.
-  **Waits for SO-07:** signup cannot insert a row either.
+  Signup cannot insert a row either. With the switch on, signup reads the
+  free-tenant cap from the registry copy of the gateway, so after 60 s each
+  signup page answers "Activation is temporarily unavailable. Try again
+  later." and writes a `Hosted signup could not read the free-tenant cap.`
+  line. With the switch off, signup checks no cap: it creates the organization
+  and writes a `Hosted signup could not request the tenant of the new
+  organization.` line, and the first workspace status read after the resume
+  requests the tenant again.
+- The workspace status. After 60 s, Connect in the portal shows "The service
+  is temporarily unavailable. Try again in 15 seconds." in place of the
+  connection guide, and reloads every 5 s. With the switch off, Connect shows
+  the connection guide, because the control plane serves the tools itself.
 - The registry reads of the gateway. The gateway serves its copy of the
   registry for up to 60 s. Then each MCP call through the gateway gets `503`
   with `Retry-After: 15` and "The service is temporarily unavailable. Try
@@ -349,7 +368,8 @@ the pages that need no storage keep working.
 - The `Tenant provisioning cannot read the tenant registry.` lines stop. A row
   that waited moves on with `Tenant provisioning record:` lines.
 - With the switch on: the `registry-unavailable` refusals stop, and an MCP
-  call reaches its tenant.
+  call reaches its tenant. Connect of an organization with a live tenant shows
+  the connection guide, and the signup page shows its notice again.
 - In an organization with a saved destination, open Audit logs. The page
   shows the settings, and **Test** passes.
 - The next daily summary line `Tenant fleet summary:` comes at the next tick.
