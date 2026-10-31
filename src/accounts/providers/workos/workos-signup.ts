@@ -4,6 +4,7 @@ import type { AuthenticatedUser } from '../../identity/access-context.ts';
 import type { OrganizationDirectory } from '../../organizations/organization-directory.ts';
 import { organizationNameIn, type SignupActivation, type SignupDocuments, type SignupResult, type SignupState } from '../../organizations/signup-activation.ts';
 import { grantsOfRoles, type RoleRecord } from './hosted-role-mapping.ts';
+import { unlessNotFound } from './workos-answers.ts';
 import { validateSignupDocuments } from './workos-signup-documents.ts';
 
 type InspectionRequest = Parameters<SignupActivation['inspect']>[0];
@@ -99,13 +100,8 @@ export class WorkOSSignup implements SignupActivation {
     }
   }
 
-  private async currentUser(subject: string): Promise<{ readonly id: string; readonly emailVerified: boolean } | undefined> {
-    try {
-      return await this.options.workos.userManagement.getUser(subject);
-    } catch (error) {
-      if (typeof error === 'object' && error !== null && 'status' in error && error.status === 404) return undefined;
-      throw error;
-    }
+  private currentUser(subject: string): Promise<{ readonly id: string; readonly emailVerified: boolean } | undefined> {
+    return unlessNotFound(() => this.options.workos.userManagement.getUser(subject));
   }
 
   private async chooseWorkspace(request: ActivationRequest): Promise<SignupResult> {
@@ -169,13 +165,8 @@ export class WorkOSSignup implements SignupActivation {
     return saved === undefined ? UNAVAILABLE : this.savedAccess(saved, request);
   }
 
-  private async findOrganization(externalId: string): Promise<SignupOrganization | undefined> {
-    try {
-      return await this.options.workos.organizations.getOrganizationByExternalId(externalId);
-    } catch (error) {
-      if (typeof error === 'object' && error !== null && 'status' in error && error.status === 404) return undefined;
-      throw error;
-    }
+  private findOrganization(externalId: string): Promise<SignupOrganization | undefined> {
+    return unlessNotFound(() => this.options.workos.organizations.getOrganizationByExternalId(externalId));
   }
 
   private async savedAccess(organization: SignupOrganization, request: InspectionRequest, requireAdminOnly = false): Promise<SignupResult> {
