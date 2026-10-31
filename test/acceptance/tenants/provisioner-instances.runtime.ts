@@ -196,7 +196,7 @@ test('Given a creating row that a stopped control plane still holds, when its cl
   const render = renderFake();
   const service = render.addService(nameOf(organizationA), { outcome: 'live', readsLeft: 1 });
   await site.ownerQuery(`INSERT INTO thermus_admin.tenants (organization_id, state, service_name, plan, claimed_by, claimed_until)
-    VALUES ('${organizationA}', 'creating', '${nameOf(organizationA)}', '0.5c-512mb', 'a-stopped-instance', now() + interval '2 seconds')`);
+    VALUES ('${organizationA}', 'creating', '${nameOf(organizationA)}', '0.5c-512mb', 'a-stopped-instance', now() + interval '5 seconds')`);
   const plane = controlPlane(t, site, render);
 
   await until(() => plane.store.results.length >= 5, 'five claims');
