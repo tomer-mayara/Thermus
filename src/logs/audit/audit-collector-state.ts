@@ -23,11 +23,20 @@ export function collectorBounds(overrides: Partial<AuditCollectorBounds>): Audit
   return bounds;
 }
 
-export function retryDelay(outcome: AuditSendOutcome | 'unavailable', attempts: number, bounds: AuditCollectorBounds, random: number): number | undefined {
-  if (attempts >= bounds.attempts) return undefined;
-  if (outcome !== 'unavailable' && outcome.kind !== 'transient_failure' && outcome.kind !== 'busy') return undefined;
-  const base = Math.min(bounds.backoffCapMs, bounds.backoffMs * 2 ** (attempts - 1));
-  const delay = base + Math.floor(base * 0.25 * Math.max(0, Math.min(1, random)));
-  const retryAfter = outcome === 'unavailable' ? 0 : outcome.retryAfterMs ?? 0;
-  return Number.isFinite(retryAfter) && retryAfter >= 0 ? Math.max(delay, retryAfter) : undefined;
+export function boundedCollectorText(value: unknown, bytes: number): value is string {
+  return typeof value === 'string' && value !== '' && Buffer.byteLength(value) <= bytes;
+}
+
+export class RetryBackoff {
+  constructor(private readonly bounds: AuditCollectorBounds, private readonly random: () => number) {}
+
+  delayAfter(outcome: AuditSendOutcome | 'unavailable', attempts: number): number | undefined {
+    const jitter = Math.max(0, Math.min(1, this.random()));
+    if (attempts >= this.bounds.attempts) return undefined;
+    if (outcome !== 'unavailable' && outcome.kind !== 'transient_failure' && outcome.kind !== 'busy') return undefined;
+    const base = Math.min(this.bounds.backoffCapMs, this.bounds.backoffMs * 2 ** (attempts - 1));
+    const delay = base + Math.floor(base * 0.25 * jitter);
+    const retryAfter = outcome === 'unavailable' ? 0 : outcome.retryAfterMs ?? 0;
+    return Number.isFinite(retryAfter) && retryAfter >= 0 ? Math.max(delay, retryAfter) : undefined;
+  }
 }
