@@ -64,6 +64,7 @@ function privateKeyOf(pem: string): KeyObject | undefined {
   try {
     return createPrivateKey({ key: pem, format: 'pem' });
   } catch {
+    // A refused key gives no detail: the message of the start names the setting only.
     return undefined;
   }
 }

@@ -48,6 +48,7 @@ export class AuditRelaySink {
       this.scheduler.schedule();
       return true;
     } catch {
+      // Capture is best effort. An event that fails here is lost; the tool result stays.
       return false;
     }
   }
