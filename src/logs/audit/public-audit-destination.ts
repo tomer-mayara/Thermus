@@ -22,18 +22,38 @@ function publicAddress(address: string): boolean {
 }
 
 export function parseAuditDestination(destination: AuditDestination): { url: URL; authorization?: string; axiomDataset?: string } {
-  const endpoint = destination.endpoint;
-  if (typeof endpoint !== 'string' || endpoint.length > AUDIT_SEND_LIMITS.endpointCharacters || /[\s\\?#]/.test(endpoint) || !/^https:\/\//i.test(endpoint) || /^https:\/\/[^/]*@/i.test(endpoint)) throw new AuditSendFailure({ kind: 'permanent_failure', reason: 'invalid_destination' });
-  let url: URL;
-  try { url = new URL(endpoint); } catch { throw new AuditSendFailure({ kind: 'permanent_failure', reason: 'invalid_destination' }); }
-  if (url.port === '0') throw new AuditSendFailure({ kind: 'permanent_failure', reason: 'invalid_destination' });
-  const axiomDataset = destination.axiomDataset;
-  if (axiomDataset !== undefined && (typeof axiomDataset !== 'string' || !/^[A-Za-z0-9-]{1,128}$/.test(axiomDataset))) throw new AuditSendFailure({ kind: 'permanent_failure', reason: 'invalid_destination' });
-  const parsed = { url, ...(axiomDataset === undefined ? {} : { axiomDataset }) };
+  const parsed = { url: endpointUrl(destination.endpoint), ...datasetOf(destination.axiomDataset) };
   if (destination.auth.type === 'none') return parsed;
-  const token = destination.auth.token;
-  if (destination.auth.type !== 'bearer' || typeof token !== 'string' || token.length > AUDIT_SEND_LIMITS.tokenBytes || !/^[A-Za-z0-9._~+/=-]+$/.test(token)) throw new AuditSendFailure({ kind: 'permanent_failure', reason: 'invalid_auth' });
-  return { ...parsed, authorization: `Bearer ${token}` };
+  return { ...parsed, authorization: bearerAuthorization(destination.auth) };
+}
+
+function invalidDestination(): AuditSendFailure {
+  return new AuditSendFailure({ kind: 'permanent_failure', reason: 'invalid_destination' });
+}
+
+function endpointUrl(endpoint: unknown): URL {
+  if (!safeEndpointText(endpoint)) throw invalidDestination();
+  let url: URL;
+  try { url = new URL(endpoint); } catch { throw invalidDestination(); }
+  if (url.port === '0') throw invalidDestination();
+  return url;
+}
+
+function safeEndpointText(endpoint: unknown): endpoint is string {
+  return typeof endpoint === 'string' && endpoint.length <= AUDIT_SEND_LIMITS.endpointCharacters && !/[\s\\?#]/.test(endpoint)
+    && /^https:\/\//i.test(endpoint) && !/^https:\/\/[^/]*@/i.test(endpoint);
+}
+
+function datasetOf(axiomDataset: unknown): { axiomDataset?: string } {
+  if (axiomDataset === undefined) return {};
+  if (typeof axiomDataset !== 'string' || !/^[A-Za-z0-9-]{1,128}$/.test(axiomDataset)) throw invalidDestination();
+  return { axiomDataset };
+}
+
+function bearerAuthorization(auth: Extract<AuditDestination['auth'], { readonly type: 'bearer' }>): string {
+  const token = auth.token;
+  if (auth.type !== 'bearer' || typeof token !== 'string' || token.length > AUDIT_SEND_LIMITS.tokenBytes || !/^[A-Za-z0-9._~+/=-]+$/.test(token)) throw new AuditSendFailure({ kind: 'permanent_failure', reason: 'invalid_auth' });
+  return `Bearer ${token}`;
 }
 
 export async function resolveAuditAddress(url: URL, signal: AbortSignal): Promise<LookupAddress> {
