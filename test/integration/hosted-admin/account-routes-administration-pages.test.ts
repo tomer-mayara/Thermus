@@ -50,7 +50,9 @@ describe('HostedAccountRoutes combined Members page', () => {
       assert.equal(disclosure.querySelectorAll('li').length, count);
       assert.equal(organizations.administrationCalls.filter(call => call.operation === 'invitationOverview').length, 1);
       if (count === 0) assert.match(disclosure.textContent ?? '', /No pending invitations/);
-      const surfaces = [...document.querySelector('.member-lists')!.children];
+      const memberLists = document.querySelector('.member-lists');
+      assert.ok(memberLists, 'Members has a list area');
+      const surfaces = [...memberLists.children];
       assert.equal(surfaces[0], document.querySelector('section[aria-labelledby="active-heading"]'));
       assert.equal(surfaces[1], disclosure);
       assert.equal(surfaces[2], document.querySelector('details[data-help="members"]'));
@@ -64,7 +66,8 @@ describe('HostedAccountRoutes combined Members page', () => {
     const rows = [...parseHTML(body).document.querySelectorAll('.invitation-row')];
     assert.equal(rows.length, 2);
     for (const [index, row] of rows.entries()) {
-      const entry = entries[index]!;
+      const entry = entries[index];
+      assert.ok(entry);
       assert.equal(row.querySelector('.invitation-email')?.textContent, entry.email);
       assert.equal(row.querySelector('.invitation-role')?.textContent, `Role ${index === 0 ? 'User' : 'Admin'}`);
       assert.equal(row.querySelector('time')?.getAttribute('datetime'), entry.expiresAt);
