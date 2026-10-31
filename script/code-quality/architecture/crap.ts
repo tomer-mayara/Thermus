@@ -18,14 +18,12 @@ export interface FunctionCrap {
   readonly crap: number;
 }
 
-// Each function has exact CRAP or a lower bound. Unmatched counts unknown covered shares.
 export interface FileCrap {
   readonly functions: readonly FunctionCrap[];
   readonly unmatched: number;
   readonly incomplete?: true;
 }
 
-// Gives the covered share, or undefined when it cannot be measured.
 type ShareRule = (fn: MapFunction, index: number) => number | undefined;
 
 export function isOver(entry: FunctionCrap): boolean {
@@ -56,19 +54,21 @@ function keyOf(name: string): string | undefined {
 // A file absent from the capture is uncovered. A loaded file needs exact source
 // evidence when either side has it. Legacy unique names remain a limited fallback.
 export function coverageShareOf(covered: readonly CoverageFunction[] | undefined, file?: TableFile): ShareRule {
-  return (fn) => {
-    if (covered === undefined) return 0;
-    const identity = fn.identity;
-    if (identity) {
-      const partners = covered.filter((entry) => entry.sourceIdentity && sameIdentity(entry.sourceIdentity, identity));
-      return partners.length === 1 ? partners[0].coveredShare : undefined;
-    }
-    if (file?.sourceEvidence !== undefined || covered.some((entry) => entry.identityRequired || entry.sourceIdentity !== undefined)) return undefined;
-    const key = keyOf(fn.name);
-    if (key === undefined || (file?.functions ?? [fn]).filter((entry) => keyOf(entry.name) === key).length !== 1) return undefined;
-    const partners = covered.filter((entry) => entry.name === key);
-    return partners.length === 1 ? partners[0].coveredShare : undefined;
-  };
+  if (covered === undefined) return () => 0;
+  return (fn) => fn.identity ? identityShareOf(covered, fn.identity) : legacyShareOf(covered, fn, file);
+}
+
+function identityShareOf(covered: readonly CoverageFunction[], identity: FunctionIdentity): number | undefined {
+  const partners = covered.filter((entry) => entry.sourceIdentity && sameIdentity(entry.sourceIdentity, identity));
+  return partners.length === 1 ? partners[0].coveredShare : undefined;
+}
+
+function legacyShareOf(covered: readonly CoverageFunction[], fn: MapFunction, file: TableFile | undefined): number | undefined {
+  if (file?.sourceEvidence !== undefined || covered.some((entry) => entry.identityRequired || entry.sourceIdentity !== undefined)) return undefined;
+  const key = keyOf(fn.name);
+  if (key === undefined || (file?.functions ?? [fn]).filter((entry) => keyOf(entry.name) === key).length !== 1) return undefined;
+  const partners = covered.filter((entry) => entry.name === key);
+  return partners.length === 1 ? partners[0].coveredShare : undefined;
 }
 
 function sameIdentity(first: FunctionIdentity, second: FunctionIdentity): boolean {

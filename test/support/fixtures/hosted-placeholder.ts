@@ -21,7 +21,6 @@ export const hostedStartupLine = 'Hosted authentication uses WorkOS: the client 
 
 export const hostedStorageUnavailableLine = 'Logging storage is unavailable: DATABASE_URL must be a full postgres or postgresql URI with explicit nonblank username and password, a host and database, without query parameters or fragments. LOGGING_DESTINATION_ENCRYPTION_KEY must be canonical base64 for exactly 32 bytes.';
 
-// Offline startup uses a valid portal and the stub of the Lightpanda executable that answers only the pinned version.
 export const hostedFetchSettings: Readonly<Record<string, string>> = {
   AD_RULES_FILE: trustedAdRulesFile, LIGHTPANDA_BIN: lightpandaStub, NODE_OPTIONS: `--import=${hostedPortalPreload}`,
 };

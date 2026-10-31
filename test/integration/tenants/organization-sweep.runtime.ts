@@ -38,12 +38,17 @@ function storesOn(t: TestContext, site: Site) {
   return { fleet: new PgTenantFleetStore(runtime), provisioning: new PgTenantProvisioningStore(runtime) };
 }
 
-// A row with a service of the Render fake, as the provisioner leaves it.
-async function rowWithService(site: Site, render: RenderFake, organizationId: string, state: string): Promise<string> {
-  const service = render.addService(nameOf(organizationId));
-  await site.ownerQuery(`INSERT INTO thermus_admin.tenants (organization_id, state, render_service_id, service_name, internal_url, plan, applied_plan, image_digest)
+async function registryWithRender(t: TestContext) {
+  const site = await postgresSettingsSite(t);
+  const render = new RenderFake({ apiKey: settings.render.apiKey, ownerId: settings.render.ownerId });
+  // A row with a service of the Render fake, as the provisioner leaves it.
+  const rowWithService = async (organizationId: string, state: string): Promise<string> => {
+    const service = render.addService(nameOf(organizationId));
+    await site.ownerQuery(`INSERT INTO thermus_admin.tenants (organization_id, state, render_service_id, service_name, internal_url, plan, applied_plan, image_digest)
     VALUES ('${organizationId}', '${state}', '${service.id}', '${service.name}', 'http://${service.slug}:8080', '0.5c-512mb', '0.5c-512mb', '${digest}')`);
-  return service.id;
+    return service.id;
+  };
+  return { site, render, rowWithService };
 }
 
 async function rowsOf(site: Site): Promise<string[]> {
@@ -52,11 +57,10 @@ async function rowsOf(site: Site): Promise<string[]> {
 }
 
 test('Given rows on the real registry and organizations that WorkOS no longer has, when the sweep runs, then their services are deleted and their rows are deleted, and the other rows stay', { timeout: 120_000 }, async (t) => {
-  const site = await postgresSettingsSite(t);
-  const render = new RenderFake({ apiKey: settings.render.apiKey, ownerId: settings.render.ownerId });
-  const kept = await rowWithService(site, render, 'org_01JSWEEPKEEP', 'live');
-  const absentLive = await rowWithService(site, render, 'org_01JSWEEPLIVE', 'live');
-  const absentSuspended = await rowWithService(site, render, 'org_01JSWEEPPAUSED', 'suspended');
+  const { site, render, rowWithService } = await registryWithRender(t);
+  const kept = await rowWithService('org_01JSWEEPKEEP', 'live');
+  const absentLive = await rowWithService('org_01JSWEEPLIVE', 'live');
+  const absentSuspended = await rowWithService('org_01JSWEEPPAUSED', 'suspended');
   await site.ownerQuery(`INSERT INTO thermus_admin.tenants (organization_id, state, service_name) VALUES ('org_01JSWEEPNEW', 'creating', '${nameOf('org_01JSWEEPNEW')}')`);
   await site.ownerQuery("INSERT INTO thermus_admin.tenants (organization_id, state, updated_at) VALUES ('org_01JSWEEPGONE', 'deleted', '2026-10-01T00:00:00Z')");
   // WorkOS lists the organization of the creating row too, so two rows are absent: inside the bound of the sweep.
@@ -84,10 +88,9 @@ test('Given rows on the real registry and organizations that WorkOS no longer ha
 });
 
 test('Given a deleted row on the real registry, when it is revived, then a full cap keeps it deleted, and a free place makes it a new requested row without its old service', { timeout: 120_000 }, async (t) => {
-  const site = await postgresSettingsSite(t);
-  const render = new RenderFake({ apiKey: settings.render.apiKey, ownerId: settings.render.ownerId });
-  await rowWithService(site, render, 'org_01JREVIVELIVE', 'live');
-  await rowWithService(site, render, 'org_01JREVIVEOLD', 'live');
+  const { site, rowWithService } = await registryWithRender(t);
+  await rowWithService('org_01JREVIVELIVE', 'live');
+  await rowWithService('org_01JREVIVEOLD', 'live');
   await site.ownerQuery("UPDATE thermus_admin.tenants SET state = 'deleted', internal_url = NULL, created_at = '2026-10-01T00:00:00Z', last_active_at = '2026-10-02T00:00:00Z' WHERE organization_id = 'org_01JREVIVEOLD'");
   const { fleet } = storesOn(t, site);
 
@@ -103,9 +106,8 @@ test('Given a deleted row on the real registry, when it is revived, then a full 
 });
 
 test('Given live and suspended rows on the real registry, when the fleet statements run, then each changes a row only from the state that it names', { timeout: 120_000 }, async (t) => {
-  const site = await postgresSettingsSite(t);
-  const render = new RenderFake({ apiKey: settings.render.apiKey, ownerId: settings.render.ownerId });
-  const serviceId = await rowWithService(site, render, 'org_01JSTATES', 'live');
+  const { site, rowWithService } = await registryWithRender(t);
+  const serviceId = await rowWithService('org_01JSTATES', 'live');
   const { fleet } = storesOn(t, site);
   const newer = `sha256:${'6b'.repeat(32)}`;
 
@@ -128,10 +130,9 @@ test('Given live and suspended rows on the real registry, when the fleet stateme
 // Each fleet change names the state and the service that it starts from: a replacement row has a new service, so a
 // stale write of a slow operation moves instead of changing it (manager decision of 31 October 2026).
 test('Given a live row on the real registry that a delete, a revive, and a new provision replaced with another service, when a stale change names the old service, then it is moved, and the row stays with the new service', { timeout: 120_000 }, async (t) => {
-  const site = await postgresSettingsSite(t);
-  const render = new RenderFake({ apiKey: settings.render.apiKey, ownerId: settings.render.ownerId });
+  const { site, render, rowWithService } = await registryWithRender(t);
   const organizationId = 'org_01JREPLACED';
-  const old = await rowWithService(site, render, organizationId, 'live');
+  const old = await rowWithService(organizationId, 'live');
   const { fleet, provisioning } = storesOn(t, site);
   assert.deepEqual(await fleet.markDeleted(organizationId, 'live', old), { status: 'recorded' });
   assert.deepEqual(await reviveTenant(fleet, organizationId, 25), { status: 'revived' });

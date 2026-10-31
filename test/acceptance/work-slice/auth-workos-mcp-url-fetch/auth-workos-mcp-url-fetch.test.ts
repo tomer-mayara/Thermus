@@ -25,7 +25,6 @@ import { composeWorkSliceApplication } from './auth-workos-mcp-url-fetch.ts';
 const storyUrl = 'https://news.example/story';
 const reason = 'Read the story for the work slice';
 const rendererExecutable = '/opt/thermus-test/lightpanda';
-// A second copy of the page and the Markdown of the basic slice test. DRY3 shares them after the third copy.
 const storyHtml = '<html><head><title>Story</title></head><body><main><h1>Rendered story</h1>'
   + '<p>The rendered article has a first paragraph with enough words to keep it.</p>'
   + '<p class="final-host-target">Final host target</p><p class="requested-host-target">Requested host target</p>'

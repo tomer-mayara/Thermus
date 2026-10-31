@@ -41,7 +41,6 @@ export class RenderWrites {
     return creationOf(exchange.answer);
   }
 
-  /** Deletes a service that the registry owns. A service that is already gone counts as deleted. */
   async deleteService(serviceId: string, signal: AbortSignal): Promise<ServiceDeletion> {
     const refusal = await this.refusalOf(serviceId);
     if (refusal !== undefined) return { status: 'refused', reason: refusal };

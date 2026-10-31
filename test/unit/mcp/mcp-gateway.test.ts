@@ -3,9 +3,6 @@ import { test } from 'node:test';
 import type { GatewayRoute, GatewayTenantRequest } from '../../../src/interfaces/mcp/mcp-gateway-tenants.ts';
 import { fetchCall, gatewayOf, organizationId, post, refusalOf } from './fixtures/gateway-harness.ts';
 
-// The answers of the gateway for each row of the registry and each tenant request (SO-05): the status, the
-// Retry-After, the words, the resume, and the one log line of a refusal.
-
 const starting = 'Your workspace is not ready yet. Try again in 15 seconds.';
 const unavailable = 'The service is temporarily unavailable. Try again in 15 seconds.';
 const stateAnswers: ReadonlyArray<readonly [string, GatewayRoute, number, string | null, string]> = [

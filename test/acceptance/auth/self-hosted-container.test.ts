@@ -24,8 +24,6 @@ const lockError = /in use by another Thermus process/;
 // Only the dedicated command arms the gate. npm test and npm run test:acceptance report these tests as skipped.
 const gateArmed = process.env.THERMUS_CONTAINER_GATE === '1';
 const hostedSettings = { DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://thermus.example', ...workOSSettings };
-// The hosted and paid capabilities: WorkOS sign-in, onboarding, organizations, grants, invitations, seats, and
-// billing, with the provider routes that could add them. The self-hosted composition routes none of them.
 const hostedAndPaidPaths = [
   ['GET', '/auth/callback?code=hosted-code&state=hosted-state'],
   ['GET', '/auth/sign-in'],
@@ -51,7 +49,6 @@ let images: GateImages;
 const fetchToolNames = ['getURLAsMarkdown', 'search'];
 const fetchReason = 'Read the rendered page for the task';
 const pinnedRenderer = '/opt/lightpanda/1.0.0/lightpanda';
-// The page of the test-only seam in container-page.ts, on port 8090 of a server container.
 const containerPage = 'http://localhost:8090';
 const storyMarkdown = '## Runtime story\n\nThe script rendered this paragraph with enough words to keep it.\n\nFinal host target\n\n'
   + `Related [article](${containerPage}/related) and [root](${containerPage}/root).`;
@@ -114,6 +111,18 @@ function assertRenewedToken(user: LocalMcpUser, owner: { readonly userId?: strin
   assert.equal(claims.sid, jwtClaims(firstToken).sid);
 }
 
+function assertOneFetchFailedCompletion(server: ServerContainer, tenant: string, subject: string | undefined): void {
+  const completions = server.completionRecords();
+  assert.equal(completions.length, 1);
+  const { operationId, durationMs, ...completion } = completions[0] as Record<string, unknown>;
+  assert.match(operationId as string, generatedOperationIdPattern);
+  assert.ok(typeof durationMs === 'number' && Number.isFinite(durationMs) && durationMs >= 0);
+  assert.deepEqual(completion, {
+    event: 'mcp.tool.completed', authority: `better-auth:${tenant.slice('local:'.length)}`,
+    subject, tenantId: tenant, tool: 'getURLAsMarkdown', status: 'fetch_failed',
+  });
+}
+
 function seamLines(server: ServerContainer, event: 'renderer launch' | 'page connection' | 'page request'): string[] {
   return [...server.output.matchAll(new RegExp(`^Container ${event}(?: (.*))?$`, 'gm'))].map((line) => line[1] ?? '');
 }
@@ -161,15 +170,7 @@ describe('Self-hosted evaluation container without outbound access', { skip: gat
 
     assert.deepEqual(connections.map(({ pages }) => pages), [['/sign-in', '/consent'], ['/sign-in', '/consent']]);
     assert.deepEqual([fetchCall.content, fetchCall.isError], [[{ type: 'text', text: 'Page fetch failed: Renderer connection failed' }], true]);
-    const completions = server.completionRecords();
-    assert.equal(completions.length, 1);
-    const { operationId, durationMs, ...completion } = completions[0] as Record<string, unknown>;
-    assert.match(operationId as string, generatedOperationIdPattern);
-    assert.ok(typeof durationMs === 'number' && Number.isFinite(durationMs) && durationMs >= 0);
-    assert.deepEqual(completion, {
-      event: 'mcp.tool.completed', authority: `better-auth:${tenant.slice('local:'.length)}`,
-      subject: setup.userIds.get(alice.email), tenantId: tenant, tool: 'getURLAsMarkdown', status: 'fetch_failed',
-    });
+    assertOneFetchFailedCompletion(server, tenant, setup.userIds.get(alice.email));
     assert.doesNotMatch(server.completionLines().join('\n'), /93\.184\.216\.34|Show the network limit|"url"|"query"|"reason"|"result"/);
     assert.doesNotMatch(server.output, /Renderer setup failure/);
     assert.notEqual(setup.clientIds[0], setup.clientIds[1]);

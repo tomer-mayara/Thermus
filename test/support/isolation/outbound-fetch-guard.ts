@@ -4,16 +4,12 @@ import { after, before } from 'node:test';
 interface OutboundFetchGuardOptions {
   // Lets a request to 127.0.0.1 through to the real fetch. The default refuses each request.
   readonly allowLoopback?: boolean;
-  // The message of the error that a refused request gets.
   readonly refusal: string;
-  // The message of the check at the end: no request left the machine.
   readonly finding: string;
 }
 
 export interface OutboundFetchGuard {
-  // The URL of each refused request, in the order of the requests. A test can read it while the guard is installed.
   readonly refusedRequests: readonly string[];
-  // Replaces globalThis.fetch.
   install(): void;
   // Puts the real fetch back, then fails with the finding when a request was refused.
   release(): void;

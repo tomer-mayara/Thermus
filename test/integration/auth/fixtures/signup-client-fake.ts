@@ -15,7 +15,6 @@ export const documents: SignupDocuments = { purpose: 'organization-creation', ve
   notice: { version: 'notice-v1', sha256: createHash('sha256').update('Notice').digest('hex'), text: 'Notice' },
   agreement: { version: 'agreement-v1', text: 'TEST ONLY. I have authority to accept these terms for this organization.' } };
 
-// A fake of the narrow SDK client that WorkOSSignup needs: the workos option of WorkOSSignupOptions.
 export class SignupClientFake {
   readonly organizationWrites: CreateOrganizationOptions[] = [];
   readonly membershipWrites: CreateOrganizationMembershipOptions[] = [];

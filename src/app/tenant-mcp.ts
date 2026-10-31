@@ -15,7 +15,6 @@ import { tenantMcpHandler } from './tenant-requests.ts';
 
 type TenantConfig = Extract<DeploymentConfig, { role: 'tenant' }>;
 
-/** The collaborators of the MCP resource of a tenant. */
 export interface TenantMcpParts {
   readonly logger: SystemLog;
   readonly operations: ToolOperations;
@@ -23,10 +22,6 @@ export interface TenantMcpParts {
   readonly relay: Pick<AuditRelaySink, 'forContext'>;
 }
 
-/**
- * The MCP server of a tenant and its handler. The server keeps the bearer check, the product permission, and the
- * per-request serving of today. The context of each admitted request gives its access and its audit relay.
- */
 export function composeTenantMcp(config: TenantConfig, parts: TenantMcpParts): { readonly server: MCPServer; readonly handler: FetchHandler } {
   const { tenant } = config;
   // The token check knows the AuthKit issuer, not the authority of the control plane: the context gives that.

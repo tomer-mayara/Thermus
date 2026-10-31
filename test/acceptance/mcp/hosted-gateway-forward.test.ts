@@ -3,9 +3,6 @@ import { test } from 'node:test';
 import { gatewayOrganization, openHostedGatewaySite, otherGatewayOrganization } from '../../support/in-process/hosted-gateway-site.ts';
 import { busyWords, fetchCall, restartedWords, searchCall } from './fixtures/gateway-calls.ts';
 
-// The forward of the MCP gateway to a live tenant (SO-05): a light streaming proxy with the signed context, the two
-// abort paths, the restart answers, and the search limit. The site is the control plane of hosted-gateway.test.ts.
-
 test('Given a live tenant, when the client sends a Thermus-Access header or hop-by-hop headers, then the tenant gets none of these client values and gets the signed context of the gateway', { timeout: 30_000 }, async (t) => {
   const site = await openHostedGatewaySite(t);
   site.registry.live(gatewayOrganization, site.tenant.origin);
@@ -47,7 +44,6 @@ test('Given a tool that sends progress notifications, when the client calls it t
   assert.ok(progress.every((time) => time < resultAt));
   const call = site.tenant.slowCalls.get('progress');
   assert.ok(call !== undefined);
-  // Each notification reached the client while the tool still ran: the gateway streams and does not buffer.
   assert.ok((progress[0] ?? Infinity) < (call.finishedAt ?? 0), 'The first notification arrived before the tool finished.');
 });
 

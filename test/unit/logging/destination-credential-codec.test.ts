@@ -11,7 +11,8 @@ test('Given one tenant and token, when encrypted twice, then fresh authenticated
   assert.equal(codec.decrypt('tenant-b', first), null);
   assert.equal(new DestinationCredentialCodec(Buffer.alloc(32, 8)).decrypt('tenant-a', first), null);
   const changed = Buffer.from(first, 'base64');
-  changed[changed.length - 1] = changed[changed.length - 1]! ^ 1;
+  const last = changed.length - 1;
+  changed[last] = changed.readUInt8(last) ^ 1;
   assert.equal(codec.decrypt('tenant-a', changed.toString('base64')), null);
 });
 

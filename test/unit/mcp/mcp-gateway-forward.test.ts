@@ -3,9 +3,6 @@ import { test } from 'node:test';
 import { setImmediate } from 'node:timers/promises';
 import { context, controlledBody, fetchCall, gatewayOf, internalUrl, organizationId, post } from './fixtures/gateway-harness.ts';
 
-// The forward of the gateway to a live tenant (SO-05): the header rules, the signed claims, the stream, both abort
-// paths, the restart answers, and the request body limit. mcp-gateway-searches.test.ts holds the search limit.
-
 test('Given a live tenant, when a call is forwarded, then the tenant gets the method, the body, the path and query, the client headers without the hop-by-hop headers, a cookie, or a client context, and the signed context of the access', async (t) => {
   const { forward, calls, signed } = gatewayOf(t);
   const body = JSON.stringify(fetchCall);

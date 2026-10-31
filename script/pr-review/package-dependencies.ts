@@ -42,7 +42,6 @@ function importGroup(base: GraphRules, head: GraphRules): FactGroup {
   };
 }
 
-// Each name that after lists for a component and before does not, as "<component>: <name>".
 function gainedOf(before: Allowed, after: Allowed): string[] {
   return [...after].flatMap(([owner, names]) => names.filter((name) => !(before.get(owner) ?? []).includes(name)).map((name) => `${owner}: ${name}`));
 }

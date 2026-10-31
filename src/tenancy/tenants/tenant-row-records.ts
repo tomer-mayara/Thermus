@@ -18,7 +18,6 @@ export class RowRecords {
     this.lines = new ProvisioningLog(parts.log);
   }
 
-  /** The line of a claimed row, with resumed for a row of an earlier run or a resume. */
   claimed(row: ProvisioningRow, resumed: boolean): void {
     this.lines.record(row, row.state, resumed ? { resumed: true } : {});
   }

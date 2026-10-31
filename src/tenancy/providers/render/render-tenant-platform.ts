@@ -13,7 +13,6 @@ export { PRODUCTION_SERVICE_ID } from './render-writes.ts';
 export interface RenderTenantPlatformOptions extends ServiceSource {
   // The key of the Render user of the control plane. Only the HTTP client of the adapter holds it.
   readonly apiKey: string;
-  // The write guard: true when the tenant registry owns the service (answer 4 of 27 October 2026).
   readonly ownsService: (serviceId: string) => Promise<boolean>;
   readonly clock: RenderClock;
   readonly fetch?: typeof fetch;

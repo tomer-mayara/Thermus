@@ -4,7 +4,6 @@ import { htmlDocument, NOTICE_HEADERS } from '../page-html.ts';
 const PLAN_LABELS: Readonly<Record<BillingState['plan'], string>> = { free: 'Free', team: 'Team' };
 const FREE_PLAN = '<p>This service collects no payment. The organization is on the free plan, and no seat is billed. Access depends only on the grants of each member.</p>';
 
-// Billing has no write operation. Only the free plan states that no payment is collected.
 export function billingPage(state: BillingState): Response {
   return new Response(htmlDocument('Billing', [
     `<p>Plan: ${PLAN_LABELS[state.plan]}</p>`,

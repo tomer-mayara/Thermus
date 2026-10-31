@@ -10,7 +10,6 @@ import { textOrder } from '../shared/order.ts';
 import type { CrapDelta } from './crap-delta.ts';
 import type { MapSources, MapCommunity, MapSnapshot } from './types.ts';
 
-// functionsOver30 is the count of the functions at CRAP 30 or more, absent without coverage.
 interface TrendCommunity {
   readonly label: string;
   readonly files: number;
@@ -42,10 +41,8 @@ export interface TrendRecord {
   readonly crap?: TrendCrapBasis;
 }
 
-// The numbers of one row of the trend table.
 export type TrendNumbers = Pick<TrendRecord, 'commit' | 'date' | 'title' | 'tool' | 'modularity' | 'crossShare' | 'cycles' | 'maintainability' | 'functionsOver30' | 'crap' | 'components'>;
 
-// The CRAP of each file of the snapshot, by path, as the CRAP delta gives it.
 type FilesCrap = ReadonlyMap<string, FileCrap>;
 
 // Without coverage, crap is undefined and the record has no count of the functions at CRAP 30 or more.

@@ -8,7 +8,6 @@ const resourceMetadataUrl = `${origin}/.well-known/oauth-protected-resource/team
 const authorizationServer = 'https://example-staging.authkit.app';
 const metadataPaths = ['/.well-known/oauth-protected-resource', '/.well-known/oauth-protected-resource/team/mcp'];
 
-// Stands in for MCPServer and records each request that reaches it.
 class McpServerDouble {
   readonly requests: Request[] = [];
   closeCount = 0;

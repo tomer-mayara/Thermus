@@ -6,7 +6,6 @@ interface HttpsExchange {
   readonly response: Promise<IncomingMessage>;
 }
 
-// Each request trusts the site's certificate and has its own connection.
 export async function sendHttpsRequest(input: Request, ca: Buffer): Promise<HttpsExchange> {
   const body = input.body === null ? undefined : Buffer.from(await input.arrayBuffer());
   const response = Promise.withResolvers<IncomingMessage>();

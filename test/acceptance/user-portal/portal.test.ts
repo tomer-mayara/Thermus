@@ -30,6 +30,10 @@ async function openPortal(server: ServerState) {
   return { document, navigations, requests };
 }
 
+function textAt(root: ParentNode, selector: string): string | null | undefined {
+  return root.querySelector(selector)?.textContent;
+}
+
 const ada = { signedIn: true, email: 'ada@example.com', name: 'Ada Lovelace', organizationId: 'org_01ACME', mfaCompleted: true, csrfToken: 'csrf-of-the-session' };
 
 test('Given a signed-out visitor, when the portal opens, then the approved product story is complete', async () => {
@@ -192,7 +196,7 @@ test('Given a signed-in user at a custom endpoint, when they choose Desktop and 
   assert.ok(view);
   const methods = document.querySelector('fieldset');
   assert.ok(methods);
-  assert.equal(methods.querySelector('legend')?.textContent, 'Connect with');
+  assert.equal(textAt(methods, 'legend'), 'Connect with');
   assert.deepEqual([...methods.querySelectorAll('label')].map((label) => label.textContent), ['CLI', 'Desktop and Web Apps']);
   const select = document.querySelector<HTMLSelectElement>('#ai-agent');
   assert.ok(select);
@@ -202,41 +206,45 @@ test('Given a signed-in user at a custom endpoint, when they choose Desktop and 
   desktop.checked = true;
   desktop.dispatchEvent(new view.Event('change'));
   assert.equal(select.value, 'claude');
-  assert.equal(document.querySelector('label[for="ai-agent"]')?.textContent, 'Your desktop app');
+  assert.equal(textAt(document, 'label[for="ai-agent"]'), 'Your desktop app');
   assert.deepEqual([...select.querySelectorAll('option')].map((option) => option.textContent), ['Claude (web / desktop)', 'Codex app', 'ChatGPT (web setup)', 'Cursor', 'VS Code', 'Other MCP client']);
-  assert.equal(document.querySelector('.add-content code')?.textContent, mcpUrl);
-  assert.match(document.querySelector('.add-content')?.textContent ?? '', /Connectors/);
-  assert.match(document.querySelector('.authorize-content')?.textContent ?? '', /Sign in.*workspace.*Approve/s);
+  assert.equal(textAt(document, '.add-content code'), mcpUrl);
+  assert.match(textAt(document, '.add-content') ?? '', /Connectors/);
+  assert.match(textAt(document, '.authorize-content') ?? '', /Sign in.*workspace.*Approve/s);
 
   const cli = methods.querySelector<HTMLInputElement>('input[value="cli"]');
   assert.ok(cli);
   cli.checked = true;
   cli.dispatchEvent(new view.Event('change'));
   assert.equal(select.value, 'claude-code');
-  assert.equal(document.querySelector('label[for="ai-agent"]')?.textContent, 'Your AI agent');
-  assert.match(document.querySelector('.add-content code')?.textContent ?? '', /claude mcp add/);
+  assert.equal(textAt(document, 'label[for="ai-agent"]'), 'Your AI agent');
+  assert.match(textAt(document, '.add-content code') ?? '', /claude mcp add/);
   assert.deepEqual(requests, ['session', 'portal/access', 'workspace/status']);
 });
 
-for (const role of ['admin', 'user']) {
+const workspaceNavigation = {
+  admin: { links: ['Quick start', 'Connect', 'Switch Workspace', 'Members', 'Audit Log'], members: 'Members', logging: 'Audit Log' },
+  user: { links: ['Connect', 'Switch Workspace'], members: null, logging: null },
+};
+
+for (const [role, expected] of Object.entries(workspaceNavigation)) {
   test(`Given a current ${role}, when the portal opens, then workspace navigation matches the current server role and legal links need no invited-member agreement`, async () => {
     const { document, requests } = await openPortal({ session: { ...ada, roles: ['admin'] }, productAccess: {
       organizationId: 'org_01ACME', organizationName: 'Acme Labs', roles: [role], plan: 'free', memberLimit: 5, mcpUrl: 'https://thermus.example/mcp',
     } });
     const navigation = document.querySelector('header nav[aria-label="Workspace"]');
     assert.ok(navigation);
-    assert.deepEqual([...navigation.querySelectorAll('a')].map(link => link.textContent), role === 'admin'
-      ? ['Quick start', 'Connect', 'Switch Workspace', 'Members', 'Audit Log'] : ['Connect', 'Switch Workspace']);
+    assert.deepEqual([...navigation.querySelectorAll('a')].map(link => link.textContent), expected.links);
     assert.equal(document.querySelectorAll('nav[aria-label="Workspace"]').length, 1);
     assert.equal(document.querySelector('main nav[aria-label="Workspace"]'), null);
-    assert.equal(navigation.querySelector('a[aria-current="page"]')?.textContent, 'Connect');
+    assert.equal(textAt(navigation, 'a[aria-current="page"]'), 'Connect');
     assert.equal(navigation.querySelector('a[aria-current="page"]')?.getAttribute('href'), './');
-    assert.equal(navigation.querySelector('a[href="organizations"]')?.textContent, 'Switch Workspace');
-    assert.equal(navigation.querySelector('a[href="members"]')?.textContent ?? null, role === 'admin' ? 'Members' : null);
-    assert.equal(navigation.querySelector('a[href="logging"]')?.textContent ?? null, role === 'admin' ? 'Audit Log' : null);
+    assert.equal(textAt(navigation, 'a[href="organizations"]'), 'Switch Workspace');
+    assert.equal(textAt(navigation, 'a[href="members"]') ?? null, expected.members);
+    assert.equal(textAt(navigation, 'a[href="logging"]') ?? null, expected.logging);
     assert.doesNotMatch(navigation.textContent ?? '', /Security|Remove|Change role|MFA/);
-    assert.equal(document.querySelector('footer a[href="https://thermus.ai/privacy"]')?.textContent, 'Privacy Notice');
-    assert.equal(document.querySelector('footer a[href="https://thermus.ai/terms"]')?.textContent, 'Terms of Service');
+    assert.equal(textAt(document, 'footer a[href="https://thermus.ai/privacy"]'), 'Privacy Notice');
+    assert.equal(textAt(document, 'footer a[href="https://thermus.ai/terms"]'), 'Terms of Service');
     assert.equal(document.querySelector('input[type="checkbox"]'), null);
     assert.deepEqual([...document.querySelectorAll('form')].map((form) => form.getAttribute('action')), ['logout']);
     assert.deepEqual(requests, ['session', 'portal/access', 'workspace/status']);

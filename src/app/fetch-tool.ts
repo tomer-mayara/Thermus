@@ -24,7 +24,6 @@ type Environment = Readonly<Record<string, string | undefined>>;
 
 export type { ToolOperations } from '../interfaces/mcp/fetch-tool-server.ts';
 
-// One application owns the renderer, rules, compatible cleaners, and setup reports for both tools.
 export function createToolOperations(environment: Environment, logger: SystemLog): ToolOperations {
   const ads = adCleaner(readAdRulesFile(environment));
   const sanitizer = new PromptInjectionRemoverSanitizer();

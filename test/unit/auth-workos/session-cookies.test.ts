@@ -14,7 +14,6 @@ const otherPassword = 'another-cookie-password-0123456789-abcdef';
 const session: SessionEnvelope = { seal: 'Fe26.2*1*sealed-workos-session~2', csrf: 'csrf-token-0123456789', mfa: true };
 const signIn: SignInEnvelope = { state: 'state-0123456789', codeVerifier: 'verifier-0123456789', returnTo: '/team/', expiresAt: 1_800_000_000_000 };
 
-// The pair that a browser sends back in its Cookie header for a Set-Cookie value.
 function sentBack(setCookie: string): string {
   return setCookie.split(';')[0] ?? '';
 }

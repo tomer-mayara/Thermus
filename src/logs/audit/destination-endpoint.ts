@@ -1,13 +1,23 @@
 import { isIP } from 'node:net';
 
+// This check reads only the text of the endpoint, so a DNS name passes. Before each export or Test connects, the
+// sender resolves the name and refuses the destination when an address is not public (public-audit-destination.ts).
 export function validDestinationEndpoint(endpoint: string): boolean {
-  if (endpoint.length > 2048 || /^https:\/\/[^/]*@/.test(endpoint) || !endpoint.startsWith('https://') || /[\s\p{Cc}?#\\]/u.test(endpoint)) return false;
+  if (!safeEndpointText(endpoint)) return false;
   const url = URL.parse(endpoint);
   if (!url || url.protocol !== 'https:' || url.username || url.password) return false;
-  const hostname = url.hostname.replace(/^\[|\]$/g, '').toLowerCase().replace(/\.$/, '');
+  return publicHost(url.hostname.replace(/^\[|\]$/g, '').toLowerCase().replace(/\.$/, ''));
+}
+
+function safeEndpointText(endpoint: string): boolean {
+  return endpoint.length <= 2048 && endpoint.startsWith('https://') && !/^https:\/\/[^/]*@/.test(endpoint) && !/[\s\p{Cc}?#\\]/u.test(endpoint);
+}
+
+function publicHost(hostname: string): boolean {
   if (!hostname || hostname === 'localhost' || hostname.endsWith('.localhost')) return false;
-  if (isIP(hostname) === 4) return publicIpv4(hostname);
-  if (isIP(hostname) === 6) return publicIpv6(hostname);
+  const family = isIP(hostname);
+  if (family === 4) return publicIpv4(hostname);
+  if (family === 6) return publicIpv6(hostname);
   return !hostname.includes(':');
 }
 

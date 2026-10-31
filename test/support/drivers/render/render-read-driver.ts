@@ -27,7 +27,6 @@ export interface ServiceView {
   readonly type: string;
 }
 
-/** The fields of one service that name its private address: the slug and serviceDetails.url. */
 export interface AddressView {
   readonly name: string;
   readonly slug: string;
@@ -63,7 +62,6 @@ export class RenderReadDriver {
     return credentials.map((item) => record(item.registryCredential ?? item)).map((item) => ({ id: text(item, 'id'), name: text(item, 'name'), registry: text(item, 'registry') }));
   }
 
-  /** Each service of the workspace, of every type, page by page. */
   async services(): Promise<readonly ServiceView[]> {
     const found: ServiceView[] = [];
     let cursor: string | undefined;

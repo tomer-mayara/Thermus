@@ -37,7 +37,6 @@ export function signedInState(changes: Partial<ProfiledSignedInBrowserSession> =
   };
 }
 
-// A double of the browser session controls with configured answers. It records each call in order.
 export class SessionDouble implements BrowserSessionControls {
   readonly calls: SessionCall[] = [];
   state: Answer<ProfiledBrowserSessionState> = signedInState();

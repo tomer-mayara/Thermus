@@ -23,7 +23,6 @@ export interface RenderAnswer {
   readonly limits: RenderLimits;
 }
 
-/** An answer, or the failure of a call that got no answer: a network failure or the timeout of the call. */
 export type RenderExchange =
   | { readonly answer: RenderAnswer }
   | { readonly answer?: undefined; readonly failure: string };

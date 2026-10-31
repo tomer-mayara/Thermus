@@ -3,7 +3,6 @@ import type { FakeInvitation, FakeMembership, FakeUser } from './workos-fake.ts'
 import { changeMembership, currentStatus, effectiveRoles, membershipIdAt, isKnownRole, matches, queryOf } from './workos-fake-directory.ts';
 import { invitationJson, listAnswer, notFound, refusal, type ShownInvitation } from './workos-fake-wire.ts';
 
-// What the invitation routes read and change in the fake.
 export interface InvitationView {
   readonly fake: WorkOSFakeApi;
   invitations: readonly FakeInvitation[];
@@ -40,10 +39,8 @@ function sameAddress(first: string, second: string): boolean {
   return first.toLowerCase() === second.toLowerCase();
 }
 
-// The routes of the invitations of the organization administration.
 export class WorkOSFakeInvitations {
   readonly #view: InvitationView;
-  // The number of changes of each invitation, by ID. The update times come from them.
   readonly #changes = new Map<string, number>();
 
   constructor(view: InvitationView) {
@@ -139,8 +136,6 @@ export class WorkOSFakeInvitations {
     return index === -1 ? invitation.roleSlug : effectiveRoles(this.#view.memberships[index])[0];
   }
 
-  // Gives the membership of the address of an invitation in its organization these roles and this status. A new
-  // address gets a new unverified user, and a user without a membership there gets a new membership.
   private putMembershipOf(invitation: FakeInvitation, grant: Pick<FakeMembership, 'roles' | 'status'>): void {
     const user = this.userWithAddress(invitation.email) ?? this.addInvitedUser(invitation.email);
     const index = this.indexOfAddress(invitation);
@@ -154,7 +149,6 @@ export class WorkOSFakeInvitations {
     return user;
   }
 
-  // Replaces an invitation after a change in WorkOS, which gives it a later update time.
   private changeInvitation(invitation: FakeInvitation, change: Partial<FakeInvitation>): FakeInvitation {
     const changed = { ...invitation, ...change };
     this.#view.invitations = this.#view.invitations.map((each) => (each === invitation ? changed : each));

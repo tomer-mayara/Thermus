@@ -2,9 +2,6 @@ import type { IncomingMessage } from 'node:http';
 import type { RoleGrant } from '../../../../src/accounts/identity/access-context.ts';
 import type { AccessContextVerification } from '../../../../src/accounts/identity/signed-access-context.ts';
 
-// The records of the requests that the fake tenant (tenant-upstream-fake.ts) got, as the tests read them.
-
-// The context that the fake verified, without its expiry.
 export interface VerifiedContextRecord {
   readonly authority: string;
   readonly subject: string;
@@ -23,7 +20,6 @@ export interface UpstreamRequest {
   readonly toolName?: string;
   readonly context?: VerifiedContextRecord;
   answerStatus?: number;
-  // When the HTTP request of the tenant aborted: the client of the tenant went away.
   signalAt?: number;
 }
 
@@ -31,7 +27,6 @@ export function bearerTokenOf(request: Request): string | undefined {
   return /^Bearer (\S+)$/i.exec(request.headers.get('Authorization') ?? '')?.[1];
 }
 
-// The record of a request that reached the MCP front of the fake, with its context when the fake verified it.
 export function upstreamRecordOf(request: Request, body: string, verification: AccessContextVerification): UpstreamRequest {
   const bearerToken = bearerTokenOf(request);
   return {
@@ -41,7 +36,6 @@ export function upstreamRecordOf(request: Request, body: string, verification: A
   };
 }
 
-// The record of a tool call that the fake fails as a restarted container does, before the MCP front.
 export function failedCallRecordOf(incoming: IncomingMessage): UpstreamRequest {
   return { method: incoming.method ?? '', path: incoming.url ?? '', headers: headersOf(incoming), rpcMethod: 'tools/call' };
 }

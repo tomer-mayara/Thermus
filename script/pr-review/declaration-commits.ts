@@ -46,7 +46,6 @@ export function lineCountsOf(diff: string): { readonly added: number; readonly r
   return { added: hunks.filter((line) => line.startsWith('+')).length, removed: hunks.filter((line) => line.startsWith('-')).length };
 }
 
-// A last line without a new line counts too.
 export function lineCountOf(text: string): number {
   if (text === '') return 0;
   return text.split('\n').length - (text.endsWith('\n') ? 1 : 0);

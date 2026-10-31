@@ -13,7 +13,6 @@ const context: VerifiedAccessContext = {
 };
 const denyAll: AccessResolver = { resolve: async () => ({ allowed: false, reason: 'account-inactive' }) };
 
-// The MCP part of a tenant with doubles of the verifier, the MCP server, and the scope.
 function tenantMcpOf(verification: AccessContextVerification) {
   const verified: Array<{ readonly header: string | null | undefined; readonly token: string | undefined }> = [];
   const served: Array<{ readonly request: Request; readonly scope?: McpRequestScope }> = [];

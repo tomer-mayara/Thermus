@@ -10,8 +10,6 @@ interface LineCounts {
   readonly total: number;
 }
 
-// productionNumstat comes from a diff that git limits to scopes.production, so a file that moves into that scope
-// counts all its lines. testDiff is the output of git diff -U0 --no-prefix for the files under test/.
 interface SizeInput {
   readonly numstat: readonly NumstatRow[];
   readonly productionNumstat: readonly NumstatRow[];

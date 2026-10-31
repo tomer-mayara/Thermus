@@ -9,8 +9,6 @@ import { readProbeLines, transcriptOf, type LinesRead, type ProbeLine } from './
 export const JOB_POLL = { everyMs: 5_000, attempts: 60 } as const;
 export const JOB_ENDED = new Set(['succeeded', 'failed', 'canceled']);
 
-// One job: its step in the report, the service that runs it, its program with the DNS lookups and the requests of
-// that program, and the requests that decide the step. SO-03 adds the lookups, the deciding requests, and a wait.
 interface JobPlan {
   readonly step: string;
   readonly on: Role;
@@ -21,7 +19,6 @@ interface JobPlan {
   readonly settleMs?: number;
 }
 
-// In the job of SO-01d, each request decides the step.
 const EACH_REQUEST = (): boolean => true;
 
 export interface JobView {

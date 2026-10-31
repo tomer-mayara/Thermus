@@ -21,7 +21,6 @@ export interface Revisions {
   readonly mergeBase: string;
 }
 
-// The text of one file at the merge base and at HEAD. A side is absent where the file does not exist.
 export interface FilePair {
   readonly base?: string;
   readonly head?: string;

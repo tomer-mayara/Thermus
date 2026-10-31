@@ -3,7 +3,6 @@ import type { FakeAnswer, RecordedRequest, WorkOSFakeApi } from './workos-fake-a
 import type { FakeMembership, FakeUser, MembershipStatus } from './workos-fake.ts';
 import { listAnswer, membershipJson, notFound, refusal, roleAssignmentJson, roleJson, userJson, type ShownMembership } from './workos-fake-wire.ts';
 
-// What the directory routes read and change in the fake.
 export interface DirectoryView {
   memberships: readonly FakeMembership[];
   readonly deletedMembershipIds: Set<string>;

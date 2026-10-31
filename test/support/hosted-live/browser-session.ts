@@ -28,7 +28,6 @@ export interface SignInServices {
   readonly browser: LiveBrowser;
 }
 
-// The sealed session that a hosted server keeps in its cookie. It holds the latest seal after each refresh.
 class BrowserSession {
   readonly #workos: WorkOS;
   readonly #cookiePassword: string;
@@ -59,7 +58,6 @@ export function refreshedAccessToken(result: RefreshSessionResponse): string {
   return result.session.accessToken;
 }
 
-// A browser sign-in of the hosted edition, with PKCE and a sealed session; the callback is intercepted.
 export async function signInWithAuthKit(services: SignInServices, request: SignInRequest): Promise<BrowserSignIn> {
   const { settings, workos, browser } = services;
   const { url, state, codeVerifier } = await workos.userManagement.getAuthorizationUrlWithPKCE({ provider: 'authkit', redirectUri: browserRedirectUri, clientId: settings.clientId });

@@ -1,8 +1,8 @@
 import type { RevisionBoundAuditEvent, RevisionBoundAuditSink } from './audit-snapshots.ts';
 import type { DestinationSettingsService } from './destination-settings-service.ts';
 import type { AuditSendAttempt, AuditSendOutcome, TrackedAuditSender } from './audit-send.ts';
-import { collectorBounds, retryDelay } from './audit-collector-state.ts';
-import type { AuditCollectorBounds, CollectorItem, CollectorTenant } from './audit-collector-state.ts';
+import { boundedCollectorText, collectorBounds, retryDelay } from './audit-collector-state.ts';
+import type { AuditCollectorBounds, CollectorItem, CollectorTenant, RetryBackoff } from './audit-collector-state.ts';
 import { detachedAuditEvent } from './audit-snapshot-state.ts';
 
 export type { AuditCollectorBounds } from './audit-collector-state.ts';
@@ -11,7 +11,7 @@ export interface AuditCollectorOptions { readonly now?: () => number; readonly r
 export class AuditCollector implements RevisionBoundAuditSink {
   private readonly bounds: AuditCollectorBounds;
   private readonly now: () => number;
-  private readonly random: () => number;
+  private readonly retries: RetryBackoff;
   private readonly items = new Set<CollectorItem>();
   private readonly tenants = new Map<string, CollectorTenant>();
   private bytes = 0;
@@ -23,27 +23,15 @@ export class AuditCollector implements RevisionBoundAuditSink {
   constructor(private readonly authorizer: Pick<DestinationSettingsService, 'authorizeExport'>, private readonly sender: TrackedAuditSender, options: AuditCollectorOptions = {}) {
     this.bounds = collectorBounds(options.bounds ?? {});
     this.now = options.now ?? (() => performance.now());
-    this.random = options.random ?? Math.random;
+    this.retries = { bounds: this.bounds, random: options.random ?? Math.random };
   }
 
   admit(captured: RevisionBoundAuditEvent): boolean {
     try {
       if (this.closed) return false;
-      const { organizationId: tenant } = captured.event;
-      const revision = captured.destinationRevision;
-      if (typeof tenant !== 'string' || !tenant || Buffer.byteLength(tenant) > 1_024 || typeof revision !== 'string' || !revision || Buffer.byteLength(revision) > 128) return false;
-      // The input is the plain, bounded projection owned by AuditSnapshots.
-      if (Buffer.byteLength(JSON.stringify(captured.event)) > this.bounds.eventBytes) return false;
-      const bytes = Buffer.byteLength(JSON.stringify({ destinationRevision: revision, event: captured.event }));
-      const known = this.tenants.get(tenant);
-      if (!this.capacity(known, bytes)) return false;
-      const group = known ?? { items: [], bytes: 0, active: false };
-      const item: CollectorItem = { tenant, revision, bytes, until: this.now() + this.bounds.ageMs,
-        event: detachedAuditEvent(captured.event), attempts: 0, nextAt: 0, disposed: false, active: false };
-      this.tenants.set(tenant, group); group.items.push(item); group.bytes += bytes;
-      this.items.add(item); this.bytes += bytes;
-      item.deadline = setTimeout(() => this.dispose(item), this.bounds.ageMs);
-      this.schedule();
+      const admission = admissionOf(captured, this.bounds.eventBytes);
+      if (admission === undefined || !this.capacity(this.tenants.get(admission.tenant), admission.bytes)) return false;
+      this.enqueue(admission, captured.event);
       return true;
     } catch { return false; }
   }
@@ -64,6 +52,16 @@ export class AuditCollector implements RevisionBoundAuditSink {
     return this.items.size < this.bounds.items && this.bytes + bytes <= this.bounds.bytes
       && (group !== undefined || this.tenants.size < this.bounds.tenants)
       && (group?.items.length ?? 0) < this.bounds.tenantItems && (group?.bytes ?? 0) + bytes <= this.bounds.tenantBytes;
+  }
+
+  private enqueue(admission: Admission, event: RevisionBoundAuditEvent['event']): void {
+    const group = this.tenants.get(admission.tenant) ?? { items: [], bytes: 0, active: false };
+    const item: CollectorItem = { ...admission, until: this.now() + this.bounds.ageMs,
+      event: detachedAuditEvent(event), attempts: 0, nextAt: 0, disposed: false, active: false };
+    this.tenants.set(admission.tenant, group); group.items.push(item); group.bytes += admission.bytes;
+    this.items.add(item); this.bytes += admission.bytes;
+    item.deadline = setTimeout(() => this.dispose(item), this.bounds.ageMs);
+    this.schedule();
   }
 
   private schedule(): void {
@@ -125,7 +123,7 @@ export class AuditCollector implements RevisionBoundAuditSink {
 
   private backoff(item: CollectorItem, outcome: AuditSendOutcome | 'unavailable'): void {
     if (item.disposed) return;
-    const delay = retryDelay(outcome, item.attempts, this.bounds, this.random());
+    const delay = retryDelay(outcome, item.attempts, this.retries);
     if (delay === undefined || this.now() + delay >= item.until) this.dispose(item);
     else item.nextAt = this.now() + delay;
   }
@@ -150,4 +148,15 @@ export class AuditCollector implements RevisionBoundAuditSink {
     if (group.items.length === 0) this.tenants.delete(item.tenant);
     this.schedule();
   }
+}
+
+type Admission = Pick<CollectorItem, 'tenant' | 'revision' | 'bytes'>;
+
+function admissionOf(captured: RevisionBoundAuditEvent, eventBytes: number): Admission | undefined {
+  const { organizationId: tenant } = captured.event;
+  const revision = captured.destinationRevision;
+  if (!boundedCollectorText(tenant, 1_024) || !boundedCollectorText(revision, 128)) return undefined;
+  // The input is the plain, bounded projection owned by AuditSnapshots.
+  if (Buffer.byteLength(JSON.stringify(captured.event)) > eventBytes) return undefined;
+  return { tenant, revision, bytes: Buffer.byteLength(JSON.stringify({ destinationRevision: revision, event: captured.event })) };
 }

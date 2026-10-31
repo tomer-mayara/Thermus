@@ -16,7 +16,6 @@ interface MemberEntry {
   readonly subject: string;
   readonly email: string;
   readonly status: MembershipStatus;
-  // The roles of the grants that give an application permission.
   readonly roles: readonly string[];
   readonly revision: string;
   // A supported target at read time, not authority to remove it later.
@@ -39,7 +38,6 @@ export interface InvitationEntry {
   readonly role: string;
   readonly state: InvitationState;
   readonly expiresAt: string;
-  // The changes that the actor can make now.
   readonly changes: readonly InvitationChange[];
 }
 
@@ -67,7 +65,6 @@ export async function readMemberOverview(directory: OrganizationDirectory, organ
   return Object.freeze({ organizationId, organizationName, members: Object.freeze(entries), activeUserSeats: userSeatsOf(members) });
 }
 
-// From every member page, so that a failed page fails the count and no partial count looks complete.
 export async function activeUserSeatCount(directory: OrganizationDirectory, organizationId: string): Promise<number> {
   return userSeatsOf(await membersOf(directory, organizationId));
 }

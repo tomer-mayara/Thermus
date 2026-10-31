@@ -29,31 +29,22 @@ import { MCPServer, type RequestServerBuilder } from '../interfaces/mcp/mcp-serv
 
 type Environment = Readonly<Record<string, string | undefined>>;
 
-// The connection to one WorkOS environment: its settings, an SDK client, and the AuthKit key set of the Connect
-// tokens. The production connection reaches WorkOS; a test can point the client and the key set at a local fake.
 export interface WorkOSConnection {
   readonly settings: WorkOSSettings;
   readonly workos: WorkOS;
   readonly authkitKeySet: JWTVerifyGetKey;
 }
 
-// The parts of the hosted application that a composition root chooses. Production supplies the shared fetch
-// operation; a development composition can supply another request-scoped tool server.
 export interface WorkOSApplicationParts {
   readonly logger: SystemLog;
   readonly loggingStorage?: HostedLoggingStorage;
-  // Explicit audit and tool-server overrides take precedence in development compositions.
   readonly audit?: AuditLog;
   readonly toolOperations?: ToolOperations;
-  // Explicit development composition can replace the customer dispatch sink.
   readonly auditSink?: RevisionBoundAuditSink;
   readonly snapshotOptions?: AuditSnapshotsOptions;
   readonly buildServer?: RequestServerBuilder;
-  // Omitted by production. A slice must select its enrollment organization explicitly.
   readonly onboarding?: GoogleOnboardingSettings;
-  // Explicit composition supplies its own documents. Production selects the approved organization removal bundle at startup.
   readonly signup?: { readonly enabled: boolean; readonly documents?: SignupDocuments };
-  // Explicit composition can supply the billing of its organizations. Production uses BillingFree.
   readonly billing?: Billing;
   // With MCP_TENANTS_ENABLED on: MCPServer forwards each admitted request to the tenant of the organization, and
   // /internal/audit takes the audit relays of the tenants. Without it, the control plane serves the tools as today.
@@ -90,7 +81,6 @@ export async function openWorkOSApplication(config: RouteConfig, logger: SystemL
   return portal.withApplication(application);
 }
 
-// With MCP_TENANTS_ENABLED off, the control plane reads none of the tenant settings (plan section 4.1).
 async function tenantProvisioningSettingsOf(environment: Environment): Promise<TenantProvisioningSettings | undefined> {
   const { loadMcpTenantsEnabled, loadTenantProvisioningSettings } = await import('../runtime/config/mcp-tenants-config.ts');
   return loadMcpTenantsEnabled(environment) ? loadTenantProvisioningSettings(environment) : undefined;
@@ -117,20 +107,8 @@ export async function openWorkOSConnection(config: RouteConfig, logger: SystemLo
 
 export async function composeWorkOSApplication(config: RouteConfig, connection: WorkOSConnection, parts: WorkOSApplicationParts): Promise<Application> {
   using owned = new DisposableStack();
-  const snapshots = parts.audit === undefined && parts.loggingStorage !== undefined
-    ? owned.adopt(new AuditSnapshots(parts.loggingStorage.store, parts.auditSink ?? parts.loggingStorage.dispatch ?? { admit: () => false }, parts.snapshotOptions), (capture) => capture.close())
-    : undefined;
-  const audit = parts.audit ?? (snapshots === undefined ? discardAuditLog() : new AuditLog(snapshots));
-  let buildServer = parts.buildServer;
-  if (buildServer === undefined && parts.toolOperations !== undefined) {
-    const { fetchToolServers } = await import('./fetch-tool.ts');
-    buildServer = fetchToolServers(parts.toolOperations, parts.logger, audit);
-  }
-  let loggingStorage = parts.loggingStorage;
-  if (loggingStorage !== undefined && snapshots !== undefined) {
-    const storage = loggingStorage;
-    loggingStorage = { ...storage, close: () => { snapshots.close(); return storage.close(); } };
-  }
+  const { audit, storage } = auditParts(parts, owned);
+  const buildServer = await buildServerOf(parts, audit);
   const billing = await billingOf(parts);
   // Signup and the portal follow the tenant of each organization through the registry rules of the gateway (SO-07).
   const { workspacePartsOf } = await import('./workspace-composition.ts');
@@ -143,13 +121,26 @@ export async function composeWorkOSApplication(config: RouteConfig, connection: 
     billing,
     operation: portalAccessOperation(config.publicBaseUrl, config.mcpResourceUrl, portalReads(providerParts.organizations, billing)),
     signupUrl: new URL('signup', config.publicBaseUrl).href,
+    storage,
     workspaces: workspaces.statuses,
-  }, loggingStorage);
+  });
   owned.move();
   return application;
 }
 
-// The portal reads the name of the active organization of the member and the billing state of that organization.
+function auditParts(parts: WorkOSApplicationParts, owned: DisposableStack): { readonly audit: AuditLog; readonly storage?: HostedLoggingStorage } {
+  const storage = parts.loggingStorage;
+  if (parts.audit !== undefined || storage === undefined) return { audit: parts.audit ?? discardAuditLog(), storage };
+  const snapshots = owned.adopt(new AuditSnapshots(storage.store, parts.auditSink ?? storage.dispatch ?? { admit: () => false }, parts.snapshotOptions), (capture) => capture.close());
+  return { audit: new AuditLog(snapshots), storage: { ...storage, close: () => { snapshots.close(); return storage.close(); } } };
+}
+
+async function buildServerOf(parts: WorkOSApplicationParts, audit: AuditLog): Promise<RequestServerBuilder | undefined> {
+  if (parts.buildServer !== undefined || parts.toolOperations === undefined) return parts.buildServer;
+  const { fetchToolServers } = await import('./fetch-tool.ts');
+  return fetchToolServers(parts.toolOperations, parts.logger, audit);
+}
+
 function portalReads(organizations: WorkOSOrganizations, billing: Billing): PortalReads {
   return {
     organizationNameOf: (user, organizationId) => organizations.activeOrganizationName(user, organizationId),
@@ -164,7 +155,8 @@ async function billingOf(parts: WorkOSApplicationParts): Promise<Billing> {
 }
 
 async function workosProviderParts(config: RouteConfig, connection: WorkOSConnection, parts: WorkOSApplicationParts & { readonly billing: Billing; readonly audit: AuditLog; readonly signupTenants?: SignupTenants }): Promise<HostedProviderParts & { readonly organizations: WorkOSOrganizations }> {
-  const { WorkOSOrganizations, workosMembershipReads } = await import('../accounts/providers/workos/workos-organizations.ts');
+  const { WorkOSOrganizations } = await import('../accounts/providers/workos/workos-organizations.ts');
+  const { workosMembershipReads } = await import('../accounts/providers/workos/workos-membership-reads.ts');
   const { WorkOSAuthProvider } = await import('../accounts/providers/workos/workos-auth-provider.ts');
   const { WorkOSBrowserSession } = await import('../accounts/providers/workos/workos-browser-session.ts');
   const { WorkOSSessionRoutes } = await import('../interfaces/web/auth/workos/workos-session-routes.ts');
@@ -175,8 +167,6 @@ async function workosProviderParts(config: RouteConfig, connection: WorkOSConnec
   const { settings, workos, authkitKeySet } = connection;
   const { logger, buildServer } = parts;
   const authority = workosAuthority(settings.clientId);
-  // One directory gives the current grants to access resolution, and the organizations, members, and invitations and
-  // their changes to the account routes.
   const organizations = new WorkOSOrganizations({ authority, memberships: workosMembershipReads(workos), userManagement: workos.userManagement, authorization: workos.authorization });
   const provider = new WorkOSAuthProvider({ authority, authkitIssuer: settings.authkitIssuer, mcpResourceUrl: config.mcpResourceUrl, keySet: authkitKeySet, grants: organizations, userManagement: workos.userManagement });
   const { WorkOSGoogleOnboarding } = await import('../accounts/providers/workos/workos-google-onboarding.ts');

@@ -7,9 +7,6 @@ import { TenantProvisioningStoreFake } from '../../support/doubles/tenants/tenan
 import { VirtualClock } from '../../support/doubles/tenants/virtual-clock.ts';
 import { TenantPlatformFake } from './fixtures/tenant-platform-fake.ts';
 
-// The state machine of the provisioner with a fake of the tenant platform, a fake of the registry, a virtual clock,
-// and a spy of the operator log.
-
 const organization = 'org_01JUNITAAAAAAAAAAAAAAAAAAA';
 const otherOrganization = 'org_01JUNITBBBBBBBBBBBBBBBBBB';
 const name = 'thermus-tenant-org-01junitaaaaaaaaaaaaaaaaaaa';

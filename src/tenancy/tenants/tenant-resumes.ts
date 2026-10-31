@@ -21,11 +21,8 @@ const UNAVAILABLE: ResumeResult = Object.freeze({ status: 'unavailable' });
  * the newest deploy of the deploying row and records live.
  */
 export class TenantResumes {
-  /** The conditional registry statements of a resume. */
   private readonly store: Pick<TenantGatewayStore, 'markResuming' | 'restoreSuspended'>;
-  /** The resume call of the platform; SO-10 connects it to Render. */
   private readonly operation: TenantResume;
-  /** The organizations whose resume runs in this process. */
   private readonly running = new Set<string>();
 
   constructor(store: Pick<TenantGatewayStore, 'markResuming' | 'restoreSuspended'>, operation: TenantResume) {

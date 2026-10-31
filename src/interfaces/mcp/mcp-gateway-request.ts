@@ -11,7 +11,6 @@ export interface ForwardedMessage {
   readonly toolName?: string;
 }
 
-/** The body that the gateway forwards: its bytes as the client sent them, and its messages. */
 export interface ForwardedBody {
   readonly bytes?: Uint8Array;
   readonly messages: readonly ForwardedMessage[];
@@ -32,7 +31,6 @@ export async function readForwardedBody(request: Request, signal: AbortSignal): 
   return bytes === undefined ? { status: 'too-large' } : { status: 'read', body: { bytes, ...messagesOf(bytes) } };
 }
 
-/** The answer of the SDK to a body above its limit. */
 export function tooLargeAnswer(): Response {
   const message = `Payload Too Large: Request body must not exceed ${DEFAULT_MAX_REQUEST_BODY_SIZE} bytes`;
   return Response.json({ jsonrpc: '2.0', error: { code: -32000, message }, id: null }, { status: 413 });

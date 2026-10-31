@@ -20,7 +20,6 @@ const STATE_REFUSALS: Readonly<Record<Exclude<GatewayTenantState, 'suspended' | 
   requested: 'starting', creating: 'starting', deploying: 'starting', live: 'registry-unavailable', deleted: 'deleted',
 };
 
-// The refusal of a tenant request for an organization without a row.
 const REQUEST_REFUSALS: Readonly<Record<Exclude<GatewayTenantRequest['status'], 'present'>, Refusal>> = {
   requested: { reason: 'starting', state: 'requested' },
   full: { reason: 'capacity' },
@@ -34,23 +33,17 @@ const REQUEST_REFUSALS: Readonly<Record<Exclude<GatewayTenantRequest['status'], 
  * method, and the tool name of each JSON-RPC message, for its own answers and for the search limit.
  */
 export class McpGateway {
-  /** The registry port that app composes on the tenants owner. */
   private readonly tenants: GatewayTenants;
-  /** The answers of the gateway itself, with their log lines. */
   private readonly refusals: GatewayRefusals;
-  /** The forward to a live tenant. */
   private readonly live: LiveForward;
-  /** The refusal of each row that is not live, with the one report of each failed row. */
   private readonly states = new StateRefusals();
 
-  /** The answers of the gateway and of its live forward share one refusals object and one logger. */
   constructor(options: McpGatewayOptions) {
     this.tenants = options.tenants;
     this.refusals = new GatewayRefusals(options.logger);
     this.live = new LiveForward({ signer: options.signer, tenants: options.tenants, refusals: this.refusals });
   }
 
-  /** The forward step: the answer of the live tenant of the organization, or the 503 of its row. */
   async forward(request: Request, forwarded: McpForwardedRequest): Promise<Response> {
     const organizationId = organizationOf(forwarded);
     const signal = forwarded.lifetime.signal;
@@ -62,7 +55,6 @@ export class McpGateway {
     return this.answerState(organizationId, route.state, signal);
   }
 
-  /** The 503 of a row that is not live, after the one resume of a suspended row. */
   private async answerState(organizationId: string, state: GatewayTenantState, signal: AbortSignal): Promise<Response> {
     if (state === 'suspended') {
       const resumed = await waitForRequest(signal, () => this.tenants.resume(organizationId));
@@ -95,10 +87,8 @@ function resumeRefusalOf(result: GatewayResume): Refusal {
 
 /** The refusal of each row state. A failed tenant reports one time until its row leaves the failed state. */
 class StateRefusals {
-  /** The organizations that got their report. At REPORT_MEMORY of them, the memory starts again. */
   private readonly reported = new Set<string>();
 
-  /** A row that is not failed makes the next failure of its organization report again. */
   rowSeen(organizationId: string, state: GatewayTenantState): void {
     if (state !== 'failed') this.reported.delete(organizationId);
   }

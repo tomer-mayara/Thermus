@@ -37,8 +37,6 @@ export function administrationWith(seeds: readonly MemberSeed[] = members) {
   return { directory, records, billing, administration };
 }
 
-// Acme has a pending, an accepted, a revoked, and an expired User invitation (invitation-1 to -4) and a pending
-// Admin invitation (invitation-5); Globex has a pending User invitation (invitation-6).
 export function invitationsWith() {
   const served = administrationWith();
   served.directory.addInvitations(
@@ -62,9 +60,6 @@ export function rolesIn(directory: OrganizationDirectoryDouble, subject: string,
   return directory.membershipIn(subject, organizationId)?.grants.map(({ role }) => role) ?? [];
 }
 
-// Each record as one line: "<actor> in <organization>: <action> <role> for <target>: <outcome>". Each record must be
-// frozen, have the time of the clock and the actor of the provider double, and no field other than those of the
-// contract.
 export function recordLines(records: readonly ChangeRecord[]): readonly string[] {
   return records.map((record) => {
     assert.ok(Object.isFrozen(record));

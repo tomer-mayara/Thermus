@@ -3,7 +3,7 @@ import { describe, test } from 'node:test';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { completeAuthKit } from '../../../support/hosted-live/authkit-driver.ts';
 import { refreshedAccessToken } from '../../../support/hosted-live/browser-session.ts';
-import { serverGet, sessionJson, signInThroughPortal, waitForPortal } from '../../../support/hosted-live/portal-visit.ts';
+import { serverGet, sessionJson, signInThroughPortal, signInToOrganizationSelector, waitForPortal } from '../../../support/hosted-live/portal-visit.ts';
 import { authorizeWithConnect, type ConnectGrant } from '../../../support/hosted-live/connect-grant.ts';
 import { issuedTokens, requestMachineTokens } from '../../../support/hosted-live/connect-client.ts';
 import { once, type LiveRun } from '../../../support/hosted-live/live-run.ts';
@@ -62,7 +62,7 @@ export function describeHostedServerCases(run: LiveRun): void {
 
     test('Given a signed-in user without an active membership, when the portal and the organization page open, then the portal shows no product access, the protected portal request gives 403, and the organization page gives the onboarding guidance', signInOptions, async () => {
       const { newUser } = await run.fixtures();
-      const { page } = await signInThroughPortal(run, newUser, undefined, 'organizations');
+      const { page } = await signInToOrganizationSelector(run, newUser);
       await page.goto(`${localOrigin}/`);
       await waitForPortal(page);
 
@@ -77,7 +77,7 @@ export function describeHostedServerCases(run: LiveRun): void {
     test('Given an Admin-only member and a default-role member of organization A, when each signs in, then Admin has product access and the default role is refused', signInOptions, async () => {
       const { adminOnlyUser, defaultRoleUser } = await run.fixtures();
       for (const [user, expected] of [[adminOnlyUser, 200], [defaultRoleUser, 403]] as const) {
-        const { page } = await signInThroughPortal(run, user, undefined, expected === 200 ? 'portal' : 'organizations');
+        const { page } = await (expected === 200 ? signInThroughPortal(run, user) : signInToOrganizationSelector(run, user));
         if (expected === 403) {
           await page.goto(`${localOrigin}/`);
           await waitForPortal(page);
@@ -237,7 +237,6 @@ async function activeSessionsOf(run: LiveRun, userId: string): Promise<number> {
   return sessions.filter(({ status }) => status === 'active').length;
 }
 
-// The operator ends each active browser session of the user through the WorkOS API.
 async function revokeActiveSessionsOf(run: LiveRun, userId: string): Promise<number> {
   const sessions = await (await run.workos.userManagement.listSessions(userId)).autoPagination();
   const active = sessions.filter(({ status }) => status === 'active');

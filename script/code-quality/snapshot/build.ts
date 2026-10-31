@@ -1,4 +1,3 @@
-// Assemble a snapshot from native measurements and their exact source text.
 import { dependenciesOf } from '../dependencies/source.ts';
 import { snapshotCommunitiesOf } from './communities.ts';
 import { functionEvidenceOf } from '../identity/source.ts';
@@ -18,7 +17,6 @@ export interface SnapshotSources {
   readonly title?: string;
   // Sorted by path, as sourceFilesOf gives them. The snapshot keeps this order.
   readonly files: readonly FileMeasurement[];
-  // The answer texts of get_communities and of get_file_metrics for each file.
   readonly communities: string;
   readonly functions: ReadonlyMap<string, string>;
   readonly sourceTexts: ReadonlyMap<string, string>;
@@ -63,7 +61,7 @@ function snapshotFileOf(file: FileMeasurement, community: string | null, sources
     paths: file.paths,
     loc: file.loc,
     risk: numbers.rounded(file.risk, 2),
-    functions: nativeFunctionsOf(sources.root, file.path, sources.functions.get(file.path), source),
+    functions: nativeFunctionsOf(sources.root, { path: file.path, text: source }, sources.functions.get(file.path)),
   };
 }
 

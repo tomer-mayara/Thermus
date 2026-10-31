@@ -10,11 +10,9 @@ const DEFAULT_LIMIT_WAIT_MS = 60_000;
 export interface ServiceSource {
   readonly ownerId: string;
   readonly registryCredentialId: string;
-  // The image of each new tenant, by digest.
   readonly image: string;
 }
 
-/** The body of the create call: an image-backed private service, and each variable of its first deploy. */
 export function createBodyOf(source: ServiceSource, request: TenantServiceRequest): unknown {
   const { ownerId, image, registryCredentialId } = source;
   return {

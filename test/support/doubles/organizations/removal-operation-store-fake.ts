@@ -1,6 +1,5 @@
 import type { RemovalIntent, RemovalOperation, RemovalOperationStore, RemovalTerminal } from '../../../../src/accounts/organizations/removal-operation-store.ts';
 
-// Keeps admission and receipts for browser journeys. The PostgreSQL gate proves durability.
 export class RemovalOperationStoreFake implements RemovalOperationStore {
   readonly operations = new Map<string, RemovalOperation>();
   readonly admissions: RemovalIntent[] = [];

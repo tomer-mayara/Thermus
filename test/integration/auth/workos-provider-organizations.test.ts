@@ -5,7 +5,8 @@ import type { AuthenticatedUser, RequestContext } from '../../../src/accounts/id
 import type { AccountFailureReport } from '../../../src/interfaces/web/account/account-routes.ts';
 import { WorkOSAuthProvider } from '../../../src/accounts/providers/workos/workos-auth-provider.ts';
 import { WorkOSBrowserSession } from '../../../src/accounts/providers/workos/workos-browser-session.ts';
-import { WorkOSOrganizations, workosMembershipReads } from '../../../src/accounts/providers/workos/workos-organizations.ts';
+import { WorkOSOrganizations } from '../../../src/accounts/providers/workos/workos-organizations.ts';
+import { workosMembershipReads } from '../../../src/accounts/providers/workos/workos-membership-reads.ts';
 import { WorkOSSessionRoutes } from '../../../src/interfaces/web/auth/workos/workos-session-routes.ts';
 import { workosAuthority } from '../../../src/accounts/providers/workos/workos-settings.ts';
 import { BillingFree } from '../../../src/accounts/billing/billing-free.ts';
@@ -21,11 +22,6 @@ import { WorkOSFake, type FakeMembership, type FakeUser } from '../../support/do
 import { mcpRequest } from '../../support/drivers/mcp/mcp-http-request.ts';
 import { hostedConfig } from '../../support/fixtures/hosted-config.ts';
 import { adminGrant, userGrant } from '../../support/fixtures/hosted-roles.ts';
-
-// The real WorkOS session, organization directory, and access resolver with the pinned SDK and a local fake of the
-// WorkOS API, together with the real OrganizationAdministration, account routes, and MCP server. A probe stands in for
-// the destinations of the account pages, each with its permission, so that the administration access of each role
-// shows. These tests do not show what the WorkOS service sends; the hosted live gate does.
 
 const authority = workosAuthority(fakeClientId);
 const acme = 'org_01ACME';
@@ -46,8 +42,6 @@ const mia: FakeUser = { id: 'user_01MIA', email: 'mia@example.com', firstName: '
 const otto: FakeUser = { id: 'user_01OTTO', email: 'otto@example.com', firstName: 'Otto' };
 const sam: FakeUser = { id: 'user_01SAM', email: 'sam@example.com', firstName: 'Sam' };
 
-// Mia: User in Acme, Admin in Globex, inactive in Initech, and only the default role in Umbrella. Otto: every role in
-// Hooli. Sam: only Admin in Acme.
 const memberships: readonly FakeMembership[] = [
   { userId: mia.id, organizationId: acme, roles: ['user'] },
   { userId: mia.id, organizationId: globex, roles: ['admin'] },
@@ -104,7 +98,6 @@ async function contextAt(browser: HostedBrowser, path: string): Promise<RequestC
   return (JSON.parse(answer.body) as { context: RequestContext }).context;
 }
 
-// The WorkOS requests of the site, without the reads of the browser key set.
 function workosRequests(site: Site): string[] {
   return site.world.fake.takeRequests().map(({ method, path }) => `${method} ${path}`).filter((line) => !line.startsWith('GET /sso/jwks/'));
 }

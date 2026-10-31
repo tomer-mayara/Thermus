@@ -1,7 +1,6 @@
 import { generateKeyPairSync, type KeyObject } from 'node:crypto';
 import { workOSSettings } from './hosted-placeholder.ts';
 
-// The organization that the tenant of the offline tests serves, and an organization of another tenant.
 export const tenantOrganizationId = 'org_01TENANTA';
 export const otherOrganizationId = 'org_01TENANTB';
 
@@ -10,20 +9,15 @@ export const otherOrganizationId = 'org_01TENANTB';
 export const controlPlaneAuthority = `workos:${workOSSettings.WORKOS_CLIENT_ID}`;
 
 export interface GatewayKeyPair {
-  // GATEWAY_PUBLIC_KEY of a tenant: one PEM public key.
   readonly publicKeyPem: string;
-  // GATEWAY_SIGNING_KEY of the control plane. Only the gateway of the tests holds it.
   readonly privateKey: KeyObject;
 }
 
-// A new Ed25519 key pair of the gateway for each call.
 export function gatewayKeyPairOf(): GatewayKeyPair {
   const { publicKey, privateKey } = generateKeyPairSync('ed25519');
   return { publicKeyPem: publicKey.export({ type: 'spki', format: 'pem' }).toString(), privateKey };
 }
 
-// The gateway settings of a control plane with MCP_TENANTS_ENABLED on (SO-05): the PEM private key of the pair and the
-// origin of the control plane on the private network, which is also the host of its relay route.
 export function gatewaySigningSettingsOf(keys: GatewayKeyPair = gatewayKeyPairOf(), controlPlaneInternalUrl = 'http://thermus-control-plane:8080'): Readonly<Record<string, string>> {
   return { GATEWAY_SIGNING_KEY: keys.privateKey.export({ type: 'pkcs8', format: 'pem' }).toString(), CONTROL_PLANE_INTERNAL_URL: controlPlaneInternalUrl };
 }

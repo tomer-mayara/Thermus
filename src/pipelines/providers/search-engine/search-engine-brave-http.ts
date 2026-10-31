@@ -93,32 +93,41 @@ export class SearchEngineBraveHttp implements SearchEngine {
     const wrapper = selectOne<HtmlNode, HtmlElement>(':scope > .fallback-snippet', main);
     if (wrapper === null || banner.parent !== wrapper) return false;
     if (selectOne<HtmlNode, HtmlElement>('.snippet, .result-content, a.l1, .search-snippet-title, main#search-page [data-type]', document) !== null) return false;
-    const headers = selectAll<HtmlNode, HtmlElement>(':scope > span', banner);
-    if (headers.length !== 1) return false;
-    const header = headers[0];
-    const lists = selectAll<HtmlNode, HtmlElement>(':scope > ul', banner);
-    if (lists.length !== 1) return false;
-    const queries = selectAll<HtmlNode, HtmlElement>(':scope > span', header);
-    const tips = selectAll<HtmlNode, HtmlElement>(':scope > li', lists[0]);
-    if (queries.length !== 1 || !DomUtils.textContent(queries[0]).trim() || tips.length !== 2) return false;
-    for (const [parent, children] of [[main, [wrapper]], [wrapper, [banner]], [banner, [header, lists[0]]], [lists[0], tips]] as const) {
-      let index = 0;
-      for (const node of parent.children) {
-        if (node.type === 'comment' || (node.type === 'text' && node.data.trim() === '')) continue;
-        if (node !== children[index]) return false;
-        index++;
-      }
-      if (index !== children.length) return false;
-    }
-    const expected = [header, queries[0], lists[0], ...tips];
+    const parts = bannerParts(banner);
+    if (parts === undefined) return false;
+    const { header, query, list, tips } = parts;
+    const layout = [[main, [wrapper]], [wrapper, [banner]], [banner, [header, list]], [list, tips]] as const;
+    if (!layout.every(([parent, children]) => hasElementChildren(parent, children))) return false;
+    const expected = [header, query, list, ...tips];
     const descendants = selectAll<HtmlNode, HtmlElement>('*', banner);
     if (descendants.length !== expected.length) return false;
-    let label = '';
-    for (const node of header.children) {
-      if (node.type === 'text') label += node.data;
-    }
-    return label.trim() === 'Not many great matches came back for your search:'
+    return ownText(header).trim() === 'Not many great matches came back for your search:'
       && DomUtils.textContent(tips[0]).trim() === 'Try more general keywords'
       && DomUtils.textContent(tips[1]).trim() === 'Try fewer keywords';
   }
+}
+
+function bannerParts(banner: HtmlElement): { header: HtmlElement; query: HtmlElement; list: HtmlElement; tips: HtmlElement[] } | undefined {
+  const headers = selectAll<HtmlNode, HtmlElement>(':scope > span', banner);
+  if (headers.length !== 1) return undefined;
+  const header = headers[0];
+  const lists = selectAll<HtmlNode, HtmlElement>(':scope > ul', banner);
+  if (lists.length !== 1) return undefined;
+  const queries = selectAll<HtmlNode, HtmlElement>(':scope > span', header);
+  const tips = selectAll<HtmlNode, HtmlElement>(':scope > li', lists[0]);
+  if (queries.length !== 1 || !DomUtils.textContent(queries[0]).trim() || tips.length !== 2) return undefined;
+  return { header, query: queries[0], list: lists[0], tips };
+}
+
+function hasElementChildren(parent: HtmlElement, children: readonly HtmlElement[]): boolean {
+  const significant = parent.children.filter((node) => node.type !== 'comment' && (node.type !== 'text' || node.data.trim() !== ''));
+  return significant.length === children.length && significant.every((node, index) => node === children[index]);
+}
+
+function ownText(element: HtmlElement): string {
+  let text = '';
+  for (const node of element.children) {
+    if (node.type === 'text') text += node.data;
+  }
+  return text;
 }

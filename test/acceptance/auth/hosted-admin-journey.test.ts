@@ -2,12 +2,13 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { test } from 'node:test';
 import { signInThroughServer } from '../../support/dsl/workos-sign-in.ts';
-import { formLabelled, formsIn } from '../../support/drivers/browser/hosted-browser.ts';
+import { formLabelled, formsIn, type HostedBrowser } from '../../support/drivers/browser/hosted-browser.ts';
 import { mcpRequest, toolJson } from '../../support/drivers/mcp/mcp-http-request.ts';
 import { ContextReportToolSpy, type ContextReport } from '../../support/doubles/mcp/context-report-tool-spy.ts';
+import type { WorkOSSignupFake } from '../../support/doubles/workos/workos-signup-fake.ts';
 import { hostedRootConfig } from '../../support/fixtures/hosted-config.ts';
 import { signupDocuments } from '../../support/fixtures/signup-documents.ts';
-import { serveWorkOSSite } from '../../support/in-process/workos-site.ts';
+import { serveWorkOSSite, type WorkOSSite } from '../../support/in-process/workos-site.ts';
 
 for (const role of ['admin', 'user'] as const) {
   test(`S1-05 Given a verified creator and recipient, when they create, invite as ${role}, accept with a provider fake, and select the workspace, then application browser and MCP access match their roles and only the creator agreement is stored`, async (t) => {
@@ -23,24 +24,7 @@ for (const role of ['admin', 'user'] as const) {
     const recipient = { id: 'user_RECIPIENT', email: 'recipient@example.com', firstName: 'Recipient', emailVerified: true };
     site.world.users = [creator, recipient];
     const { browser: owner } = await signInThroughServer(site, creator);
-    const creationPage = await owner.open('signup');
-    assert.equal(creationPage.status, 200, creationPage.body);
-    assert.equal((creationPage.body.match(/type="checkbox"/g) ?? []).length, 1);
-    assert.ok(creationPage.body.includes(signupDocuments.agreement.text));
-    const creation = formLabelled(formsIn(creationPage.body), 'Create organization');
-    const created = await owner.submit({ ...creation, fields: { ...creation.fields, organization_name: 'Journey Labs', agreement: 'accepted' } });
-    assert.equal(created.status, 303, created.body);
-    assert.equal(created.location?.href, new URL('quick-start', site.publicBaseUrl).href);
-    const quickStart = await owner.follow(created);
-    assert.equal(quickStart.status, 200, quickStart.body);
-    assert.match(quickStart.body, /Quick start|Journey Labs/);
-    const ownerAccess = await owner.open('portal/access');
-    assert.equal(ownerAccess.status, 200, ownerAccess.body);
-    const organizationId = JSON.parse(ownerAccess.body).organizationId;
-    assert.equal(typeof organizationId, 'string');
-    assert.notEqual(organizationId, '');
-    assert.equal(JSON.parse(ownerAccess.body).organizationName, 'Journey Labs');
-    assert.deepEqual(JSON.parse(ownerAccess.body).roles, ['admin']);
+    const organizationId = await createJourneyLabs(site, owner);
 
     const members = await owner.open('members');
     assert.equal(members.status, 200, members.body);
@@ -90,18 +74,44 @@ for (const role of ['admin', 'user'] as const) {
       assert.deepEqual(report.context.grants.map(({ role: grantedRole }) => grantedRole), [expectedRole]);
     }
 
-    assert.equal(site.signupFake.organizations.length, 1);
-    const metadata = site.signupFake.organizations[0]?.metadata;
-    assert.ok(typeof metadata === 'object' && metadata !== null && !Array.isArray(metadata));
-    assert.ok('subject' in metadata && 'agreement_version' in metadata && 'agreement_sha256' in metadata && 'authority_accepted_at' in metadata);
-    assert.equal(metadata.subject, creator.id);
-    assert.equal(metadata.agreement_version, signupDocuments.agreement.version);
-    assert.equal(metadata.agreement_sha256, createHash('sha256').update(signupDocuments.agreement.text).digest('hex'));
-    assert.ok(typeof metadata.authority_accepted_at === 'string');
-    assert.ok(Number.isFinite(Date.parse(metadata.authority_accepted_at)));
-    const writes = site.world.fake.takeRequests().filter(({ method }) => method !== 'GET');
-    assert.equal(writes.filter(({ method, path }) => method === 'POST' && path === '/organizations').length, 1);
-    assert.equal(writes.filter(({ path }) => path === '/user_management/organization_memberships').length, 1);
-    assert.equal(writes.filter(({ method }) => method === 'PATCH').length, 0);
+    assertOnlyCreatorAgreementStored(site, creator.id);
   });
+}
+
+async function createJourneyLabs(site: WorkOSSite, owner: HostedBrowser): Promise<string> {
+  const creationPage = await owner.open('signup');
+  assert.equal(creationPage.status, 200, creationPage.body);
+  assert.equal((creationPage.body.match(/type="checkbox"/g) ?? []).length, 1);
+  assert.ok(creationPage.body.includes(signupDocuments.agreement.text));
+  const creation = formLabelled(formsIn(creationPage.body), 'Create organization');
+  const created = await owner.submit({ ...creation, fields: { ...creation.fields, organization_name: 'Journey Labs', agreement: 'accepted' } });
+  assert.equal(created.status, 303, created.body);
+  assert.equal(created.location?.href, new URL('quick-start', site.publicBaseUrl).href);
+  const quickStart = await owner.follow(created);
+  assert.equal(quickStart.status, 200, quickStart.body);
+  assert.match(quickStart.body, /Quick start|Journey Labs/);
+  const ownerAccess = await owner.open('portal/access');
+  assert.equal(ownerAccess.status, 200, ownerAccess.body);
+  const organizationId = JSON.parse(ownerAccess.body).organizationId;
+  assert.equal(typeof organizationId, 'string');
+  assert.notEqual(organizationId, '');
+  assert.equal(JSON.parse(ownerAccess.body).organizationName, 'Journey Labs');
+  assert.deepEqual(JSON.parse(ownerAccess.body).roles, ['admin']);
+  return organizationId;
+}
+
+function assertOnlyCreatorAgreementStored(site: WorkOSSite & { readonly signupFake: WorkOSSignupFake }, creatorId: string): void {
+  assert.equal(site.signupFake.organizations.length, 1);
+  const metadata = site.signupFake.organizations[0]?.metadata;
+  assert.ok(typeof metadata === 'object' && metadata !== null && !Array.isArray(metadata));
+  assert.ok('subject' in metadata && 'agreement_version' in metadata && 'agreement_sha256' in metadata && 'authority_accepted_at' in metadata);
+  assert.equal(metadata.subject, creatorId);
+  assert.equal(metadata.agreement_version, signupDocuments.agreement.version);
+  assert.equal(metadata.agreement_sha256, createHash('sha256').update(signupDocuments.agreement.text).digest('hex'));
+  assert.ok(typeof metadata.authority_accepted_at === 'string');
+  assert.ok(Number.isFinite(Date.parse(metadata.authority_accepted_at)));
+  const writes = site.world.fake.takeRequests().filter(({ method }) => method !== 'GET');
+  assert.equal(writes.filter(({ method, path }) => method === 'POST' && path === '/organizations').length, 1);
+  assert.equal(writes.filter(({ path }) => path === '/user_management/organization_memberships').length, 1);
+  assert.equal(writes.filter(({ method }) => method === 'PATCH').length, 0);
 }

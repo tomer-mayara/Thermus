@@ -3,8 +3,6 @@ import type { RequestListener } from 'node:http';
 import { createServer, type Server } from 'node:https';
 import type { AddressInfo } from 'node:net';
 
-// The HTTPS fronts of the local site: one TLS listener on each loopback address, both on one port.
-
 export interface TlsCertificate {
   readonly key: Buffer | string;
   readonly cert: Buffer | string;
@@ -12,7 +10,6 @@ export interface TlsCertificate {
 
 interface FrontPlan {
   readonly tls: TlsCertificate;
-  // A fixed port, or 0 for a free port.
   readonly port: number;
   readonly listener: RequestListener;
 }

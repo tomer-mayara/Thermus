@@ -3,8 +3,6 @@ import { describe, test } from 'node:test';
 import type { MemberSeed } from '../../support/doubles/organizations/directory-double-records.ts';
 import { actorOf, administrationWith, invitationsWith, members, adminGrant, userGrant } from './fixtures/administration-fixtures.ts';
 
-// vic is an inactive Admin of Acme. gil is an Admin of Globex, the organization that each session of the
-// fixtures selected, and only a User in Acme.
 const billingMembers: readonly MemberSeed[] = [
   ...members,
   { subject: 'user-vic', organizationId: 'org-a', grants: [adminGrant], status: 'inactive' },
@@ -69,7 +67,6 @@ describe('OrganizationAdministration billing state', () => {
 });
 
 
-// The number of change records that were kept when each seat update of billing started.
 describe('OrganizationAdministration invitation billing behavior', () => {
   test('Given an Admin, when it sends, resends, and revokes User invitations, then each is applied, and billing gets no update, because an invitation is no seat', async () => {
     const { billing, administration } = invitationsWith();

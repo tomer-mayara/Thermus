@@ -20,7 +20,6 @@ interface ServerContainerOptions {
   readonly environment?: Readonly<Record<string, string>>;
   // false starts the server without the trusted rules file.
   readonly adRules?: false;
-  // Loads the test-only page seam of container-page.ts into the server, with renderer access to the page or without it.
   readonly page?: 'permitted' | 'blocked';
 }
 

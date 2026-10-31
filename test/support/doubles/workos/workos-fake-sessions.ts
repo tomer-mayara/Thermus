@@ -4,7 +4,6 @@ import type { FakeMembership, FakeUser } from './workos-fake.ts';
 import { invalidGrant, organizationMembershipNotFound, userJson } from './workos-fake-wire.ts';
 import { membershipIdAt } from './workos-fake-directory.ts';
 
-// What the codes, the refreshes, and the tokens read of the fake.
 export interface SessionView {
   readonly fake: WorkOSFakeApi;
   readonly browserKey: SigningKey;

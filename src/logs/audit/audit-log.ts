@@ -43,7 +43,6 @@ export interface DestinationChange extends AuditContext {
   readonly outcome: 'saved' | 'unchanged' | 'invalid' | 'conflict' | 'unavailable' | 'unconfirmed' | 'tested' | 'unsaved' | 'cancelled' | 'busy' | 'denied' | 'stale';
 }
 
-/** A synthetic record from an explicit saved-destination Test. */
 interface DestinationTestEvent extends AuditContext {
   readonly destinationRevision: string;
 }
@@ -54,7 +53,6 @@ export type AuditEvent =
   | (DestinationChange & { readonly eventName: 'audit.destination.changed' })
   | (DestinationTestEvent & { readonly eventName: 'audit.destination.test' });
 
-/** A tool completion event, as the AuditLog of a tenant projects it and relays it to the control plane (SO-05). */
 export type RelayedToolCompletion = Extract<AuditEvent, { readonly eventName: 'mcp.tool.completed' }>;
 
 export interface AuditEventSink {

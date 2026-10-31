@@ -13,7 +13,6 @@ const compileTimeout = 120_000;
 const fileError = /^(.+?)\(\d+,\d+\): error TS\d+: /u;
 const optionsError = /^error TS\d+: /u;
 
-// skipped: the listed modules that do not exist in the working tree, when the caller allows that.
 interface Declarations {
   readonly texts: ReadonlyMap<string, string>;
   readonly ignored: { readonly errors: number; readonly files: number };

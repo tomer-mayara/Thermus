@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { test } from 'node:test';
+import { test, type TestContext } from 'node:test';
 import { formLabelled, formsIn } from '../../support/drivers/browser/hosted-browser.ts';
 import { signInThroughServer } from '../../support/dsl/workos-sign-in.ts';
 import { serveDestinationTestSite, destinationTestAdmin as admin, destinationTestOrganizationId as organizationId, destinationTestEndpoint as endpoint, destinationTestSecret as secret } from '../../support/in-process/logging-destination-test-site.ts';
@@ -44,26 +44,41 @@ for (const enabled of [false, true]) {
   });
 }
 
-for (const failure of ['invalid', 'endpoint-token', 'unconfirmed', 'test-failed', 'read-failed'] as const) {
-  test(`Given ${failure} during Test, when the Admin submits current settings, then a styled outcome distinguishes Save from Test and offers safe recovery`, async (t) => {
-    const { browserSite, browser, service, store, tenantId, calls, form } = await testFormSite(t, failure === 'test-failed');
-    const before = await service.read(tenantId);
-    const fields = { ...form.fields, endpoint, token: '' };
-    if (failure === 'invalid') fields.endpoint = 'https://private-user:private-endpoint-secret@collector.example/v1/logs';
-    if (failure === 'endpoint-token') fields.endpoint = 'https://changed.example/v1/logs';
-    if (failure === 'unconfirmed') { store.unconfirmNextSave = true; fields.token = 'new-private-token'; }
-    if (failure === 'read-failed') {
+interface TestFailure {
+  readonly status: number;
+  readonly saveUnknown: boolean;
+  readonly testFails: boolean;
+  readonly arrange: (fields: Record<string, string>, site: Awaited<ReturnType<typeof testFormSite>>, t: TestContext) => void;
+}
+
+const testFailures: Readonly<Record<string, TestFailure>> = {
+  invalid: { status: 400, saveUnknown: false, testFails: false, arrange: (fields) => { fields.endpoint = 'https://private-user:private-endpoint-secret@collector.example/v1/logs'; } },
+  'endpoint-token': { status: 400, saveUnknown: false, testFails: false, arrange: (fields) => { fields.endpoint = 'https://changed.example/v1/logs'; } },
+  unconfirmed: { status: 503, saveUnknown: true, testFails: false, arrange: (fields, { store }) => { store.unconfirmNextSave = true; fields.token = 'new-private-token'; } },
+  'test-failed': { status: 502, saveUnknown: false, testFails: true, arrange: () => {} },
+  'read-failed': {
+    status: 503, saveUnknown: true, testFails: false, arrange: (fields, { service }, t) => {
       fields.endpoint = 'http://collector.example/v1/logs';
       t.mock.method(service, 'read', async () => { throw new Error('private-storage-cause'); });
-    }
+    },
+  },
+};
+
+for (const [failure, expected] of Object.entries(testFailures)) {
+  test(`Given ${failure} during Test, when the Admin submits current settings, then a styled outcome distinguishes Save from Test and offers safe recovery`, async (t) => {
+    const site = await testFormSite(t, expected.testFails);
+    const { browserSite, browser, service, tenantId, calls, form } = site;
+    const before = await service.read(tenantId);
+    const fields = { ...form.fields, endpoint, token: '' };
+    expected.arrange(fields, site, t);
     const answer = await browser.submit({ ...form, fields });
-    assert.equal(answer.status, failure === 'test-failed' ? 502 : failure === 'unconfirmed' || failure === 'read-failed' ? 503 : 400);
+    assert.equal(answer.status, expected.status);
     assert.match(answer.body, /class="site-header"/);
     assert.match(answer.body, /<h1>Audit logs<\/h1>/);
     assert.match(answer.body, /role="alert"/);
     assert.doesNotMatch(answer.body, /new-private-token|private-storage-cause|private-sender-cause|private-user|private-endpoint-secret/);
     assert.equal(answer.headers.get('Cache-Control'), 'no-store');
-    if (failure === 'unconfirmed' || failure === 'read-failed') {
+    if (expected.saveUnknown) {
       assert.equal(formsIn(answer.body).length, 0);
       assert.match(answer.body, /Read saved settings/);
     } else {
@@ -71,7 +86,7 @@ for (const failure of ['invalid', 'endpoint-token', 'unconfirmed', 'test-failed'
       assert.ok(before.status === 'found');
       assert.equal(resumed.fields.expected_revision, before.settings.revision);
     }
-    if (failure === 'test-failed') {
+    if (expected.testFails) {
       assert.match(answer.body, /Settings saved/);
       assert.match(answer.body, /Test attempt failed/);
       assert.equal(calls.length, 1);

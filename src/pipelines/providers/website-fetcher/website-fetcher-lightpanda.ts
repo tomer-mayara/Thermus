@@ -39,7 +39,7 @@ function launchError(error: unknown, executable: string): WebsiteFetchLaunchErro
   if (typeof syscall !== 'string' || !syscall.startsWith('spawn') || SYSTEM_LIMIT_CODES.has(code)) return undefined;
   const name = systemErrorName(code);
   const problem = name === 'ENOENT' ? 'was not found' : `could not start (${name})`;
-  return new WebsiteFetchLaunchError(name, `Lightpanda executable "${executable}" ${problem}. See docs/lightpanda-runtime.md for setup.`, { cause: error }, { category: 'launch', phase: 'renderer_launch', ...processDiagnostic(error as ExecFileException) });
+  return new WebsiteFetchLaunchError(name, `Lightpanda executable "${executable}" ${problem}. See docs/lightpanda-runtime.md for setup.`, { cause: error });
 }
 
 export class WebsiteFetcherLightpanda implements WebsiteFetcher {
@@ -67,75 +67,100 @@ export class WebsiteFetcherLightpanda implements WebsiteFetcher {
       throw error instanceof WebsiteFetchFailure ? error : new WebsiteFetchFailure((error as Error).message, { category: 'unknown', phase: 'destination_policy', ...processDiagnostic(error) }, { cause: error });
     }
     signal?.throwIfAborted();
-    return render(this.executable, parsed.href, url, signal);
+    return new RendererRun(this.executable, { url: parsed.href, requestedUrl: url }, signal).result();
   }
 
 }
 
-function render(executable: string, url: string, requestedUrl: string, signal?: AbortSignal): Promise<WebsiteFetchResult> {
-  function awaitRenderer(resolve: (page: WebsiteFetchResult) => void, reject: (error: unknown) => void) {
-    let readinessTimer: ReturnType<typeof setTimeout> | undefined;
-    let readinessLimitReached = false;
-    let completed = false;
-    let resourcesReleased = false;
-    let killRequested = false;
-    let child: ChildProcess | undefined;
-    function releaseResources() {
-      if (resourcesReleased) return;
-      resourcesReleased = true;
-      clearTimeout(readinessTimer);
-      signal?.removeEventListener('abort', cancel);
-    }
-    function stopChild() {
-      if (!completed && !killRequested && child?.exitCode === null && child.signalCode === null) {
-        killRequested = true;
-        child.kill('SIGKILL');
-      }
-    }
-    function cancel() {
-      releaseResources();
-      stopChild();
-    }
-    function cleanup() {
-      completed = true;
-      releaseResources();
-    }
-    signal?.addEventListener('abort', cancel, { once: true });
+interface RenderTarget {
+  readonly url: string;
+  readonly requestedUrl: string;
+}
+
+class RendererRun {
+  private readonly settled = Promise.withResolvers<WebsiteFetchResult>();
+  private readinessTimer: ReturnType<typeof setTimeout> | undefined;
+  private readinessLimitReached = false;
+  private completed = false;
+  private resourcesReleased = false;
+  private killRequested = false;
+  private child: ChildProcess | undefined;
+  private readonly cancel = (): void => {
+    this.releaseResources();
+    this.stopChild();
+  };
+
+  public constructor(private readonly executable: string, private readonly target: RenderTarget, private readonly signal?: AbortSignal) {}
+
+  public result(): Promise<WebsiteFetchResult> {
+    this.signal?.addEventListener('abort', this.cancel, { once: true });
     try {
-      function receiveRendererResult(error: ExecFileException | null, stdout: string) {
-        if (completed) return;
-        cleanup();
-        try {
-          signal?.throwIfAborted();
-          if (readinessLimitReached) {
-            throw new WebsiteFetchReadinessTimeoutError({
-              cause: error ?? undefined,
-            }, { category: 'readiness_timeout', phase: 'renderer_process', budgetMs: WEBSITE_FETCH_READINESS_BUDGET_MS, ...processDiagnostic(error) });
-          }
-          assertRendererExit(error, executable);
-          const result = parseRendererResult(requestedUrl, stdout, error);
-          signal?.throwIfAborted();
-          resolve(result);
-        } catch (error) {
-          reject(signal?.aborted ? signal.reason : error);
-        }
-      }
-      child = startRenderer(executable, url, receiveRendererResult);
-      if (signal?.aborted) cancel();
-      if (!completed && !signal?.aborted) {
-        function expireRendererReadiness() {
-          if (completed || child?.exitCode !== null || child.signalCode !== null) return;
-          readinessLimitReached = true;
-          stopChild();
-        }
-        readinessTimer = setTimeout(expireRendererReadiness, WEBSITE_FETCH_READINESS_BUDGET_MS);
-      }
+      this.child = startRenderer(this.executable, this.target.url, (error, stdout) => this.receive(error, stdout));
+      if (this.signal?.aborted) this.cancel();
+      this.armReadinessLimit();
     } catch (error) {
-      cleanup();
-      reject(signal?.aborted ? signal.reason : error);
+      this.cleanup();
+      this.fail(error);
+    }
+    return this.settled.promise;
+  }
+
+  private armReadinessLimit(): void {
+    if (this.completed || this.signal?.aborted) return;
+    this.readinessTimer = setTimeout(() => this.expireReadiness(), WEBSITE_FETCH_READINESS_BUDGET_MS);
+  }
+
+  private receive(error: ExecFileException | null, stdout: string): void {
+    if (this.completed) return;
+    this.cleanup();
+    try {
+      this.settled.resolve(this.page(error, stdout));
+    } catch (failure) {
+      this.fail(failure);
     }
   }
-  return new Promise(awaitRenderer);
+
+  private page(error: ExecFileException | null, stdout: string): WebsiteFetchResult {
+    this.signal?.throwIfAborted();
+    if (this.readinessLimitReached) {
+      throw new WebsiteFetchReadinessTimeoutError({
+        cause: error ?? undefined,
+      }, { category: 'readiness_timeout', phase: 'renderer_process', budgetMs: WEBSITE_FETCH_READINESS_BUDGET_MS, ...processDiagnostic(error) });
+    }
+    assertRendererExit(error, this.executable);
+    const result = parseRendererResult(this.target.requestedUrl, stdout, error);
+    this.signal?.throwIfAborted();
+    return result;
+  }
+
+  private fail(error: unknown): void {
+    this.settled.reject(this.signal?.aborted ? this.signal.reason : error);
+  }
+
+  private expireReadiness(): void {
+    if (this.completed || this.child?.exitCode !== null || this.child.signalCode !== null) return;
+    this.readinessLimitReached = true;
+    this.stopChild();
+  }
+
+  private stopChild(): void {
+    if (!this.completed && !this.killRequested && this.child?.exitCode === null && this.child.signalCode === null) {
+      this.killRequested = true;
+      this.child.kill('SIGKILL');
+    }
+  }
+
+  private releaseResources(): void {
+    if (this.resourcesReleased) return;
+    this.resourcesReleased = true;
+    clearTimeout(this.readinessTimer);
+    this.signal?.removeEventListener('abort', this.cancel);
+  }
+
+  private cleanup(): void {
+    this.completed = true;
+    this.releaseResources();
+  }
 }
 
 // Node refuses some starts at once, for example with ENOEXEC. They become launch errors, as the later ones do.

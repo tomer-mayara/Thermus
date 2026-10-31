@@ -6,11 +6,6 @@ import { mcpRequest, rpcResult } from '../../support/drivers/mcp/mcp-http-reques
 import { controlPlaneAuthority, gatewayKeyPairOf, otherOrganizationId, tenantOrganizationId } from '../../support/fixtures/hosted-tenant.ts';
 import { openTenantSite, tenantUser } from '../../support/in-process/tenant-site.ts';
 
-// The hosted image in the tenant role (SO-03): THERMUS_ROLE=tenant serves /healthz and /mcp for one organization. The
-// test plays the gateway of the control plane: it signs a Thermus-Access context for each request. The tenant checks
-// the context and the bearer token, runs the tool, and relays its audit events with the context. The capacity cases
-// are in hosted-tenant-capacity.test.ts.
-
 const url = 'https://source.example/story';
 const article = '<html><body><main><h1>Tenant story</h1><p>The rendered article has enough words to keep this first paragraph.</p><div hidden>private-hidden-text</div></main></body></html>';
 const markdown = 'The rendered article has enough words to keep this first paragraph.';

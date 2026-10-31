@@ -8,7 +8,6 @@ import { impactFlags } from './types.ts';
 const supportedCrapGoals = { new_function_above: 15, changed_legacy_function_at_or_above: 30 } as const;
 // Optional, because the check takes the files from --process and --review, and an older merge base lacks the keys.
 const metricsFileKeys = ['ratchet.process_outcomes', 'ratchet.review_findings'];
-// The tiers of the impact flags before the rules named them under impact (2026-10-24).
 const earlierImpact = { architect: impactFlags.slice(0, 5), team: impactFlags.slice(5) };
 
 // A signal that the earlier rules read as T1 Team review, and the rules of 2026-10-24 as a note to the author.
@@ -28,19 +27,16 @@ interface ArchitectureRules {
   readonly decisions: readonly string[];
 }
 
-// The section dependencies: the manifest whose dependency keys the check compares, and its lockfile.
 export interface DependencyRules {
   readonly manifest: string;
   readonly lockfile?: string;
 }
 
-// The impact flags that are T2 Need architect, and those that are T1 Team review.
 export interface ImpactRules {
   readonly architect: readonly string[];
   readonly team: readonly string[];
 }
 
-// The keys of the rules file that the check uses. The other keys are for people or for later checks.
 export interface Rules {
   readonly historical?: boolean;
   readonly processPaths?: readonly string[];
@@ -48,13 +44,10 @@ export interface Rules {
   readonly policyQuestion: string;
   readonly contractsQuestion: string;
   readonly readPaths: readonly string[];
-  // T1 Team review only when the diff removes lines from the file.
   readonly readRemovalPaths: readonly string[];
   readonly scopes: { readonly production: readonly string[]; readonly generated: readonly string[] };
   readonly limits: { readonly production: number; readonly total: number; readonly outcome: SignalOutcome };
   readonly skippedOrTodo: 'T1' | 'blocked';
-  // modules holds every module that public_surface lists: external, between_packages, and documented. snapshots is
-  // the folder of the declaration snapshots, without a trailing slash.
   readonly surface: { readonly modules: readonly string[]; readonly external?: readonly string[]; readonly contractDocuments: readonly string[]; readonly snapshots?: string };
   readonly graph: GraphRules;
   readonly maintainability: { readonly newFileBelow: number; readonly existingFileDropAt: number; readonly dropOutcome: SignalOutcome };

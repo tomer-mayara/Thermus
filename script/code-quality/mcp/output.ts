@@ -5,7 +5,6 @@ import { fileSummary } from './file-summary.ts';
 import { jsonOf, type JsonObject } from '../shared/json.ts';
 import type { AstMetricsServer, AstMetricsWork } from './server.ts';
 
-// The path of a file call is as the command line gives it. workOf makes it a path from the root.
 export type McpCall =
   | { readonly kind: 'file'; readonly path: string; readonly json: boolean }
   | { readonly kind: 'tool'; readonly name: string; readonly arguments: JsonObject }

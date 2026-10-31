@@ -14,10 +14,8 @@ export const GATEWAY_WORDS = Object.freeze({
   busy: 'Server busy. Try again later.',
 });
 
-// The JSON-RPC code of an internal error.
 const INTERNAL_ERROR = -32603;
 
-/** A gateway refusal: 503 with the OAuth error temporarily_unavailable, its words, and Retry-After when a retry helps. */
 export function unavailableAnswer(words: string, retryAfterSeconds?: number): Response {
   const headers = retryAfterSeconds === undefined ? undefined : { 'Retry-After': String(retryAfterSeconds) };
   return Response.json(new OAuthError(OAuthErrorCode.TemporarilyUnavailable, words).toResponseObject(), { status: 503, headers });

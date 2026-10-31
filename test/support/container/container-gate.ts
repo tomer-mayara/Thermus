@@ -6,7 +6,6 @@ import { containerProbeScript, repositoryRoot as repositoryRootUrl } from '../pr
 import { docker, dockerOutput, type DockerResult } from './docker-cli.ts';
 
 export const containerDataDirectory = '/var/lib/thermus';
-// The AD_RULES_FILE of the image, where compose.yaml mounts the trusted rules of the operator.
 export const containerAdRulesFile = '/etc/thermus/ad-rules.txt';
 export const repositoryRoot = fileURLToPath(repositoryRootUrl);
 export const gateRun = randomBytes(4).toString('hex');

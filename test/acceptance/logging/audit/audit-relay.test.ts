@@ -4,11 +4,6 @@ import { setTimeout as delay } from 'node:timers/promises';
 import { gatewayKeyPairOf } from '../../../support/fixtures/hosted-tenant.ts';
 import { gatewayOrganization, gatewayUser, openHostedGatewaySite, otherGatewayOrganization } from '../../../support/in-process/hosted-gateway-site.ts';
 
-// The relay route POST /internal/audit of the control plane (SO-05). A tenant relays the audit event of each tool call
-// with the access context of its request. The route accepts a relay only on the internal service host, only with a
-// valid context for the organization of the event, and only one time for each operation ID. It captures the event
-// through the existing audit capture, which exports it with the destination settings of the organization.
-
 test('Given a relay with a valid context for organization A, when it reaches POST /internal/audit, then the event is captured and exported one time', { timeout: 30_000 }, async (t) => {
   const site = await openHostedGatewaySite(t);
   await site.enableExport();

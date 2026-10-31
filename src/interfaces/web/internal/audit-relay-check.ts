@@ -1,21 +1,17 @@
 import type { AccessContextVerification, VerifiedAccessContext } from '../../../accounts/identity/signed-access-context.ts';
 import type { AuditLog, RelayedToolCompletion } from '../../../logs/audit/audit-log.ts';
 
-/** Checks the access context of a relay for the organization of its event. App gives the public key of the gateway. */
 export type RelayContextCheck = (context: string | null, organizationId: string) => Promise<AccessContextVerification>;
 
-/** The reason of a refused relay, for the operator log. The detail is the reason of a refused context. */
 export interface RelayRefusal {
   readonly reason: 'body' | 'event' | 'organization' | 'context' | 'actor' | 'memory';
   readonly detail?: string;
   readonly organizationId?: string;
 }
 
-/** A relay that passed its check, or the refusal of the check. */
 export type CheckedRelay = { readonly event: RelayedToolCompletion; readonly context: VerifiedAccessContext } | { readonly refusal: RelayRefusal };
 
 export interface RelayCheckRule {
-  /** The authority of the control plane. The tenant ID of a relayed event is this authority and the organization ID. */
   readonly authority: string;
   readonly verify: RelayContextCheck;
   readonly audit: Pick<AuditLog, 'relayedToolCompletion'>;

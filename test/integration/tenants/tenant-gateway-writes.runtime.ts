@@ -6,9 +6,6 @@ import { PgTenantRegistryStore } from '../../../src/tenancy/tenants/pg-tenant-re
 import { TenantRequests } from '../../../src/tenancy/tenants/tenant-requests.ts';
 import { postgresSettingsSite } from '../../support/in-process/postgres-settings-site.ts';
 
-// SO-05: the writes of the MCP gateway on disposable PostgreSQL, with the scoped runtime role and the row rules of the
-// migration. tenant-registry-store.runtime.ts holds the tenant request and the read of the same store.
-
 type Site = Awaited<ReturnType<typeof postgresSettingsSite>>;
 
 function storeOn(t: TestContext, site: Site): PgTenantRegistryStore {

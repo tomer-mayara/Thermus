@@ -1,8 +1,5 @@
 import { stripVTControlCharacters } from 'node:util';
 
-// The functions in this file read the operator log of the server. Three sites keep the log, each in a different form.
-// ServerProcess keeps the text of the child process. ServerContainer keeps the text of docker start --attach.
-// InProcessServer keeps the messages of its logger as lines. Each site gives the log to these functions as one text.
 const listeningLine = /Listening on (http:\/\/\S+)/;
 // The pattern ends at the full stop of the tenant line. Thus it gives only a complete ID.
 const tenantLine = /tenant (local:[0-9a-f-]+)\./;

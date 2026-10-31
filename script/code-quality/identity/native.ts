@@ -7,12 +7,13 @@ import { rounded } from '../shared/numbers.ts';
 import { CommandError } from '../shared/repository.ts';
 import type { SnapshotFunction } from '../snapshot/types.ts';
 import { declarationsOf, type Candidate } from './declarations.ts';
-import { candidateIdentityOf } from './source.ts';
+import { candidateIdentityOf, type SourceText } from './source.ts';
 
 // Native offsets are UTF-8 bytes. Compare them with encoded declaration boundaries;
 // never use them directly as TypeScript or V8 UTF-16 offsets.
-export function nativeFunctionsOf(root: string, path: string, text: string | undefined, source: string): SnapshotFunction[] {
-  const answer = text === undefined ? undefined : jsonOf(text);
+export function nativeFunctionsOf(root: string, file: SourceText, answerText: string | undefined): SnapshotFunction[] {
+  const { path, text: source } = file;
+  const answer = answerText === undefined ? undefined : jsonOf(answerText);
   if (!isJsonObject(answer) || typeof answer.path !== 'string' || resolve(root, answer.path) !== resolve(root, path)) return invalid(path, 'file identity');
   if (answer.source_sha256 !== createHash('sha256').update(source).digest('hex')) return invalid(path, 'source byte hash');
   const tree = ts.createSourceFile(path, source, ts.ScriptTarget.Latest, true);
@@ -23,7 +24,7 @@ export function nativeFunctionsOf(root: string, path: string, text: string | und
   const used = new Set<Candidate>();
   const result = functions.map((value) => {
     if (!isJsonObject(value)) return invalid(path, 'function record');
-    const candidate = matchedDeclaration(value.source_range, candidates, source, path);
+    const candidate = matchedDeclaration(value.source_range, candidates, file);
     if (used.has(candidate)) return invalid(path, 'duplicate source range');
     used.add(candidate);
     return metricOf(value, candidate, path);
@@ -39,7 +40,7 @@ function nativeEntries(answer: JsonObject, count: number, path: string): readonl
   return invalid(path, 'function list');
 }
 
-function matchedDeclaration(value: unknown, candidates: readonly Candidate[], source: string, path: string): Candidate {
+function matchedDeclaration(value: unknown, candidates: readonly Candidate[], { path, text: source }: SourceText): Candidate {
   if (!isJsonObject(value) || value.coordinates !== 'utf8-bytes' || !nonnegativeInteger(value.start) || !nonnegativeInteger(value.end) || value.end <= value.start) return invalid(path, 'native byte range');
   const byteOffset = (position: number) => Buffer.byteLength(source.slice(0, position));
   const matches = candidates.filter(({ node }) => byteOffset(node.getEnd()) === value.end && declarationStarts(node).some((start) => byteOffset(start) === value.start));
@@ -61,13 +62,30 @@ function declarationStarts(node: Candidate['node']): readonly number[] {
 }
 
 function metricOf(fields: JsonObject, candidate: Candidate, path: string): SnapshotFunction {
-  if (fields.name !== undefined && typeof fields.name !== 'string') return invalid(path, 'function name');
+  if (!optional(fields.name, isText)) return invalid(path, 'function name');
+  const { paths, loc, mi } = measuresOf(fields, path);
+  return { name: fields.name as string || '(anonymous)', paths, loc, maintainability: rounded(mi, 1), identity: candidateIdentityOf(candidate) };
+}
+
+function measuresOf(fields: JsonObject, path: string): { readonly paths: number; readonly loc: number; readonly mi: number | undefined } {
+  if (!optional(fields.volume, isJsonObject) || !optional(fields.maintainability, isJsonObject)) return invalid(path, 'function metric objects');
   const paths = fields.cyclomatic_complexity;
-  if (fields.volume !== undefined && !isJsonObject(fields.volume) || fields.maintainability !== undefined && !isJsonObject(fields.maintainability)) return invalid(path, 'function metric objects');
   const loc = objectOf(fields.volume).loc ?? 0;
   const mi = objectOf(fields.maintainability).maintainability_index;
-  if (!nonnegativeInteger(paths) || paths < 1 || !nonnegativeInteger(loc) || mi !== undefined && (typeof mi !== 'number' || !Number.isFinite(mi))) return invalid(path, 'function metrics');
-  return { name: fields.name as string || '(anonymous)', paths, loc, maintainability: rounded(mi as number | undefined, 1), identity: candidateIdentityOf(candidate) };
+  if (!nonnegativeInteger(paths) || paths < 1 || !nonnegativeInteger(loc) || !optional(mi, isFiniteNumber)) return invalid(path, 'function metrics');
+  return { paths, loc, mi };
+}
+
+function optional<T>(value: unknown, kind: (value: unknown) => value is T): value is T | undefined {
+  return value === undefined || kind(value);
+}
+
+function isText(value: unknown): value is string {
+  return typeof value === 'string';
+}
+
+function isFiniteNumber(value: unknown): value is number {
+  return typeof value === 'number' && Number.isFinite(value);
 }
 
 function nonnegativeInteger(value: unknown): value is number {

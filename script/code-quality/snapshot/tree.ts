@@ -1,5 +1,3 @@
-// Snapshot and architecture commands share this module to capture a tree.
-// See docs/implementation/ast-metrics-review.md, "Take a snapshot" and "Show the architecture delta".
 import * as toolVersion from '../shared/tool-version.ts';
 import { withAstMetricsServer } from '../mcp/session.ts';
 import type { AstMetricsServer } from '../mcp/server.ts';
@@ -16,8 +14,6 @@ import { ownershipOfTree } from './ownership.ts';
 // the communities of src/. Both runs thus analyze src/ alone.
 const analyzedFolder = 'src';
 
-// One JSON report of "ast-metrics analyze" and one session of "ast-metrics mcp". HEAD gives the commit and the date;
-// the files can hold changes that are not committed. timeoutMs is the deadline of the session.
 export async function snapshotOfTree(root: string, timeoutMs: number, checked?: toolVersion.CheckedToolVersion): Promise<Snapshot> {
   const tool = checked ?? toolVersion.cliToolVersion(root);
   const provenance = inputIdentityOf(root);

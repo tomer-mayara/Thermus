@@ -11,7 +11,6 @@ import { listenerTransport, type BrowserTransport } from '../drivers/browser/hos
 import { mcpRequest } from '../drivers/mcp/mcp-http-request.ts';
 import { hostedConfig } from '../fixtures/hosted-config.ts';
 
-// A hosted server that uses the WorkOS provider with the fake WorkOS API of the world.
 export interface WorkOSServerSite {
   readonly world: WorkOSFake;
   readonly transport: BrowserTransport;
@@ -21,9 +20,7 @@ export interface WorkOSServerSite {
 interface WorkOSSiteOptions {
   // The hosted configuration of the site. Without it, the site uses hostedConfig.
   readonly config?: typeof hostedConfig;
-  // Browser layout checks use the real loaded portal build and its fonts and images.
   readonly portal?: HostedPortal;
-  // The organizations that a new fake knows. Each gets the environment roles.
   readonly organizations: readonly string[];
   // Reuse provider state for a fresh application. Install the signup fake only on the first site.
   readonly world?: WorkOSFake;
@@ -50,7 +47,6 @@ export interface WorkOSSite extends WorkOSServerSite {
   readonly log: OperatorLogSpy;
   // Close admission and drain the listener before closing the application. Repeated calls share the result.
   close(): Promise<void>;
-  // The answer of the MCP endpoint to server/discover, with this Connect token or without a token.
   discover(token?: string): Promise<Response>;
 }
 
@@ -58,9 +54,6 @@ interface WorkOSSignupSite extends WorkOSSite {
   readonly signupFake: WorkOSSignupFake;
 }
 
-// The one place that composes the real hosted application against the fake: composeWorkOSApplication() with the
-// connection of the fake. A site of another deployment, such as LocalHttpsSite, can serve
-// the application.
 export function composeApplicationWithWorkOSFake(
   config: typeof hostedConfig,
   world: WorkOSFake,
@@ -69,8 +62,6 @@ export function composeApplicationWithWorkOSFake(
   return composeWorkOSApplication(config, world.connection(), parts);
 }
 
-// The real hosted composition with the WorkOS provider behind the real HTTP server on a loopback port, at the public
-// base URL of the configuration. The fake stands in for WorkOS. The server closes before the application.
 export function serveWorkOSSite(t: TestContext, options: WorkOSSiteOptions & { readonly signupFake: true }): Promise<WorkOSSignupSite>;
 export function serveWorkOSSite(t: TestContext, options: WorkOSSiteOptions): Promise<WorkOSSite>;
 export async function serveWorkOSSite(t: TestContext, options: WorkOSSiteOptions): Promise<WorkOSSite | WorkOSSignupSite> {

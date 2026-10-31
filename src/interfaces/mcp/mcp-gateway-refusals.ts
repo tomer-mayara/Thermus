@@ -6,7 +6,6 @@ import type { GatewayResume, GatewayTenantState } from './mcp-gateway-tenants.ts
 
 type RefusalReason = 'starting' | 'resuming' | 'failed' | 'deleted' | 'capacity' | 'registry-unavailable';
 
-/** A 503 of the gateway: its reason and the facts of its log line, and whether the line reports to the operator. */
 export interface Refusal {
   readonly reason: RefusalReason;
   readonly state?: GatewayTenantState;
@@ -32,14 +31,12 @@ const REFUSALS: Readonly<Record<RefusalReason, { readonly words: string; readonl
  * resume, and each restart of a tenant.
  */
 export class GatewayRefusals {
-  /** The system log: info for a refusal, error for an operator report. */
   private readonly logger: SystemLog;
 
   constructor(logger: SystemLog) {
     this.logger = logger;
   }
 
-  /** One 503 with the words and the Retry-After of the reason, and one log line with the facts of the refusal. */
   refuse(organizationId: string, refusal: Refusal): Response {
     const { report = false, ...facts } = refusal;
     this.write(refusalLineOf({ organizationId, ...facts }), report);
@@ -47,7 +44,6 @@ export class GatewayRefusals {
     return unavailableAnswer(words, retryAfter);
   }
 
-  /** A request whose searches do not fit: the busy words for each request of the body, and one log line. */
   searchBusy(organizationId: string, body: ForwardedBody): Response {
     this.write(refusalLineOf({ organizationId, reason: 'search-busy' }), false);
     return messageAnswers(body, GATEWAY_WORDS.busy) ?? unavailableAnswer(GATEWAY_WORDS.busy);

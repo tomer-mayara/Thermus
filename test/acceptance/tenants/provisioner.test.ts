@@ -5,11 +5,6 @@ import { loadOperationCapacity } from '../../../src/runtime/config/operation-cap
 import { controlPlaneSecrets, tenantImage, tenantImageDigest, tenantProvisioningSettings } from '../../support/fixtures/control-plane-tenants.ts';
 import { organizationA, organizationB, productionServiceId, ProvisioningHarness, serviceNameOf } from './fixtures/provisioning-harness.ts';
 
-// SO-06 of the self on-boarding plan: the provisioner loop of the control plane takes one requested row of the tenant
-// registry at a time and moves it through creating and deploying to live, through the Render adapter. The loop runs
-// as app composes it from the control plane settings, against a fake of the Render API and a fake of the registry,
-// with a virtual clock. The live interface test of the adapter runs the real Render API.
-
 const freePlan = '0.5c-512mb';
 const refusedTenantSettings = /^(?:WORKOS_API_KEY|WORKOS_CLIENT_SECRET|WORKOS_COOKIE_PASSWORD|GATEWAY_SIGNING_KEY|DATABASE_|LOGGING_DESTINATION_ENCRYPTION_KEY|RENDER_|STRIPE_)/;
 

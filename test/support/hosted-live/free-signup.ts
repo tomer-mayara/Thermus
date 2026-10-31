@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import type { Organization } from '@workos-inc/node';
 import type { Page } from 'playwright';
 import type { LiveRun } from './live-run.ts';
-import { signInThroughPortal } from './portal-visit.ts';
+import { signInToOrganizationSelector } from './portal-visit.ts';
 import { localOrigin } from './settings.ts';
 import { personalExternalId } from './signup-fixtures.ts';
 import type { LiveUser } from './staging-fixtures.ts';
@@ -15,7 +15,7 @@ export interface FreeSignup {
 // A verified user without memberships signs in, opens the Start free link of the marketing page, names the
 // organization, accepts the one agreement, and lands on Quick start. The run deletes the new organization at its end.
 export async function signUpAtFreeTier(run: LiveRun, user: LiveUser, organizationName: string): Promise<FreeSignup> {
-  const { page } = await signInThroughPortal(run, user, undefined, 'organizations');
+  const { page } = await signInToOrganizationSelector(run, user);
   await page.goto(`${localOrigin}/signup?tier=free`);
   const agreement = page.getByRole('checkbox');
   assert.equal(await agreement.isChecked(), false);

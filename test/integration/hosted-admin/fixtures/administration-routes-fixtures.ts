@@ -39,7 +39,6 @@ export interface AdministrationServe {
   readonly routes?: Setup;
 }
 
-// Ann has a signed-in session with a refreshed session cookie and allowed access to Acme (org-a).
 export function serveAdministration(administration: AdministrationSetup = {}, setup: AdministrationServe = {}) {
   const annSession = signedIn(ann, { cookies: sessionCookies, ...setup.session });
   const served = serve({

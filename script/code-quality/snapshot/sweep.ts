@@ -6,7 +6,6 @@ import { git } from '../shared/repository.ts';
 // The folder of a temporary worktree is this prefix, the id of the process of its run, a dash, and a random part.
 export const worktreePrefix = 'thermus-snapshot-base-';
 
-// Gives the caller one line for stderr.
 export type Notice = (line: string) => void;
 
 // A run that SIGKILL or a crash stopped leaves its temporary worktree. Each run thus removes the worktrees with the
@@ -26,7 +25,6 @@ function temporaryWorktreesOf(root: string): string[] {
   return lines.filter((line) => line.startsWith(start)).map((line) => line.slice('worktree '.length));
 }
 
-// The folder name holds the id of the process of the run. A name without one comes from no active run.
 function runIsActive(folder: string): boolean {
   const pid = Number(new RegExp(`^${worktreePrefix}(\\d+)-`).exec(basename(folder))?.[1]);
   if (!Number.isInteger(pid) || pid === 0) return false;

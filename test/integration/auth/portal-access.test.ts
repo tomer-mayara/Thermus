@@ -8,7 +8,6 @@ import { portalBaseUrl as base, portalContext as contextWith, productUserGrant a
 const userManagerGrant: RoleGrant = { role: 'test-user-manager', permissions: ['user-grants:manage'] };
 const member: RoleGrant = { role: 'member', permissions: [] };
 
-// The portal request of Acme Labs, with the free plan unless a case gives another billing read.
 function operationWith(billingOf = async (organizationId: string): Promise<BillingState> => ({ organizationId, plan: 'free', memberLimit: 5, billedSeats: 0 })) {
   return portalAccessOperation(base, 'https://mcp.example/service/mcp', { organizationNameOf: async () => 'Acme Labs', billingOf });
 }

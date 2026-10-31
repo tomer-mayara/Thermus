@@ -22,16 +22,21 @@ export function fileSha256(path: string): string {
 // Resolve from these wrappers, not the analyzed tree. A base worktree can have no installer or cache.
 export function astMetricsBinary(): string {
   try {
-    const manifest: unknown = JSON.parse(readFileSync(runtimeManifest, 'utf8'));
-    if (manifest === null || typeof manifest !== 'object') throw new Error('Invalid install manifest.');
-    const facts = manifest as Record<string, unknown>;
-    if (facts.format !== 1 || facts.version !== pinnedToolVersion || facts.upstreamCommit !== upstreamCommit
-      || facts.sourceArchiveSha256 !== sourceArchiveSha256 || facts.goVersion !== pinnedGoVersion
-      || facts.patchSha256 !== fileSha256(patchPath) || facts.binarySha256 !== fileSha256(runtimeBinary)) {
-      throw new Error('The installed files do not match the pinned inputs.');
-    }
+    if (!matchesPinnedInputs(installManifest())) throw new Error('The installed files do not match the pinned inputs.');
     return runtimeBinary;
   } catch (error) {
     throw new CommandError(`The local ast-metrics runtime is missing or invalid. ${installInstruction} ${(error as Error).message}`);
   }
+}
+
+function installManifest(): Record<string, unknown> {
+  const manifest: unknown = JSON.parse(readFileSync(runtimeManifest, 'utf8'));
+  if (manifest === null || typeof manifest !== 'object') throw new Error('Invalid install manifest.');
+  return manifest as Record<string, unknown>;
+}
+
+function matchesPinnedInputs(facts: Record<string, unknown>): boolean {
+  return facts.format === 1 && facts.version === pinnedToolVersion && facts.upstreamCommit === upstreamCommit
+    && facts.sourceArchiveSha256 === sourceArchiveSha256 && facts.goVersion === pinnedGoVersion
+    && facts.patchSha256 === fileSha256(patchPath) && facts.binarySha256 === fileSha256(runtimeBinary);
 }

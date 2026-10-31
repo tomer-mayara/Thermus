@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import type { Invitation, OrganizationMembership } from '@workos-inc/node';
 import type { Page } from 'playwright';
-import { WorkOSOrganizations, workosMembershipReads } from '../../../../src/accounts/providers/workos/workos-organizations.ts';
+import { WorkOSOrganizations } from '../../../../src/accounts/providers/workos/workos-organizations.ts';
+import { workosMembershipReads } from '../../../../src/accounts/providers/workos/workos-membership-reads.ts';
 import { workosAuthority } from '../../../../src/accounts/providers/workos/workos-settings.ts';
 import type { ChangeRecord } from '../../../../src/accounts/organizations/change-records.ts';
 import { labelsOf, seatsIn, seatUsageIn } from '../../../support/dsl/hosted-administration.ts';
@@ -80,7 +81,6 @@ function recordLine(record: ChangeRecord): string {
   return `${record.action} ${record.role ?? '-'} for ${Object.values(record.target).join()}: ${record.outcome}`;
 }
 
-// True when a text holds one of the secrets. The result gives no secret.
 function holdsAny(texts: readonly string[], secrets: readonly string[]): boolean {
   const values = secrets.filter((secret) => secret !== '');
   return texts.some((text) => values.some((secret) => text.includes(secret)));
@@ -102,10 +102,8 @@ async function assertAdministrationRefusal(run: LiveRun, answer: ServerAnswer): 
 
 export function describeAdministrationServerCases(run: LiveRun): void {
   const { settings, workos } = run;
-  // The administrator keeps its session from one case to the next.
   const administrator = once(async () => signInThroughPortal(run, (await run.administrationFixtures()).users['c-administrator']));
 
-  // A person opens the page and submits the form with this button.
   async function submitFrom(page: Page, path: string, label: string): Promise<ServerAnswer> {
     return submit(page, formLabelled((await shownPage(run, page, path)).forms, label));
   }
@@ -130,7 +128,6 @@ export function describeAdministrationServerCases(run: LiveRun): void {
     return (await workos.userManagement.listInvitations({ organizationId, limit: 100 })).autoPagination();
   }
 
-  // The token and the link of each invitation: the credentials of the invited persons. Only the test reads them.
   async function credentialsOf(invitations: readonly Invitation[]): Promise<string[]> {
     const read = await Promise.all(invitations.map(({ id }) => workos.userManagement.getInvitation(id)));
     return read.flatMap(({ token, acceptInvitationUrl }) => [token, acceptInvitationUrl]);

@@ -5,7 +5,7 @@ import type { Page } from 'playwright';
 import { formLabelled, formsIn, type PageForm } from '../../../support/drivers/browser/hosted-browser.ts';
 import { once, type LiveRun } from '../../../support/hosted-live/live-run.ts';
 import { rolesOf, adminRole } from '../../../support/hosted-live/operator-runbook.ts';
-import { serverGet, serverPost, sessionJson, signInThroughPortal, type PortalVisit, type ServerAnswer } from '../../../support/hosted-live/portal-visit.ts';
+import { serverGet, serverPost, sessionJson, signInThroughPortal, signInToOrganizationSelector, type PortalVisit, type ServerAnswer } from '../../../support/hosted-live/portal-visit.ts';
 import { localOrigin, mcpResource } from '../../../support/hosted-live/settings.ts';
 import type { LiveUser } from '../../../support/hosted-live/staging-fixtures.ts';
 
@@ -47,7 +47,6 @@ function labelOf(user: LiveUser): string {
 // Registers the AUTH-07W cases of the hosted server. It returns the case that needs an expired access token of the
 // selection session: the caller registers it after the AUTH-06 cases, whose 300-second wait lets the token expire.
 export function describeOrganizationServerCases(run: LiveRun): () => void {
-  // The member signs in to A one time and selects B. The later cases use the same session.
   const selection = once(async (): Promise<SelectionVisit> => {
     const { organizationA, organizationB } = await run.fixtures();
     const { users } = await run.organizationFixtures();
@@ -63,7 +62,7 @@ export function describeOrganizationServerCases(run: LiveRun): () => void {
       const { defaultRoleUser } = await run.fixtures();
       const { users } = await run.organizationFixtures();
       for (const user of [users['inactive-only'], defaultRoleUser]) {
-        const { page } = await signInThroughPortal(run, user, undefined, 'organizations');
+        const { page } = await signInToOrganizationSelector(run, user);
         assertOnboarding(await serverGet(page, 'organizations'), labelOf(user));
         assert.equal((await serverGet(page, 'billing')).status, 403, labelOf(user));
         assert.equal((await serverGet(page, 'portal/access')).status, 403, labelOf(user));

@@ -62,3 +62,15 @@ test('Given Custom and a blank dataset, when the form is read, then only Bearer 
   const form = validForm(); form.set('axiom_dataset', '');
   assert.deepEqual(loggingForm(form, 'csrf'), { tenantId: 'tenant:a', expectedRevision: null, endpoint: 'https://collector.example/v1/logs', auth: 'bearer', token: '', enabled: false });
 });
+test('Given a saved revision, when the form is read, then the settings expect that revision', () => {
+  const form = validForm(); form.set('expected_revision', 'revision-1');
+  const result = loggingForm(form, 'csrf');
+  assert.notEqual(typeof result, 'string');
+  if (typeof result !== 'string') assert.equal(result.expectedRevision, 'revision-1');
+});
+test('Given a tenant or revision that is not visible ASCII text, when the form is read, then it is refused', () => {
+  for (const [name, value] of [['organization_id', ''], ['organization_id', 'tenant a'], ['expected_revision', 'revision 1'], ['expected_revision', 'r'.repeat(257)]]) {
+    const form = validForm(); form.set(name, value);
+    assert.equal(loggingForm(form, 'csrf'), 'invalidRequest');
+  }
+});

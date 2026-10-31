@@ -11,7 +11,6 @@ export interface RowParts extends CreationParts {
   readonly store: TenantProvisioningStore;
 }
 
-/** The work on one claimed row: its service, its first deploy or the deploy of a resume, and its end state. */
 export class RowProvisioning {
   private readonly parts: RowParts;
   private readonly records: RowRecords;
@@ -21,7 +20,6 @@ export class RowProvisioning {
     this.records = new RowRecords(parts);
   }
 
-  /** Moves the row on as far as it goes: to live, to failed, or to the next claim after a storage failure. */
   async provision(claim: Extract<ClaimResult, { status: 'claimed' }>, signal: AbortSignal): Promise<RowOutcome> {
     const { row } = claim;
     this.records.claimed(row, claim.resumed);

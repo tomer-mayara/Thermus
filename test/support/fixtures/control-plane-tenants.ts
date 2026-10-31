@@ -43,7 +43,6 @@ export const controlPlaneSecrets: Readonly<Record<string, string>> = {
   STRIPE_WEBHOOK_SECRET: 'whsec_placeholderStripeWebhookSecret',
 };
 
-// The whole environment of such a control plane: the hosted settings, every secret, and the tenant settings.
 export const controlPlaneEnvironment: Readonly<Record<string, string>> = {
   DEPLOYMENT: 'hosted',
   PUBLIC_BASE_URL: controlPlanePublicBaseUrl,

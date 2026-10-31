@@ -79,13 +79,11 @@ function staleFoldersOf(temporary: string): string[] {
   return readdirSync(temporary).filter(isStale).map((name) => join(temporary, name));
 }
 
-// path is relative to the system temporary folder. Its first name holds the id of the process of its run.
 function isStale(path: string): boolean {
   if (!path.startsWith(folderPrefix)) return false;
   return !runIsActive(Number(/^(\d+)-/u.exec(path.slice(folderPrefix.length))?.[1]));
 }
 
-// A folder name without the id of a process comes from no active run.
 function runIsActive(pid: number): boolean {
   if (!Number.isInteger(pid) || pid <= 0) return false;
   try {

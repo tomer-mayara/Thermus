@@ -37,14 +37,18 @@ class TicksClock {
   };
 }
 
-function stepOf(name: string, runsAt: (tickMs: number) => boolean, ran: string[], failure?: Error): SweepStep {
-  return {
-    name, runsAt,
-    run: async (tickMs) => {
-      ran.push(`${name} ${new Date(tickMs).toISOString()}`);
-      if (failure !== undefined) throw failure;
-    },
-  };
+class SweepStepSpy {
+  readonly ran: string[] = [];
+
+  step(name: string, runsAt: (tickMs: number) => boolean, failure?: Error): SweepStep {
+    return {
+      name, runsAt,
+      run: async (tickMs) => {
+        this.ran.push(`${name} ${new Date(tickMs).toISOString()}`);
+        if (failure !== undefined) throw failure;
+      },
+    };
+  }
 }
 
 const isMonday = (tickMs: number): boolean => new Date(tickMs).getUTCDay() === 1;
@@ -59,9 +63,9 @@ test('Given a time, when the next tick is computed, then it is the next full hou
 
 test('Given three daily ticks from a Sunday evening, when the sweeps run, then the daily step runs each day and the weekly step on Monday only, in the order of the list', async () => {
   const clock = new TicksClock(sundayEvening, 3);
-  const ran: string[] = [];
+  const stepSpy = new SweepStepSpy();
   const log = new OperatorLogSpy();
-  const sweeps = new TenantSweeps({ steps: [stepOf('weekly', isMonday, ran), stepOf('daily', () => true, ran)], hourUtc: 4, clock, log });
+  const sweeps = new TenantSweeps({ steps: [stepSpy.step('weekly', isMonday), stepSpy.step('daily', () => true)], hourUtc: 4, clock, log });
   const controller = new AbortController();
 
   const running = sweeps.run(controller.signal);
@@ -69,7 +73,7 @@ test('Given three daily ticks from a Sunday evening, when the sweeps run, then t
   controller.abort();
   await running;
 
-  assert.deepEqual(ran, [
+  assert.deepEqual(stepSpy.ran, [
     'weekly 2026-11-02T04:00:00.000Z', 'daily 2026-11-02T04:00:00.000Z',
     'daily 2026-11-03T04:00:00.000Z',
     'daily 2026-11-04T04:00:00.000Z',
@@ -80,9 +84,9 @@ test('Given three daily ticks from a Sunday evening, when the sweeps run, then t
 
 test('Given a step that fails, when the tick runs, then one line names the step and the next step still runs', async () => {
   const clock = new TicksClock(sundayEvening, 1);
-  const ran: string[] = [];
+  const stepSpy = new SweepStepSpy();
   const log = new OperatorLogSpy();
-  const sweeps = new TenantSweeps({ steps: [stepOf('broken', () => true, ran, new Error('the registry went away')), stepOf('daily', () => true, ran)], hourUtc: 4, clock, log });
+  const sweeps = new TenantSweeps({ steps: [stepSpy.step('broken', () => true, new Error('the registry went away')), stepSpy.step('daily', () => true)], hourUtc: 4, clock, log });
   const controller = new AbortController();
 
   const running = sweeps.run(controller.signal);
@@ -90,14 +94,14 @@ test('Given a step that fails, when the tick runs, then one line names the step 
   controller.abort();
   await running;
 
-  assert.deepEqual(ran, ['broken 2026-11-02T04:00:00.000Z', 'daily 2026-11-02T04:00:00.000Z']);
+  assert.deepEqual(stepSpy.ran, ['broken 2026-11-02T04:00:00.000Z', 'daily 2026-11-02T04:00:00.000Z']);
   assert.deepEqual(log.lines, [`ERROR Tenant sweep step failed: ${JSON.stringify({ step: 'broken', reason: 'the registry went away' })}`]);
 });
 
 test('Given a stop before the tick, when the sweeps wait, then the run ends and no step runs', async () => {
   const clock = new TicksClock(sundayEvening, 0);
-  const ran: string[] = [];
-  const sweeps = new TenantSweeps({ steps: [stepOf('daily', () => true, ran)], hourUtc: 4, clock, log: new OperatorLogSpy() });
+  const stepSpy = new SweepStepSpy();
+  const sweeps = new TenantSweeps({ steps: [stepSpy.step('daily', () => true)], hourUtc: 4, clock, log: new OperatorLogSpy() });
   const controller = new AbortController();
 
   const running = sweeps.run(controller.signal);
@@ -105,7 +109,7 @@ test('Given a stop before the tick, when the sweeps wait, then the run ends and 
   controller.abort();
   await running;
 
-  assert.deepEqual(ran, []);
+  assert.deepEqual(stepSpy.ran, []);
 });
 
 test('Given a stop during a step, when the step then fails, then the run ends without a failure line', async () => {

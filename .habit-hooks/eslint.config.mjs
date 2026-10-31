@@ -13,39 +13,6 @@ const sourceFiles = [
   '**/*.cjs',
 ];
 
-const providerPackages = '(?:better-auth|@better-auth/mcp|@workos-inc/node)(?:/|$)';
-const providerPaths = '(?:local-auth/better-auth(?:/|$)|hosted-auth/workos(?:/|$))';
-const sharedImports = [
-  providerPackages,
-  `(?:\\./|(?:\\.\\./)+auth/)${providerPaths}`,
-  '(?:\\.\\./)+(?:mcp/|hosted-admin/|http/(?!client-address(?:\\.[jt]s)?$))',
-  '@modelcontextprotocol/(?:server|client)(?:/|$)',
-];
-const localImports = [
-  providerPackages,
-  `(?:\\.\\./|(?:\\.\\./)+auth/)${providerPaths}`,
-  '\\./better-auth(?:/|$)',
-];
-const consumerImports = [
-  providerPackages,
-  `(?:\\.\\./)+auth/(?:${providerPaths}|local-auth/local-auth-command(?:-line)?(?:\\.[jt]s)?$)`,
-];
-const pageFetchImports = [
-  ...consumerImports,
-  '@modelcontextprotocol/(?:server|client)(?:/|$)',
-  '(?:adblock-rs|agent-input-sanitizer|defuddle)(?:/|$)',
-  '@opentelemetry/(?:sdk-logs|exporter-logs-otlp-http)(?:/|$)',
-  '(?:\\.\\./)+(?:mcp/|http/|hosted-admin/|html-cleaner-pipeline/|logging/|logs/)',
-  '(?:\\.\\./)+(?:application|fetch-tool|hosted-workos-application|hosted-renderer-startup|hosted-portal|index)(?:\\.[jt]s)?$',
-  '(?:\\.\\./)+website-fetcher/(?!website-fetcher(?:\\.[jt]s)?$)',
-];
-
-const searchPipelineImports = [
-  ...pageFetchImports,
-  '(?:\\.\\./)+search-engine/(?!search-engine(?:\\.[jt]s)?$)',
-  '(?:\\.\\./)+page-fetch/(?!(?:pipeline-step|execution-context|step-record|renderer-failure-reports)(?:\\.[jt]s)?$)',
-];
-
 function directImportRules(paths, message) {
   const regex = `^(?:${paths.join('|')})`;
   return {
@@ -60,7 +27,6 @@ function directImportRules(paths, message) {
 const testLayout = 'docs/testing/test-code-layout.md';
 const testTypes = ['unit', 'integration', 'interface', 'acceptance'];
 const otherUnitPackageFixtures = '(?:\\.\\./)+(?:test/unit/)?(?!support/)[a-z-]+/fixtures/';
-// Rule D6 covers each script that runs alone in a container.
 const containerScripts = [
   'test/support/container/container-edge.ts',
   'test/support/container/container-page.ts',
@@ -100,7 +66,7 @@ export default [
       'no-unused-vars': 'off',
       '@typescript-eslint/no-unused-vars': [
         'error',
-        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_', ignoreUsingDeclarations: true },
       ],
       eqeqeq: ['error', 'always', { null: 'ignore' }],
       'no-var': 'error',
@@ -123,30 +89,6 @@ export default [
   {
     files: ['**/*.test.ts', '**/*.test.tsx', '**/test/**'],
     rules: { 'max-lines-per-function': 'off' },
-  },
-  {
-    files: ['src/auth/access-context.ts', 'src/auth/identity-verifier.ts'],
-    rules: directImportRules(sharedImports, 'Shared auth uses contracts, not provider or transport implementations.'),
-  },
-  {
-    files: [
-      'src/auth/local-auth/local-user-administration.ts',
-      'src/auth/local-auth/local-auth-command.ts',
-      'src/auth/local-auth/local-auth-command-line.ts',
-    ],
-    rules: directImportRules(localImports, 'Neutral local auth does not import provider implementations.'),
-  },
-  {
-    files: ['src/mcp/**/*.ts', 'src/hosted-admin/**/*.ts'],
-    rules: directImportRules(consumerImports, 'Auth consumers use role contracts. Composition roots select implementations.'),
-  },
-  {
-    files: ['src/page-fetch/**/*.ts'],
-    rules: directImportRules(pageFetchImports, 'Page fetch uses public contracts. Composition selects transport, renderer, cleaner, and logger implementations.'),
-  },
-  {
-    files: ['src/search-pipeline/**/*.ts'],
-    rules: directImportRules(searchPipelineImports, 'Search pipeline uses public contracts and shared execution helpers. Composition selects implementations.'),
   },
   // For the same rule, a block replaces the options of each block before it.
   // Thus each glob has one block with all of its patterns. The driver block and

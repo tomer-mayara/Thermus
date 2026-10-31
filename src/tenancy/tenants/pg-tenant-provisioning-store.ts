@@ -15,7 +15,6 @@ const OWNS_SERVICE = 'SELECT 1 AS owned FROM thermus_admin.tenants WHERE render_
 // A bounded reason keeps a long answer of the platform out of the row.
 const MAX_REASON_LENGTH = 1_000;
 
-/** The provisioning statements of the tenants table, on the shared SQL runtime. */
 export class PgTenantProvisioningStore implements TenantProvisioningStore {
   private readonly runtime: BoundedSqlRuntime;
 

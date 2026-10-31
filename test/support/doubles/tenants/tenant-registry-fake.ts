@@ -7,10 +7,6 @@ interface FakeRow {
   readonly serviceId: string | null;
 }
 
-// A working tenant registry in memory with the statements of the lookup, the tenant request, and the writes of the
-// gateway. readFailure stands in for a registry that cannot be read, and insertFailure for a tenant request whose
-// insert fails or is not confirmed. The lists record each tenant request, the inserts, and the writes of last_active_at,
-// so a test can count them.
 export class TenantRegistryFake implements TenantRegistryStore, TenantGatewayStore {
   readonly rows = new Map<string, FakeRow>();
   readonly requests: string[] = [];
@@ -20,7 +16,6 @@ export class TenantRegistryFake implements TenantRegistryStore, TenantGatewaySto
   insertFailure: 'unavailable' | 'unconfirmed' | undefined;
   reads = 0;
 
-  // A live row with the internal address of the tenant and a service ID.
   live(organizationId: string, internalUrl: string): void {
     this.rows.set(organizationId, { state: 'live', internalUrl, serviceId: `srv-${organizationId.toLowerCase().replace(/[^a-z0-9]/g, '')}` });
   }

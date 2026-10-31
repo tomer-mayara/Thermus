@@ -5,7 +5,6 @@ import { deployProgressOf, type DeployProgressRead, type ProgressPlatform } from
 const POLL_MS = 5_000;
 const BUDGET_MS = 15 * 60_000;
 
-/** live: the record of a live row. failed: the reason for the operator. */
 export type WatchOutcome = Exclude<DeployProgressRead, { readonly status: 'pending' }>;
 
 export interface WatchParts {

@@ -18,10 +18,6 @@ import { WorkOSFakeApi, workosClientFor } from '../../support/doubles/workos/wor
 import { controlPlaneAuthkitIssuer, controlPlaneEnvironment, controlPlanePublicBaseUrl, tenantImageDigest } from '../../support/fixtures/control-plane-tenants.ts';
 import { postgresSettingsSite } from '../../support/in-process/postgres-settings-site.ts';
 
-// The provisioner of the control plane with the real tenant registry store and the sql runtime on disposable
-// PostgreSQL 17, with verified test TLS and the scoped runtime role thermus_logging. A fake of the Render API stands
-// in for Render, and a virtual clock for the waits of the loop; the database and its SQL run for real.
-
 type Site = Awaited<ReturnType<typeof postgresSettingsSite>>;
 
 const settings = loadTenantProvisioningSettings(controlPlaneEnvironment);

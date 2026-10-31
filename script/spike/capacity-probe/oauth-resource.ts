@@ -65,7 +65,6 @@ function listedText(resources: readonly ResourceView[], uri: string): string {
   return `${resources.length} resources; ${gate}; ${own === undefined ? `${uri} is not listed` : `${uri} is listed as ${own.id}`}`;
 }
 
-// The setup registers the resource of the tenant service when it is missing. A listed one stays as it is.
 export async function ensureResource(context: ProbeContext): Promise<string> {
   const settings = context.secrets.workos;
   const uri = resourceOf(originOf(context, 'tenant'));

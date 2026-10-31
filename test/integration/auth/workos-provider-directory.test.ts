@@ -5,14 +5,12 @@ import { createRemoteJWKSet } from 'jose';
 import type { AuthenticatedUser } from '../../../src/accounts/identity/access-context.ts';
 import { WorkOSAuthProvider } from '../../../src/accounts/providers/workos/workos-auth-provider.ts';
 import { HostedRoleConfigurationError } from '../../../src/accounts/providers/workos/hosted-role-mapping.ts';
-import { WorkOSOrganizations, workosMembershipReads } from '../../../src/accounts/providers/workos/workos-organizations.ts';
+import { WorkOSOrganizations } from '../../../src/accounts/providers/workos/workos-organizations.ts';
+import { workosMembershipReads } from '../../../src/accounts/providers/workos/workos-membership-reads.ts';
 import { workosAuthority } from '../../../src/accounts/providers/workos/workos-settings.ts';
 import { nowInSeconds, SigningKey } from '../../support/doubles/workos/jwt-signing-key.ts';
 import { fakeClientId, WorkOSFakeApi, workosClientFor, type FakeAnswer } from '../../support/doubles/workos/workos-fake-api.ts';
 import { adminGrant, userGrant } from '../../support/fixtures/hosted-roles.ts';
-
-// The real provider and organization reads with the pinned SDK client. The answers come from a local fake in the
-// WorkOS wire format, so these tests do not show what the WorkOS service sends.
 
 const authority = workosAuthority(fakeClientId);
 const mcpResourceUrl = 'https://localhost:46443/mcp';

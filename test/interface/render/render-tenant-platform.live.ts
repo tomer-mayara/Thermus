@@ -120,8 +120,6 @@ function answerLog(): { readonly lines: string[]; readonly fetch: typeof fetch }
   return { lines, fetch: logged };
 }
 
-// Creates one tenant, waits until its deploy is live, and reads its address through the adapter and its slug and
-// serviceDetails.url from the API.
 async function liveTenant(parts: LiveParts, name: string): Promise<LiveTenant> {
   const { t, platform, driver, owned, signal } = parts;
   const started = performance.now();

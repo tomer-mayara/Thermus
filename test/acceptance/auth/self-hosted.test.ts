@@ -36,7 +36,6 @@ async function installation(t: TestContext, accounts: readonly AccountCredential
   return { directory, operator, clientId: registeredClientId(registration), userIds, commands };
 }
 
-// The server can restart on another port; the users' browsers and MCP clients follow it and keep their state.
 class RunningServer {
   private current?: ServerProcess;
   private url?: URL;

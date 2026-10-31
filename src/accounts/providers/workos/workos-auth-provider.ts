@@ -14,13 +14,11 @@ interface ActiveGrantReader {
 }
 
 export interface WorkOSTokenVerifierOptions {
-  // The one authority of the WorkOS environment, from workosAuthority(). The client ID of an MCP client never changes it.
   readonly authority: string;
   // Exactly as written: each Connect access token must carry this issuer.
   readonly authkitIssuer: string;
   // Each Connect access token must have this MCP resource as its audience.
   readonly mcpResourceUrl: string;
-  // The AuthKit key set. In production: createRemoteJWKSet(<authkitIssuer>/oauth2/jwks).
   readonly keySet: JWTVerifyGetKey;
 }
 
@@ -184,13 +182,19 @@ function isTime(value: unknown): value is number {
   return typeof value === 'number' && Number.isFinite(value);
 }
 
-function profileNameOf(profile: unknown, subject: string): string | undefined {
-  if (typeof profile !== 'object' || profile === null || !('id' in profile) || profile.id !== subject) return undefined;
-  const user = profile as { name?: unknown; firstName?: unknown; lastName?: unknown };
+export function profileNameOf(profile: unknown, subject: string): string | undefined {
+  if (!isProfileOf(profile, subject)) return undefined;
   // A nonempty native name takes precedence; invalid display data is omitted by the request context.
-  if (typeof user.name === 'string' && (user.name.trim() !== '' || /\p{Cc}/u.test(user.name))) return user.name;
-  if (user.name != null && typeof user.name !== 'string') return undefined;
-  const parts = [user.firstName, user.lastName];
+  if (typeof profile.name === 'string' && (profile.name.trim() !== '' || /\p{Cc}/u.test(profile.name))) return profile.name;
+  if (profile.name != null && typeof profile.name !== 'string') return undefined;
+  return splitNameOf([profile.firstName, profile.lastName]);
+}
+
+function isProfileOf(profile: unknown, subject: string): profile is { readonly name?: unknown; readonly firstName?: unknown; readonly lastName?: unknown } {
+  return typeof profile === 'object' && profile !== null && 'id' in profile && profile.id === subject;
+}
+
+function splitNameOf(parts: readonly unknown[]): string | undefined {
   if (parts.some(part => part != null && (typeof part !== 'string' || /\p{Cc}/u.test(part)))) return undefined;
   return parts.filter((part): part is string => typeof part === 'string').map(part => part.trim()).filter(Boolean).join(' ') || undefined;
 }

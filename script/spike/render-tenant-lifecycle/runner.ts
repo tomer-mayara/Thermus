@@ -15,7 +15,6 @@ interface Concluding {
 const PROGRAM = basename(process.argv[1] ?? 'probe.ts', '.ts');
 const EXIT_LIMIT_MS = 10_000;
 
-// The service names of a run end with its UTC start time, YYYYMMDD-HHMMSS.
 export function runToken(now: Date): string {
   return now.toISOString().replace(/[-:]/g, '').replace('T', '-').slice(0, 15);
 }

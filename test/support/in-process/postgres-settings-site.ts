@@ -9,7 +9,6 @@ import { thermusAdminMigrations } from '../processes/module-paths.ts';
 
 const exec = promisify(execFile);
 
-/** Starts only a disposable PostgreSQL container with a private runtime role and verified TLS. */
 export async function postgresSettingsSite(t: TestContext, certificateNames = 'DNS:localhost,IP:127.0.0.1'): Promise<{ connection: { connectionString: string; ca: string }; container: string; ownerQuery(sql: string): Promise<string>; settingsConnections(activeOnly?: boolean): Promise<number>; disconnectIdleSettingsConnections(): Promise<void> }> {
   const directory = await mkdtemp(join(tmpdir(), 'thermus-settings-'));
   const container = `thermus-settings-${randomUUID()}`;
@@ -31,7 +30,6 @@ export async function postgresSettingsSite(t: TestContext, certificateNames = 'D
     await exec('docker', ['cp', migration, `${container}:/tmp/settings.sql`]);
     await exec('docker', ['exec', container, 'psql', '-U', 'postgres', '-v', 'ON_ERROR_STOP=1', '-f', '/tmp/settings.sql']);
   }
-  // The administrative owner: it applies setup and plays operators and other writers that a case needs.
   const ownerQuery = async (sql: string): Promise<string> => (await exec('docker', ['exec', container, 'psql', '-U', 'postgres', '-v', 'ON_ERROR_STOP=1', '-Atc', sql])).stdout.trim();
   await ownerQuery("ALTER ROLE thermus_logging LOGIN PASSWORD 'local-runtime-fixture'");
   const port = (await exec('docker', ['port', container, '5432/tcp'])).stdout.trim().split(':').at(-1);

@@ -15,7 +15,6 @@ interface Received {
 
 type Answer = (response: ServerResponse) => void;
 
-// A loopback stand-in for the relay route of the control plane. It answers each request with the answer of the test.
 async function controlPlaneWith(t: TestContext, answer: Answer) {
   const received: Received[] = [];
   const server = createServer(async (request: IncomingMessage, response: ServerResponse) => {

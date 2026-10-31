@@ -16,9 +16,6 @@ import { completionRecordsIn } from '../drivers/operator-log.ts';
 export const tenantUser = 'user_01TENANTUSER';
 const userGrants = [{ role: 'user', permissions: ['product:access'] }];
 
-// The production composition of the hosted image in the tenant role, from the same settings and entry as the server
-// process. The fetch seam routes only the AuthKit key set to a local fake. The relay of the tenant reaches the relay
-// route spy on a loopback port, and the test plays the gateway that signs a context for each request.
 export async function openTenantSite(t: TestContext, settings: Readonly<Record<string, string>> = {}) {
   const authkit = await WorkOSFakeApi.start(t);
   const authkitKey = await SigningKey.generate('authkit-key-1');
@@ -43,13 +40,10 @@ export async function openTenantSite(t: TestContext, settings: Readonly<Record<s
   const mcpUrl = new URL('mcp', listener.url);
   return {
     config, relay, gateway, lines, mcpUrl,
-    // A Connect user token of the AuthKit issuer for the public MCP resource. Another key gives a token without a
-    // valid AuthKit signature.
     token: (claims: Readonly<Record<string, unknown>> = {}, key = authkitKey): Promise<string> => key.sign(
       { sub: tenantUser, client_id: 'client_01TENANTMCP', sid: 'app_consent_01TENANT', scope: 'openid', org_id: tenantOrganizationId, ...claims },
       { issuer: workOSSettings.WORKOS_AUTHKIT_ISSUER, audience: config.mcpResourceUrl },
     ),
-    // An SDK client that reaches the tenant through the gateway of the test.
     connect: async (token: string, era: McpProtocolEra = '2026-07-28') => {
       const transport = new StreamableHTTPClientTransport(mcpUrl, { authProvider: { token: async () => token }, fetch: gateway.fetchFor(token) });
       const client = await connectMcpClient(t, transport, { era, probe: era === '2026-07-28' });

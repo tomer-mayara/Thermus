@@ -41,7 +41,6 @@ const fullPage = '<!DOCTYPE html><html><head><title>Pinned search runtime</title
   + '<p>private unrendered placeholder</p></section></main><footer data-runtime="whole-document-footer">Runtime footer</footer>'
   + '<script src="/runtime.js"></script></body></html>';
 
-// Only transport changes: the real renderer reads a local page, then the real Brave classifier receives canonical metadata.
 class LocalBraveTransport implements WebsiteFetcher {
   readonly requests: string[] = [];
   readonly pages: WebsiteFetchResult[] = [];

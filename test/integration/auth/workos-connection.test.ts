@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import type { WorkOS } from '@workos-inc/node';
-import { WorkOSOrganizations, workosMembershipReads } from '../../../src/accounts/providers/workos/workos-organizations.ts';
+import { WorkOSOrganizations } from '../../../src/accounts/providers/workos/workos-organizations.ts';
+import { workosMembershipReads } from '../../../src/accounts/providers/workos/workos-membership-reads.ts';
 import { WorkOSFakeApi, type FakeAnswer } from '../../support/doubles/workos/workos-fake-api.ts';
 import { openWorkOSConnection } from '../../../src/app/hosted-workos-application.ts';
 import { hostedRootConfig } from '../../support/fixtures/hosted-config.ts';

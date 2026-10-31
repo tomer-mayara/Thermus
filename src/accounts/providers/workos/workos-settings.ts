@@ -27,7 +27,6 @@ type Refusal = (value: string) => string | undefined;
 const SPACE_OR_CONTROL_CHARACTER = /[\s\p{Cc}]/u;
 const MIN_COOKIE_PASSWORD_LENGTH = 32;
 
-// The browser access tokens of the environment client have this issuer.
 export function browserSessionIssuer(clientId: string): string {
   return `https://api.workos.com/user_management/${clientId}`;
 }

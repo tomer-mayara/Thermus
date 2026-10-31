@@ -18,7 +18,6 @@ interface RegistryCopy {
   readonly readAt: number;
 }
 
-/** Gives the gateway the state and the internal address of an organization from an in-memory copy of the registry. */
 export class TenantLookup {
   private readonly store: Pick<TenantRegistryStore, 'readRoutes'>;
   private readonly now: () => number;

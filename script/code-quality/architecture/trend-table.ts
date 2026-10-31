@@ -8,8 +8,6 @@ import type { TrendNumbers } from './trend-record.ts';
 const heading = '## Trend of src/ on main';
 const columns = ['Commit', 'PR', 'Date', 'Modularity', 'Cross share', 'Cycles', 'Maintainability', 'Functions ≥ 30'];
 
-// An en dash (U+2013) shows a value that a row does not have, such as the count of the functions at CRAP 30 or more of
-// a record without coverage.
 const noValue = '–';
 
 // stored: the records of the store, oldest first; undefined means no store. Without a record, the section has one
@@ -26,7 +24,6 @@ export function trendSectionOf(stored: readonly TrendNumbers[] | undefined, head
     ...trendChartsOf(stored, head), ...componentTrendTableOf(stored, head)];
 }
 
-// A share keeps two decimals and a score one, as in the summary line and in the map.
 function numbersOf(record: TrendNumbers): string[] {
   const { modularity, crossShare, cycles, maintainability } = record;
   return [modularity.toFixed(2), crossShare.toFixed(2), `${cycles}`, maintainability?.toFixed(1) ?? noValue, countCellOf(record)];

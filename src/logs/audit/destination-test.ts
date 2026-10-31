@@ -1,5 +1,6 @@
-import type { AuditEvent } from './audit-log.ts';
+import type { AuditContext, AuditEvent } from './audit-log.ts';
 import type { AuditDestination, AuditSendOutcome } from './audit-send.ts';
+import type { ReadSettingsResult } from './destination-settings-store.ts';
 
 export interface DestinationTestSender {
   send(destination: AuditDestination, event: AuditEvent, signal?: AbortSignal): Promise<AuditSendOutcome>;
@@ -8,6 +9,8 @@ export interface DestinationTestSender {
 export type DestinationTestResult =
   | { readonly status: 'tested'; readonly revision: string; readonly outcome: AuditSendOutcome }
   | { readonly status: 'conflict' | 'unavailable' | 'unsaved' | 'busy' | 'cancelled' | 'unconfirmed' };
+
+export type TestRequester = Pick<AuditContext, 'organizationId' | 'actor'>;
 
 export const DESTINATION_TEST_LIMITS = Object.freeze({ active: 4, timeoutMs: 5_000 });
 
@@ -30,4 +33,14 @@ export class DestinationTestLifetime {
     try { return await Promise.race([pending, cancellation]); }
     finally { clearTimeout(timer); signal?.removeEventListener('abort', cancel); }
   }
+}
+
+export function testEvent(requester: TestRequester, revision: string): AuditEvent {
+  return { eventName: 'audit.destination.test', timestamp: new Date().toISOString(), organizationId: requester.organizationId, actor: requester.actor, destinationRevision: revision };
+}
+
+export function confirmedTest(after: ReadSettingsResult, revision: string, outcome: AuditSendOutcome): DestinationTestResult {
+  if (after.status === 'unavailable') return { status: 'unconfirmed' };
+  if (after.status !== 'found' || after.settings.revision !== revision) return { status: 'conflict' };
+  return { status: 'tested', revision, outcome };
 }

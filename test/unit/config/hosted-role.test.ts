@@ -3,9 +3,6 @@ import { generateKeyPairSync, type KeyObject } from 'node:crypto';
 import { test } from 'node:test';
 import { DeploymentConfigError, loadDeploymentConfig } from '../../../src/runtime/config/deployment-config.ts';
 
-// THERMUS_ROLE of the hosted image (SO-03): control-plane, the default, or tenant with the four tenant settings of
-// plan section 4.1 and the refusal of each secret of the control plane.
-
 type Environment = Record<string, string | undefined>;
 
 const gatewayKey = generateKeyPairSync('ed25519');

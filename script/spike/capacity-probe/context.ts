@@ -17,7 +17,6 @@ export interface ServiceState {
   name: string;
   serviceId?: string;
   createSent: boolean;
-  // The public origin from serviceDetails.url, such as https://<name>.onrender.com, without a final slash.
   origin?: string;
 }
 

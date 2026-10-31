@@ -6,7 +6,6 @@ import { probeServices, type ProbeService } from '../render-tenant-lifecycle/wai
 import { ROLES, type ProbeContext, type Role } from './context.ts';
 import { WEB_PREFIX } from './inputs.ts';
 
-// An empty type list sends no type filter: the preflight and the cleanup see thermus-spike-* services of every type.
 export const ANY_TYPE: readonly ServiceType[] = [];
 
 export const REUSE_OPTION: Readonly<Record<Role, string>> = { private: '--private-service-id', web: '--web-service-id' };

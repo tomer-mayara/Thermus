@@ -5,22 +5,16 @@ import { loadTenantSweepHour } from './tenant-sweep-config.ts';
 
 type Environment = Readonly<Record<string, string | undefined>>;
 
-/** The settings that the control plane reads only with MCP_TENANTS_ENABLED=true (plan section 4.1). */
 export interface TenantProvisioningSettings {
   readonly render: {
     // The key of the dedicated Render user of the control plane. It stays in the control plane.
     readonly apiKey: string;
     readonly ownerId: string;
     readonly registryCredentialId: string;
-    // The hosted image of each new tenant, by digest.
     readonly tenantImage: string;
   };
   readonly freePlan: string;
-  // The name of a tenant service is this prefix and the organization ID in lower case, with each character outside
-  // a-z, 0-9, and hyphen as a hyphen.
   readonly namePrefix: string;
-  // The public values that each new tenant gets, with the rules of the tenant role: the gateway public keys and the
-  // private address of the control plane.
   readonly gatewayPublicKey: string;
   readonly controlPlaneInternalUrl: string;
   // The hour in UTC of the daily tick of the tenant sweeps.
@@ -97,7 +91,6 @@ function gatewayPublicKeyOf(list: string): string {
   return list;
 }
 
-// The origin without its final slash, as the tenant role reads it.
 function internalOriginOf(value: string): string {
   const origin = originWithSlashOf(value, ['http:', 'https:']);
   if (origin === undefined) throw new DeploymentConfigError(INTERNAL_URL_RULE);

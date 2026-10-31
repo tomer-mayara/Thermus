@@ -16,10 +16,8 @@ type MapCommunity = MapSnapshot['communities'][number];
 type TableFile = MapSnapshot['files'][number];
 type MapFunction = NonNullable<TableFile['functions']>[number];
 
-// Gives the value of a field that a snapshot always has, or stops the check.
 type Check = <T>(value: T | undefined) => T;
 
-// The path is relative to the current folder, as the command line gives it.
 export function snapshotInFile(path: string): MapSnapshot {
   const fields = jsonFieldsInFile(path, 'snapshot');
   if (fields.version !== 1 || !Array.isArray(fields.communities) || !Array.isArray(fields.files)) invalid(path);
@@ -30,7 +28,6 @@ function invalid(path: string): never {
   throw new CommandError(`The file ${path} is not a valid snapshot of version 1.`);
 }
 
-// The maintainability is absent for a src/ without code, so it stays optional.
 function snapshotOf(fields: Fields, check: Check): MapSnapshot {
   const global = json.objectOf(fields.global);
   const ownership = componentDefinitionsOf(fields.ownership, 'Snapshot ownership');
@@ -52,7 +49,6 @@ function snapshotOf(fields: Fields, check: Check): MapSnapshot {
   };
 }
 
-// The maintainability is absent for a community without code, so it stays optional.
 function communityOf(fields: Fields, check: Check): MapCommunity {
   return {
     id: check(json.textOf(fields.id)),
@@ -69,8 +65,6 @@ function communityOf(fields: Fields, check: Check): MapCommunity {
   };
 }
 
-// A value that ast-metrics did not measure is absent, so a file needs only its path. A file without functions, such as
-// a file of types, has none to join with the coverage.
 function fileOf(fields: Fields, check: Check): TableFile {
   const functions = json.arrayOf(fields.functions).map((entry) => functionOf(json.objectOf(entry), check));
   const sourceEvidence = fileEvidenceIn(fields.sourceEvidence, Array.isArray(fields.functions) ? functions : undefined);

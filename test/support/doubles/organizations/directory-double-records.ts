@@ -44,7 +44,6 @@ export interface InvitationRecord {
   readonly token: string;
 }
 
-// Lays out the records that match a page request on pages; an Error is a page that fails.
 export type PageLayout<T> = (records: readonly T[]) => ReadonlyArray<readonly T[] | Error>;
 
 const defaultRoleGrants: ReadonlyMap<string, RoleGrant> = new Map([

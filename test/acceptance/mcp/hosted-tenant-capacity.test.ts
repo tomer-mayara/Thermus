@@ -26,7 +26,6 @@ async function nextTurn(t: TestContext): Promise<void> {
   await new Promise<void>((resolve) => setImmediate(resolve));
 }
 
-// Holds each call that runs in incoming processing until settleAll, so the test controls how many calls run.
 function holdIncomingWork(t: TestContext) {
   const held: Array<PromiseWithResolvers<void>> = [];
   const process = HtmlToMarkdownPipeline.prototype.process;

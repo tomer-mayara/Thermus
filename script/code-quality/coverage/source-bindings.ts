@@ -2,10 +2,9 @@ import { ts } from 'ts-morph';
 import { declarationsOf, type Candidate } from '../identity/declarations.ts';
 import { candidateIdentityOf } from '../identity/source.ts';
 import type { FunctionIdentity } from '../identity/types.ts';
-import { sourceDeclarationMapper } from './source-map.ts';
+import { sourceDeclarationMapper, type ParsedScript } from './source-map.ts';
 import type { CoverageSourceFiles } from './source-files.ts';
 
-type ParsedScript = { readonly tree: ts.SourceFile; readonly declarations: readonly Candidate[] };
 export type SourceBindings = { readonly sourceContentIdentity: string; readonly sourceIdentities: ReadonlyMap<string, FunctionIdentity> };
 const omittedRangeModifiers = new Set([ts.SyntaxKind.ExportKeyword, ts.SyntaxKind.DefaultKeyword, ts.SyntaxKind.StaticKeyword, ts.SyntaxKind.PublicKeyword, ts.SyntaxKind.PrivateKeyword, ts.SyntaxKind.ProtectedKeyword, ts.SyntaxKind.ReadonlyKeyword, ts.SyntaxKind.AbstractKeyword, ts.SyntaxKind.OverrideKeyword, ts.SyntaxKind.DeclareKeyword]);
 
@@ -29,7 +28,7 @@ function parsedScript(path: string, text: string): ParsedScript | undefined {
 
 function identitiesOf(source: ParsedScript, emitted: ParsedScript, mapping: { mapText: string; emittedPath: string; sourcePath: string } | undefined): ReadonlyMap<string, FunctionIdentity> {
   const candidates = new Map<string, FunctionIdentity[]>();
-  const originalOf = mapping === undefined ? (candidate: Candidate) => candidate : sourceDeclarationMapper(emitted.tree, source.tree, source.declarations, mapping);
+  const originalOf = mapping === undefined ? (candidate: Candidate) => candidate : sourceDeclarationMapper(emitted, source, mapping);
   for (const declaration of emitted.declarations) {
     const original = originalOf(declaration);
     const identity = original === undefined ? undefined : candidateIdentityOf(original);

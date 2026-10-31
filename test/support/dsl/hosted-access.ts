@@ -2,8 +2,6 @@ import assert from 'node:assert/strict';
 import type { RequestContext } from '../../../src/accounts/identity/access-context.ts';
 import type { HostedBrowser } from '../drivers/browser/hosted-browser.ts';
 
-// Steps that read which pages of the organization site a signed-in browser can open, and the context of a page.
-
 export const destinationPaths = ['portal', 'administration/users', 'administration/admins', 'billing'];
 
 export async function statusesOf(browser: Pick<HostedBrowser, 'open'>, paths: readonly string[] = destinationPaths): Promise<Record<string, number>> {

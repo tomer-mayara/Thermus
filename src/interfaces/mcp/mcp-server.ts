@@ -31,15 +31,12 @@ export interface McpRequestScope {
   readonly buildServer?: RequestServerBuilder;
 }
 
-// A request that passed the bearer check and the access check: its decided access, its bearer token, and its
-// lifetime, for a step that answers it in place of the local MCP server.
 export interface McpForwardedRequest {
   readonly context: RequestContext;
   readonly bearerToken: string;
   readonly lifetime: McpRequestLifetime;
 }
 
-// Answers an admitted request in place of the local dispatch, such as the gateway to the tenant of the organization.
 export type McpForwardStep = (request: Request, forwarded: McpForwardedRequest) => Promise<Response>;
 
 export interface FailureReport {

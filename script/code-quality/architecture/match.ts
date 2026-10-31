@@ -7,7 +7,6 @@ import type { MapCommunity } from './types.ts';
 
 const minimumOverlap = 0.5;
 
-// The partner of each matched community in the other snapshot, by the id of the community.
 export interface Matching {
   readonly baseOf: ReadonlyMap<string, MapCommunity>;
   readonly headOf: ReadonlyMap<string, MapCommunity>;
@@ -38,8 +37,6 @@ function candidatesOf(base: readonly MapCommunity[], head: readonly MapCommunity
   return pairs.filter(({ overlap }) => overlap >= minimumOverlap).sort(byOverlapThenLabels);
 }
 
-// The Jaccard overlap: the files that both communities have, over all files of the two. Two communities without files
-// have no overlap.
 function overlapOf(first: readonly string[], second: readonly string[]): number {
   const firstFiles = new Set(first);
   const all = new Set([...first, ...second]);

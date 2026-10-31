@@ -14,7 +14,10 @@ function accepted(body: Buffer): AuditSendOutcome {
   const value: unknown = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(body));
   if (!record(value)) throw new Error();
   const partial = value.partialSuccess;
-  if (partial === undefined || partial === null) return { kind: 'accepted' };
+  return partial === undefined || partial === null ? { kind: 'accepted' } : partialSuccess(partial);
+}
+
+function partialSuccess(partial: unknown): AuditSendOutcome {
   if (!record(partial)) throw new Error();
   const count = partial.rejectedLogRecords ?? '0';
   const message = partial.errorMessage ?? '';
@@ -34,13 +37,18 @@ export function retryAfterMs(value: string | undefined, now: number): number | u
 
 export function interpretAuditResponse(response: AuditHttpResponse, now = Date.now()): AuditSendOutcome {
   if (response.body.length > AUDIT_SEND_LIMITS.responseBytes) return { kind: 'unconfirmed', reason: 'response_too_large' };
+  return response.statusCode === 200 ? successOutcome(response) : statusOutcome(response, now);
+}
+
+function statusOutcome(response: AuditHttpResponse, now: number): AuditSendOutcome {
   const statusCode = response.statusCode;
-  if (statusCode !== 200) {
-    if (![429, 502, 503, 504].includes(statusCode)) return { kind: 'permanent_failure', reason: 'http_status', statusCode };
-    const delay = retryAfterMs(response.retryAfter, now);
-    if (delay !== undefined && delay > AUDIT_SEND_LIMITS.retryAfterMs) return { kind: 'permanent_failure', reason: 'retry_after_exceeds_limit', statusCode };
-    return { kind: 'transient_failure', reason: 'http_status', statusCode, ...(delay === undefined ? {} : { retryAfterMs: delay }) };
-  }
+  if (![429, 502, 503, 504].includes(statusCode)) return { kind: 'permanent_failure', reason: 'http_status', statusCode };
+  const delay = retryAfterMs(response.retryAfter, now);
+  if (delay !== undefined && delay > AUDIT_SEND_LIMITS.retryAfterMs) return { kind: 'permanent_failure', reason: 'retry_after_exceeds_limit', statusCode };
+  return { kind: 'transient_failure', reason: 'http_status', statusCode, ...(delay === undefined ? {} : { retryAfterMs: delay }) };
+}
+
+function successOutcome(response: AuditHttpResponse): AuditSendOutcome {
   try {
     if (!/^application\/json(?:\s*;|\s*$)/i.test(response.contentType ?? '')) throw new Error();
     return accepted(response.body);

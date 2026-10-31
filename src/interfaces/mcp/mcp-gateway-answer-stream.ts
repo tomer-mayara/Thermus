@@ -6,7 +6,6 @@ export type StreamEnd = 'complete' | 'cancelled' | 'failed';
 
 type ReadResult = Awaited<ReturnType<ReadableStreamDefaultReader<Uint8Array>['read']>>;
 
-/** The answer body of a tenant: its reader, the signal of the forwarded request, and the end of the stream. */
 interface TenantBody {
   readonly reader: ReadableStreamDefaultReader<Uint8Array>;
   readonly signal: AbortSignal;

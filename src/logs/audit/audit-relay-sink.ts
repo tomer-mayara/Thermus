@@ -28,7 +28,6 @@ export class AuditRelaySink {
     this.scheduler = new RelayScheduler(this.queue, this.route);
   }
 
-  /** The sink of the events of one request. A tool server of that request writes its audit events here. */
   forContext(context: string): AuditEventSink {
     return { writeAuditEvent: (event) => this.admit(event, context) };
   }
@@ -55,8 +54,8 @@ export class AuditRelaySink {
   }
 }
 
-// Production posts with fetch on the performance clock; a test gives its own clock, random source, or post.
 function relayRouteOf(target: URL, options: AuditRelayOptions): RelayRoute {
   const clock = { now: options.now ?? (() => performance.now()), random: options.random ?? Math.random, post: options.post ?? postAuditRelay };
-  return { target, clock, bounds: collectorBounds(options.bounds ?? {}) };
+  const bounds = collectorBounds(options.bounds ?? {});
+  return { target, clock, bounds, retries: { bounds, random: clock.random } };
 }

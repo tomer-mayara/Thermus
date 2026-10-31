@@ -36,7 +36,6 @@ export async function serviceOfRow(parts: CreationParts, row: ProvisioningRow, s
   }
 }
 
-// The line before the next attempt, so that the operator sees the wait and its reason.
 function retryLine(organizationId: string, attempt: number, again: AgainAttempt): string {
   return `Tenant provisioning retry: ${JSON.stringify({ organizationId, attempt, waitSeconds: again.waitMs / 1_000, reason: again.reason })}`;
 }

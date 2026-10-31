@@ -5,7 +5,6 @@ import type { MCPServer, McpRequestScope } from '../interfaces/mcp/mcp-server.ts
 import type { FetchHandler } from '../runtime/http/server.ts';
 import type { RouteConfig } from './application.ts';
 
-/** The parts of the MCP resource of a tenant: the context check, the MCP server, and the scope of a verified context. */
 export interface TenantMcp {
   readonly verifier: Pick<AccessContextVerifier, 'verify'>;
   readonly server: Pick<MCPServer, 'fetch'>;

@@ -8,9 +8,6 @@ import { nowInSeconds, SigningKey } from '../../../support/doubles/workos/jwt-si
 import { cookiePassword, fakeClientId, WorkOSFakeApi, workosClientFor, type FakeAnswer, type FakeClientSettings } from '../../../support/doubles/workos/workos-fake-api.ts';
 import { guardOutboundFetch } from '../../../support/isolation/outbound-fetch-guard.ts';
 
-// A local session fixture for the browser session: the fake WorkOS API with a browser key set, and the real session
-// with the pinned SDK client. The test plays AuthKit and scripts each answer of the API.
-
 const settings = { clientId: fakeClientId, redirectUri: 'https://thermus.example/team/callback', cookiePassword };
 export const authority = workosAuthority(fakeClientId);
 export const authenticateRoute = 'POST /user_management/authenticate';
@@ -71,7 +68,6 @@ export function tokenAnswer(token: string, refreshToken: string): FakeAnswer {
   return { status: 200, body };
 }
 
-// The Cookie header that a browser sends after it stored these Set-Cookie values.
 export function cookieHeaderOf(setCookies: readonly string[]): string {
   return setCookies.map((setCookie) => setCookie.split(';')[0]).join('; ');
 }
@@ -85,7 +81,6 @@ export function grantsSent(fake: WorkOSFakeApi): ReadonlyArray<Readonly<Record<s
   return fake.takeRequests().filter(({ path }) => path === '/user_management/authenticate').map(({ body }) => body as Readonly<Record<string, unknown>>);
 }
 
-// The browser starts the sign-in and comes back from AuthKit with a code. Gives the Cookie header of the new session.
 export async function signIn(world: SessionFixture, token: string): Promise<string> {
   const start = await world.session.startSignIn({ returnTo: '/team/' });
   world.fake.answer(authenticateRoute, tokenAnswer(token, 'refresh-1'));

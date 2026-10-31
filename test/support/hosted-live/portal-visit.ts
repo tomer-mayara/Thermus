@@ -19,25 +19,30 @@ export interface ServerAnswer {
   readonly location: string | undefined;
 }
 
-// A sign-in through the portal of the local HTTPS site: the Sign in link, /login, the AuthKit pages, and the
-// callback of the server. The browser keeps the cookies of the server, as a user's browser does.
-export async function signInThroughPortal(run: LiveRun, user: LiveUser, organizationName?: string, expectedLanding: 'portal' | 'organizations' = 'portal'): Promise<PortalVisit> {
+export async function signInThroughPortal(run: LiveRun, user: LiveUser, organizationName?: string): Promise<PortalVisit> {
+  const { page, pages } = await startPortalSignIn(run, user, organizationName);
+  await waitForPortal(page);
+  return { page, pages, signedInAt: Date.now() };
+}
+
+export async function signInToOrganizationSelector(run: LiveRun, user: LiveUser): Promise<PortalVisit> {
+  const { page, pages } = await startPortalSignIn(run, user);
+  const destination = new URL('/organizations', localOrigin);
+  destination.searchParams.set('return_to', '/');
+  await page.waitForURL(destination.href);
+  assert.equal(page.url(), destination.href);
+  assert.equal((await sessionJson(page)).signedIn, true);
+  return { page, pages, signedInAt: Date.now() };
+}
+
+async function startPortalSignIn(run: LiveRun, user: LiveUser, organizationName?: string): Promise<Pick<PortalVisit, 'page' | 'pages'>> {
   await run.site();
   const authkitHost = new URL(run.settings.authkitIssuer).host;
   const page = await run.browser.newPage();
   await page.goto(`${localOrigin}/`);
   await page.getByRole('link', { name: 'Sign in', exact: true }).click();
   const pages = await completeAuthKit(page, { user, authkitHost, ...(organizationName === undefined ? {} : { organizationName }) });
-  if (expectedLanding === 'organizations') {
-    const destination = new URL('/organizations', localOrigin);
-    destination.searchParams.set('return_to', '/');
-    await page.waitForURL(destination.href);
-    assert.equal(page.url(), destination.href);
-    assert.equal((await sessionJson(page)).signedIn, true);
-  } else {
-    await waitForPortal(page);
-  }
-  return { page, pages, signedInAt: Date.now() };
+  return { page, pages };
 }
 
 // The acceptance of an organization invitation through its link. AuthKit sends the browser through the Initiate login
@@ -53,7 +58,6 @@ export async function acceptInvitationThroughPortal(run: LiveRun, user: LiveUser
   return { page, pages, signedInAt: Date.now() };
 }
 
-// A request of the browser with its cookies, which follows no redirect.
 export async function serverGet(page: Page, path: string): Promise<ServerAnswer> {
   const answer = await page.context().request.get(new URL(path, `${localOrigin}/`).href, { maxRedirects: 0 });
   return { status: answer.status(), body: await answer.text(), setCookies: setCookiesOf(answer.headersArray()), location: answer.headers().location };

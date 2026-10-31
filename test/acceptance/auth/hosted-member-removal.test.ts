@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { parseHTML } from 'linkedom';
-import { formsIn, type PageForm } from '../../support/drivers/browser/hosted-browser.ts';
+import { formsIn, type BrowserAnswer, type HostedBrowser, type PageForm } from '../../support/drivers/browser/hosted-browser.ts';
 import { signInThroughServer } from '../../support/dsl/workos-sign-in.ts';
 import { removalForm } from '../../support/dsl/hosted-member-removal.ts';
 import { otherOrganization, remainingAdmin, removalAdmin, removalOrganization, removalUser, serveMemberRemovalSite } from '../../support/in-process/hosted-member-removal-site.ts';
@@ -23,30 +23,55 @@ test('Given a password-authenticated Admin, two active Admins, and an ordinary U
   assert.doesNotMatch(refreshed.body, /user@example\.com/);
 });
 
-for (const invalid of ['actor authority changed', 'saved organization stale', 'organization forged', 'saved target stale', 'target forged', 'revision stale', 'revision forged', 'method invalid', 'origin invalid', 'CSRF invalid']) {
+interface Removal {
+  readonly site: Awaited<ReturnType<typeof serveMemberRemovalSite>>;
+  readonly browser: HostedBrowser;
+  readonly form: PageForm;
+  readonly targetId: string;
+}
+type Submission = () => Promise<BrowserAnswer>;
+
+const submitted = ({ browser, form }: Removal): Submission => () => browser.submit(form);
+const forged = ({ browser, form }: Removal, field: string, value: string): Submission => () => browser.submit({ ...form, fields: { ...form.fields, [field]: value } });
+
+const invalidRemovals: Readonly<Record<string, (removal: Removal) => Submission | Promise<Submission>>> = {
+  'actor authority changed': (removal) => {
+    removal.site.world.setRoles(removalAdmin, removalOrganization, ['user']);
+    return submitted(removal);
+  },
+  'saved organization stale': async (removal) => {
+    const choice = formsIn((await removal.browser.open('organizations')).body).find(each => each.fields.organization_id === otherOrganization);
+    assert.ok(choice);
+    assert.equal((await removal.browser.submit(choice)).status, 303);
+    return submitted(removal);
+  },
+  'organization forged': (removal) => forged(removal, 'organization_id', 'org_FORGED'),
+  'saved target stale': (removal) => {
+    removal.site.world.deletedMembershipIds.add(removal.targetId);
+    return submitted(removal);
+  },
+  'target forged': (removal) => forged(removal, 'membership_id', 'om_FORGED'),
+  'revision stale': (removal) => {
+    removal.site.world.setRoles(removalUser, removalOrganization, ['admin']);
+    return submitted(removal);
+  },
+  'revision forged': (removal) => forged(removal, 'revision', 'forged'),
+  'method invalid': ({ browser, form }) => () => browser.open(form.action),
+  'origin invalid': ({ browser, form }) => () => browser.submit(form, { origin: 'https://forged.example' }),
+  'CSRF invalid': (removal) => forged(removal, 'csrf_token', 'forged'),
+};
+
+for (const [invalid, prepare] of Object.entries(invalidRemovals)) {
   test(`Given a valid removable target and only ${invalid}, when the removal form is submitted, then no provider deletion occurs`, async (t) => {
     const site = await serveMemberRemovalSite(t, { setUp: world => {
       world.memberships = [...world.memberships, { userId: removalAdmin.id, organizationId: otherOrganization, roles: ['admin'], directoryManaged: false }];
     } });
     const { browser } = await signInThroughServer(site, removalAdmin, removalOrganization);
     const targetId = site.world.membershipId(removalUser, removalOrganization);
-    const original = await removalForm(browser, targetId);
-    let form: PageForm = original;
-    if (invalid === 'actor authority changed') site.world.setRoles(removalAdmin, removalOrganization, ['user']);
-    if (invalid === 'saved organization stale') {
-      const choice = formsIn((await browser.open('organizations')).body).find(each => each.fields.organization_id === otherOrganization);
-      assert.ok(choice);
-      assert.equal((await browser.submit(choice)).status, 303);
-    }
-    if (invalid === 'organization forged') form = { ...form, fields: { ...form.fields, organization_id: 'org_FORGED' } };
-    if (invalid === 'saved target stale') site.world.deletedMembershipIds.add(targetId);
-    if (invalid === 'target forged') form = { ...form, fields: { ...form.fields, membership_id: 'om_FORGED' } };
-    if (invalid === 'revision stale') site.world.setRoles(removalUser, removalOrganization, ['admin']);
-    if (invalid === 'revision forged') form = { ...form, fields: { ...form.fields, revision: 'forged' } };
-    if (invalid === 'CSRF invalid') form = { ...form, fields: { ...form.fields, csrf_token: 'forged' } };
+    const submit = await prepare({ site, browser, form: await removalForm(browser, targetId), targetId });
     site.world.fake.takeRequests();
 
-    const answer = invalid === 'method invalid' ? await browser.open(form.action) : await browser.submit(form, invalid === 'origin invalid' ? { origin: 'https://forged.example' } : {});
+    const answer = await submit();
 
     assert.ok(answer.status >= 400, answer.body);
     assert.deepEqual(site.world.fake.takeRequests().filter(request => request.method === 'DELETE'), []);

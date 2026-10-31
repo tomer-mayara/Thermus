@@ -3,12 +3,6 @@ import { committedFiles, committedSnapshots, lineCountOf, lineCountsOf, snapshot
 import { emitDeclarations, ignoredNote, snapshotPathOf } from './declaration-emit.ts';
 import type { Reason } from './types.ts';
 
-// The declaration snapshots of the public modules: one <module>.d.ts under the folder public_surface.snapshots for each
-// module that public_surface lists, written by script/pr-review/api-surface.ts. The check regenerates the snapshots
-// of HEAD and compares them with the committed files, then compares the committed files of HEAD with those of the
-// merge base.
-
-// One revision: its commit, the snapshot folder of its rules (none for rules before 2026-10-24), and its public modules.
 interface SnapshotRevision {
   readonly commit: string;
   readonly folder?: string;
@@ -23,9 +17,6 @@ export interface SnapshotInput {
   readonly dirty: boolean;
 }
 
-// A committed snapshot of HEAD that differs from the merge base. added: the module has a snapshot at HEAD only;
-// removed: at the merge base only. diff is the unified diff of the two committed files, empty for added and removed.
-// added and removed count the lines; for an added or a removed snapshot, they count the lines of its file.
 export interface SnapshotDifference {
   readonly module: string;
   readonly status: 'changed' | 'added' | 'removed';

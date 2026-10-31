@@ -14,9 +14,6 @@ import { AuditRelayRoute } from '../../../../src/interfaces/web/internal/audit-r
 import { AuditExportSenderSpy } from '../../../support/doubles/logging/audit-export-sender-spy.ts';
 import { SnapshotSettingsStoreSpy } from '../../../support/doubles/logging/snapshot-settings-store-spy.ts';
 
-// The relay route of the control plane with the real context check of identity (the public key of the gateway signing
-// key) and the real capture and dispatch of audit-logs. Only the settings store and the export sender are doubles.
-
 const authority = 'workos:client_01CONTROL';
 const internalHost = 'thermus-control-plane:8080';
 const organizationA = 'org_RELAY_A';

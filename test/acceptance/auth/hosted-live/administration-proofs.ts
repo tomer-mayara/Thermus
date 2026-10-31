@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import { describe, test, type TestContext } from 'node:test';
 import type { Invitation, OrganizationMembership } from '@workos-inc/node';
-import { WorkOSOrganizations, workosMembershipReads, type WorkOSOrganizationsOptions } from '../../../../src/accounts/providers/workos/workos-organizations.ts';
+import { WorkOSOrganizations, type WorkOSOrganizationsOptions } from '../../../../src/accounts/providers/workos/workos-organizations.ts';
+import { workosMembershipReads } from '../../../../src/accounts/providers/workos/workos-membership-reads.ts';
 import { workosAuthority } from '../../../../src/accounts/providers/workos/workos-settings.ts';
 import { activeUserSeatCount } from '../../../../src/accounts/organizations/administration-overviews.ts';
 import { invitationsOf } from '../../../../src/accounts/organizations/directory-reads.ts';
@@ -24,7 +25,6 @@ interface MembershipState {
   readonly updatedAt: string;
 }
 
-// One membership list read of WorkOS: the statuses that it named and the number of memberships on its page.
 interface MembershipListRead {
   readonly statuses: readonly string[];
   readonly size: number;
@@ -41,7 +41,6 @@ const maxPages = 50;
 const singleStatuses: readonly (readonly MembershipStatus[])[] = [['active'], ['inactive'], ['pending']];
 const everyStatus: readonly MembershipStatus[] = ['active', 'inactive', 'pending'];
 const invitationStates: readonly InvitationState[] = ['pending', 'accepted', 'revoked', 'expired'];
-// The memberships of the seat proof, with the status and the roles that the fixtures gave them.
 const seatMemberships: readonly (readonly [AdministrationMembershipName, string])[] = [
   ['seatUserAdminInD', 'active admin,user'],
   ['seatAdminInD', 'active admin'],
@@ -64,8 +63,6 @@ function memberSummary(member: OrganizationMember | undefined): string {
   return `${member.status} ${member.grants.map(({ role }) => role).toSorted().join()}`;
 }
 
-// The SDK client of the run, but each membership list asks WorkOS for pages of two, so that a member read gets several
-// pages. Each other call goes to the SDK client unchanged.
 function withPagesOfTwo(memberships: MembershipReads, reads: MembershipListRead[]): MembershipReads {
   const paged: MembershipReads = Object.create(memberships);
   paged.listOrganizationMemberships = async (options) => {
@@ -76,7 +73,6 @@ function withPagesOfTwo(memberships: MembershipReads, reads: MembershipListRead[
   return paged;
 }
 
-// Every page of one member read of the directory, in order.
 async function everyMemberPage(directory: OrganizationDirectory, organizationId: string, statuses: readonly MembershipStatus[]): Promise<OrganizationMember[]> {
   const members: OrganizationMember[] = [];
   let cursor: string | undefined;
@@ -92,7 +88,6 @@ async function everyMemberPage(directory: OrganizationDirectory, organizationId:
 export function describeAdministrationProofs(run: LiveRun): void {
   const { workos, settings } = run;
   const authority = workosAuthority(settings.clientId);
-  // The directory of the hosted edition, as the composition makes it, against the staging environment.
   const directory = new WorkOSOrganizations({ authority, memberships: workosMembershipReads(workos), userManagement: workos.userManagement, authorization: workos.authorization });
 
   function pagedDirectory(reads: MembershipListRead[]): WorkOSOrganizations {
@@ -114,7 +109,6 @@ export function describeAdministrationProofs(run: LiveRun): void {
     return (await workos.userManagement.listInvitations({ organizationId, limit: 100 })).autoPagination();
   }
 
-  // A member read in pages of two, which must give exactly the memberships of a direct WorkOS read with the same statuses.
   async function checkedPagedRead(t: TestContext, organizationId: string, statuses: readonly MembershipStatus[]): Promise<PagedMemberRead> {
     const reads: MembershipListRead[] = [];
     const members = await everyMemberPage(pagedDirectory(reads), organizationId, statuses);
@@ -134,7 +128,6 @@ export function describeAdministrationProofs(run: LiveRun): void {
     return invitation;
   }
 
-  // The states under which a directory read of one state lists the invitation.
   async function statesListing(organizationId: string, invitationId: string): Promise<InvitationState[]> {
     const listed: InvitationState[] = [];
     for (const state of invitationStates) {

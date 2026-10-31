@@ -20,7 +20,6 @@ export class RelayQueue {
     return true;
   }
 
-  /** The head of each tenant whose head does not run. */
   waitingHeads(): RelayItem[] {
     return [...this.tenants.values()].flatMap((items) => items.slice(0, 1)).filter((head) => !head.active);
   }
@@ -46,8 +45,6 @@ interface Pending {
   readonly tenants: number;
 }
 
-// One more item must keep the items and the bytes within their bounds, in all and for its tenant. A new tenant needs a
-// free tenant place too.
 function fitsBounds(bounds: AuditCollectorBounds, pending: Pending, item: RelayItem): boolean {
   const { all, items, tenants } = pending;
   const fitsAll = all.length < bounds.items && bytesOf(all) + item.bytes <= bounds.bytes;

@@ -23,7 +23,6 @@ export interface MembershipRecord {
   readonly roles?: readonly { readonly slug: string }[];
 }
 
-// A WorkOS invitation with its token and its link, which are credentials of the invited person.
 export interface InvitationRecord {
   readonly id: string;
   readonly email: string;
@@ -40,7 +39,6 @@ export interface RoleRecord {
   readonly permissions: readonly string[];
 }
 
-// The fields of a WorkOS organization that the directory reads. The external ID is null for an organization without one.
 export interface OrganizationRecord {
   readonly id: string;
   readonly externalId: string | null;
@@ -63,10 +61,8 @@ export const acme = 'org_01ACME';
 export const globex = 'org_02GLOBEX';
 // The external ID of Acme, as each customer organization of the operator runbook has one. Globex has none.
 export const acmeExternalId = 'customer-acme';
-// The time of the clock that the directory gets from the double.
 export const now = new Date('2026-10-14T12:00:00.000Z');
 
-// The roles of the WorkOS staging environment, which follow the hosted role mapping.
 export function stagingRoles(): RoleRecord[] {
   return [
     { slug: 'member', permissions: [] },
@@ -80,7 +76,6 @@ export function roles(...slugs: string[]): { readonly slug: string }[] {
   return slugs.map((slug) => ({ slug }));
 }
 
-// An active membership of Alice in Acme with only User, which no directory connection manages.
 export function membership(changes: Partial<MembershipRecord> = {}): MembershipRecord {
   return {
     id: 'om_01ALICE',
@@ -95,7 +90,6 @@ export function membership(changes: Partial<MembershipRecord> = {}): MembershipR
   };
 }
 
-// A pending invitation of Bob to Acme as User, which expires a week after the clock time.
 export function invitation(changes: Partial<InvitationRecord> = {}): InvitationRecord {
   return {
     id: 'invitation_01BOB',
@@ -110,18 +104,14 @@ export function invitation(changes: Partial<InvitationRecord> = {}): InvitationR
   };
 }
 
-// The error of the SDK for a WorkOS 404.
 export function notFound(): NotFoundException {
   return new NotFoundException({ code: 'entity_not_found', message: 'The entity was not found.', path: '/user_management/entity', requestID: 'request_01' });
 }
 
-// The error of the SDK for a WorkOS refusal with this status and code, such as 400.
 export function refusal(code: string, status = 400): GenericServerException {
   return new GenericServerException(status, `WorkOS refused the request with ${code}.`, { code, message: `WorkOS refused the request with ${code}.` }, 'request_01');
 }
 
-// A double of the WorkOS SDK client of the organization directory. It answers from the records that a test sets, and
-// records each call in order. A role write changes the roles and the update time of the membership, as WorkOS does.
 export class WorkOSOrganizationsDouble {
   readonly calls: SdkCall[] = [];
   readonly memberships = new Map<string, MembershipRecord>();
@@ -130,12 +120,10 @@ export class WorkOSOrganizationsDouble {
   membershipList: ListAnswer<MembershipRecord> = { data: [], after: null };
   invitationList: ListAnswer<InvitationRecord> = { data: [], after: null };
   organizationRoles: readonly RoleRecord[] = stagingRoles();
-  // The organizations that the organization reads give, by ID.
   readonly organizationRecords = new Map<string, OrganizationRecord>([
     [acme, { id: acme, externalId: acmeExternalId }],
     [globex, { id: globex, externalId: null }],
   ]);
-  // An answer of an invitation change in place of the default answer.
   readonly changeAnswers = new Map<InvitationChange, InvitationRecord>();
   // A failure for each method name. The double records the call before it fails.
   readonly failures = new Map<string, Error>();
@@ -162,7 +150,6 @@ export class WorkOSOrganizationsDouble {
     getOrganization: async (id: string) => this.answer('getOrganization', id, () => this.organizationRecords.get(id) ?? missing()),
   };
 
-  // The directory under test. The default clock gives the fixed time.
   directory(clock: () => Date = () => new Date(now)): WorkOSOrganizations {
     const { userManagement, authorization } = this;
     return new WorkOSOrganizations({ authority, memberships: userManagement, userManagement, authorization, clock });
