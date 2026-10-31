@@ -32,7 +32,7 @@ export class RowProvisioning {
   }
 
   private async workOn(row: ProvisioningRow, signal: AbortSignal): Promise<RowOutcome> {
-    const renew = (): Promise<RecordResult> => {
+    const renew = async (): Promise<RecordResult> => {
       signal.throwIfAborted();
       return this.parts.store.renewClaim(row);
     };
