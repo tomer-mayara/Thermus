@@ -1,5 +1,5 @@
 import type { BoundedSqlRuntime } from '../../runtime/sql/bounded-sql-runtime.ts';
-import { claimNextRow, RELEASE_CLAIM, RENEW_CLAIM } from './pg-tenant-claim.ts';
+import { claimNextRow, RELEASE_CLAIM, RELEASE_UNWORKED_CLAIM, RENEW_CLAIM } from './pg-tenant-claim.ts';
 import type { ClaimRequest, ClaimResult, LiveRecord, LiveTarget, ProvisioningRow, RecordResult, TenantProvisioningStore } from './tenant-provisioning-store.ts';
 
 // Each change names the state that it starts from and the holder of the claim, so a row that another writer changed, or
@@ -36,6 +36,10 @@ export class PgTenantProvisioningStore implements TenantProvisioningStore {
   // A failed release changes nothing: the lease of the row ends by itself.
   async releaseClaim(row: ProvisioningRow): Promise<void> {
     await this.runtime.run((session) => session.query(RELEASE_CLAIM, [row.organizationId, row.holder], true));
+  }
+
+  async releaseUnworkedClaim(row: ProvisioningRow): Promise<void> {
+    await this.runtime.run((session) => session.query(RELEASE_UNWORKED_CLAIM, [row.organizationId, row.holder], true));
   }
 
   recordService(row: ProvisioningRow, serviceId: string): Promise<RecordResult> {

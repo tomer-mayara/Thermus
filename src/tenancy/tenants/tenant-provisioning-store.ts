@@ -35,7 +35,8 @@ export type RecordResult = { readonly status: 'recorded' | 'moved' | 'unavailabl
 
 /**
  * The work of the loop on one claimed row: the renewal of the claim, which the work makes before each create and each
- * read of the deploy, and the stop signal of the loop, which ends each wait and each new platform call.
+ * read of the deploy, and the stop signal of the loop, which ends each wait and each new platform call. After the stop,
+ * renew rejects with the stop reason, so no renewal comes when no create or read can follow it.
  */
 export interface RowWork {
   renew(): Promise<RecordResult>;
@@ -69,6 +70,8 @@ export interface TenantProvisioningStore {
    * create of the work can still be unknown, and the next search by name must see the service that it made.
    */
   releaseClaim(row: ProvisioningRow): Promise<void>;
+  /** Frees a claimed row that the loop does not work on, in each state: no platform call was made for this claim. */
+  releaseUnworkedClaim(row: ProvisioningRow): Promise<void>;
   /** creating to deploying, with the ID of the service. */
   recordService(row: ProvisioningRow, serviceId: string): Promise<RecordResult>;
   /**

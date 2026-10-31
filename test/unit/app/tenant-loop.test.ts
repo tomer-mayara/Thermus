@@ -39,7 +39,7 @@ test('Given a call in flight that does not end, when the grace of the stop ends,
   assert.ok(reasons.every((reason) => reason instanceof DOMException && reason.name === 'AbortError' && reason.message === 'The control plane is shutting down'));
 });
 
-test('Given a closing tenant loop, when it closes again, then the second close waits for the same end, and the grace stays below the hosted shutdown deadline of 10 s', async () => {
+test('Given a closing tenant loop, when it closes again, then the second close waits for the same end, and the grace of production is 3 s', async () => {
   let ends = 0;
   const lifetime = startTenantLoop(async ({ stop }) => {
     await aborted(stop);
@@ -52,5 +52,5 @@ test('Given a closing tenant loop, when it closes again, then the second close w
 
   assert.equal(first, second);
   assert.equal(ends, 1);
-  assert.equal(IN_FLIGHT_GRACE_MS, 5_000);
+  assert.equal(IN_FLIGHT_GRACE_MS, 3_000);
 });

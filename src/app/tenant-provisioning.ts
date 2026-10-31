@@ -21,14 +21,14 @@ export interface TenantProvisioningParts {
   readonly logger: SystemLog;
   readonly fetch?: typeof fetch;
   readonly clock?: ProvisioningClock;
-  // A seam of the tests: the grace of the platform call in flight after the stop. Production waits 5 s.
+  // A seam of the tests: the grace of the platform call in flight after the stop. Production waits 3 s.
   readonly inFlightGraceMs?: number;
 }
 
 export interface TenantProvisioning {
   /**
-   * Stops the loop: it claims no row and starts no Render call after the stop, and the call in flight ends within the
-   * grace of 5 s. A deploying row is free for the next claim at once; a creating row waits until its claim lease ends.
+   * Stops the loop: it claims no row and starts no Render call after the stop, and the call in flight gets a grace of
+   * 3 s. A deploying row is free for the next claim at once; a creating row waits until its claim lease ends.
    */
   close(): Promise<void>;
 }

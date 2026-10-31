@@ -30,7 +30,6 @@ export async function attemptService(platform: CreationPlatform, request: Tenant
   if (search.services.length > 1) return { status: 'failed', reason: `${search.services.length} services of the platform have the name ${request.name}` };
   const [service] = search.services;
   if (service !== undefined) return { status: 'service', serviceId: service.id };
-  work.signal.throwIfAborted();
   const held = await work.renew();
   if (held.status !== 'recorded') return { status: 'lost', claim: held };
   return outcomeOf(await platform.createService(request, work.signal));

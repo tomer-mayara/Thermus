@@ -1,6 +1,7 @@
 // The grace of a platform call in flight after the stop of a tenant loop. A Render create answered in 1.9 to 2.9 s
-// (SO-01c), and the hosted process exits 10 s after SIGTERM (src/index.ts), so the close still ends in time.
-export const IN_FLIGHT_GRACE_MS = 5_000;
+// (SO-01c). The hosted process exits 10 s after SIGTERM (src/index.ts), and after the loops the SQL runtime closes
+// (at most 1.5 s) and the system log export sends its last records (at most 5 s), so 3 s remain for the call in flight.
+export const IN_FLIGHT_GRACE_MS = 3_000;
 
 /** The two signals of a tenant loop: stop ends its claims, waits, and new calls; inFlight goes to its platform calls. */
 export interface TenantLoopSignals {
@@ -16,8 +17,8 @@ export interface TenantLoopLifetime {
 /**
  * Starts a tenant loop of the control plane, such as the provisioner or the sweeps (SO-12 rehearsal of 31 October
  * 2026). The close aborts the stop signal at once, so the old instance of a deploy claims no row and starts no Render
- * call after SIGTERM, and it aborts the in-flight signal graceMs later, so a call in flight ends and its answer reaches
- * the registry before the SQL runtime closes.
+ * call after SIGTERM. It aborts the in-flight signal graceMs later: a call in flight that ends before then writes its
+ * answer to the registry before the SQL runtime closes, and a longer call is cut.
  */
 export function startTenantLoop(run: (signals: TenantLoopSignals) => Promise<void>, graceMs = IN_FLIGHT_GRACE_MS): TenantLoopLifetime {
   const stop = new AbortController();

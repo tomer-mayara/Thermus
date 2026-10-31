@@ -500,21 +500,35 @@ test('Given a stop while the search of the loop is in flight, when the search en
   assert.deepEqual([store.row(organization).state, store.row(organization).claimedBy], ['creating', holder]);
 });
 
-test('Given a stop while a read of the deploy is in flight, when the read ends, then the loop renews no claim, reads no more, and frees the deploying row', async () => {
+test('Given a stop while the create call of the loop is in flight, when the create ends, then the loop records the service, renews no claim for the watch, reads no deploy, and frees the deploying row', async () => {
   const { platform, store, clock, log } = provisionerWith();
   const stop = new AbortController();
   const renewals: string[] = [];
   const renewClaim = store.renewClaim.bind(store);
   store.renewClaim = async (row) => { renewals.push(row.organizationId); return renewClaim(row); };
-  platform.deploys.push(inProgress, live);
-  platform.onCall = (call) => { if (call.startsWith('deploy ')) stop.abort(); };
+  platform.onCall = (call) => { if (call.startsWith('create ')) stop.abort(); };
   const finishing = new FinishingPlatform(platform, new AbortController().signal);
   const provisioner = new TenantProvisioner({ platform: finishing, store, clock, log, tenant, namePrefix: 'thermus-tenant-', freePlan: '0.5c-512mb', holder });
   store.request(organization);
 
   await provisioner.run(stop.signal);
 
-  assert.deepEqual(platform.calls, [`find ${name}`, `create ${name}`, 'deploy srv-new1']);
-  assert.deepEqual(renewals, [organization, organization], 'One renewal before the create and one before the read that was in flight');
-  assert.deepEqual([store.row(organization).state, store.row(organization).claimedBy], ['deploying', null]);
+  assert.deepEqual(platform.calls, [`find ${name}`, `create ${name}`]);
+  assert.deepEqual(renewals, [organization], 'Only the renewal before the create');
+  assert.deepEqual([store.row(organization).state, store.row(organization).serviceId, store.row(organization).claimedBy], ['deploying', 'srv-new1', null]);
+});
+
+test('Given a stop while the claim commits, when the claim returns a row, then the loop starts no work, logs no record, and frees the row at once, also a creating row', async () => {
+  const { platform, store, clock, log } = provisionerWith();
+  const stop = new AbortController();
+  const claimNext = store.claimNext.bind(store);
+  store.claimNext = async (request) => { const claim = await claimNext(request); stop.abort(); return claim; };
+  const provisioner = new TenantProvisioner({ platform, store, clock, log, tenant, namePrefix: 'thermus-tenant-', freePlan: '0.5c-512mb', holder });
+  store.request(organization);
+
+  await provisioner.run(stop.signal);
+
+  assert.deepEqual(platform.calls, []);
+  assert.deepEqual(log.lines, []);
+  assert.deepEqual([store.row(organization).state, store.row(organization).claimedBy], ['creating', null]);
 });

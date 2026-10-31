@@ -42,6 +42,11 @@ export class TenantProvisioner {
       log.error('Tenant provisioning cannot read the tenant registry. It tries again in 60 s.');
       return STORE_PAUSE_MS;
     }
+    // A claim that commits while the stop comes starts no work, so no create can be unknown: the row is free at once.
+    if (signal.aborted) {
+      await store.releaseUnworkedClaim(claim.row);
+      return 0;
+    }
     return await this.rows.provision(claim, signal) === 'store-failed' ? STORE_PAUSE_MS : 0;
   }
 

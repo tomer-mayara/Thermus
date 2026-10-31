@@ -28,6 +28,8 @@ export const RENEW_CLAIM = `UPDATE thermus_admin.tenants SET claimed_until = now
 /** The release by the holder at the end of its work. A creating row stays held until its lease ends. */
 export const RELEASE_CLAIM = `UPDATE thermus_admin.tenants SET claimed_by = NULL, claimed_until = NULL
   WHERE organization_id = $1 AND claimed_by = $2 AND state <> 'creating'`;
+/** The release by the holder of a claim that it did not work on, in each state. */
+export const RELEASE_UNWORKED_CLAIM = 'UPDATE thermus_admin.tenants SET claimed_by = NULL, claimed_until = NULL WHERE organization_id = $1 AND claimed_by = $2';
 
 // No deletion state: the provisioner works only toward live (answer 6 of 27 October 2026).
 type ClaimedState = 'requested' | 'creating' | 'deploying';

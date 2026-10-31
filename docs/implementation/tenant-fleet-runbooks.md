@@ -195,14 +195,16 @@ leaves the row. Each record of the work names the holder, and the `live` and
 ([`pg-tenant-claim.ts`](../../src/tenancy/tenants/pg-tenant-claim.ts)).
 
 At `SIGTERM`, the old instance claims no row and starts no Render call. A
-Render call in flight ends within 5 s, and its answer reaches the registry.
-Then the end of its work frees a `deploying` row at once, and the new instance
-continues it. A `creating` row stays held until its lease ends, because a
+Render call in flight gets 3 s to end, and then its answer reaches the
+registry; a longer call is cut. Then the end of its work frees a `deploying`
+row at once, and the new instance continues it. A `creating` row stays held until its lease ends, because a
 create of the old instance can still be unknown. After that, the next claim
 searches by name. To see who holds a row, read `claimed_by` and
 `claimed_until` of the row with the read of step 1 below. An old instance of
-a version before the claim lease ignores the claims. So the protection starts
-when the two instances have the lease.
+a version before the claim lease ignores the claims. So deploy the first
+version with the lease with `MCP_TENANTS_ENABLED` off, as the production order
+does, or when `fleet.ts list` shows no row in `requested`, `creating`, or
+`deploying`.
 
 **Repair: delete, then request.** The fleet commands `status`, `delete`, and
 `request` do it ([Operate the tenant fleet](../../script/README.md#operate-the-tenant-fleet)).

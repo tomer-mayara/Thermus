@@ -108,6 +108,12 @@ export class TenantProvisioningStoreFake implements TenantProvisioningStore {
     freed(row);
   }
 
+  async releaseUnworkedClaim(claimed: ProvisioningRow): Promise<void> {
+    const row = this.rows.get(claimed.organizationId);
+    if (this.unavailable.has('release') || row?.claimedBy !== claimed.holder) return;
+    freed(row);
+  }
+
   async recordService(claimed: ProvisioningRow, serviceId: string): Promise<RecordResult> {
     return this.move('service', claimed, (row) => {
       this.change(row, 'deploying');

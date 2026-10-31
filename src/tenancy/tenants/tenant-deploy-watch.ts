@@ -16,8 +16,8 @@ export interface WatchParts {
 /**
  * Watches the newest deploy of a service until the row can be live, within the budget of 15 minutes. The failure reason
  * at the end of the budget names the last state seen, so the operator knows where the deploy stopped. Each read comes
- * after a renewal of the claim of the row, so the claim lasts for the whole deploy. A row that another loop claimed,
- * or that left the work, ends the watch; a registry that does not answer does not.
+ * after a renewal of the claim of the row, so the claim lasts while the reads answer within the lease. A row that
+ * another loop claimed, or that left the work, ends the watch; a registry that does not answer does not.
  */
 export async function watchDeploy(parts: WatchParts, serviceId: string, work: RowWork): Promise<WatchOutcome> {
   const deadline = parts.clock.now() + BUDGET_MS;

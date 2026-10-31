@@ -575,8 +575,8 @@ switch on, app also composes the `render` adapter with its write guard and the
 WorkOS organization inventory of the `workos` owner on the WorkOS client of the
 hosted connection, and starts the provisioner loop and the tenant sweeps of
 `tenants`; it stops both at close, before the SQL runtime closes: after the
-stop they start no claim and no Render call, and a call in flight ends within
-5 s. The MCP
+stop they start no claim and no Render call, and a call in flight gets 3 s to
+end. The MCP
 gateway (SO-05) calls the registry through a port that app composes, with the
 resume operation on the adapter of the sweeps (SO-10). Thick arrows show composition; solid
 arrows show runtime calls, and their labels name only the calls that this
@@ -687,9 +687,9 @@ does not own, and always for the production service. At the stop, the loop and
 the sweeps call the platform through a
 [finishing platform](../src/tenancy/tenants/finishing-platform.ts): a call
 starts only before the stop, and a call that started runs on with the in-flight
-signal, which the [tenant loop](../src/app/tenant-loop.ts) of app aborts 5 s
-after the stop. So its answer, such as the service of a create or a suspend,
-reaches the registry.
+signal, which the [tenant loop](../src/app/tenant-loop.ts) of app aborts 3 s
+after the stop. So the answer of a call that ends in time, such as the service
+of a create or a suspend, reaches the registry.
 
 The gateway writes the registry through three narrow statements of the registry
 adapter. [TenantResumes](../src/tenancy/tenants/tenant-resumes.ts) moves a
@@ -1727,7 +1727,7 @@ sequenceDiagram
   Render-->>Prov: http://slug:8080
   Prov->>Store: Record live with the address and the digest, and free the claim
   App->>Prov: Stop at close, with no claim and no new call after it
-  Note over Prov,API: The call in flight ends within 5 s
+  Note over Prov,API: The call in flight gets 3 s to end
   Prov->>Store: Free the row, unless it is creating
 ```
 
@@ -1743,11 +1743,13 @@ its own holder, so the loop of the other instance during a deploy leaves a row
 in work (SO-12 rehearsal of 31 October 2026). A renewal that finds another
 holder, or a row that left the work, ends the work with the line
 `Tenant provisioning leaves organization`; a renewal that the registry does
-not answer sends no create, and the loop waits 60 s. A stop starts no claim
-and no Render call; a call in flight ends within 5 s, and its record reaches
-the registry. Then a `deploying` row is free for the next claim of any
-instance, which reads the newest deploy again; a `creating` row waits until
-its lease ends, and the next claim searches by name. An unreadable registry or
+not answer sends no create, and the loop waits 60 s. A stop starts no claim,
+no renewal, and no Render call; a call in flight gets 3 s to end, and the
+record of its answer reaches the registry. Then a `deploying` row is free for
+the next claim of any instance, which reads the newest deploy again; a
+`creating` row waits until its lease ends, and the next claim searches by
+name. A claim that commits while the stop comes starts no work and frees its
+row at once. An unreadable registry or
 a failed record logs one error and waits 60 s.
 
 ### Scenario: weekly organization sweep
@@ -2340,7 +2342,12 @@ The following limits affect architectural decisions today:
   renews its lease. A loop that cannot renew for 60 s, for example in a long
   stall of Render or of the database, can lose its row to the other loop; its
   records then name a holder that no longer holds the row, so only one loop
-  writes it. An old instance of a version before the lease ignores the claims.
+  writes it. An old instance of a version before the lease ignores the claims,
+  so the first deploy of the lease runs with the switch off or without a row in
+  work. The 3 s for a call in flight at the stop keep the close inside the
+  hosted deadline of 10 s while the database answers at once; a slow database
+  can make the process reach the deadline, and then the lease of its row ends
+  by itself.
   The tenant sweeps have no shared claim: when the daily tick falls inside the
   2 minutes of a deploy, both instances run them, and the guarded marks keep
   each row right, but Render can get a suspend or a delete two times. A slow

@@ -23,6 +23,7 @@ type Site = Awaited<ReturnType<typeof postgresSettingsSite>>;
 const settings = loadTenantProvisioningSettings(controlPlaneEnvironment);
 const organizationA = 'org_01JRUNTIMEAAAAAAAAAAAAAAA';
 const organizationB = 'org_01JRUNTIMEBBBBBBBBBBBBBBB';
+const organizationC = 'org_01JRUNTIMECCCCCCCCCCCCCCC';
 
 // The name rule of 27 October 2026 (SO-06): the organization ID in lower case, each character outside a-z, 0-9, and
 // hyphen as a hyphen.
@@ -280,6 +281,7 @@ test('Given a claimed row on the real registry, when its holder renews, records,
   const store = new PgTenantProvisioningStore(runtime);
   await requestTenant(site, organizationA);
   await requestTenant(site, organizationB);
+  await requestTenant(site, organizationC);
   const request = { serviceNameOf: nameOf, plan: '0.5c-512mb', holder: 'holder-1' };
   const claimA = await store.claimNext(request);
   // The row of holder-1 comes first for holder-1 itself, so another holder claims the second row.
@@ -306,4 +308,12 @@ test('Given a claimed row on the real registry, when its holder renews, records,
   assert.deepEqual(await store.recordLive(rowB, 'srv-d0servicebbbbbbbbb', { internalUrl: 'http://thermus-tenant-org-b:8080' }), { status: 'recorded' });
   assert.equal(await claimOf(organizationB), 'live free', 'The live record frees the claim');
   assert.deepEqual(await store.renewClaim(rowB), { status: 'moved' }, 'A live row is out of work');
+
+  // A claim that commits while the stop comes starts no work: its release frees also a creating row.
+  const claimC = await store.claimNext({ ...request, holder: 'holder-4' });
+  assert.ok(claimC.status === 'claimed' && claimC.row.organizationId === organizationC);
+  await store.releaseUnworkedClaim({ ...claimC.row, holder: 'holder-5' });
+  assert.equal(await claimOf(organizationC), 'creating holder-4 true', 'Another holder cannot release it');
+  await store.releaseUnworkedClaim(claimC.row);
+  assert.equal(await claimOf(organizationC), 'creating free');
 });

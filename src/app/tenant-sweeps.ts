@@ -21,12 +21,12 @@ export interface TenantSweepsParts {
   readonly logger: SystemLog;
   // A seam of the tests. Production uses the wall clock of the process.
   readonly sweepClock?: SweepClock;
-  // A seam of the tests: the grace of the platform call in flight after the stop. Production waits 5 s.
+  // A seam of the tests: the grace of the platform call in flight after the stop. Production waits 3 s.
   readonly inFlightGraceMs?: number;
 }
 
 export interface TenantSweepsLifetime {
-  /** Stops the sweeps: no new step, row, or Render call, and the call in flight ends within the grace of 5 s. */
+  /** Stops the sweeps: no new step, row, or Render call after the stop, and the call in flight gets a grace of 3 s. */
   close(): Promise<void>;
 }
 

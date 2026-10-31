@@ -11,6 +11,7 @@ const claimRequested = /^UPDATE thermus_admin\.tenants SET state = 'creating', s
 const claimResumed = /^UPDATE thermus_admin\.tenants SET service_name = COALESCE\(service_name, \$2\), claimed_by = \$3,\s+claimed_until = now\(\) \+ interval '60 seconds' WHERE organization_id = \$1$/;
 const renewClaim = /^UPDATE thermus_admin\.tenants SET claimed_until = now\(\) \+ interval '60 seconds'\s+WHERE organization_id = \$1 AND claimed_by = \$2 AND state IN \('creating', 'deploying'\) RETURNING organization_id$/;
 const releaseClaim = /^UPDATE thermus_admin\.tenants SET claimed_by = NULL, claimed_until = NULL\s+WHERE organization_id = \$1 AND claimed_by = \$2 AND state <> 'creating'$/;
+const releaseUnworkedClaim = /^UPDATE thermus_admin\.tenants SET claimed_by = NULL, claimed_until = NULL WHERE organization_id = \$1 AND claimed_by = \$2$/;
 const recordService = /^UPDATE thermus_admin\.tenants SET state = 'deploying', render_service_id = \$2, updated_at = now\(\)\s+WHERE organization_id = \$1 AND state = 'creating' AND claimed_by = \$3 RETURNING organization_id$/;
 const recordLive = /^UPDATE thermus_admin\.tenants SET state = 'live', internal_url = \$3, image_digest = COALESCE\(\$4::text, image_digest\), applied_plan = plan,\s+failure_reason = NULL, claimed_by = NULL, claimed_until = NULL, updated_at = now\(\)\s+WHERE organization_id = \$1 AND state = 'deploying' AND render_service_id = \$2 AND \(claimed_by = \$5 OR \$5::text IS NULL\) RETURNING organization_id$/;
 const recordFailed = /^UPDATE thermus_admin\.tenants SET state = 'failed', failure_reason = \$2, claimed_by = NULL, claimed_until = NULL, updated_at = now\(\)\s+WHERE organization_id = \$1 AND state IN \('creating', 'deploying'\) AND render_service_id IS NOT DISTINCT FROM \$3 AND claimed_by = \$4 RETURNING organization_id$/;
@@ -103,6 +104,15 @@ test('Given the end of the work on a row, when the holder releases its claim, th
   assert.deepEqual(queries.map(({ values }) => values), [['org_01A', holder]]);
   const failed = provisioningStore(t, () => new Error('private storage details'));
   await failed.store.releaseClaim(rowA);
+  assert.equal(failed.queries.length, 1);
+});
+
+test('Given a claim that the loop does not work on, when the holder releases it, then one guarded update frees the row in each state', async (t) => {
+  const { store, queries } = provisioningStore(t, (text) => releaseUnworkedClaim.test(text) ? [] : new Error('unexpected statement'));
+  await store.releaseUnworkedClaim({ ...rowA, state: 'creating', serviceId: null });
+  assert.deepEqual(queries.map(({ values }) => values), [['org_01A', holder]]);
+  const failed = provisioningStore(t, () => new Error('private storage details'));
+  await failed.store.releaseUnworkedClaim(rowA);
   assert.equal(failed.queries.length, 1);
 });
 

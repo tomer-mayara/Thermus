@@ -6,9 +6,9 @@ import type {
 /**
  * The platform of a loop of the control plane, such as the provisioner or the sweeps, for its stop (SO-12 rehearsal
  * of 31 October 2026). A call starts only while the signal of its caller, the stop signal of the loop, has not
- * stopped. A call that started runs with the in-flight signal instead, so the stop never cuts it, and its answer still
- * reaches the registry; the owner of the loop aborts the in-flight signal when the grace of the stop ends. The repeats
- * of a read in the adapter are part of its call.
+ * stopped. A call that started runs with the in-flight signal instead, so the stop does not cut it, and its answer can
+ * still reach the registry; the owner of the loop aborts the in-flight signal when the grace of the stop ends. The
+ * repeats of a read in the adapter are part of its call.
  */
 export class FinishingPlatform implements TenantPlatform {
   private readonly platform: TenantPlatform;

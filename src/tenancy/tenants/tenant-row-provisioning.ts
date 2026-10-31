@@ -1,5 +1,5 @@
 import { watchDeploy, type WatchParts } from './tenant-deploy-watch.ts';
-import type { ClaimResult, ProvisioningRow, TenantProvisioningStore } from './tenant-provisioning-store.ts';
+import type { ClaimResult, ProvisioningRow, RecordResult, TenantProvisioningStore } from './tenant-provisioning-store.ts';
 import { RowRecords, type RowOutcome } from './tenant-row-records.ts';
 import { serviceOfRow, type CreationParts } from './tenant-service-creation.ts';
 
@@ -32,7 +32,11 @@ export class RowProvisioning {
   }
 
   private async workOn(row: ProvisioningRow, signal: AbortSignal): Promise<RowOutcome> {
-    const work = { renew: () => this.parts.store.renewClaim(row), signal };
+    const renew = (): Promise<RecordResult> => {
+      signal.throwIfAborted();
+      return this.parts.store.renewClaim(row);
+    };
+    const work = { renew, signal };
     const service = await serviceOfRow(this.parts, row, work);
     if (service.status === 'lost') return this.records.unrecorded(row, service.claim);
     // Without a service, the row still has the service of its claim: none for a creating row.
