@@ -1,5 +1,5 @@
 import type { SystemLog } from '../../logs/system/system-logger.ts';
-import { IdleSweepLog, type IdleRow } from './idle-sweep-log.ts';
+import { IdleSweepLog, type IdleCounts, type IdleRow } from './idle-sweep-log.ts';
 import { serviceChangeReason } from './service-change-reason.ts';
 import type { FleetRow, FleetWrite, TenantFleetStore } from './tenant-fleet-store.ts';
 import type { TenantPlatform } from './tenant-platform.ts';
@@ -19,6 +19,12 @@ export interface IdleSweepParts {
   readonly log: SystemLog;
 }
 
+// The parts of one sweep with its operator lines.
+interface Suspension {
+  readonly parts: IdleSweepParts;
+  readonly lines: IdleSweepLog;
+}
+
 /**
  * The daily idle sweep (plan section 4.2, decision D-6): it suspends each live free tenant whose last MCP call is
  * idleDays or more before the tick, or whose creation is, when it never served a call. The gateway writes the last use
@@ -30,12 +36,10 @@ export interface IdleSweepParts {
  */
 export class IdleSweep implements SweepStep {
   readonly name = 'idle sweep';
-  private readonly parts: IdleSweepParts;
-  private readonly lines: IdleSweepLog;
+  private readonly suspension: Suspension;
 
   constructor(parts: IdleSweepParts) {
-    this.parts = parts;
-    this.lines = new IdleSweepLog(parts.log);
+    this.suspension = { parts, lines: new IdleSweepLog(parts.log) };
   }
 
   // Each day: a tick that falls while the control plane is down waits until the next day.
@@ -44,37 +48,42 @@ export class IdleSweep implements SweepStep {
   }
 
   async run(tickMs: number, signal: AbortSignal): Promise<void> {
-    const cutoff = new Date(tickMs - this.parts.idleDays * DAY_MS).toISOString();
-    const idle = await this.parts.store.readIdle(this.parts.freePlan, cutoff);
-    if (idle.status !== 'complete') return this.lines.stopped();
-    const counts = { idle: idle.rows.length, suspended: 0, moved: 0, failed: 0 };
-    for (const row of idle.rows.filter(hasService)) {
-      // A stop of the control plane ends the sweep between two rows, with no count line.
-      signal.throwIfAborted();
-      counts[await this.suspend(row, signal)] += 1;
-    }
-    this.lines.counts(counts);
-  }
-
-  // The platform first: a refused or limited suspend changes no row.
-  private async suspend(row: IdleRow, signal: AbortSignal): Promise<RowResult> {
-    const change = await this.parts.platform.suspendService(row.serviceId, signal);
-    if (change.status === 'accepted') return this.marked(row, await this.parts.store.markSuspended(row.organizationId, row.serviceId));
-    this.lines.failed(row, `The platform did not take the suspend: ${serviceChangeReason(change)}`);
-    return 'failed';
-  }
-
-  // The mark names the state and the service that the sweep read, so a row of another writer is moved.
-  private marked(row: IdleRow, mark: FleetWrite): RowResult {
-    if (mark.status === 'recorded') this.lines.suspended(row);
-    else if (mark.status === 'moved') this.lines.left(row);
-    else this.lines.failed(row, `The platform suspended the tenant service ${row.serviceId}, but the tenant registry did not take the suspended state. The next sweep suspends it again.`);
-    return MARK_RESULTS[mark.status];
+    const { parts, lines } = this.suspension;
+    const idle = await parts.store.readIdle(parts.freePlan, new Date(tickMs - parts.idleDays * DAY_MS).toISOString());
+    if (idle.status !== 'complete') return lines.stopped();
+    lines.counts(await suspendAll(this.suspension, idle.rows, signal));
   }
 }
 
 const MARK_RESULTS: Readonly<Record<FleetWrite['status'], RowResult>> = { recorded: 'suspended', moved: 'moved', unavailable: 'failed' };
 
+// Each idle row in turn. A stop of the control plane ends the sweep between two rows, with no count line.
+async function suspendAll(suspension: Suspension, rows: readonly FleetRow[], signal: AbortSignal): Promise<IdleCounts> {
+  const counts = { idle: rows.length, suspended: 0, moved: 0, failed: 0 };
+  for (const row of rows.filter(hasService)) {
+    signal.throwIfAborted();
+    counts[await suspendRow(suspension, row, signal)] += 1;
+  }
+  return counts;
+}
+
+// The platform first: a refused or limited suspend changes no row.
+async function suspendRow({ parts, lines }: Suspension, row: IdleRow, signal: AbortSignal): Promise<RowResult> {
+  const change = await parts.platform.suspendService(row.serviceId, signal);
+  if (change.status === 'accepted') return resultOfMark(lines, row, await parts.store.markSuspended(row.organizationId, row.serviceId));
+  lines.failed(row, `The platform did not take the suspend: ${serviceChangeReason(change)}`);
+  return 'failed';
+}
+
+// The mark names the state and the service that the sweep read, so a row of another writer is moved.
+function resultOfMark(lines: IdleSweepLog, row: IdleRow, mark: FleetWrite): RowResult {
+  if (mark.status === 'recorded') lines.suspended(row);
+  else if (mark.status === 'moved') lines.left(row);
+  else lines.failed(row, `The platform suspended the tenant service ${row.serviceId}, but the tenant registry did not take the suspended state. The next sweep suspends it again.`);
+  return MARK_RESULTS[mark.status];
+}
+
+// The idle query reads only rows with a service; the guard gives the suspend call its service ID without a cast.
 function hasService(row: FleetRow): row is IdleRow {
   return row.serviceId !== null;
 }
