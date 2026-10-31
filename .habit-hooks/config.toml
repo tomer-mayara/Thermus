@@ -12,6 +12,8 @@ files = [
   "!coverage/**",
   "!tools/code-review-agents/**",
   "!docs/api-surface/**",
+  "!.claude/**",
+  "!ast-report/**",
 ]
 
 [scope]
