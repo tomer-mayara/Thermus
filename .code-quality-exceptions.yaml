@@ -221,8 +221,8 @@ exceptions:
     expires: 2026-12-28
   - path: src/tenancy/tenants/pg-tenant-fleet-store.ts
     metric: mi
-    bound: 69.5
-    reason: One small SQL adapter keeps the six fleet statements of the tenants table, each with the state that it starts from, the revive transaction under the registry lock and the cap, and the decoding of a fleet row. Its largest function has three paths. Nine unit cases check each statement and outcome, and real PostgreSQL cases check the sweep, the revive inside the cap, and the start states. A split of the statements from their outcome mapping would hide the rule that no change overwrites another writer.
+    bound: 72
+    reason: One small SQL adapter keeps the six fleet statements of the tenants table, each with the state and the service that it starts from, the revive transaction under the registry lock and the cap, and the decoding of a fleet row. Its largest function has three paths. Nine unit cases check each statement and outcome, and real PostgreSQL cases check the sweep, the revive inside the cap, the start states, and a same-state replacement with a new service. A split of the statements from their outcome mapping would hide the rule that no change overwrites another writer or a replacement row.
     expires: 2026-12-28
   - path: src/tenancy/tenants/fleet-summary.ts
     metric: mi

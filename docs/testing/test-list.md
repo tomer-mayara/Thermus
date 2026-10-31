@@ -39,8 +39,9 @@ request records the runs.
   31 October 2026). It runs in `npm run test:logging:postgres`.
 - `test/unit/tenants/organization-sweep.test.ts`, `fleet-summary.test.ts`,
   `tenant-sweeps.test.ts`, `tenant-removal.test.ts`, `pg-tenant-fleet-store.test.ts`,
-  `fleet-deploy-wait.test.ts` (the deploy wait that the upgrade and the resume
-  of the fleet script share), and the revive cases of `tenant-requests.test.ts`;
+  `fleet-deploy-wait.test.ts` and `fleet-image-deploy.test.ts` (the deploy
+  wait that the upgrade and the resume of the fleet script share, and one
+  upgrade deploy), and the revive cases of `tenant-requests.test.ts`;
   `test/unit/render/render-fleet-operations.test.ts`;
   `test/unit/auth-workos/workos-organization-inventory.test.ts`; and
   `test/unit/config/tenant-sweep-config.test.ts` with the new cases of
@@ -1215,7 +1216,7 @@ The same stub of `fetch` and virtual clock, in `test/unit/render/fixtures/render
 [V] The memory read names each service in one memory read and one memory-limit read for the window, with a point every 600 s, and gives the peak and the limit of each service; no service makes no request; a failed, invalid, or not-bytes answer is unavailable
 [V] The restart count reads the events of the window, follows the cursor of a full page up to 10 pages, and counts `server_failed` and `server_restarted` inside the window only; a `404` is gone
 
-**Tenant sweeps and fleet statements** (`test/unit/tenants/organization-sweep.test.ts`, `fleet-summary.test.ts`, `tenant-sweeps.test.ts`, `tenant-removal.test.ts`, `pg-tenant-fleet-store.test.ts`, `tenant-requests.test.ts`, `fleet-deploy-wait.test.ts`)
+**Tenant sweeps and fleet statements** (`test/unit/tenants/organization-sweep.test.ts`, `fleet-summary.test.ts`, `tenant-sweeps.test.ts`, `tenant-removal.test.ts`, `pg-tenant-fleet-store.test.ts`, `tenant-requests.test.ts`, `fleet-deploy-wait.test.ts`, `fleet-image-deploy.test.ts`)
 
 A fake of the tenant platform, a fake of the organization inventory, the fleet registry fake, and a spy of the operator log; the SQL adapter runs on the real bounded runtime over a client double.
 

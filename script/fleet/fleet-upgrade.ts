@@ -8,7 +8,7 @@
 // is left as it is.
 import { systemClock } from '../../src/app/system-clock.ts';
 import { isImageByDigest } from '../../src/tenancy/providers/render/render-changes.ts';
-import { finishImageDeploy, imageDigestOf, startImageDeploy } from '../../src/tenancy/tenants/fleet-deploy-wait.ts';
+import { finishImageDeploy, imageDigestOf, startImageDeploy } from '../../src/tenancy/tenants/fleet-image-deploy.ts';
 import type { FleetRow } from '../../src/tenancy/tenants/tenant-fleet-store.ts';
 import { confirmed } from './fleet-confirm.ts';
 import type { CommandParts } from './fleet-reads.ts';

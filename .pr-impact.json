@@ -50,6 +50,8 @@
       "src/tenancy/tenants/tenant-fleet-store.ts",
       "src/tenancy/tenants/pg-tenant-provisioning-store.ts",
       "test/unit/tenants/fleet-deploy-wait.test.ts",
+      "src/tenancy/tenants/fleet-image-deploy.ts",
+      "test/unit/tenants/fleet-image-deploy.test.ts",
       "script/fleet/fleet.ts",
       "test/acceptance/tenants/organization-sweep.test.ts",
       "test/acceptance/tenants/fleet-summary.test.ts",

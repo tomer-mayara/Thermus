@@ -716,7 +716,8 @@ Render reports, and the memory of the live tenants; the
 give its fields for the Axiom monitors of SO-11. The fleet script of the
 operator ([`script/fleet/`](../script/fleet/)) composes the same adapter, stores,
 removal, revive, and summary from `src`, and the
-[deploy wait](../src/tenancy/tenants/fleet-deploy-wait.ts) of its writes: an
+[deploy wait](../src/tenancy/tenants/fleet-deploy-wait.ts) of its writes with
+the [upgrade deploy](../src/tenancy/tenants/fleet-image-deploy.ts): an
 upgrade follows the deploy that the answer of the platform names, and a newer
 deploy with another ID stops it; after an answer without a deploy, as Render
 gives to a queued deploy and to each resume, the wait takes the first new
