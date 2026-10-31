@@ -5,18 +5,20 @@ import type { CoverageFunction, CoverageReport } from './coverage.ts';
 type Fields = ReturnType<typeof json.objectOf>;
 export type Check = <T>(value: T | undefined) => T;
 export type Unmeasured = { readonly ranges: ReadonlySet<string>; readonly names: ReadonlySet<string> };
+export interface CoverageFormat { readonly version: number; readonly check: Check }
 const fingerprint = /^[a-f0-9]{64}$/u;
 
-export function coverageFileIn(fields: Fields, check: Check, unmeasured: Unmeasured, version: number): CoverageReport['files'][number] {
+export function coverageFileIn(fields: Fields, format: CoverageFormat, unmeasured: Unmeasured): CoverageReport['files'][number] {
+  const { check, version } = format;
   const path = check(json.textOf(fields.path));
-  const measured = requiredArray(fields.functions, check).map((entry) => functionOf(json.objectOf(entry), check, version)).filter((fn) =>
+  const measured = requiredArray(fields.functions, check).map((entry) => functionOf(json.objectOf(entry), format)).filter((fn) =>
     !unmeasured.names.has(JSON.stringify([path, fn.name])) && !unmeasured.ranges.has(JSON.stringify([path, fn.start, fn.end])));
   const representation = fields.representation === 'emitted-javascript' || fields.representation === 'source-typescript' ? fields.representation : undefined;
   if (version === 3) check(representation);
   return { path, representation, contentIdentity: hashIn(fields.contentIdentity, check, version === 3), sourceContentIdentity: hashIn(fields.sourceContentIdentity, check, false), functions: measured };
 }
 
-function functionOf(fields: Fields, check: Check, version: number): CoverageFunction {
+function functionOf(fields: Fields, { check, version }: CoverageFormat): CoverageFunction {
   const share = check(json.numberOf(fields.coveredShare));
   check(Number.isFinite(share) && share >= 0 && share <= 1 ? share : undefined);
   return {
@@ -25,7 +27,7 @@ function functionOf(fields: Fields, check: Check, version: number): CoverageFunc
   };
 }
 
-export function unmeasuredFunctions(value: unknown = [], check: Check, version: number): Unmeasured {
+export function unmeasuredFunctions(value: unknown = [], { check, version }: CoverageFormat): Unmeasured {
   const ranges = new Set<string>();
   const names = new Set<string>();
   for (const entry of requiredArray(value, check)) {
