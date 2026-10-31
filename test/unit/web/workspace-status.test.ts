@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import { WorkspaceStatuses, type WorkspaceState, type WorkspaceTenants } from '../../../src/interfaces/web/account/workspace-status.ts';
 
 const settingUp = 'Setting up your workspace. This takes about two minutes.';
+const paused = 'Your workspace was paused after 14 days without use. It restarts on the next request, which can take about a minute.';
 
 // A stub of the tenant port: each organization has its scripted state, and each read is recorded.
 function tenantsOf(states: Record<string, WorkspaceState>): WorkspaceTenants & { readonly reads: string[] } {
@@ -10,19 +11,19 @@ function tenantsOf(states: Record<string, WorkspaceState>): WorkspaceTenants & {
   return { reads, stateOf: async (organizationId) => { reads.push(organizationId); return states[organizationId] ?? 'unavailable'; } };
 }
 
-function statusesOf(states: Record<string, WorkspaceState>) {
+function statusesOf(states: Record<string, WorkspaceState>, idleDays = 14) {
   const reports: string[] = [];
   const tenants = tenantsOf(states);
-  return { reports, tenants, statuses: new WorkspaceStatuses(tenants, (line) => reports.push(line)) };
+  return { reports, tenants, statuses: new WorkspaceStatuses(tenants, (line) => reports.push(line), idleDays) };
 }
 
-test('Given each tenant state, when the portal asks for the view, then only a live or a suspended tenant is ready, and every other state has the words of the portal', async () => {
+test('Given each tenant state, when the portal asks for the view, then only a live or a suspended tenant is ready, a suspended tenant has the notice of the pause, and every other state has the words of the portal', async () => {
   const expected: Readonly<Record<WorkspaceState, { readonly ready: boolean; readonly message?: string }>> = {
     requested: { ready: false, message: settingUp },
     creating: { ready: false, message: settingUp },
     deploying: { ready: false, message: settingUp },
     live: { ready: true },
-    suspended: { ready: true },
+    suspended: { ready: true, message: paused },
     failed: { ready: false, message: 'Workspace setup failed. We have been notified and will fix it.' },
     deleted: { ready: false, message: 'Your workspace is not available. Contact Thermus support.' },
     full: { ready: false, message: 'All free workspaces are in use. Try again later.' },
@@ -97,4 +98,9 @@ test('Given current product access, when another method than GET or HEAD arrives
   assert.equal(answer.status, 405);
   assert.equal(answer.headers.get('Allow'), 'GET, HEAD');
   assert.deepEqual(tenants.reads, []);
+});
+
+test('Given FREE_TENANT_IDLE_DAYS of 7, when the portal asks for the view of a suspended tenant, then the notice of the pause names 7 days', async () => {
+  const { statuses } = statusesOf({ org_A: 'suspended' }, 7);
+  assert.deepEqual(await statuses.viewOf('org_A'), { state: 'suspended', ready: true, message: 'Your workspace was paused after 7 days without use. It restarts on the next request, which can take about a minute.' });
 });

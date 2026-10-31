@@ -291,6 +291,7 @@ registerHooks({ resolve(specifier, context, nextResolve) {
       [{ ...switchSettings, GATEWAY_PUBLIC_KEY: 'not-a-public-key' }, /FATAL\S* (?:\[[^\]]*\]: )?GATEWAY_PUBLIC_KEY must hold one or more PEM public keys of type Ed25519, separated by commas\.$/m],
       [{ ...switchSettings, CONTROL_PLANE_INTERNAL_URL: 'http://thermus-control-plane:8080/private-path' }, /FATAL\S* (?:\[[^\]]*\]: )?CONTROL_PLANE_INTERNAL_URL must be the http or https origin of the control plane/m],
       [{ ...switchSettings, TENANT_SWEEP_HOUR_UTC: '24' }, /FATAL\S* (?:\[[^\]]*\]: )?TENANT_SWEEP_HOUR_UTC must be a whole number from 0 to 23\.$/m],
+      [{ ...switchSettings, FREE_TENANT_IDLE_DAYS: '0' }, /FATAL\S* (?:\[[^\]]*\]: )?FREE_TENANT_IDLE_DAYS must be a whole number from 1 to 365\.$/m],
     ];
 
     for (const [overrides, message] of invalidSettings) {
@@ -315,7 +316,7 @@ registerHooks({ resolve(specifier, context, nextResolve) {
   });
 
   test('Given MCP_TENANTS_ENABLED off, also with invalid tenant settings, when the server starts, then it listens, reads no tenant setting, and starts no provisioner', { timeout: 60_000 }, async (t) => {
-    const invalidTenantSettings = { RENDER_API_KEY: 'a key with spaces', RENDER_OWNER_ID: 'srv-notaworkspace', TENANT_IMAGE: 'latest', GATEWAY_PUBLIC_KEY: 'not-a-public-key', CONTROL_PLANE_INTERNAL_URL: 'not-a-url' };
+    const invalidTenantSettings = { RENDER_API_KEY: 'a key with spaces', RENDER_OWNER_ID: 'srv-notaworkspace', TENANT_IMAGE: 'latest', GATEWAY_PUBLIC_KEY: 'not-a-public-key', CONTROL_PLANE_INTERNAL_URL: 'not-a-url', FREE_TENANT_IDLE_DAYS: 'never' };
     for (const MCP_TENANTS_ENABLED of ['false', '']) {
       const server = await ServerProcess.start(t, { ...hostedSettings, ...workOSSettings, ...invalidTenantSettings, MCP_TENANTS_ENABLED });
       await server.stop();

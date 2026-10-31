@@ -27,12 +27,13 @@ public pages and Brave HTML search results to cleaned Markdown for MCP clients,
 and provides account and connection pages. External clients and websites are
 outside its trust boundary. Local Better Auth belongs inside Thermus. With
 `MCP_TENANTS_ENABLED=true`, the hosted control plane also creates the services
-of its tenants through the Render API, and its sweeps delete the tenant of a
-removed organization. The operator's fleet script deploys, suspends, resumes,
-and deletes them through the same API. With the three `SYSTEM_LOG_*` settings
-(SO-11a), the control plane also exports its system log to an OTLP/HTTP logs
-endpoint of the operator; for production, the owner chose the Axiom dataset
-`system-log`.
+of its tenants through the Render API, its sweeps delete the tenant of a
+removed organization and suspend an idle free tenant, and its gateway resumes a
+suspended tenant at the next call. The operator's fleet script deploys,
+suspends, resumes, and deletes them through the same API. With the three
+`SYSTEM_LOG_*` settings (SO-11a), the control plane also exports its system log
+to an OTLP/HTTP logs endpoint of the operator; for production, the owner chose
+the Axiom dataset `system-log`.
 
 ```mermaid
 %%{init: {"flowchart": {"wrappingWidth": 260}}}%%
@@ -77,7 +78,9 @@ to the tenant of its organization with a signed access context, and its route
 the provisioner of the server creates each tenant server as a Render private
 service through the Render API (SO-06); Render pulls the image from GHCR by
 digest. The tenant sweeps of the server (SO-09) read the WorkOS organizations,
-delete the tenant of a removed organization, and write the daily fleet summary.
+delete the tenant of a removed organization, and write the daily fleet summary;
+the daily idle sweep suspends an idle free tenant, and the gateway resumes it at
+the next call (SO-10).
 The switch is off by default, and no production deployment runs a tenant yet.
 The fleet script is an operator command line application on the machine of the
 operator (SO-09): it lists, requests, upgrades, suspends, resumes, and deletes
@@ -565,14 +568,15 @@ actual-connection address and TLS checks. No provider SDK enters the
 Scope: one hosted Node server container, the control plane of the self
 on-boarding plan. App reads the switch `MCP_TENANTS_ENABLED` through config.
 Only with the switch on, it reads `FREE_TENANT_LIMIT` (else the cap is 25), the
-tenant settings, and the hour of the tenant sweeps. It opens the one bounded SQL
-runtime of the `sql` owner and composes the `tenants` owner on it next to the
-settings and removal adapter of audit-logs. With the switch on, app also
-composes the `render` adapter with its write guard and the WorkOS organization
-inventory of the `workos` owner on the WorkOS client of the hosted connection,
-and starts the provisioner loop and the tenant sweeps of `tenants`; it stops
-both at close, before the SQL runtime closes. The MCP gateway (SO-05) calls the
-registry through a port that app composes. Thick arrows show composition; solid
+tenant settings, the hour of the tenant sweeps, and `FREE_TENANT_IDLE_DAYS`. It
+opens the one bounded SQL runtime of the `sql` owner and composes the `tenants`
+owner on it next to the settings and removal adapter of audit-logs. With the
+switch on, app also composes the `render` adapter with its write guard and the
+WorkOS organization inventory of the `workos` owner on the WorkOS client of the
+hosted connection, and starts the provisioner loop and the tenant sweeps of
+`tenants`; it stops both at close, before the SQL runtime closes. The MCP
+gateway (SO-05) calls the registry through a port that app composes, with the
+resume operation on the adapter of the sweeps (SO-10). Thick arrows show composition; solid
 arrows show runtime calls, and their labels name only the calls that this
 container makes; the dashed arrows are the type-only source dependencies of the
 two adapters on the `TenantPlatform` and `OrganizationInventory` contracts of
@@ -593,7 +597,7 @@ flowchart TB
     tenancy_app["app · TypeScript<br/>Opens one SQL runtime; composes<br/>Owns the loop and sweep lifetimes"]
     tenancy_web["web · TypeScript<br/>Signup: cap, then tenant request<br/>GET /workspace/status"]
     tenancy_mcp["mcp · TypeScript<br/>MCP gateway<br/>Row of the organization"]
-    tenancy_tenants["tenants · TypeScript<br/>Request inside the cap; lookup copy<br/>Provisioner: one row at a time<br/>Resume once; activity once a minute<br/>Sweeps: daily summary, weekly org sweep"]
+    tenancy_tenants["tenants · TypeScript<br/>Request inside the cap; lookup copy<br/>Provisioner: one row at a time<br/>Resume once; activity once a minute<br/>Sweeps: weekly org sweep, daily idle sweep and summary"]
     tenancy_render["render · TypeScript<br/>Render adapter of TenantPlatform<br/>Retry bounds; write guard"]
     tenancy_workos["workos · TypeScript<br/>WorkOS adapter of OrganizationInventory<br/>Every page, or unavailable"]
     tenancy_audit["audit-logs · TypeScript<br/>Settings and removal adapter"]
@@ -608,11 +612,11 @@ flowchart TB
     tenancy_app ==> tenancy_sql
     tenancy_mcp -->|find, request, resume, activity| tenancy_tenants
     tenancy_web -->|row counts, request, row| tenancy_tenants
-    tenancy_tenants -->|find, create, deploys, address; delete, memory, restarts| tenancy_render
+    tenancy_tenants -->|find, create, deploys, address; delete, suspend, resume, memory, restarts| tenancy_render
     tenancy_render -.->|implements| tenancy_tenants
     tenancy_tenants -->|organization list, read by ID, default-role memberships| tenancy_workos
     tenancy_workos -.->|implements| tenancy_tenants
-    tenancy_tenants -->|cap, routes, claim, records, gateway writes; fleet read and removal| tenancy_sql
+    tenancy_tenants -->|cap, routes, claim, records, gateway writes; fleet and idle reads, suspended and deleted marks| tenancy_sql
     tenancy_audit --> tenancy_sql
   end
   tenancy_db[("L2: PostgreSQL · thermus_admin<br/>tenants, subscriptions, billing_events<br/>Role thermus_logging")]
@@ -654,8 +658,12 @@ next row in one short [transaction](../src/tenancy/tenants/pg-tenant-claim.ts):
 a `creating` or `deploying` row first, else the oldest `requested` row, which
 becomes `creating` with its service name, the prefix of `TENANT_NAME_PREFIX` and
 the organization ID in lower case with each character outside a-z, 0-9, and
-hyphen as a hyphen, and the free plan. Each later record names the state that it
-starts from, and the live record names the service of the work too. The loop works behind the
+hyphen as a hyphen, and the free plan. A `deploying` row that keeps its address
+is the row of a resume, because only a live record gives an address and a
+delete takes it away; the claim takes it 15 s after its resume mark, when
+Render has made the deploy of the resume (SO-10). Each later record names the
+state that it starts from, and the live and failed records name the service of
+the work too. The loop works behind the
 [`TenantPlatform`](../src/tenancy/tenants/tenant-platform.ts) contract: the
 search by name, the create, the newest deploy, the internal address, and the
 delete. The [Render adapter](../src/tenancy/providers/render/render-tenant-platform.ts)
@@ -669,12 +677,13 @@ adapter. [TenantResumes](../src/tenancy/tenants/tenant-resumes.ts) moves a
 `suspended` row with a service ID to `deploying` and sends the one resume call
 through the [resume operation](../src/tenancy/tenants/tenant-resume.ts) only for
 the call that moved it, so concurrent calls of any process send one; a failed
-resume moves the row back from `deploying` to `suspended`. Each statement names
-the state that it starts from. [TenantActivity](../src/tenancy/tenants/tenant-activity.ts)
+resume moves the row back from `deploying` to `suspended` on the service of the
+mark. Each statement names the state that it starts from. [TenantActivity](../src/tenancy/tenants/tenant-activity.ts)
 writes `last_active_at` at most once a minute for each organization, with the
 time of the last write in memory; the write keeps the state and `updated_at`.
-SO-10 connects the resume operation to the Render API; until then, app supplies
-one that fails, and the row stays suspended.
+App connects the resume operation to `resumeService` of the Render adapter
+(SO-10); a resume that Render does not take, also a `429`, is a failed resume
+with its reason, and the next call tries again.
 
 Since SO-09 the contract has five more operations, each with a closed result
 union: `deployImage` (the Render API deploy with `imageUrl`, an image by digest
@@ -702,11 +711,11 @@ The writers of each transition of a row:
 - A new `requested` row: the request of the gateway, and the fleet `request`
   command; only that command revives a `deleted` row to `requested`.
 - `requested` to `creating` to `deploying` to `live`, and `creating` or
-  `deploying` to `failed`: the provisioner.
-- `live` to `suspended`: the fleet `suspend` command; SO-10 adds the idle sweep.
+  `deploying` to `failed` on the service of the work: the provisioner.
+- `live` to `suspended`: the idle sweep and the fleet `suspend` command.
 - `suspended` to `deploying`: the gateway, with its one resume call, and the
   fleet `resume` command; `deploying` back to `suspended` after a failed
-  resume: the gateway.
+  resume, on the service of the mark: the gateway.
 - `deploying` to `live` after a resume: the provisioner, or the fleet `resume`
   command after its own wait.
 - Each state except `deleted` to `deleted`: the organization sweep and the fleet
@@ -716,9 +725,16 @@ The writers of each transition of a row:
 
 The [tenant sweeps](../src/tenancy/tenants/tenant-sweeps.ts) are one runner
 with one tick a day at `TENANT_SWEEP_HOUR_UTC` (default 4) and an open list of
-steps; app composes the [organization sweep](../src/tenancy/tenants/organization-sweep.ts)
-and the [fleet summary](../src/tenancy/tenants/fleet-summary.ts), and SO-10 adds
-the idle suspension. On Mondays the organization sweep compares the rows that
+steps; app composes the [organization sweep](../src/tenancy/tenants/organization-sweep.ts),
+the [idle sweep](../src/tenancy/tenants/idle-sweep.ts), and the
+[fleet summary](../src/tenancy/tenants/fleet-summary.ts), in this order. Each
+day the idle sweep reads the live free rows whose last use, or creation when
+they never served a call, is `FREE_TENANT_IDLE_DAYS` (default 14) or more
+before the tick, suspends each service on the platform, and then moves each
+row from `live` to `suspended` on the service that it read; a team row is
+never read, and a suspend that the platform does not take, also a `429`,
+changes no row and gives one `Tenant suspension failed:` line for the next
+sweep. On Mondays the organization sweep compares the rows that
 are not deleted with the complete list of the
 [`OrganizationInventory`](../src/tenancy/tenants/organization-inventory.ts)
 contract, which the [WorkOS adapter](../src/accounts/providers/workos/workos-organization-inventory.ts)
@@ -745,15 +761,13 @@ gives to a queued deploy and to each resume, the wait takes the first new
 deploy, and its identity stays unconfirmed. The upgrade records the digest only
 when the live deploy names the requested digest; else the registry keeps its
 digest, and the upgrade stops (manager decision of 31 October 2026). In the
-server, only the sweeps use the
-new parts: the delete, `memoryUse`, and `restartCount` of the contract, and the
-fleet read and the deleted mark of the fleet statements. The deploy, the
-suspend, the resume, their marks, the digest record, and the revive have no
-caller in the server; only the fleet script calls them. Until SO-10 connects the
-resume operation of the gateway, only the `resume` command of the fleet script
-brings back a tenant that it suspended: each MCP call of that organization gets
-a `503` with a retry time and writes one operator report (owner decision of 31
-October 2026).
+server, the sweeps use the delete, `suspendService`, `memoryUse`, and
+`restartCount` of the contract, and the fleet read, the idle read, and the
+deleted and suspended marks of the fleet statements; the gateway uses
+`resumeService`. The deploy, the resumed mark, the digest record, and the
+revive have callers only in the fleet script. A tenant that the idle sweep or
+the fleet `suspend` command suspended comes back at the next MCP call of its
+organization, or with the fleet `resume` command.
 
 ### Selected C4 components: MCP gateway and audit relay in the Node server
 
@@ -764,7 +778,8 @@ draws it. PostgreSQL holds the `tenants` table; the customer Audit destination
 is the external Collector of the audit view. Thick arrows show composition;
 solid arrows show runtime calls. The Origin check of app, the bearer and access
 checks of MCPServer with WorkOS, and the SQL runtime of `sql` keep their views
-above and are not drawn here.
+above and are not drawn here; so does the resume call of `tenants` through the
+`render` adapter to the Render API, which the tenant registry view above draws.
 
 ```mermaid
 %%{init: {"flowchart": {"wrappingWidth": 150, "nodeSpacing": 20, "rankSpacing": 35}}}%%
@@ -802,9 +817,11 @@ server. The gateway reads the row of the organization through the port that
 `mcp` imports no registry module. For a live row, it signs a context with
 [`AccessContextSigner`](../src/accounts/identity/access-context-signer.ts),
 removes the hop-by-hop headers, the cookie, and each client context, and
-streams the answer of the tenant back; each other state gets `503`. It reads
-only the id, the method, and the tool name of the JSON-RPC messages that it
-forwards. The [relay route](../src/interfaces/web/internal/audit-relay-route.ts)
+streams the answer of the tenant back; each other state gets `503`. A
+`suspended` row and a `deploying` row that keeps its address, the row of a
+resume, get `Retry-After: 60`; the first of them sends the one resume (SO-10).
+It reads only the id, the method, and the tool name of the JSON-RPC messages
+that it forwards. The [relay route](../src/interfaces/web/internal/audit-relay-route.ts)
 answers only the host of `CONTROL_PLANE_INTERNAL_URL`; its
 [check](../src/interfaces/web/internal/audit-relay-check.ts) verifies the
 context with the public key of `GATEWAY_SIGNING_KEY` for the organization and
@@ -1197,9 +1214,10 @@ of every hosted store. App composes the tenant registry on that runtime. With
 `MCP_TENANTS_ENABLED=true`, app also starts the provisioner loop of tenants,
 which creates the tenant services through the Render adapter of render, and the
 tenant sweeps, which read the organizations through the WorkOS inventory of
-workos; the MCP gateway reads the row of the organization, requests a tenant,
-sends the one resume call for a suspended one, which fails until SO-10 connects
-it, and records activity through a port that app composes
+workos and suspend the idle free tenants through the same adapter; the MCP
+gateway reads the row of the organization, requests a tenant, sends the one
+resume call for a suspended one through the Render adapter, and records
+activity through a port that app composes
 on the registry; it forwards the request to the tenant server, and the relay
 route of web takes the audit relay of that tenant. Signup and the workspace
 status route of web use the same registry rules through ports that app
@@ -1335,13 +1353,13 @@ sequenceDiagram
         Relay->>Relay: Internal host, context, organization, user, repeat
         Relay->>Audit: Checked tool completion, one time
       end
-    else Suspended row
-      Gateway->>Registry: suspended to deploying, then one resume call
+    else Suspended row, or a deploying row that keeps its address after a resume
+      Gateway->>Registry: A suspended row only: suspended to deploying, then one resume call to Render
       Gateway-->>Client: 503, Retry-After 60
     else No row
       Gateway->>Registry: Tenant request inside the cap
       Gateway-->>Client: 503, Retry-After 15, or the capacity message
-    else Requested, creating, deploying, failed, deleted, or no usable copy
+    else Requested, creating, a first deploy, failed, deleted, or no usable copy
       Gateway-->>Client: 503 with the words of the state
     end
   end
@@ -1356,7 +1374,8 @@ the operator report. The [gateway](../src/interfaces/mcp/mcp-gateway.ts), its
 [answer stream](../src/interfaces/mcp/mcp-gateway-answer-stream.ts), the
 [registry rules](../src/tenancy/tenants/tenant-resumes.ts), and the
 [relay route](../src/interfaces/web/internal/audit-relay-route.ts) provide the
-contracts.
+contracts. The [resume of a suspended tenant](#scenario-resume-of-a-suspended-tenant)
+shows the resume until the tenant is live.
 
 ### Scenario: free signup and the workspace setup state
 
@@ -1689,7 +1708,9 @@ A claim without a row waits 5 s. A create that Render limits waits for
 `Retry-After`, at most one hour, and a create without a clear answer waits 30 s;
 the next attempt searches by name again, so a lost answer never makes a second
 service, and a row has at most three attempts. A `deploying` row after a resume
-skips the search and the create. A stop leaves a `creating` or `deploying` row
+skips the search and the create, and its claim comes 15 s after the resume
+mark, when the newest deploy is the deploy of the resume
+([resume of a suspended tenant](#scenario-resume-of-a-suspended-tenant)). A stop leaves a `creating` or `deploying` row
 for the next start, which searches by name or reads the newest deploy again.
 An unreadable registry or a failed record logs one error and waits 60 s.
 
@@ -1713,7 +1734,7 @@ sequenceDiagram
   participant WorkOS as WorkOS API
   participant API as Render API
   App->>Sweep: Start the sweeps
-  Note over Sweep,Store: Monday tick: the organization sweep, then the fleet summary
+  Note over Sweep,Store: Monday tick: the organization sweep, then the idle sweep and the fleet summary
   Sweep->>Store: Read every row
   Sweep->>Inv: List every organization
   Inv->>WorkOS: GET /organizations, page after page
@@ -1749,8 +1770,103 @@ decides; an organization that the read still finds keeps its tenant. A failed
 read keeps the tenant until the next sweep. A failed platform delete changes no
 row and gives one `Tenant removal failed:` line; a row that another writer
 moved, also a replacement with a new service in the same state, is left for the
-next sweep. The fleet summary of the same tick then
-writes its line; on the other days, the tick runs the summary only.
+next sweep. The idle sweep and the fleet summary of the same tick then run; on
+the other days, the tick runs those two only.
+
+### Scenario: daily idle sweep
+
+Scope: the idle sweep of the daily tick of the tenant sweeps (SO-10), after the
+organization sweep of a Monday and before the fleet summary, on the hosted
+control plane with `MCP_TENANTS_ENABLED=true`. The SQL adapter participant is
+the fleet store of tenants on the shared runtime, and the platform is the
+Render adapter of render with its write guard.
+
+```mermaid
+%%{init: {"sequence": {"wrap": true, "actorMargin": 40, "width": 150}}}%%
+sequenceDiagram
+  participant Sweep as tenants / idle sweep
+  participant Store as tenants / SQL adapter
+  participant Render as render / adapter
+  participant API as Render API
+  Note over Sweep,Store: The daily tick of the sweeps
+  Sweep->>Store: Live free rows without a call for the idle days
+  break The registry cannot be read
+    Note over Sweep,Store: One stop line, and nothing is suspended
+  end
+  loop Each idle row
+    Sweep->>Render: Suspend the service of the row
+    Render->>API: POST /services/{id}/suspend, one time
+    alt Render took the suspend
+      Sweep->>Store: live to suspended, if state and service are as read
+      Note over Sweep,Store: One Tenant suspension record line
+    else Refused, 429, gone, or no clear answer
+      Note over Sweep,Store: One Tenant suspension failed line, and the row stays live
+    end
+  end
+  Note over Sweep,Store: One Idle sweep line with the counts
+```
+
+A team row, with a plan other than `TENANT_PLAN_FREE`, is never read, and a
+row that is not `live` is never suspended again. The gateway writes the last
+use at most once a minute, so the period is exact to the minute. A row that
+another writer changed after the read, for example a delete, stays as that
+writer left it. When the platform took the suspend but the registry did not
+take the mark, the failed line says so; the fleet `suspend` command repairs
+the row before the next call meets the stopped service. The fleet summary of
+the same tick then counts the suspended rows at no cost.
+
+### Scenario: resume of a suspended tenant
+
+Scope: the first MCP calls of a suspended tenant on the hosted control plane
+with `MCP_TENANTS_ENABLED=true` (SO-10), after the checks of today. The
+registry participant is the registry port and the stores of tenants on the
+shared runtime; the gateway reads the row from its lookup copy, which refreshes
+every 10 s. The platform is the Render adapter of render.
+
+```mermaid
+%%{init: {"sequence": {"wrap": true, "actorMargin": 24, "width": 130}}}%%
+sequenceDiagram
+  actor Client as MCP client
+  participant Gateway as mcp / gateway
+  participant Registry as tenants / registry
+  participant Prov as tenants / provisioner
+  participant Render as render / adapter
+  participant API as Render API
+  Client->>Gateway: Call of the organization of a suspended row
+  Gateway->>Registry: suspended to deploying, and only the call that moves the row resumes
+  Registry->>Render: Resume the service of the mark
+  Render->>API: POST /services/{id}/resume, sent one time
+  alt Render did not take the resume, also a 429
+    Registry->>Registry: deploying back to suspended, on the service of the mark
+    Note over Gateway,Registry: The refusal line is an operator report, and the next call tries again
+  end
+  Gateway-->>Client: 503, Retry-After 60
+  Client->>Gateway: Calls while the row is deploying with its address
+  Gateway-->>Client: 503, Retry-After 60
+  Note over Registry,Prov: 15 s after the resume mark, the claim takes the deploying row
+  loop Every 5 s, at most 15 minutes
+    Prov->>Render: Read the newest deploy, now the deploy of the resume
+    Render->>API: GET /services/{id}/deploys
+  end
+  Prov->>Registry: deploying to live, on the service of the work
+  Client->>Gateway: A call after the next refresh of the copy
+  Gateway-->>Client: The answer of the live tenant
+```
+
+Render made the deploy of a resume 1.8 to 2.0 s after the call and set it live
+12 to 29 s after the call (records SO-01c and SO-09). Until then, the newest
+deploy of the service is the live deploy from before the suspend, so the claim
+waits 15 s after the mark instead of a deploy identity, which the answer of a
+resume does not give. A failed deploy of the resume makes the row `failed`
+with one operator report, as a failed first deploy does. The resume call runs
+to its end also when its request or the control plane stops; the adapter
+bounds it to 30 s. The fleet `resume` command takes the same way without a
+call, and the provisioner or the command records `live`, whichever comes first.
+While the row is `suspended`, the workspace status of web answers `ready` true
+with the notice of the pause, with the days of `FREE_TENANT_IDLE_DAYS` that app
+gives it, so Connect in the portal shows the notice above the connection guide;
+while the resume deploys, the row is `deploying`, and Connect shows the setup
+words of the scenario "free signup and the workspace setup state".
 
 ## Deployment view
 
@@ -1887,8 +2003,9 @@ writes its system log only to standard error, which Render keeps for 7 days on
 the Hobby plan. So its diagram draws no export: the owner sets the settings,
 with the Axiom dataset `system-log`, at step 6 of the SO-12 order at the latest.
 
-The tenant sweeps of SO-09 run inside the Node server process of the control
-plane, only with the switch on, so the recorded target runs none. The fleet
+The tenant sweeps of SO-09, with the idle sweep of SO-10, run inside the Node
+server process of the control plane, only with the switch on, so the recorded
+target runs none. The fleet
 script runs on the machine of the operator, with the fleet key of the owner's
 Render user and the registry connection that the operator gives it. Neither
 adds a deployment unit; the
@@ -1919,9 +2036,9 @@ surface and the narrower file-context restrictions.
 | `workos` — [`src/accounts/providers/workos/`](../src/accounts/providers/workos/) | Hosted token/access verification, sessions, organization operations, signup/onboarding, settings, cookies, and signup-document validation. `WorkOSTokenVerifier` is the Connect token check alone, for a tenant. The [organization inventory](../src/accounts/providers/workos/workos-organization-inventory.ts) gives the sweeps every organization, the read by ID, and the default-role memberships, from complete pages or not at all. | App constructs provider/SDK objects. Web uses neutral supplied session, signup, and account roles; its WorkOS auth area still uses provider cookie and document-validation helpers. The inventory imports only the contract types of tenants. |
 | `better-auth` — [`src/accounts/providers/better-auth/`](../src/accounts/providers/better-auth/) | Local authentication, access resolution, user/client administration, installation storage, data-directory lock, and cleanup. | Provider, runtime-opening, and administration-opening modules for app; storage and lock mechanics remain private. |
 | `mcp` — [`src/interfaces/mcp/`](../src/interfaces/mcp/) | Adapt protocol requests to trusted access contexts and supplied tool operations. Own schemas, metadata, protocol errors, request lifetimes, and completion presentation. A request can carry its own scope: the access resolver and the tool server of an admitted tenant request. With a forward step, MCPServer gives each admitted request to the MCP gateway, which forwards it to the tenant of the organization, answers the other states of the registry, and lets 5 searches run at a time across tenants. | Server/tool composition modules, protected-resource endpoint, and client-visible schema modules. SDK adaptation stays inside this owner. |
-| `web` — [`src/interfaces/web/`](../src/interfaces/web/) | Account/admin/organization-selection routes, portal access, the workspace status route `GET /workspace/status` with its words and its one report of a failed setup, sign-in/out, signup with its free-tenant cap and tenant request through ports of app, consent, forms, pages, escaping, and browser request protection; the relay route `/internal/audit` of the private network. `account/`, `auth/`, and `internal/` are private areas of this one owner. | Route constructors for app; shared account-form, page-html, and html-escape modules. Provider-specific browser adapters have narrower access than the whole owner. |
+| `web` — [`src/interfaces/web/`](../src/interfaces/web/) | Account/admin/organization-selection routes, portal access, the workspace status route `GET /workspace/status` with its words, the notice of a paused workspace, and its one report of a failed setup, sign-in/out, signup with its free-tenant cap and tenant request through ports of app, consent, forms, pages, escaping, and browser request protection; the relay route `/internal/audit` of the private network. `account/`, `auth/`, and `internal/` are private areas of this one owner. | Route constructors for app; shared account-form, page-html, and html-escape modules. Provider-specific browser adapters have narrower access than the whole owner. |
 | `cli` — [`src/interfaces/cli/`](../src/interfaces/cli/) | Parse local user/client commands, use supplied administration and hidden-input roles, format output and exit status. | [Local command](../src/interfaces/cli/local-auth-command.ts). App opens and closes administration/input resources. |
-| `user-portal` — [`src/interfaces/user-portal/`](../src/interfaces/user-portal/) | Browser portal behavior, connection instructions, the workspace setup state with its meta refresh, styles, and static assets; Vite build configuration and declarations. | Browser HTTP interactions and rendered output. Vite runs in Node; browser modules cannot inherit its server/build access. |
+| `user-portal` — [`src/interfaces/user-portal/`](../src/interfaces/user-portal/) | Browser portal behavior, connection instructions, the workspace setup state with its meta refresh, the notice of a paused workspace above the guide, styles, and static assets; Vite build configuration and declarations. | Browser HTTP interactions and rendered output. Vite runs in Node; browser modules cannot inherit its server/build access. |
 | `execution` — [`src/pipelines/execution/`](../src/pipelines/execution/) | Operation IDs/context, outgoing/incoming step roles, bounded best-effort records, and pass-through request observation. | Execution-context, pipeline-step, and step-record modules. App constructs the observer. |
 | `page-fetch` — [`src/pipelines/page-fetch/`](../src/pipelines/page-fetch/) | Check product permission and URL; run outgoing work, fetch, and incoming work; preserve cancellation, withholding, and safe failures. | [Fetch operation](../src/pipelines/page-fetch/fetch-page.ts), URL validation, and failure modules. Step executors remain private. |
 | `search` — [`src/pipelines/search/`](../src/pipelines/search/) | Check permission/query, use a supplied search engine, process its page, and preserve cancellation, no-results, withholding, and safe failures. | Search-pipeline, search-query, and search-failure modules; private step executors and cancellation helper. |
@@ -1933,7 +2050,7 @@ surface and the narrower file-context restrictions.
 | `http` — [`src/runtime/http/`](../src/runtime/http/) | Node listener, HTTP-to-Fetch exchange, trusted client address, request cancellation, connection tracking, and listener drain. | Server for app; client-address and request-cancellation modules for other consumers. Exchange mechanics remain private. |
 | `config` — [`src/runtime/config/`](../src/runtime/config/) | Validate deployment/listen settings, `THERMUS_ROLE` and the tenant settings with the refusal of control-plane secrets, optional hosted logging storage settings, the optional system log export settings of the control plane, the hosted operation capacity, the switch `MCP_TENANTS_ENABLED`, and, with it on, the free-tenant cap, the provisioning settings, the hour of the tenant sweeps, and the gateway settings with the check that `GATEWAY_PUBLIC_KEY` holds the public key of `GATEWAY_SIGNING_KEY`, and read trusted ad rules. Provider settings stay with their provider; a tenant has no provider settings. | Deployment-config and ad-rules-file modules; app selects the logging-storage settings reader, the system-log-export settings reader, the operation-capacity reader, the switch and provisioning-settings reader, the free-tenant-limit reader, and the gateway-settings reader. |
 | `sql` — [`src/runtime/sql/`](../src/runtime/sql/) | Own the one bounded SQL runtime of the hosted stores: the `pg` pool with verified TLS, admission of active and pending work, acquisition, operation and statement deadlines, late-work accounting, and bounded close. The only owner that imports `pg`. | [Bounded SQL runtime](../src/runtime/sql/bounded-sql-runtime.ts) for the stores; app opens it and owns its lifetime. |
-| `tenants` — [`src/tenancy/tenants/`](../src/tenancy/tenants/) | Own the tenant registry of the control plane: the tenant request inside the free-tenant cap and the revive of a deleted row, the in-memory route lookup with its refresh bounds, the provisioner state machine with its bounds, the resume of a suspended tenant and the activity write of the gateway, the fleet statements, the removal of a tenant, and the deploy wait of the fleet writes, the tenant sweeps (the weekly organization sweep and the daily fleet summary with its cost table), and the SQL adapters of the `tenants` table. | [Tenant platform](../src/tenancy/tenants/tenant-platform.ts), the contract that render implements, and [organization inventory](../src/tenancy/tenants/organization-inventory.ts), the contract that workos implements; app composes the request, the lookup, the provisioner, the resume, the activity, the sweeps, and the adapters, and gives the gateway a port; the fleet script composes the fleet parts. Signup uses the row counts of the lookup copy and the request, and the workspace status the gateway port, through ports that app composes. |
+| `tenants` — [`src/tenancy/tenants/`](../src/tenancy/tenants/) | Own the tenant registry of the control plane: the tenant request inside the free-tenant cap and the revive of a deleted row, the in-memory route lookup with its refresh bounds, the provisioner state machine with its bounds, the resume of a suspended tenant and the activity write of the gateway, with the resume operation on the platform, the fleet statements, the removal of a tenant, and the deploy wait of the fleet writes, the tenant sweeps (the weekly organization sweep, the daily idle sweep of the free tenants, and the daily fleet summary with its cost table), and the SQL adapters of the `tenants` table. | [Tenant platform](../src/tenancy/tenants/tenant-platform.ts), the contract that render implements, and [organization inventory](../src/tenancy/tenants/organization-inventory.ts), the contract that workos implements; app composes the request, the lookup, the provisioner, the resume with its operation on the Render adapter of the sweeps, the activity, the sweeps, and the adapters, and gives the gateway a port; the fleet script composes the fleet parts. Signup uses the row counts of the lookup copy and the request, and the workspace status the gateway port, through ports that app composes. |
 | `render` — [`src/tenancy/providers/render/`](../src/tenancy/providers/render/) | The Render API adapter of the tenant platform: the search by name, the create of an image-backed private service, the newest deploy, the internal address, the delete, the deploy of an image by digest, the suspend, the resume, and the reads of the memory metrics and the restart events, with the retry bounds, the count of the create limit, and the write guard. It holds the Render API key. | No public module; app composes it with the write guard of the registry. It imports only the contract types of tenants. Another platform would be a sibling owner under `src/tenancy/providers/` behind the same contract; the soft spots below name what moves with it. |
 
 ## Behavior and resource ownership
@@ -2027,7 +2144,10 @@ field, and no log line holds it.
 The tenant sweeps have the same lifetime: app starts them with the provisioner
 when the switch is on, with their own instance of the Render adapter and the
 WorkOS client of the control plane, and the storage close stops both before the
-SQL runtime closes. The runner holds no state between ticks except the time of
+SQL runtime closes. The resume operation of the gateway shares the instance of
+the sweeps; a resume call runs to its end also when its request or the control
+plane stops, within the 30 s bound of the adapter, because the row already
+shows `deploying`. The runner holds no state between ticks except the time of
 the last tick; each step reads the registry again. The steps of a tick run one
 after the other, and a step that fails reports one line without stopping the
 next one. The fleet script holds one SQL runtime, one adapter, and one WorkOS
@@ -2134,8 +2254,7 @@ The following limits affect architectural decisions today:
   contract, cookie, Origin/CSRF, and return-path protection; a common provider
   interface alone does not cover this work.
 - The gateway and the relay route exist behind `MCP_TENANTS_ENABLED`, which is
-  off by default, so no deployment runs a tenant yet. The resume operation
-  fails until SO-10 connects it to the Render API. The relay is best effort like
+  off by default, so no deployment runs a tenant yet. The relay is best effort like
   the capture of today: a refused, failed, slow, or excess relay loses its
   event, and during a rotation of the signing key the route refuses a relay of
   the old key. Traffic on the private network is plain HTTP, and a context can
@@ -2147,9 +2266,19 @@ The following limits affect architectural decisions today:
   plan keeps one instance (section 7).
 - After the first answer byte, the gateway can only end the answer stream of a
   tenant that fails; a client then sees no result and waits for its own request
-  timeout. A failed resume moves the row back to `suspended` only from
-  `deploying`, so a provisioner that records `live` in between leaves a live row
-  for a suspended service, until the sweep of SO-10.
+  timeout.
+- The claim of a resumed `deploying` row waits a time, 15 s after the resume
+  mark, not a deploy identity: the answer of a resume names no deploy. Render
+  made the deploy of a resume about 2 s after the call (SO-01c, SO-09). A resume
+  call that takes longer than 15 s, up to the 30 s bound of the adapter, or a
+  Render that makes the deploy later, can let the provisioner record `live` on
+  the deploy from before the suspend; a failed resume then finds a `live` row and
+  moves nothing. Such a row leads the calls to a stopped service, which gives
+  the restart answer and reports, until its idle sweep suspends it again or the
+  operator suspends and resumes it with the fleet script.
+- A resume that Render refuses again and again, for example because the
+  service no longer exists, gives one operator report at each call, and the row
+  stays `suspended`; the operator repairs it with the fleet script.
 - The system log export of the control plane is best effort: a full queue, a
   failed batch, and a stop after its bound of 5 s lose records; stderr on
   Render keeps each line for 7 days. It carries every line of the system log
@@ -2224,14 +2353,19 @@ The following limits affect architectural decisions today:
   restarts that Render reports, which SO-01e showed to be incomplete, and its
   memory points are 10 minutes apart, so a short peak can show lower. The cost
   counts each plan other than `TENANT_PLAN_FREE` as the team plan of D-12 until
-  Slice 3 names it.
+  Slice 3 names it. The idle sweep decides free and team by the wanted plan of
+  the row in the same way, so Slice 3 keeps a team tenant out by its plan. A
+  tenant that became idle just after a tick stays live until the next tick, up
+  to a day longer than `FREE_TENANT_IDLE_DAYS`. A call that arrives between the
+  idle read and the suspend reaches a service that then stops: its client gets
+  the restart answer, and its next call resumes the tenant.
 - A failed API deploy with `imageUrl` still sets the image setting of the
   service (SO-09 record): after a stopped upgrade, a resume of that tenant would
   deploy the failed digest until the fleet deploys its recorded digest again.
   The fleet script waits for the deploy that the answer of a write names, or,
   after a resume, whose answer names none, for the first new deploy; the
-  provisioner watch of a resumed `deploying` row reads only the newest deploy,
-  which right after a resume can still be the deploy from before the suspend.
+  provisioner claims a resumed `deploying` row 15 s after its resume mark and
+  then reads the newest deploy (SO-10, the soft spot of the resume above).
 - `deleted` rows stay in the registry, because the runtime role has no `DELETE`
   grant; each fleet read and each sweep reads them too. Their count grows with
   each removed organization.

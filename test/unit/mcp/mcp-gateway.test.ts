@@ -1,18 +1,20 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import type { GatewayRoute, GatewayTenantRequest } from '../../../src/interfaces/mcp/mcp-gateway-tenants.ts';
-import { fetchCall, gatewayOf, organizationId, post, refusalOf } from './fixtures/gateway-harness.ts';
+import { fetchCall, gatewayOf, internalUrl, organizationId, post, refusalOf } from './fixtures/gateway-harness.ts';
 
 // The answers of the gateway for each row of the registry and each tenant request (SO-05): the status, the
 // Retry-After, the words, the resume, and the one log line of a refusal.
 
 const starting = 'Your workspace is not ready yet. Try again in 15 seconds.';
 const unavailable = 'The service is temporarily unavailable. Try again in 15 seconds.';
+const resuming = 'Your workspace is restarting after a pause. Try again in a minute.';
 const stateAnswers: ReadonlyArray<readonly [string, GatewayRoute, number, string | null, string]> = [
   ['requested', { status: 'found', state: 'requested', internalUrl: null }, 503, '15', starting],
   ['creating', { status: 'found', state: 'creating', internalUrl: null }, 503, '15', starting],
   ['deploying', { status: 'found', state: 'deploying', internalUrl: null }, 503, '15', starting],
-  ['suspended', { status: 'found', state: 'suspended', internalUrl: null }, 503, '60', 'Your workspace is restarting after a pause. Try again in a minute.'],
+  ['a deploying row that keeps the address of its last live deploy, as after a resume', { status: 'found', state: 'deploying', internalUrl }, 503, '60', resuming],
+  ['suspended', { status: 'found', state: 'suspended', internalUrl: null }, 503, '60', resuming],
   ['failed', { status: 'found', state: 'failed', internalUrl: null }, 503, null, 'Workspace setup failed. We have been notified and will fix it.'],
   ['deleted', { status: 'found', state: 'deleted', internalUrl: null }, 503, null, 'Your workspace is not available. Contact Thermus support.'],
   ['a live row without an address', { status: 'found', state: 'live', internalUrl: null }, 503, '15', unavailable],
@@ -40,6 +42,24 @@ test('Given a suspended row, when calls arrive, then each asks the registry to r
 
   assert.deepEqual(answers.map((answer) => [answer.status, answer.headers.get('Retry-After')]), [[503, '60'], [503, '60']]);
   assert.deepEqual(registry.resumes, [organizationId, organizationId]);
+});
+
+test('Given a suspended row that resumes and then goes live, when a call arrives at each step, then the client gets 503 with Retry-After: 60 until the row is live, and then the call reaches the tenant', async (t) => {
+  const { forward, registry, calls, log } = gatewayOf(t, { status: 'found', state: 'suspended', internalUrl });
+
+  const atTheResume = await refusalOf(await forward(post(fetchCall)));
+  registry.route = { status: 'found', state: 'deploying', internalUrl };
+  const whileDeploying = await refusalOf(await forward(post(fetchCall)));
+  registry.route = { status: 'found', state: 'live', internalUrl };
+  const live = await forward(post(fetchCall));
+
+  for (const refusal of [atTheResume, whileDeploying]) {
+    assert.deepEqual(refusal, { status: 503, retryAfter: '60', body: { error: 'temporarily_unavailable', error_description: resuming } });
+  }
+  assert.deepEqual(registry.resumes, [organizationId]);
+  assert.equal(live.status, 200);
+  assert.deepEqual(calls.map((call) => call.url), [`${internalUrl}/mcp`]);
+  assert.match(log.lines[1] ?? '', /^INFO MCP gateway refusal: \{"organizationId":"org_A","reason":"resuming","state":"deploying"\}$/);
 });
 
 test('Given a resume that fails, when a call arrives, then the client gets 503 with Retry-After: 60 and the one log line is an operator report with the reason', async (t) => {

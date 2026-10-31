@@ -31,8 +31,17 @@ interface TenantsSettings {
 }
 
 /**
+ * The tenancy of the control plane that the gateway uses: the tenant registry of the hosted storage, and the resume
+ * operation on the tenant platform (SO-10).
+ */
+export interface GatewayTenancy {
+  readonly storage: Pick<HostedLoggingStorage, 'tenants'>;
+  readonly resume: TenantResume;
+}
+
+/**
  * The gateway of one start of the control plane: the cap of the tenant registry, read only with the switch on (else the
- * default of 25), the key check, and the gateway parts on the hosted storage, or none with the switch off.
+ * default of 25), the key check, and the gateway parts on the tenancy of the control plane, or none with the switch off.
  */
 export interface GatewayStart {
   readonly freeTenantLimit: number;
@@ -41,7 +50,7 @@ export interface GatewayStart {
    * key of GATEWAY_SIGNING_KEY. With the switch off, it checks nothing.
    */
   requireSigningKeyIn(gatewayPublicKey: string | undefined): void;
-  partsOn(storage: Pick<HostedLoggingStorage, 'tenants'> | undefined): GatewayParts | undefined;
+  partsOn(tenancy: GatewayTenancy | undefined): GatewayParts | undefined;
 }
 
 /** The parts that the gateway gives the hosted composition: the forward step of MCPServer and the internal routes. */
@@ -65,7 +74,7 @@ export function gatewayStartOf(environment: Readonly<Record<string, string | und
   return {
     freeTenantLimit: settings.freeTenantLimit,
     requireSigningKeyIn: (gatewayPublicKey) => { requireSigningKeyIn(settings.gateway, gatewayPublicKey ?? ''); },
-    partsOn: (storage) => gatewayPartsOf(settings.gateway, storage),
+    partsOn: (tenancy) => gatewayPartsOf(settings.gateway, tenancy),
   };
 }
 
@@ -84,20 +93,16 @@ export function gatewayRoutesOf(parts: GatewayParts, composition: { readonly aut
 }
 
 /**
- * The resume operation until SO-10 connects it to the Render API: each call fails with one log line, and the row goes
- * back to suspended. No tenant is suspended before the idle sweep of SO-10 runs.
+ * The gateway parts of the production control plane: the gateway settings, the registry of the hosted storage, and the
+ * resume operation on the tenant platform, so the first call of a suspended tenant resumes it (SO-10).
  */
-const unconnectedResume: TenantResume = {
-  resume: async () => ({ status: 'failed', reason: 'The resume operation is not connected yet (SO-10).' }),
-};
-
-/** The gateway parts of the production control plane: the gateway settings and the registry of the hosted storage. */
-function gatewayPartsOf(settings: GatewaySettings, storage: Pick<HostedLoggingStorage, 'tenants'> | undefined, resume: TenantResume = unconnectedResume): GatewayParts {
-  if (storage?.tenants === undefined) {
+function gatewayPartsOf(settings: GatewaySettings, tenancy: GatewayTenancy | undefined): GatewayParts {
+  const tenants = tenancy?.storage.tenants;
+  if (tenancy === undefined || tenants === undefined) {
     throw new DeploymentConfigError('MCP_TENANTS_ENABLED=true needs the tenant registry: DATABASE_URL and LOGGING_DESTINATION_ENCRYPTION_KEY must be valid.');
   }
-  const { lookup, requests, gateway } = storage.tenants;
-  return { settings, tenants: gatewayTenantsOf({ lookup, requests, resumes: new TenantResumes(gateway, resume), activity: new TenantActivity(gateway) }) };
+  const { lookup, requests, gateway } = tenants;
+  return { settings, tenants: gatewayTenantsOf({ lookup, requests, resumes: new TenantResumes(gateway, tenancy.resume), activity: new TenantActivity(gateway) }) };
 }
 
 /** The registry port of the gateway, from the lookup copy, the tenant request, the resume, and the activity write. */

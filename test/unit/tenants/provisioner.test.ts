@@ -22,10 +22,11 @@ const tenant = {
 const live = { status: 'found', deploy: { id: 'dep-1', progress: 'live', status: 'live', imageDigest: `sha256:${'d'.repeat(64)}` } } as const;
 const inProgress = { status: 'found', deploy: { id: 'dep-1', progress: 'pending', status: 'update_in_progress' } } as const;
 
-function provisionerWith(options: { readonly namePrefix?: string } = {}) {
+function provisionerWith(options: { readonly namePrefix?: string; readonly storeClock?: boolean } = {}) {
   const platform = new TenantPlatformFake();
-  const store = new TenantProvisioningStoreFake();
   const clock = new VirtualClock();
+  // With the clock, the registry fake leaves the row of a resume for 15 s after its change, as the claim of the SQL adapter does.
+  const store = new TenantProvisioningStoreFake(options.storeClock === true ? clock.now : undefined);
   const log = new OperatorLogSpy();
   const provisioner = new TenantProvisioner({ platform, store, clock, log, tenant, namePrefix: options.namePrefix ?? 'thermus-tenant-', freePlan: '0.5c-512mb' });
   const runUntil = async (condition: () => boolean): Promise<void> => {
@@ -244,6 +245,33 @@ test('Given a deploying row after a resume, when the loop claims it, then it wat
 
   assert.deepEqual(platform.calls, ['deploy srv-resumed', 'deploy srv-resumed', 'address srv-resumed']);
   assert.match(log.lines[0] ?? '', /"state":"deploying".*"resumed":true/);
+});
+
+test('Given a deploying row of a resume, when the loop runs, then it claims the row 15 s after the resume mark, so its first read of the newest deploy comes after Render made the deploy of the resume', async () => {
+  const { platform, store, clock, runUntil, stateOf } = provisionerWith({ storeClock: true });
+  const readsAt: number[] = [];
+  platform.onCall = (call) => { if (call.startsWith('deploy ')) readsAt.push(clock.now()); };
+  store.put({ organizationId: organization, state: 'deploying', serviceName: name, serviceId: 'srv-resumed', internalUrl: 'http://slug-of-srv-resumed:8080' });
+
+  await runUntil(() => stateOf(organization)() === 'live');
+
+  assert.ok((readsAt[0] ?? 0) >= 15_000, `The first read of the newest deploy came at ${readsAt[0]} ms`);
+  assert.deepEqual(clock.waits.slice(0, 3), [5_000, 5_000, 5_000], 'The loop finds no other row and waits until the resume is 15 s old');
+});
+
+test('Given a deploy that fails while another writer gives the row a new service, when the loop records the failure, then the record names the service of the work, so the row stays with the new service', async () => {
+  const { platform, store, log, runUntil, errors } = provisionerWith();
+  platform.deploys.push({ status: 'found', deploy: { id: 'dep-1', progress: 'failed', status: 'update_failed' } });
+  platform.onCall = (call) => {
+    if (call === 'deploy srv-resumed') store.put({ organizationId: organization, state: 'deploying', serviceName: name, serviceId: 'srv-other' });
+  };
+  store.put({ organizationId: organization, state: 'deploying', serviceName: name, serviceId: 'srv-resumed' });
+
+  await runUntil(() => log.lines.some((line) => line.includes('leaves')));
+
+  assert.notEqual(store.row(organization).failureReason, 'The deploy dep-1 of srv-resumed ended as update_failed');
+  assert.equal(store.row(organization).serviceId, 'srv-other');
+  assert.deepEqual(errors().filter((line) => line.includes('Tenant provisioning failed')), []);
 });
 
 test('Given a deploying row whose service another writer replaces while the loop watches, when the old deploy is live, then the loop leaves the row with the new service', async () => {

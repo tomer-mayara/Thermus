@@ -1291,7 +1291,8 @@ of the organization from the in-memory copy of the registry (SO-04):
 | Row | Answer |
 | --- | --- |
 | `live` | The forward below, to `internal_url` with the signed context. |
-| `requested`, `creating`, `deploying` | `503`, `Retry-After: 15`, "Your workspace is not ready yet. Try again in 15 seconds." |
+| `requested`, `creating`, and `deploying` without an `internal_url` | `503`, `Retry-After: 15`, "Your workspace is not ready yet. Try again in 15 seconds." |
+| `deploying` with an `internal_url` | The row of a resume: only a live record gives a row its address. `503`, `Retry-After: 60`, "Your workspace is restarting after a pause. Try again in a minute." |
 | `suspended` | The row moves to `deploying`, one resume call goes through the resume operation, then `503`, `Retry-After: 60`, "Your workspace is restarting after a pause. Try again in a minute." |
 | `failed` | `503`, "Workspace setup failed. We have been notified and will fix it.", and one operator report for each organization. |
 | `deleted` | `503`, "Your workspace is not available. Contact Thermus support." |
@@ -1304,17 +1305,21 @@ organization, the reason, and the state; a refusal that reports to the
 operator is an `ERROR` line. No refusal writes an audit event, because no tool
 ran.
 
-The resume follows answer 3 of 27 October 2026. Only the call that moves the
-row from `suspended` to `deploying` sends the resume call, so concurrent calls,
-also of another process, send one. A failed resume sets the row back to
-`suspended` and makes the refusal line an `ERROR` line with the reason, so the
-next call tries again. The provisioner of SO-06 watches the newest deploy of a
-`deploying` row and records `live`. Until SO-10 connects the resume operation
-to the Render API, each resume fails with "The resume operation is not
-connected yet (SO-10).". Since SO-09 the operator can suspend a tenant with the
-fleet script; until SO-10, only the `resume` command of the fleet script brings
-it back, and each MCP call of the organization gets the `503` above and writes
-one operator report (owner decision of 31 October 2026).
+The resume follows answers 3 and 4 of 27 October 2026. Only the call that
+moves the row from `suspended` to `deploying` sends the resume call, so
+concurrent calls, also of another process, send one. App connects the resume
+operation to `resumeService` of the tenant platform, the Render API resume
+(SO-10). A failed resume, also a `429`, sets the row back to `suspended` on the
+service of the mark and makes the refusal line an `ERROR` line with the reason,
+so the next call tries again. The provisioner of SO-06 watches the newest
+deploy of a `deploying` row and records `live`. Right after a resume, the newest
+deploy of the service is still the live deploy from before the suspend, and
+Render makes the deploy of the resume about 2 s after the call (records SO-01c
+and SO-09), so the claim of the provisioner takes a `deploying` row with an
+address only 15 s after its resume mark. A suspended tenant thus answers
+`Retry-After: 60` for about a minute and then serves the next call. The idle
+sweep of SO-10 suspends a free tenant after `FREE_TENANT_IDLE_DAYS` without a
+call, and the fleet script can suspend a tenant too; each comes back this way.
 
 **The forward.** The gateway is a light streaming proxy (record SO-01d):
 
@@ -1487,26 +1492,31 @@ place frees. The answer is `200` JSON with `Cache-Control: no-store`:
 | State | Answer |
 | --- | --- |
 | `requested`, `creating`, `deploying` | `{"state":"<state>","ready":false,"message":"Setting up your workspace. This takes about two minutes."}` |
-| `live`, `suspended` | `{"state":"<state>","ready":true}` |
+| `live` | `{"state":"live","ready":true}` |
+| `suspended` | `{"state":"suspended","ready":true,"message":"Your workspace was paused after 14 days without use. It restarts on the next request, which can take about a minute."}`: the notice of the pause (SO-10, answer 3 of 27 October 2026), with the days of `FREE_TENANT_IDLE_DAYS`. |
 | `failed` | `ready` false with "Workspace setup failed. We have been notified and will fix it." The first read writes `Workspace setup failed: {"organizationId":"<id>"}` at the level ERROR; the next report of the organization comes after its row leaves `failed`. |
 | `deleted` | `ready` false with "Your workspace is not available. Contact Thermus support." |
 | No row at a full cap: `full` | `ready` false with "All free workspaces are in use. Try again later." |
 | No usable registry copy: `unavailable` | `ready` false with "The service is temporarily unavailable. Try again in 15 seconds." |
 
 The words are those of the gateway for the same states (answer 2 of
-27 October 2026), except the words of the setup. Web cannot import mcp, so the
-workspace status keeps the second copy. A suspended tenant shows its
-connection guide, because the gateway resumes it at the next MCP call. Until
-SO-10 connects the resume, only the `resume` command of the fleet script
-brings it back, as [the gateway](#mcp-gateway-and-audit-relay) says. SO-10
-adds the notice of the pause. With `MCP_TENANTS_ENABLED` off, the control
-plane serves the tools itself: the route answers `live` and reads no registry.
+27 October 2026), except the words of the setup and the notice of the pause.
+Web cannot import mcp, so the workspace status keeps the second copy. A
+suspended tenant shows its connection guide with the notice, because
+[the gateway](#mcp-gateway-and-audit-relay) resumes it at the next MCP call.
+App gives the workspace status the days of `FREE_TENANT_IDLE_DAYS`, 14 by
+default, so the notice stays true for another setting. While the resume
+deploys, the row is `deploying`, so the answer is the setup state for about a
+minute. With `MCP_TENANTS_ENABLED` off, the control plane serves the tools
+itself: the route answers `live` and reads no registry.
 
 **Portal.** The [portal](../user-portal.md#workspace-setup-state) reads the
 status after `portal/access`. While `ready` is false, it shows the words as a
 status region in place of the connection guide and adds a meta refresh of 5 s,
 so the browser reloads the page without a script timer (answer 3 of
-27 October 2026). The connection guide appears only when `ready` is true.
+27 October 2026). The connection guide appears only when `ready` is true. A
+ready answer with words, the notice of a pause, shows them above the guide,
+with no refresh.
 
 The tests: the acceptance specification of the
 [signup handoff and the status](../../test/acceptance/auth/hosted-signup-workspace.test.ts)

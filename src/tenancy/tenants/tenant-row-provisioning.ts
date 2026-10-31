@@ -26,11 +26,12 @@ export class RowProvisioning {
     const { row } = claim;
     this.records.claimed(row, claim.resumed);
     const service = await serviceOfRow(this.parts, row, signal);
-    if (service.status === 'failed') return this.records.failed(row, service.reason);
+    // Without a service, the row still has the service of its claim: none for a creating row.
+    if (service.status === 'failed') return this.records.failed(row, row.serviceId, service.reason);
     // A deploying row has its service in the registry already, so only a creating row records it.
     const stop = row.state === 'creating' ? await this.records.service(row, service.serviceId) : undefined;
     if (stop !== undefined) return stop;
     const watched = await watchDeploy(this.parts, service.serviceId, signal);
-    return watched.status === 'failed' ? this.records.failed(row, watched.reason) : this.records.live(row, service.serviceId, watched.live);
+    return watched.status === 'failed' ? this.records.failed(row, service.serviceId, watched.reason) : this.records.live(row, service.serviceId, watched.live);
   }
 }

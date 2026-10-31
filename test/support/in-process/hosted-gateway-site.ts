@@ -3,8 +3,8 @@ import type { TestContext } from 'node:test';
 import { setImmediate } from 'node:timers/promises';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/client';
 import type { Application } from '../../../src/app/application.ts';
-import { composeLoggingStorage } from '../../../src/app/logging-storage.ts';
-import { gatewayTenantsOf } from '../../../src/app/mcp-gateway-composition.ts';
+import { composeLoggingStorage, type HostedLoggingStorage } from '../../../src/app/logging-storage.ts';
+import { gatewayTenantsOf, type GatewayParts } from '../../../src/app/mcp-gateway-composition.ts';
 import { AuditLog, type AuditEvent } from '../../../src/logs/audit/audit-log.ts';
 import { startHttpServer } from '../../../src/runtime/http/server.ts';
 import { TenantActivity } from '../../../src/tenancy/tenants/tenant-activity.ts';
@@ -24,7 +24,7 @@ import { httpRefusal, mcpRequest, rpcResult, type McpRequestOptions } from '../d
 import type { McpProtocolEra } from '../drivers/mcp/mcp-protocol-eras.ts';
 import { SignedContextGateway, type ContextChanges } from '../drivers/mcp/signed-context-gateway.ts';
 import { hostedRootConfig } from '../fixtures/hosted-config.ts';
-import { gatewayKeyPairOf } from '../fixtures/hosted-tenant.ts';
+import { gatewayKeyPairOf, type GatewayKeyPair } from '../fixtures/hosted-tenant.ts';
 import { userGrant } from '../fixtures/hosted-roles.ts';
 import { composeApplicationWithWorkOSFake } from './workos-site.ts';
 
@@ -50,13 +50,54 @@ type PostOptions = Omit<McpRequestOptions, 'url'>;
 
 export type HostedGatewaySite = Awaited<ReturnType<typeof openHostedGatewaySite>>;
 
-// The control plane with the gateway of SO-05: the real hosted composition against the WorkOS fake, behind the real
-// HTTP server on a loopback port. The registry rules are the real ones (lookup copy, tenant request with the cap,
-// resume, and the activity write) over an in-memory registry with a clock of the test; the resume operation is a spy.
-// The tenant of organization A is a fake upstream at its internal address. The listener origin is also the internal
-// service host of the control plane, so the relay of the fake tenant reaches /internal/audit. Customer export runs the
-// production capture and dispatch with an export sender spy.
+/** What the tenancy of a gateway site composes on: the key pair of the gateway, the internal origin, the clock of the site, and its parts. */
+export interface SiteTenancyParts {
+  readonly keys: GatewayKeyPair;
+  readonly internalUrl: string;
+  readonly clock: () => number;
+  readonly world: WorkOSFake;
+  readonly storage: HostedLoggingStorage;
+  readonly log: OperatorLogSpy;
+}
+
+/** The gateway parts of a tenancy, none with the switch off, and the hosted storage that the close of the application closes. */
+export interface SiteTenancy {
+  readonly gateway: GatewayParts | undefined;
+  readonly storage: HostedLoggingStorage;
+}
+
+// The control plane with the gateway of SO-05 and the registry rules over an in-memory registry with a clock of the
+// test (lookup copy, tenant request with the cap, resume, and the activity write); the resume operation is a spy.
 export async function openHostedGatewaySite(t: TestContext, options: HostedGatewaySiteOptions = {}) {
+  const registry = new TenantRegistryFake();
+  const resume = new TenantResumeSpy();
+  const site = await serveHostedGatewaySite(t, ({ keys, internalUrl, clock, storage }) => ({
+    storage,
+    gateway: options.tenantsEnabled === false ? undefined : {
+      settings: { signingKey: keys.privateKey, verifyingKey: createPublicKey(keys.publicKeyPem), controlPlaneInternalUrl: internalUrl },
+      tenants: gatewayTenantsOf({
+        lookup: new TenantLookup(registry, clock), requests: new TenantRequests(registry, options.freeTenantLimit ?? 25),
+        resumes: new TenantResumes(registry, resume), activity: new TenantActivity(registry, clock),
+      }),
+    },
+  }));
+  return {
+    ...site, registry, resume,
+    // A second organization with a live fake tenant and a user with product access.
+    addTenant: async (organizationId: string) => {
+      const other = await TenantUpstreamFake.start(t, { publicKey: site.publicKey, organizationId });
+      registry.live(organizationId, other.origin);
+      return { tenant: other, token: site.tokenOf(otherUser, organizationId) };
+    },
+  };
+}
+
+// The control plane of the gateway sites: the real hosted composition against the WorkOS fake, behind the real HTTP
+// server on a loopback port, with the gateway parts that the tenancy of the site composes. The tenant of organization A
+// is a fake upstream. The listener origin is also the internal service host of the control plane, so the relay of the
+// fake tenant reaches /internal/audit. Customer export runs the production capture and dispatch with an export sender
+// spy.
+export async function serveHostedGatewaySite(t: TestContext, tenancyOf: (parts: SiteTenancyParts) => SiteTenancy | Promise<SiteTenancy>) {
   const config = hostedRootConfig;
   const world = await WorkOSFake.start(t, config.publicBaseUrl, [gatewayOrganization, otherGatewayOrganization]);
   world.users = [gatewayUser, otherUser];
@@ -67,28 +108,18 @@ export async function openHostedGatewaySite(t: TestContext, options: HostedGatew
   const keys = gatewayKeyPairOf();
   const publicKey = createPublicKey(keys.publicKeyPem);
   const tenant = await TenantUpstreamFake.start(t, { publicKey, organizationId: gatewayOrganization });
-  const registry = new TenantRegistryFake();
-  const resume = new TenantResumeSpy();
   let now = 0;
   const clock = (): number => now;
   const settings = new SnapshotSettingsStoreSpy();
   const sender = new AuditExportSenderSpy();
   t.after(() => sender.attempts.forEach((attempt) => attempt.complete()));
-  const storage = composeLoggingStorage({ store: settings, close: async () => { settings.close(); } }, Buffer.alloc(32, 7), sender);
+  const exportStorage = composeLoggingStorage({ store: settings, close: async () => { settings.close(); } }, Buffer.alloc(32, 7), sender);
   const log = new OperatorLogSpy();
   // The listener starts first, because its origin is the internal URL of the composition.
   const composed = Promise.withResolvers<Application>();
   const server = await startHttpServer(async (request) => (await composed.promise).handle(request), { listen: { host: '127.0.0.1', port: 0 }, publicBaseUrl: config.publicBaseUrl, logger: log });
   const internalUrl = server.url.origin;
-  const gateway = options.tenantsEnabled === false ? undefined : {
-    settings: { signingKey: keys.privateKey, verifyingKey: publicKey, controlPlaneInternalUrl: internalUrl },
-    tenants: gatewayTenantsOf({
-      lookup: new TenantLookup(registry, clock),
-      requests: new TenantRequests(registry, options.freeTenantLimit ?? 25),
-      resumes: new TenantResumes(registry, resume),
-      activity: new TenantActivity(registry, clock),
-    }),
-  };
+  const { gateway, storage } = await tenancyOf({ keys, internalUrl, clock, world, storage: exportStorage, log });
   const toolOperations = {
     fetch: async (url: string) => `Markdown of ${url} from the control plane`,
     search: async (query: string) => ({ status: 'released' as const, markdown: `Results for ${query} from the control plane` }),
@@ -106,16 +137,10 @@ export async function openHostedGatewaySite(t: TestContext, options: HostedGatew
   const post = (request: PostOptions): Promise<Response> => fetch(mcpRequest({ url: mcpUrl, ...request }));
 
   return {
-    config, world, tenant, registry, resume, sender, settings, log, authority, wire, tenantId,
+    config, world, tenant, publicKey, sender, settings, log, authority, wire, tenantId, tokenOf,
     token: tokenOf(gatewayUser, gatewayOrganization),
     advance: (milliseconds: number): void => { now += milliseconds; },
-    enableExport: (organizationId: string = gatewayOrganization) => storage.service.save(tenantId(organizationId), { expectedRevision: null, endpoint: 'https://collector.example/v1/logs', auth: 'none', token: '', enabled: true }),
-    // A second organization with a live fake tenant and a user with product access.
-    addTenant: async (organizationId: string) => {
-      const other = await TenantUpstreamFake.start(t, { publicKey, organizationId });
-      registry.live(organizationId, other.origin);
-      return { tenant: other, token: tokenOf(otherUser, organizationId) };
-    },
+    enableExport: (organizationId: string = gatewayOrganization) => exportStorage.service.save(tenantId(organizationId), { expectedRevision: null, endpoint: 'https://collector.example/v1/logs', auth: 'none', token: '', enabled: true }),
     // An SDK client of the public MCP URL. Its fetch records each exchange.
     connect: async (token: string, era: McpProtocolEra = '2026-07-28') => {
       const tap = async (input: string | URL | Request, init?: RequestInit): Promise<Response> => {

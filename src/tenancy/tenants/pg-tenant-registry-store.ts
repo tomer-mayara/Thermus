@@ -10,11 +10,12 @@ export const COUNT_ROWS = `SELECT state, count(*)::integer AS rows, bool_or(orga
 const INSERT_REQUESTED = "INSERT INTO thermus_admin.tenants (organization_id, state) VALUES ($1, 'requested')";
 const READ_ROUTES = 'SELECT organization_id, state, internal_url FROM thermus_admin.tenants';
 // Each gateway write names the state that it starts from, so concurrent calls, also of another process, move a row
-// one time. The activity write keeps the state and updated_at: it is not a change of the row.
+// one time; the restore also names the service of the mark. The activity write keeps the state and updated_at: it is
+// not a change of the row.
 const MARK_RESUMING = `UPDATE thermus_admin.tenants SET state = 'deploying', updated_at = now()
   WHERE organization_id = $1 AND state = 'suspended' AND render_service_id IS NOT NULL RETURNING render_service_id`;
 const RESTORE_SUSPENDED = `UPDATE thermus_admin.tenants SET state = 'suspended', updated_at = now()
-  WHERE organization_id = $1 AND state = 'deploying' RETURNING organization_id`;
+  WHERE organization_id = $1 AND state = 'deploying' AND render_service_id = $2 RETURNING organization_id`;
 const RECORD_ACTIVE = 'UPDATE thermus_admin.tenants SET last_active_at = now() WHERE organization_id = $1 RETURNING organization_id';
 
 export class PgTenantRegistryStore implements TenantRegistryStore, TenantGatewayStore {
@@ -49,16 +50,16 @@ export class PgTenantRegistryStore implements TenantRegistryStore, TenantGateway
     return typeof serviceId === 'string' ? { status: 'resuming', serviceId } : { status: 'moved' };
   }
 
-  restoreSuspended(organizationId: string): Promise<GatewayWrite> {
-    return this.write(RESTORE_SUSPENDED, organizationId);
+  restoreSuspended(organizationId: string, serviceId: string): Promise<GatewayWrite> {
+    return this.write(RESTORE_SUSPENDED, [organizationId, serviceId]);
   }
 
   recordActive(organizationId: string): Promise<GatewayWrite> {
-    return this.write(RECORD_ACTIVE, organizationId);
+    return this.write(RECORD_ACTIVE, [organizationId]);
   }
 
-  private async write(text: string, organizationId: string): Promise<GatewayWrite> {
-    const result = await this.runtime.run(async (session) => (await session.query(text, [organizationId], true)).length > 0);
+  private async write(text: string, values: readonly string[]): Promise<GatewayWrite> {
+    const result = await this.runtime.run(async (session) => (await session.query(text, [...values], true)).length > 0);
     if (result.status !== 'complete') return { status: 'unavailable' };
     return { status: result.value ? 'recorded' : 'moved' };
   }

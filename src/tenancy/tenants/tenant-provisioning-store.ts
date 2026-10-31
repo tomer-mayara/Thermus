@@ -39,8 +39,11 @@ export interface TenantProvisioningStore {
    * A row that another writer gave a new service, such as after a delete, a revive, and a new provision, is moved.
    */
   recordLive(organizationId: string, serviceId: string, live: LiveRecord): Promise<RecordResult>;
-  /** creating or deploying to failed, with the reason. */
-  recordFailed(organizationId: string, reason: string): Promise<RecordResult>;
+  /**
+   * creating or deploying to failed on serviceId, the service of the work, with the reason. A row without a service
+   * binds to null. A row that another writer gave a new service is moved.
+   */
+  recordFailed(organizationId: string, serviceId: string | null, reason: string): Promise<RecordResult>;
   /** True when a row of the registry has this service ID. An unreadable registry gives false. */
   ownsService(serviceId: string): Promise<boolean>;
 }

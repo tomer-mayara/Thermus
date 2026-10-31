@@ -175,7 +175,11 @@ each search, and the control plane forwards the request. The answers of the
 gateway for a tenant that is not ready, is resumed, failed, or restarts are
 those of the [fetch tool](mcp-fetch-tool.md#answers-of-the-mcp-gateway); a
 restart before the first answer byte gives the search call
-`Server restarted. Try again in a minute.` with `isError: true`.
+`Server restarted. Try again in a minute.` with `isError: true`. After an idle
+period of a free tenant, `FREE_TENANT_IDLE_DAYS` without an MCP call (14 by
+default, SO-10), the first search resumes the tenant, and each call gets HTTP
+`503` with `Retry-After: 60` and "Your workspace is restarting after a pause.
+Try again in a minute." until the tenant is live again, for about a minute.
 
 All tenants of a Render region send their Brave searches from the same
 outbound addresses, and Brave refused 10 searches at the same time

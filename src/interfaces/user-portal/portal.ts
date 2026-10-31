@@ -1,7 +1,7 @@
 import { renderConnectionGuide } from './connection-guide.ts';
 import { productAccess, type ProductAccess } from './product-access.ts';
 import { productFlow } from './product-flow.ts';
-import { renderWorkspaceSetup, workspaceStatus, type WorkspaceStatus } from './workspace-status.ts';
+import { renderWorkspace, workspaceStatus, type WorkspaceStatus } from './workspace-status.ts';
 
 // The server owns the browser session: it signs in, keeps the sealed HttpOnly cookie, and signs out. The portal only
 // reads the session and the product access from the server on the same origin, so no profile or organization value of
@@ -106,8 +106,8 @@ function showConnection(container: HTMLElement, access: ProductAccess, status: W
     plan.textContent = 'Free access. No card is required and there is no automatic charge.';
     section.append(plan);
   }
-  // The connection guide appears only when the tenant of the organization is ready.
-  section.append(status.ready ? renderConnectionGuide(document, access.mcpUrl) : renderWorkspaceSetup(document, status));
+  // The connection guide appears only when the tenant of the organization is ready, after the notice of a pause.
+  section.append(...renderWorkspace(document, status, () => renderConnectionGuide(document, access.mcpUrl)));
   container.querySelector('.auth-container')?.append(section);
 }
 

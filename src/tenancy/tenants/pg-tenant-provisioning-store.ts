@@ -9,8 +9,9 @@ const RECORD_SERVICE = `UPDATE thermus_admin.tenants SET state = 'deploying', re
 // the service of the work too, so the live deploy of an old service never records a replacement row.
 const RECORD_LIVE = `UPDATE thermus_admin.tenants SET state = 'live', internal_url = $3, image_digest = COALESCE($4::text, image_digest), applied_plan = plan,
   failure_reason = NULL, updated_at = now() WHERE organization_id = $1 AND state = 'deploying' AND render_service_id = $2 RETURNING organization_id`;
+// The failure names the service of the work as well; a creating row without a service binds to NULL.
 const RECORD_FAILED = `UPDATE thermus_admin.tenants SET state = 'failed', failure_reason = $2, updated_at = now()
-  WHERE organization_id = $1 AND state IN ('creating', 'deploying') RETURNING organization_id`;
+  WHERE organization_id = $1 AND state IN ('creating', 'deploying') AND render_service_id IS NOT DISTINCT FROM $3 RETURNING organization_id`;
 const OWNS_SERVICE = 'SELECT 1 AS owned FROM thermus_admin.tenants WHERE render_service_id = $1';
 // A bounded reason keeps a long answer of the platform out of the row.
 const MAX_REASON_LENGTH = 1_000;
@@ -34,8 +35,8 @@ export class PgTenantProvisioningStore implements TenantProvisioningStore {
     return this.change(RECORD_LIVE, [organizationId, serviceId, live.internalUrl, live.imageDigest ?? null]);
   }
 
-  recordFailed(organizationId: string, reason: string): Promise<RecordResult> {
-    return this.change(RECORD_FAILED, [organizationId, reason.slice(0, MAX_REASON_LENGTH)]);
+  recordFailed(organizationId: string, serviceId: string | null, reason: string): Promise<RecordResult> {
+    return this.change(RECORD_FAILED, [organizationId, reason.slice(0, MAX_REASON_LENGTH), serviceId]);
   }
 
   /** The write guard of the platform adapter. It fails closed: a registry that cannot answer owns no service. */

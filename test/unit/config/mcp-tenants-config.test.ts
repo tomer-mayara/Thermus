@@ -51,6 +51,7 @@ test('Given valid tenant settings, when they are loaded, then they give the Rend
     gatewayPublicKey: gatewayKey,
     controlPlaneInternalUrl: 'http://thermus-control-plane:8080',
     sweepHourUtc: 4,
+    freeTenantIdleDays: 14,
   });
 });
 
@@ -58,6 +59,12 @@ test('Given TENANT_SWEEP_HOUR_UTC, when the settings are loaded, then they give 
   assert.equal(loadTenantProvisioningSettings({ ...valid, TENANT_SWEEP_HOUR_UTC: '0' }).sweepHourUtc, 0);
   assert.equal(loadTenantProvisioningSettings({ ...valid, TENANT_SWEEP_HOUR_UTC: '23' }).sweepHourUtc, 23);
   refusal({ ...valid, TENANT_SWEEP_HOUR_UTC: '24' }, 'TENANT_SWEEP_HOUR_UTC must be a whole number from 0 to 23.');
+});
+
+test('Given FREE_TENANT_IDLE_DAYS, when the settings are loaded, then they give the idle period of a free tenant, and an invalid value stops with its rule', () => {
+  assert.equal(loadTenantProvisioningSettings({ ...valid, FREE_TENANT_IDLE_DAYS: '1' }).freeTenantIdleDays, 1);
+  assert.equal(loadTenantProvisioningSettings({ ...valid, FREE_TENANT_IDLE_DAYS: '365' }).freeTenantIdleDays, 365);
+  refusal({ ...valid, FREE_TENANT_IDLE_DAYS: '0' }, 'FREE_TENANT_IDLE_DAYS must be a whole number from 1 to 365.');
 });
 
 test('Given TENANT_NAME_PREFIX alone, when the prefix is loaded for the fleet script, then it follows the rule of the provisioning settings', () => {
