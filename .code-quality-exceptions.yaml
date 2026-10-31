@@ -64,11 +64,6 @@ exceptions:
     bound: 77.9
     reason: One small owner keeps the registry copy, its two time bounds, and the one shared read together. Its largest function has five paths, and clock-double cases cover each bound. A separate owner for the bounds or for the shared read would hide the rule that a copy never serves after 60 s from the start of its read.
     expires: 2026-12-27
-  - path: src/tenancy/tenants/pg-tenant-provisioning-store.ts
-    metric: mi
-    bound: 83.5
-    reason: One small SQL adapter keeps the three guarded changes of the provisioner, the claim call, and the read of the write guard on the shared SQL runtime. Each change names the state that it starts from. Its largest function has three paths. Unit cases check each statement and each outcome, and real PostgreSQL cases check the claim order, the resume, the failure record, and a database that stops. A split of the statements from their outcome mapping would hide the rule that no change overwrites another writer.
-    expires: 2026-12-27
   - path: src/tenancy/providers/render/render-api.ts
     metric: mi
     bound: 80

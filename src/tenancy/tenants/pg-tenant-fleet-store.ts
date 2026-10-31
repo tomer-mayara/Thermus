@@ -36,6 +36,7 @@ export class PgTenantFleetStore implements TenantFleetStore {
     return this.read(READ_FLEET, []);
   }
 
+  // The cutoff comes from the tick of the sweep, not from the clock of the database, so the sweep decides the period.
   readIdle(plan: string, cutoff: string): Promise<FleetRead> {
     return this.read(READ_IDLE, [plan, cutoff]);
   }
@@ -70,6 +71,7 @@ export class PgTenantFleetStore implements TenantFleetStore {
     return this.change(RECORD_DIGEST, [organizationId, serviceId, imageDigest]);
   }
 
+  // A read that does not complete is unavailable, so a partial read never looks complete.
   private async read(text: string, values: unknown[]): Promise<FleetRead> {
     const result = await this.runtime.run(async (session) => (await session.query(text, values)).map(fleetRowOf));
     return result.status === 'complete' ? { status: 'complete', rows: result.value } : { status: 'unavailable' };

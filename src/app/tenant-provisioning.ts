@@ -74,10 +74,11 @@ export function withTenantProvisioning(storage: HostedLoggingStorage | undefined
   }
   const { provisioning: store, fleet } = storage.tenants;
   const platform = tenantPlatformOf({ ...parts, store });
-  const provisioning = startTenantProvisioning({ ...parts, store });
-  const sweeps = startTenantSweeps({ ...parts, platform, fleet });
-  return {
-    storage: { ...storage, close: async () => { await Promise.all([provisioning.close(), sweeps.close()]); await storage.close(); } },
-    resume: platformResumeOf(platform),
-  };
+  const lifetimes = [startTenantProvisioning({ ...parts, store }), startTenantSweeps({ ...parts, platform, fleet })];
+  return { storage: closingAfter(storage, lifetimes), resume: platformResumeOf(platform) };
+}
+
+// The storage whose close first stops each lifetime, so no loop or sweep runs on a closed SQL runtime.
+function closingAfter(storage: HostedLoggingStorage, lifetimes: readonly { close(): Promise<void> }[]): HostedLoggingStorage {
+  return { ...storage, close: async () => { await Promise.all(lifetimes.map((lifetime) => lifetime.close())); await storage.close(); } };
 }

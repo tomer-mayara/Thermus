@@ -63,7 +63,7 @@ export class McpGateway {
       const resumed = await waitForRequest(signal, () => this.tenants.resume(organizationId));
       return this.refusals.refuse(organizationId, resumeRefusalOf(resumed));
     }
-    return this.refusals.refuse(organizationId, this.states.refusalOf(organizationId, { state: row.state, internalUrl: row.internalUrl }));
+    return this.refusals.refuse(organizationId, this.states.refusalOf(organizationId, row.state, row.internalUrl));
   }
 
   /** The access check ran before, so a token without product access requests no tenant. */
@@ -96,12 +96,11 @@ class StateRefusals {
     if (state !== 'failed') this.reported.delete(organizationId);
   }
 
-  refusalOf(organizationId: string, row: TenantRow & { readonly state: Exclude<GatewayTenantState, 'suspended'> }): Refusal {
-    const { state } = row;
+  refusalOf(organizationId: string, state: Exclude<GatewayTenantState, 'suspended'>, internalUrl: string | null): Refusal {
     if (state === 'failed') return { reason: 'failed', state, report: this.firstReport(organizationId) };
     // Only a live record gives a row its address, and a delete takes it away, so a deploying row with an address was
     // live before: its deploy is the deploy of a resume, and the client waits a minute (plan section 4.2).
-    if (state === 'deploying' && row.internalUrl !== null) return { reason: 'resuming', state };
+    if (state === 'deploying' && internalUrl !== null) return { reason: 'resuming', state };
     return { reason: STATE_REFUSALS[state], state };
   }
 
