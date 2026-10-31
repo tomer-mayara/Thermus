@@ -15,18 +15,18 @@ function visit(node: ts.Node, candidates: Candidate[]): void {
   node.forEachChild((child) => visit(child, candidates));
 }
 
-
 function ownerOf(node: Declaration): string {
   const owners: string[] = [];
   for (let parent = node.parent; parent && !ts.isSourceFile(parent); parent = parent.parent) {
-    if (isDeclaration(parent)) {
-      const name = declarationName(parent);
-      owners.unshift(`${ts.SyntaxKind[parent.kind]}:${name ?? `@${parent.getStart()}`}`);
-    } else if (ts.isClassDeclaration(parent)) {
-      owners.unshift(`ClassDeclaration:${parent.name?.text ?? `@${parent.getStart()}`}`);
-    } else if (ts.isObjectLiteralExpression(parent) || ts.isClassExpression(parent) || ts.isModuleDeclaration(parent)) {
-      owners.unshift(`${ts.SyntaxKind[parent.kind]}:@${parent.getStart()}`);
-    }
+    const label = ownerLabelOf(parent);
+    if (label !== undefined) owners.unshift(label);
   }
   return owners.join('/');
+}
+
+function ownerLabelOf(node: ts.Node): string | undefined {
+  if (isDeclaration(node)) return `${ts.SyntaxKind[node.kind]}:${declarationName(node) ?? `@${node.getStart()}`}`;
+  if (ts.isClassDeclaration(node)) return `ClassDeclaration:${node.name?.text ?? `@${node.getStart()}`}`;
+  if (ts.isObjectLiteralExpression(node) || ts.isClassExpression(node) || ts.isModuleDeclaration(node)) return `${ts.SyntaxKind[node.kind]}:@${node.getStart()}`;
+  return undefined;
 }

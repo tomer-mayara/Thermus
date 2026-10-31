@@ -61,7 +61,7 @@ function snapshotFileOf(file: FileMeasurement, community: string | null, sources
     paths: file.paths,
     loc: file.loc,
     risk: numbers.rounded(file.risk, 2),
-    functions: nativeFunctionsOf(sources.root, file.path, sources.functions.get(file.path), source),
+    functions: nativeFunctionsOf(sources.root, { path: file.path, text: source }, sources.functions.get(file.path)),
   };
 }
 

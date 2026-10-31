@@ -30,5 +30,5 @@ function currentText(root: string, path: string): string {
 
 export function measuredSourceFile(root: string, path: string, answer: string): TableFile {
   const source = currentText(root, path);
-  return sourceFileOf(path, source, nativeFunctionsOf(root, path, answer, source));
+  return sourceFileOf(path, source, nativeFunctionsOf(root, { path, text: source }, answer));
 }
