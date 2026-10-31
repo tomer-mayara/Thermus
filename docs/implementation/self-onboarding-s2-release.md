@@ -521,7 +521,10 @@ What differed from the expected values:
      production to the image. A rollback to a Git build meets the same check.
    - A new run of R1 can pass, because the case passed in the other
      environments, but the result of one build is not certain. A change of the
-     case is a source change outside this documents-only pull request.
+     case is a source change outside this documents-only pull request:
+     [#302](https://github.com/tomer-mayara/Thermus/pull/302), merged on
+     31 October 2026, now counts the relayed events of the case one time for
+     each operation ID.
 2. **Many measured values match.** The Render interface gate passed, with
    deploys `live` 71.2 and 79.4 s after their create calls, and the tenants
    of run 2 were `live` about 77 s (A) and 90 s (B) after their create calls
