@@ -35,6 +35,8 @@ interface WorkOSSiteOptions {
   readonly snapshotOptions?: WorkOSApplicationParts['snapshotOptions'];
   // The billing of the composition. Without it, the composition uses BillingFree.
   readonly billing?: WorkOSApplicationParts['billing'];
+  // The gateway parts of MCP_TENANTS_ENABLED on. Without them, the control plane serves the tools itself.
+  readonly gateway?: WorkOSApplicationParts['gateway'];
   // When true, the fake also keeps the personal organizations of signup. The signup fake starts before setUp.
   readonly signupFake?: boolean;
   // Gives the fake its memberships, names, external IDs, and users before the application starts.
@@ -63,12 +65,12 @@ export function composeApplicationWithWorkOSFake(
 export function serveWorkOSSite(t: TestContext, options: WorkOSSiteOptions & { readonly signupFake: true }): Promise<WorkOSSignupSite>;
 export function serveWorkOSSite(t: TestContext, options: WorkOSSiteOptions): Promise<WorkOSSite>;
 export async function serveWorkOSSite(t: TestContext, options: WorkOSSiteOptions): Promise<WorkOSSite | WorkOSSignupSite> {
-  const { config = hostedConfig, organizations, buildServer, signup, loggingStorage, audit, toolOperations, auditSink, snapshotOptions, billing, setUp } = options;
+  const { config = hostedConfig, organizations, buildServer, signup, loggingStorage, audit, toolOperations, auditSink, snapshotOptions, billing, gateway, setUp } = options;
   const world = options.world ?? await WorkOSFake.start(t, config.publicBaseUrl, organizations);
   const signupFake = options.signupFake === true ? new WorkOSSignupFake(world) : undefined;
   setUp?.(world);
   const log = new OperatorLogSpy();
-  const backend = await composeApplicationWithWorkOSFake(config, world, { logger: log, buildServer, signup, loggingStorage, audit, toolOperations, auditSink, snapshotOptions, billing });
+  const backend = await composeApplicationWithWorkOSFake(config, world, { logger: log, buildServer, signup, loggingStorage, audit, toolOperations, auditSink, snapshotOptions, billing, gateway });
   const application = options.portal?.withApplication(backend) ?? backend;
   const server = await startHttpServer(application.handle, { listen: { host: '127.0.0.1', port: 0 }, publicBaseUrl: config.publicBaseUrl, logger: log });
   let closing: Promise<void> | undefined;

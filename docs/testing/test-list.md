@@ -1,5 +1,59 @@
 # Test inventory
 
+## Current SO-07 inventory scope
+
+SO-07 of the [self on-boarding plan](../implementation/self-onboarding-plan.md#slice-2-free-tier-end-to-end)
+requests the tenant after signup and shows the workspace setup state in the
+portal. The [authentication design](../design/authentication-design.md#signup-handoff-and-workspace-status)
+gives the rules. Inventory presence is not a passing result; the pull request
+records the runs.
+
+- `test/acceptance/auth/hosted-signup-workspace.test.ts` (11 cases) runs the
+  real control plane against the WorkOS fake and its signup fake, with the real
+  registry rules over the in-memory registry
+  `test/support/doubles/tenants/tenant-registry-fake.ts` and a clock of the
+  test, through `test/support/in-process/signup-workspace-site.ts`. A case moves
+  a row as the provisioner would. It checks the requested row after signup at
+  `?tier=free` and the setup state until `live`, the same page for another tier
+  value or no tier, the closed notice with the switch off and at a full cap
+  before the notice of the documents, the tenant request again after a failed
+  request at signup, the tenant request of an existing organization without a
+  row, the denials without product access or for another organization, the
+  request at each read of a full cap until a place frees, the one report of a
+  failed setup, and signup and the status with `MCP_TENANTS_ENABLED` off.
+- `test/integration/auth/workos-signup-tenants.test.ts` checks the tier
+  values, the switch before the cap, the closed notice at a full cap without
+  session work, an unreadable cap, the tenant request after the confirmed first
+  Admin membership and before Quick start opens, no request for another
+  activation result, and a failed request that does not stop signup.
+- `test/integration/hosted-admin/workspace-status-route.test.ts` checks the
+  route with the account routes, the workspace status, the port of app, and the
+  real registry rules: each row state, the request for a missing row, the full
+  cap, an unreadable registry, a query that names another organization, the
+  denials, `HEAD` and `POST`, the base path, and cancellation.
+- `test/unit/web/workspace-status.test.ts`, `test/unit/app/workspace-composition.test.ts`,
+  `test/unit/tenants/tenant-lookup.test.ts`, and `tenant-requests.test.ts`
+  check the view and the words of each state with the one report of a failed
+  setup, the port of app on the gateway port, the signup port with the cap only
+  with the switch on, the row counts of the registry copy, and the place under
+  the cap.
+- `test/acceptance/user-portal/workspace-setup.test.ts` and
+  `test/unit/user-portal/workspace-status.test.ts` check the setup words with a
+  meta refresh every 5 s and no connection guide until the workspace is ready,
+  the guide without a refresh when it is ready, and the safe error for a status
+  answer that is not valid. The other portal tests read a live workspace.
+- `test/acceptance/auth/hosted.live.ts` runs the scenario
+  `test/acceptance/auth/hosted-live/signup-workspace-server.ts` last, with the
+  step `test/support/hosted-live/free-signup.ts` and the site
+  `test/support/hosted-live/workspace-site.ts`: a new Staging user signs up at
+  `?tier=free`, the row is `requested` on disposable PostgreSQL, Connect shows
+  the setup state and reloads by itself, the provisioner reaches `live` through
+  the in-process Render fake, and Connect then shows the connection guide.
+
+The live scenario needs the settings of the hosted live gate and Docker Engine.
+The other files are in the ordinary suite, and the hosted offline build selects
+the acceptance file.
+
 ## Current habit-hooks cleanup inventory scope
 
 PR 3 of the habit-hooks cleanup stack changes the structure of code to correct

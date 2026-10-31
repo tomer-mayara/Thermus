@@ -9,9 +9,11 @@ interface FakeRow {
 
 export class TenantRegistryFake implements TenantRegistryStore, TenantGatewayStore {
   readonly rows = new Map<string, FakeRow>();
+  readonly requests: string[] = [];
   readonly inserts: string[] = [];
   readonly activeWrites: string[] = [];
   readFailure = false;
+  insertFailure: 'unavailable' | 'unconfirmed' | undefined;
   reads = 0;
 
   live(organizationId: string, internalUrl: string): void {
@@ -27,6 +29,8 @@ export class TenantRegistryFake implements TenantRegistryStore, TenantGatewaySto
   }
 
   async insertRequested(organizationId: string, admit: (count: RegistryCount) => boolean): Promise<InsertRequestedResult> {
+    this.requests.push(organizationId);
+    if (this.insertFailure !== undefined) return { status: this.insertFailure };
     const count = this.countFor(organizationId);
     if (!admit(count)) return { status: 'refused', count };
     this.rows.set(organizationId, { state: 'requested', internalUrl: null, serviceId: null });

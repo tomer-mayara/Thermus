@@ -304,7 +304,10 @@ includes runtime behavior. The dependency rules declare that existing owner pair
 The WorkOS adapter saves the canonical creator/authority record on the named
 organization and confirms active Admin/product access after a new create. The
 signup route uses supplied session controls to select that organization after
-a current-membership check, then opens Quick start. Later sign-ins and normal
+a current-membership check, then opens Quick start. Before its notice, signup
+asks a port that app composes for a place under the free-tenant cap, and after
+the confirmed first Admin membership it requests the tenant through the same
+port (SO-07). Later sign-ins and normal
 workspace choices keep their Connect destination. A failed switch does not
 repeat the grant. Existing records remain replay barriers.
 The web routes use these neutral contracts; WorkOS cookie and document-validation
@@ -574,9 +577,13 @@ arrows show runtime calls, and their labels name only the calls that this
 container makes; the dashed arrows are the type-only source dependencies of the
 two adapters on the `TenantPlatform` and `OrganizationInventory` contracts of
 `tenants`. PostgreSQL is the existing supporting Level 2 container; the Render
-API and WorkOS are external systems. Signup (SO-07) is a planned caller of the
-request and the lookup and is not in this view; the fleet script is an operator
-container of the [hosted containers view](#c4-containers-hosted-edition).
+API and WorkOS are external systems. Web calls the registry through two ports
+that app composes (SO-07): signup counts the rows of the lookup copy for the cap
+before its notice and requests the tenant of a new organization, and the
+workspace status route reads the row through the registry port of the gateway,
+with the tenant request for an organization without a row. The fleet script is
+an operator container of the
+[hosted containers view](#c4-containers-hosted-edition).
 
 ```mermaid
 %%{init: {"flowchart": {"wrappingWidth": 150, "nodeSpacing": 40, "rankSpacing": 40, "subGraphTitleMargin": {"top": 10, "bottom": 25}}}}%%
@@ -584,6 +591,7 @@ flowchart TB
   subgraph tenancy_server["Container: Thermus Node server · hosted control plane"]
     tenancy_config["config · TypeScript<br/>MCP_TENANTS_ENABLED; only when on:<br/>FREE_TENANT_LIMIT, tenant settings"]
     tenancy_app["app · TypeScript<br/>Opens one SQL runtime; composes<br/>Owns the loop and sweep lifetimes"]
+    tenancy_web["web · TypeScript<br/>Signup: cap, then tenant request<br/>GET /workspace/status"]
     tenancy_mcp["mcp · TypeScript<br/>MCP gateway<br/>Row of the organization"]
     tenancy_tenants["tenants · TypeScript<br/>Request inside the cap; lookup copy<br/>Provisioner: one row at a time<br/>Resume once; activity once a minute<br/>Sweeps: daily summary, weekly org sweep"]
     tenancy_render["render · TypeScript<br/>Render adapter of TenantPlatform<br/>Retry bounds; write guard"]
@@ -593,11 +601,13 @@ flowchart TB
     tenancy_app -->|reads settings at start| tenancy_config
     tenancy_app ==>|composes; starts and stops the loop and the sweeps| tenancy_tenants
     tenancy_app ==>|registry port of the gateway| tenancy_mcp
+    tenancy_app ==>|signup and status ports| tenancy_web
     tenancy_app ==> tenancy_render
     tenancy_app ==> tenancy_workos
     tenancy_app ==> tenancy_audit
     tenancy_app ==> tenancy_sql
     tenancy_mcp -->|find, request, resume, activity| tenancy_tenants
+    tenancy_web -->|row counts, request, row| tenancy_tenants
     tenancy_tenants -->|find, create, deploys, address; delete, memory, restarts| tenancy_render
     tenancy_render -.->|implements| tenancy_tenants
     tenancy_tenants -->|organization list, read by ID, default-role memberships| tenancy_workos
@@ -1161,7 +1171,7 @@ flowchart TB
   accounts -->|removal store| runtime
   runtime -.->|compose| tenancy
   tenancy -->|registry statements| runtime
-  interfaces -->|gateway: tenant row| tenancy
+  interfaces -->|gateway, signup, status: tenant row| tenancy
   interfaces -->|gateway: MCP + signed context| tenant_server
   tenant_server -->|audit relay| interfaces
   runtime -->|settings + intent + tenants / SQL| settings_data
@@ -1191,10 +1201,12 @@ workos; the MCP gateway reads the row of the organization, requests a tenant,
 sends the one resume call for a suspended one, which fails until SO-10 connects
 it, and records activity through a port that app composes
 on the registry; it forwards the request to the tenant server, and the relay
-route of web takes the audit relay of that tenant. With the three `SYSTEM_LOG_*` settings, app also
-exports the system log of the control plane through the SDK to the logs
-endpoint of the operator (SO-11a). Web calls the service for the
-trusted current tenant and actor. Test sends one synthetic event; the
+route of web takes the audit relay of that tenant. Signup and the workspace
+status route of web use the same registry rules through ports that app
+composes. With the three `SYSTEM_LOG_*` settings, app also exports the system
+log of the control plane through the SDK to the logs endpoint of the operator
+(SO-11a). Web calls the service for the trusted current tenant and actor. Test
+sends one synthetic event; the
 separate tool and administration capture shares hosted activity-driven snapshots.
 Organizations calls the same SQL adapter through its supplied removal store for
 admission and terminal receipts. This runtime call points from organizations to
@@ -1344,6 +1356,64 @@ the operator report. The [gateway](../src/interfaces/mcp/mcp-gateway.ts), its
 [answer stream](../src/interfaces/mcp/mcp-gateway-answer-stream.ts), the
 [registry rules](../src/tenancy/tenants/tenant-resumes.ts), and the
 [relay route](../src/interfaces/web/internal/audit-relay-route.ts) provide the
+contracts.
+
+### Scenario: free signup and the workspace setup state
+
+Scope: one free signup and the portal reads that follow it on the hosted
+control plane with `MCP_TENANTS_ENABLED` on (SO-07). The registry port is the
+lookup copy and the tenant request of tenants, which app composes for web as it
+does for the gateway. The provisioner moves the row at the same time, as the
+scenario "tenant provisioning" below shows. With the switch off, signup checks
+no cap, and the workspace status answers `live` without a registry read.
+
+```mermaid
+%%{init: {"sequence": {"wrap": true, "actorMargin": 20, "width": 140}}}%%
+sequenceDiagram
+  actor Browser as Visitor browser
+  participant Signup as web / signup route
+  participant Registry as tenants / registry port
+  participant Activation as workos / signup activation
+  participant Status as web / workspace status
+  participant Prov as tenants / provisioner
+  Browser->>Signup: GET /signup?tier=free, any tier value
+  alt SELF_SERVE_SIGNUP_ENABLED off
+    Signup-->>Browser: Closed notice
+  else Switch on
+    Signup->>Registry: Row counts of the lookup copy
+    alt Full cap
+      Signup-->>Browser: Closed notice, before the notice of the documents
+    else Place free
+      Signup-->>Browser: Notice, sign-in, then the form with the agreement
+      Browser->>Signup: POST /signup, cap read again
+      Signup->>Activation: Create the organization and the first Admin
+      Activation-->>Signup: Active: first Admin membership confirmed
+      Signup->>Registry: Tenant request inside the cap
+      Signup-->>Browser: Select the organization, open Quick start
+    end
+  end
+  loop Connect, every 5 s while the workspace is not ready
+    Browser->>Status: GET /workspace/status
+    Status->>Status: Product access in the selected organization
+    Status->>Registry: Row of the lookup copy, else the tenant request
+    Status-->>Browser: ready false and the setup words, or the words of failed or full
+  end
+  Prov->>Registry: requested, creating, deploying, then live
+  Browser->>Status: GET /workspace/status
+  Status-->>Browser: live, ready true
+  Note over Browser: Connection guide, no refresh
+```
+
+A failed tenant request at signup writes one error line and does not stop
+signup: the first status read of the organization requests the tenant again.
+A full cap after the creation is the accepted race: the organization has no
+row, and each status read requests the tenant until a place frees. A failed
+setup reports to the operator one time for each organization. The
+[signup route](../src/interfaces/web/auth/workos/workos-signup-routes.ts) with
+its [tenant handoff](../src/interfaces/web/auth/workos/workos-signup-tenants.ts), the
+[workspace status](../src/interfaces/web/account/workspace-status.ts), the
+[ports of app](../src/app/workspace-composition.ts), and the
+[portal](../src/interfaces/user-portal/workspace-status.ts) provide the
 contracts.
 
 ### Scenario: hosted default sign-in landing
@@ -1842,16 +1912,16 @@ surface and the narrower file-context restrictions.
 
 | Stable ID and source root | Responsibility and main parts | Boundary |
 | --- | --- | --- |
-| `app` — [`src/app/`](../src/app/), plus [`src/index.ts`](../src/index.ts) | Select hosted or self-hosted operation and the role of the hosted image; construct providers, routes, tools, logs, and shared services; own startup, shutdown, capacity, portal loading, the tenant composition and its routes, the gateway composition behind `MCP_TENANTS_ENABLED` with its registry port and the relay route, the lifetimes of the provisioner loop and the tenant sweeps, the system log export of the control plane with its lifetime, and hidden terminal input. | Entrypoint and application lifecycle; documented [tool composition](../src/app/fetch-tool.ts). Other components do not import app; the fleet script uses its system clock. |
+| `app` — [`src/app/`](../src/app/), plus [`src/index.ts`](../src/index.ts) | Select hosted or self-hosted operation and the role of the hosted image; construct providers, routes, tools, logs, and shared services; own startup, shutdown, capacity, portal loading, the tenant composition and its routes, the gateway composition behind `MCP_TENANTS_ENABLED` with its registry port and the relay route, the workspace ports of signup and of the workspace status, the lifetimes of the provisioner loop and the tenant sweeps, the system log export of the control plane with its lifetime, and hidden terminal input. | Entrypoint and application lifecycle; documented [tool composition](../src/app/fetch-tool.ts). Other components do not import app; the fleet script uses its system clock. |
 | `identity` — [`src/accounts/identity/`](../src/accounts/identity/) | Define authenticated users, grants, immutable request contexts, permission checks, verification, browser sessions and profile controls, and local administration roles. Sign and verify the signed access context of a tenant with `jose`, check the context of an audit relay without a bearer token, and give the access of a verified context. | [Access context](../src/accounts/identity/access-context.ts), verifier, browser-session, browser-session-controls, local-user-administration, and [signed-access-context](../src/accounts/identity/signed-access-context.ts) contracts. The signer, the verifier, and the context resolver are for app. No provider or UI implementation belongs here. |
 | `organizations` — [`src/accounts/organizations/`](../src/accounts/organizations/) | Customer roles, administration rules, member/invitation overviews, directory reads and native invitations, the member limit of a plan at invitation send, durable removal coordination and last-Admin checks, signup activation, seat calculations, and privileged change recording. | Directory, administration, overview, customer-role, change-record, removal-store, and signup-activation modules. Administration exposes removal requests/results and close. Directory-read, member-limit, and removal helpers remain private. |
 | `billing` — [`src/accounts/billing/`](../src/accounts/billing/) | Report plan state, `free` with its member limit or `team`, and accept seat updates. `BillingFree` is the current implementation. | [Billing roles](../src/accounts/billing/billing.ts); app selects the implementation. |
 | `workos` — [`src/accounts/providers/workos/`](../src/accounts/providers/workos/) | Hosted token/access verification, sessions, organization operations, signup/onboarding, settings, cookies, and signup-document validation. `WorkOSTokenVerifier` is the Connect token check alone, for a tenant. The [organization inventory](../src/accounts/providers/workos/workos-organization-inventory.ts) gives the sweeps every organization, the read by ID, and the default-role memberships, from complete pages or not at all. | App constructs provider/SDK objects. Web uses neutral supplied session, signup, and account roles; its WorkOS auth area still uses provider cookie and document-validation helpers. The inventory imports only the contract types of tenants. |
 | `better-auth` — [`src/accounts/providers/better-auth/`](../src/accounts/providers/better-auth/) | Local authentication, access resolution, user/client administration, installation storage, data-directory lock, and cleanup. | Provider, runtime-opening, and administration-opening modules for app; storage and lock mechanics remain private. |
 | `mcp` — [`src/interfaces/mcp/`](../src/interfaces/mcp/) | Adapt protocol requests to trusted access contexts and supplied tool operations. Own schemas, metadata, protocol errors, request lifetimes, and completion presentation. A request can carry its own scope: the access resolver and the tool server of an admitted tenant request. With a forward step, MCPServer gives each admitted request to the MCP gateway, which forwards it to the tenant of the organization, answers the other states of the registry, and lets 5 searches run at a time across tenants. | Server/tool composition modules, protected-resource endpoint, and client-visible schema modules. SDK adaptation stays inside this owner. |
-| `web` — [`src/interfaces/web/`](../src/interfaces/web/) | Account/admin/organization-selection routes, portal access, sign-in/out, signup, consent, forms, pages, escaping, and browser request protection; the relay route `/internal/audit` of the private network. `account/`, `auth/`, and `internal/` are private areas of this one owner. | Route constructors for app; shared account-form, page-html, and html-escape modules. Provider-specific browser adapters have narrower access than the whole owner. |
+| `web` — [`src/interfaces/web/`](../src/interfaces/web/) | Account/admin/organization-selection routes, portal access, the workspace status route `GET /workspace/status` with its words and its one report of a failed setup, sign-in/out, signup with its free-tenant cap and tenant request through ports of app, consent, forms, pages, escaping, and browser request protection; the relay route `/internal/audit` of the private network. `account/`, `auth/`, and `internal/` are private areas of this one owner. | Route constructors for app; shared account-form, page-html, and html-escape modules. Provider-specific browser adapters have narrower access than the whole owner. |
 | `cli` — [`src/interfaces/cli/`](../src/interfaces/cli/) | Parse local user/client commands, use supplied administration and hidden-input roles, format output and exit status. | [Local command](../src/interfaces/cli/local-auth-command.ts). App opens and closes administration/input resources. |
-| `user-portal` — [`src/interfaces/user-portal/`](../src/interfaces/user-portal/) | Browser portal behavior, connection instructions, styles, and static assets; Vite build configuration and declarations. | Browser HTTP interactions and rendered output. Vite runs in Node; browser modules cannot inherit its server/build access. |
+| `user-portal` — [`src/interfaces/user-portal/`](../src/interfaces/user-portal/) | Browser portal behavior, connection instructions, the workspace setup state with its meta refresh, styles, and static assets; Vite build configuration and declarations. | Browser HTTP interactions and rendered output. Vite runs in Node; browser modules cannot inherit its server/build access. |
 | `execution` — [`src/pipelines/execution/`](../src/pipelines/execution/) | Operation IDs/context, outgoing/incoming step roles, bounded best-effort records, and pass-through request observation. | Execution-context, pipeline-step, and step-record modules. App constructs the observer. |
 | `page-fetch` — [`src/pipelines/page-fetch/`](../src/pipelines/page-fetch/) | Check product permission and URL; run outgoing work, fetch, and incoming work; preserve cancellation, withholding, and safe failures. | [Fetch operation](../src/pipelines/page-fetch/fetch-page.ts), URL validation, and failure modules. Step executors remain private. |
 | `search` — [`src/pipelines/search/`](../src/pipelines/search/) | Check permission/query, use a supplied search engine, process its page, and preserve cancellation, no-results, withholding, and safe failures. | Search-pipeline, search-query, and search-failure modules; private step executors and cancellation helper. |
@@ -1863,7 +1933,7 @@ surface and the narrower file-context restrictions.
 | `http` — [`src/runtime/http/`](../src/runtime/http/) | Node listener, HTTP-to-Fetch exchange, trusted client address, request cancellation, connection tracking, and listener drain. | Server for app; client-address and request-cancellation modules for other consumers. Exchange mechanics remain private. |
 | `config` — [`src/runtime/config/`](../src/runtime/config/) | Validate deployment/listen settings, `THERMUS_ROLE` and the tenant settings with the refusal of control-plane secrets, optional hosted logging storage settings, the optional system log export settings of the control plane, the hosted operation capacity, the switch `MCP_TENANTS_ENABLED`, and, with it on, the free-tenant cap, the provisioning settings, the hour of the tenant sweeps, and the gateway settings with the check that `GATEWAY_PUBLIC_KEY` holds the public key of `GATEWAY_SIGNING_KEY`, and read trusted ad rules. Provider settings stay with their provider; a tenant has no provider settings. | Deployment-config and ad-rules-file modules; app selects the logging-storage settings reader, the system-log-export settings reader, the operation-capacity reader, the switch and provisioning-settings reader, the free-tenant-limit reader, and the gateway-settings reader. |
 | `sql` — [`src/runtime/sql/`](../src/runtime/sql/) | Own the one bounded SQL runtime of the hosted stores: the `pg` pool with verified TLS, admission of active and pending work, acquisition, operation and statement deadlines, late-work accounting, and bounded close. The only owner that imports `pg`. | [Bounded SQL runtime](../src/runtime/sql/bounded-sql-runtime.ts) for the stores; app opens it and owns its lifetime. |
-| `tenants` — [`src/tenancy/tenants/`](../src/tenancy/tenants/) | Own the tenant registry of the control plane: the tenant request inside the free-tenant cap and the revive of a deleted row, the in-memory route lookup with its refresh bounds, the provisioner state machine with its bounds, the resume of a suspended tenant and the activity write of the gateway, the fleet statements, the removal of a tenant, and the deploy wait of the fleet writes, the tenant sweeps (the weekly organization sweep and the daily fleet summary with its cost table), and the SQL adapters of the `tenants` table. | [Tenant platform](../src/tenancy/tenants/tenant-platform.ts), the contract that render implements, and [organization inventory](../src/tenancy/tenants/organization-inventory.ts), the contract that workos implements; app composes the request, the lookup, the provisioner, the resume, the activity, the sweeps, and the adapters, and gives the gateway a port; the fleet script composes the fleet parts. Signup uses the request and the lookup in a later ticket. |
+| `tenants` — [`src/tenancy/tenants/`](../src/tenancy/tenants/) | Own the tenant registry of the control plane: the tenant request inside the free-tenant cap and the revive of a deleted row, the in-memory route lookup with its refresh bounds, the provisioner state machine with its bounds, the resume of a suspended tenant and the activity write of the gateway, the fleet statements, the removal of a tenant, and the deploy wait of the fleet writes, the tenant sweeps (the weekly organization sweep and the daily fleet summary with its cost table), and the SQL adapters of the `tenants` table. | [Tenant platform](../src/tenancy/tenants/tenant-platform.ts), the contract that render implements, and [organization inventory](../src/tenancy/tenants/organization-inventory.ts), the contract that workos implements; app composes the request, the lookup, the provisioner, the resume, the activity, the sweeps, and the adapters, and gives the gateway a port; the fleet script composes the fleet parts. Signup uses the row counts of the lookup copy and the request, and the workspace status the gateway port, through ports that app composes. |
 | `render` — [`src/tenancy/providers/render/`](../src/tenancy/providers/render/) | The Render API adapter of the tenant platform: the search by name, the create of an image-backed private service, the newest deploy, the internal address, the delete, the deploy of an image by digest, the suspend, the resume, and the reads of the memory metrics and the restart events, with the retry bounds, the count of the create limit, and the write guard. It holds the Render API key. | No public module; app composes it with the write guard of the registry. It imports only the contract types of tenants. Another platform would be a sibling owner under `src/tenancy/providers/` behind the same contract; the soft spots below name what moves with it. |
 
 ## Behavior and resource ownership
@@ -1989,7 +2059,10 @@ Their state is in memory and has process scope: the 5
 gateway, the organizations of its failure reports, the time of the last activity
 write of each organization in [TenantActivity](../src/tenancy/tenants/tenant-activity.ts),
 the running resumes of [TenantResumes](../src/tenancy/tenants/tenant-resumes.ts),
-and the accepted operation IDs of the relay route for 160 s, at most 16,384. A
+and the accepted operation IDs of the relay route for 160 s, at most 16,384. The
+[workspace status](../src/interfaces/web/account/workspace-status.ts) of web
+keeps the organizations of its failed-setup reports, at most 1,024, in the same
+way. A
 forwarded answer holds its search places until its stream ends; its end is work
 of the request lifetime, so close aborts the upstream call and waits for it. The
 registry rows, also the move to `deploying`, persist; the in-memory state does

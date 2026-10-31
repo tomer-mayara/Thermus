@@ -3,34 +3,49 @@
   "classification": {
     "container": false,
     "external": false,
-    "contract": false,
-    "deployment": false,
+    "contract": true,
+    "deployment": true,
     "crossCutting": false,
-    "component": false,
-    "internalInterface": false,
-    "sensitiveBehavior": false,
+    "component": true,
+    "internalInterface": true,
+    "sensitiveBehavior": true,
     "dependencyRisk": false,
-    "policy": true,
+    "policy": false,
     "uncertain": false
   },
   "architecture": {
-    "modelUpdated": false,
-    "summary": "The owner turned the habit-hooks comment check off. .habit-hooks/config.toml and .habit-hooks/hook.config.toml disable the smell non-essential-comment ([smells.non-essential-comment] disabled = true). The comment sensor of the typescript plugin gives only this smell, and the smell was advisory (severity suggested), so no enforced check and no exit code changes: a full scan of main exits 0 before and after, with 2,667 comment findings before and none after. The hook configuration keeps its other settings (88 oversized-file findings before and after); nothing in the repository runs it. The policy flag is set: the change removes a check that habit-hooks reported. No production code, test, contract, dependency, composition, build output, or deployment relationship changes: nothing in src/, test/, the runtime images, or the workflows reads these files. The component registry describes the runtime system only; its prose and all 21 views remain accurate and unchanged.",
+    "modelUpdated": true,
+    "summary": "Free signup and the portal follow the tenant of each organization (SO-07). Signup checks the free-tenant cap after its switch and before the notice, on the registry copy of the gateway lookup, and requests the tenant after the confirmed first Admin membership; with MCP_TENANTS_ENABLED on, signup therefore depends on the tenant registry. The new account route GET /workspace/status gives the portal the state of the tenant of the selected organization through the registry port of the gateway, with the tenant request for a missing row, and only with current product access in that organization. The portal shows the setup words with a meta refresh every 5 s and the connection guide only when the workspace is ready, so the portal/server account contract changes. Web reaches the registry only through ports that app composes: no component, import edge, external integration, or public module is added. The registry view of the tenant registry gains web as a caller, the collaboration overview names signup and the status, and a signup scenario is added.",
     "views": [
-      "Context",
       "C4 containers: hosted edition",
-      "C4 containers: local edition",
+      "Selected C4 components: hosted authentication in the Node server",
+      "Selected C4 components: hosted tenant registry, provisioning, and sweeps in the Node server",
+      "Selected C4 components: MCP gateway and audit relay in the Node server",
       "Collaboration overview",
-      "Self-hosted Compose",
-      "Recorded hosted Render target"
+      "Scenario: hosted MCP call through the gateway",
+      "Scenario: free signup and the workspace setup state",
+      "Scenario: tenant provisioning",
+      "Ownership",
+      "Behavior and resource ownership"
     ],
     "evidence": [
-      ".habit-hooks/config.toml",
-      ".habit-hooks/hook.config.toml",
-      "habit-hooks 1.3.1: habit_hooks_typescript/sensors/comment.cjs gives only non-essential-comment; habit_hooks/catalogue.py gives it the severity suggested",
-      "docs/implementation/pr-review-rules.yaml (protected_paths.policy)",
-      "architecture/components.md (21 Mermaid views, unchanged)",
-      "Validation comment of this pull request: the scans before and after"
+      "src/interfaces/web/auth/workos/workos-signup-routes.ts",
+      "src/interfaces/web/auth/workos/workos-signup-tenants.ts",
+      "src/interfaces/web/account/account-routes.ts",
+      "src/interfaces/web/account/workspace-status.ts",
+      "src/interfaces/user-portal/portal.ts",
+      "src/interfaces/user-portal/workspace-status.ts",
+      "src/app/workspace-composition.ts",
+      "src/app/hosted-workos-application.ts",
+      "src/tenancy/tenants/tenant-lookup.ts",
+      "src/tenancy/tenants/tenant-requests.ts",
+      "test/acceptance/auth/hosted-signup-workspace.test.ts",
+      "test/integration/auth/workos-signup-tenants.test.ts",
+      "test/integration/hosted-admin/workspace-status-route.test.ts",
+      "test/acceptance/user-portal/workspace-setup.test.ts",
+      "test/acceptance/auth/hosted-live/signup-workspace-server.ts",
+      "architecture/components.md",
+      "docs/design/authentication-design.md"
     ]
   }
 }

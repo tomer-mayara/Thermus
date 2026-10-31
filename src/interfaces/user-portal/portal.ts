@@ -1,6 +1,7 @@
 import { renderConnectionGuide } from './connection-guide.ts';
 import { productAccess, type ProductAccess } from './product-access.ts';
 import { productFlow } from './product-flow.ts';
+import { renderWorkspaceSetup, workspaceStatus, type WorkspaceStatus } from './workspace-status.ts';
 
 // The server owns the browser session: it signs in, keeps the sealed HttpOnly cookie, and signs out. The portal only
 // reads the session and the product access from the server on the same origin, so no profile or organization value of
@@ -20,7 +21,7 @@ interface SessionView {
 }
 
 // The paths are relative, so the portal works under any public base path of the server.
-const paths = { session: 'session', productAccess: 'portal/access', signIn: 'login', signOut: 'logout' };
+const paths = { session: 'session', productAccess: 'portal/access', workspaceStatus: 'workspace/status', signIn: 'login', signOut: 'logout' };
 const readOptions: RequestInit = { credentials: 'same-origin', headers: { Accept: 'application/json' } };
 
 export async function initializePortal(options: PortalOptions): Promise<void> {
@@ -49,9 +50,10 @@ async function showProductAccess(container: HTMLElement, fetch: PortalFetch): Pr
   const answer = await fetch(paths.productAccess, readOptions);
   if (answer.status === 200) {
     const access = productAccess(await answer.json());
+    const workspace = await readWorkspaceStatus(fetch);
     status.textContent = `You have product access in organization ${access.organizationId}. Roles: ${access.roles.join(', ')}.`;
     showWorkspaceNavigation(container, access.roles);
-    showConnection(container, access);
+    showConnection(container, access, workspace);
     status.removeAttribute('role');
     const details = container.ownerDocument.createElement('details');
     details.className = 'access-details';
@@ -83,7 +85,14 @@ function showWorkspaceNavigation(container: HTMLElement, roles: readonly string[
   header?.append(navigation);
 }
 
-function showConnection(container: HTMLElement, access: ProductAccess): void {
+// The state of the tenant of the organization, which the server reads for each portal load (SO-07).
+async function readWorkspaceStatus(fetch: PortalFetch): Promise<WorkspaceStatus> {
+  const answer = await fetch(paths.workspaceStatus, readOptions);
+  if (answer.status !== 200) throw new Error('The workspace status request failed');
+  return workspaceStatus(await answer.json());
+}
+
+function showConnection(container: HTMLElement, access: ProductAccess, status: WorkspaceStatus): void {
   const document = container.ownerDocument;
   const section = document.createElement('section');
   const heading = document.createElement('h2');
@@ -97,7 +106,8 @@ function showConnection(container: HTMLElement, access: ProductAccess): void {
     plan.textContent = 'Free access. No card is required and there is no automatic charge.';
     section.append(plan);
   }
-  section.append(renderConnectionGuide(document, access.mcpUrl));
+  // The connection guide appears only when the tenant of the organization is ready.
+  section.append(status.ready ? renderConnectionGuide(document, access.mcpUrl) : renderWorkspaceSetup(document, status));
   container.querySelector('.auth-container')?.append(section);
 }
 

@@ -9,6 +9,10 @@ export type TenantLookupResult =
   | { readonly status: 'absent' }
   | { readonly status: 'unavailable' };
 
+export type TenantCountResult =
+  | { readonly status: 'counted'; readonly rowsByState: ReadonlyMap<TenantState, number> }
+  | { readonly status: 'unavailable' };
+
 interface RegistryCopy {
   readonly routes: ReadonlyMap<string, TenantRoute>;
   readonly readAt: number;
@@ -26,10 +30,29 @@ export class TenantLookup {
   }
 
   async find(organizationId: string): Promise<TenantLookupResult> {
-    if (this.age() >= REFRESH_AFTER_MS) await this.refresh();
-    if (this.copy === undefined || this.age() >= STALE_LIMIT_MS) return { status: 'unavailable' };
-    const route = this.copy.routes.get(organizationId);
+    const routes = await this.currentRoutes();
+    if (routes === undefined) return { status: 'unavailable' };
+    const route = routes.get(organizationId);
     return route === undefined ? { status: 'absent' } : { status: 'found', ...route };
+  }
+
+  /**
+   * The number of rows in each state, from the same copy and with the same bounds as find. Signup checks the
+   * free-tenant cap with it before the agreement, so a signup page reads the registry only when the copy is 10 s old.
+   */
+  async countByState(): Promise<TenantCountResult> {
+    const routes = await this.currentRoutes();
+    if (routes === undefined) return { status: 'unavailable' };
+    const rowsByState = new Map<TenantState, number>();
+    for (const { state } of routes.values()) rowsByState.set(state, (rowsByState.get(state) ?? 0) + 1);
+    return { status: 'counted', rowsByState };
+  }
+
+  // The routes of a copy that is not too old, after a refresh when the copy is 10 s old or more.
+  private async currentRoutes(): Promise<ReadonlyMap<string, TenantRoute> | undefined> {
+    if (this.age() >= REFRESH_AFTER_MS) await this.refresh();
+    if (this.copy === undefined || this.age() >= STALE_LIMIT_MS) return undefined;
+    return this.copy.routes;
   }
 
   private age(): number {

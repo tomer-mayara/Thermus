@@ -6,7 +6,11 @@ import { initializePortal } from '../../../src/interfaces/user-portal/portal.ts'
 interface ServerState {
   readonly session?: Readonly<Record<string, unknown>>;
   readonly productAccess?: Readonly<Record<string, unknown>>;
+  // The answer of GET workspace/status. Without it, the tenant of the organization is live.
+  readonly workspace?: Readonly<Record<string, unknown>>;
 }
+
+const liveWorkspace = { state: 'live', ready: true };
 
 async function openPortal(server: ServerState) {
   const { document } = parseHTML('<html><body><div id="app">Loading...</div></body></html>');
@@ -18,6 +22,7 @@ async function openPortal(server: ServerState) {
       requests.push(path);
       if (path === 'session') return server.session ? Response.json(server.session) : Response.json({ signedIn: false }, { status: 401 });
       if (path === 'portal/access') return server.productAccess ? Response.json(server.productAccess) : new Response('<p>Access denied</p>', { status: 403 });
+      if (path === 'workspace/status') return Response.json(server.workspace ?? liveWorkspace);
       return new Response('Not Found', { status: 404 });
     },
     navigate: (path) => navigations.push(path),
@@ -180,7 +185,7 @@ for (const [method, value, expected, guideUrl] of clientGuides) {
     assert.equal(guide.querySelector('.test-prompt')?.textContent, 'Use Thermus to fetch https://example.com and summarize the page.');
     assert.equal(document.querySelector('details')?.hasAttribute('open'), false);
     assert.equal(document.querySelector('details')?.parentElement?.lastElementChild?.localName, 'details');
-    assert.deepEqual(requests, ['session', 'portal/access']);
+    assert.deepEqual(requests, ['session', 'portal/access', 'workspace/status']);
   });
 }
 
@@ -214,7 +219,7 @@ test('Given a signed-in user at a custom endpoint, when they choose Desktop and 
   assert.equal(select.value, 'claude-code');
   assert.equal(textAt(document, 'label[for="ai-agent"]'), 'Your AI agent');
   assert.match(textAt(document, '.add-content code') ?? '', /claude mcp add/);
-  assert.deepEqual(requests, ['session', 'portal/access']);
+  assert.deepEqual(requests, ['session', 'portal/access', 'workspace/status']);
 });
 
 const workspaceNavigation = {
@@ -242,6 +247,6 @@ for (const [role, expected] of Object.entries(workspaceNavigation)) {
     assert.equal(textAt(document, 'footer a[href="https://thermus.ai/terms"]'), 'Terms of Service');
     assert.equal(document.querySelector('input[type="checkbox"]'), null);
     assert.deepEqual([...document.querySelectorAll('form')].map((form) => form.getAttribute('action')), ['logout']);
-    assert.deepEqual(requests, ['session', 'portal/access']);
+    assert.deepEqual(requests, ['session', 'portal/access', 'workspace/status']);
   });
 }

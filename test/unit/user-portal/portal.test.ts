@@ -7,6 +7,9 @@ type Answers = Readonly<Record<string, () => Promise<Response>>>;
 
 const session = { signedIn: true, email: 'ada@example.com', name: 'Ada Lovelace', mfaCompleted: true, csrfToken: 'csrf-secret' };
 
+// The tenant of the organization is live unless a case gives another workspace status.
+const defaultAnswers: Answers = { 'workspace/status': async () => Response.json({ state: 'live', ready: true }) };
+
 function portal(answers: Answers) {
   const { document } = parseHTML('<html><body><div id="app">Loading...</div></body></html>');
   const requests: Array<{ path: string; init: RequestInit }> = [];
@@ -15,7 +18,7 @@ function portal(answers: Answers) {
     container: document.getElementById('app'),
     fetch: async (path, init) => {
       requests.push({ path, init });
-      const answer = answers[path];
+      const answer = answers[path] ?? defaultAnswers[path];
       if (answer === undefined) return assert.fail(`The portal must not request ${path}`);
       return answer();
     },
@@ -88,6 +91,7 @@ test('Given the portal, when it reads the session and the product access, then i
   assert.deepEqual(requests.map(({ path, init }) => [path, init.method ?? 'GET', init.credentials, init.body]), [
     ['session', 'GET', 'same-origin', undefined],
     ['portal/access', 'GET', 'same-origin', undefined],
+    ['workspace/status', 'GET', 'same-origin', undefined],
   ]);
 });
 

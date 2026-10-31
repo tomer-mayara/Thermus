@@ -7,6 +7,7 @@ import { readForm, ReturnDestinations, selectionIn, single } from './account-for
 import { accessDeniedPage, noOrganizationPage, noticePage, organizationSelectionPage, seeOther } from './account-pages.ts';
 import { AdministrationRoutes, type AdministrationService } from './administration-routes.ts';
 import { quickStartPage } from './quick-start-page.ts';
+import type { WorkspaceStatuses } from './workspace-status.ts';
 import type { BrowserSession, CookieEffects, OrganizationSwitch, SignedInBrowserSession } from '../../../accounts/identity/browser-session.ts';
 
 // The routes check the session and current access, but not the permission of an operation: each operation checks
@@ -33,6 +34,8 @@ export interface HostedAccountRoutesOptions {
   readonly signupUrl?: string;
   readonly logging?: LoggingRoutesOptions['service'];
   readonly audit?: Pick<AuditLog, 'administrationChanged' | 'destinationChanged'>;
+  // The workspace status of the portal (SO-07). Without it, GET workspace/status goes to the account operation.
+  readonly workspaces?: Pick<WorkspaceStatuses, 'answer'>;
 }
 
 export class HostedAccountRoutes {
@@ -45,10 +48,11 @@ export class HostedAccountRoutes {
   private readonly publicOrigin: string;
   private readonly publicBaseUrl: string;
   private readonly mcpResourceUrl: string;
-  private readonly paths: { readonly organizations: string; readonly selection: string; readonly quickStart: string };
+  private readonly paths: { readonly organizations: string; readonly selection: string; readonly quickStart: string; readonly workspaceStatus: string };
   private readonly destinations: ReturnDestinations;
   private readonly administration: AdministrationRoutes;
   private readonly logging: LoggingRoutes;
+  private readonly workspaces?: Pick<WorkspaceStatuses, 'answer'>;
 
   constructor(options: HostedAccountRoutesOptions) {
     this.session = options.session;
@@ -57,6 +61,7 @@ export class HostedAccountRoutes {
     this.reportFailure = options.reportFailure;
     this.operation = options.operation;
     this.signupUrl = options.signupUrl;
+    this.workspaces = options.workspaces;
     const publicBaseUrl = directoryUrl(options.publicBaseUrl);
     this.publicBaseUrl = publicBaseUrl;
     this.mcpResourceUrl = options.mcpResourceUrl;
@@ -65,6 +70,7 @@ export class HostedAccountRoutes {
       organizations: new URL('organizations', publicBaseUrl).pathname,
       selection: new URL('organizations/select', publicBaseUrl).pathname,
       quickStart: new URL('quick-start', publicBaseUrl).pathname,
+      workspaceStatus: new URL('workspace/status', publicBaseUrl).pathname,
     };
     this.destinations = new ReturnDestinations(publicBaseUrl, new URL(publicBaseUrl).pathname);
     this.logging = new LoggingRoutes({ publicBaseUrl, organizationsPage: this.paths.organizations, service: options.logging, audit: options.audit });
@@ -103,6 +109,8 @@ export class HostedAccountRoutes {
     if (decision.allowed !== true) return accessDeniedPage(this.paths.organizations);
     const context = requireTrustedTenant(frozenCopy(decision.context));
     if (path === this.paths.quickStart) return this.quickStart(request, session, context);
+    // A read of the workspace status can request the tenant, so it needs current product access; no request value names the organization.
+    if (path === this.paths.workspaceStatus && this.workspaces !== undefined) return this.workspaces.answer(request, currentProductOrganization(session.user, context));
     const logging = this.logging.handlerFor(path);
     if (logging !== undefined) return logging(request, session, context);
     const administration = this.administration.handlerFor(path);
@@ -169,12 +177,21 @@ export class HostedAccountRoutes {
   }
 }
 
-function currentAdminAccess(user: AuthenticatedUser, context: RequestContext): boolean {
+// The access decision is about the session user and the organization that the session selected, with product access.
+function currentProductAccess(user: AuthenticatedUser, context: RequestContext): boolean {
   return user.selectedOrganizationId !== undefined && context.organizationId === user.selectedOrganizationId
     && context.user.selectedOrganizationId === user.selectedOrganizationId
     && context.user.authority === user.authority && context.user.subject === user.subject
-    && context.tenantId !== '' && context.permissions.includes('product:access')
-    && context.grants.some(grant => grant.role === 'admin' && grant.permissions.length > 0);
+    && context.tenantId !== '' && context.permissions.includes('product:access');
+}
+
+function currentAdminAccess(user: AuthenticatedUser, context: RequestContext): boolean {
+  return currentProductAccess(user, context) && context.grants.some(grant => grant.role === 'admin' && grant.permissions.length > 0);
+}
+
+// The organization of a current product access, or undefined without one.
+function currentProductOrganization(user: AuthenticatedUser, context: RequestContext): string | undefined {
+  return currentProductAccess(user, context) ? context.organizationId : undefined;
 }
 
 // The cookie effects come before the cookies that the answer has already, so that a later cookie, such as the cookie

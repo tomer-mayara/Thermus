@@ -57,6 +57,7 @@ export interface HostedAccountParts {
   readonly operation?: AccountOperation;
   readonly signupUrl?: string;
   readonly storage?: { close(): Promise<void>; readonly service?: HostedAccountRoutesOptions['logging']; readonly removalStore?: RemovalOperationStore };
+  readonly workspaces?: HostedAccountRoutesOptions['workspaces'];
 }
 
 export interface Application {
@@ -170,6 +171,7 @@ export function composeHostedApplication(config: RouteConfig, parts: HostedProvi
     signupUrl: account.signupUrl,
     logging: account.storage?.service,
     audit: account.audit,
+    workspaces: account.workspaces,
   });
   const handle = routeHostedRequests(config, { mcp: (request) => parts.mcp.fetch(request), account: (request) => routes.handle(request), browser: parts.browserRoutes, internal: parts.internalRoutes });
   const shutdown = new AbortController();
