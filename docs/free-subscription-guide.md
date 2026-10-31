@@ -23,7 +23,7 @@ Keep activation on for this test.
 2. Open [the signup page](https://app.thermus.ai/signup?tier=free) and select **Sign in to continue**. Sign in, or create the account and verify its email address. WorkOS sends you back to the signup page.
 3. Enter the organization name. Read the Terms of Service and the Privacy Notice on the page. Select the agreement checkbox, then select **Create organization**. You become the first Admin of the organization.
 4. **Quick start** opens for the new organization. Select **Connect**.
-5. With `MCP_TENANTS_ENABLED` on, Connect first shows "Setting up your workspace. This takes about two minutes." The page reloads every 5 seconds. When the workspace is ready, Connect shows **Connect your MCP client** and the connection guide. With the switch off, the control plane serves the tools itself, and Connect shows the connection guide at once.
+5. With `MCP_TENANTS_ENABLED` on, Connect first shows "Setting up your workspace. This takes about two minutes." under **Connect your MCP client**. The page reloads every 5 seconds. When the workspace is ready, the connection guide replaces these words. With the switch off, the control plane serves the tools itself, and Connect shows the connection guide at once.
 
 If Connect shows "Workspace setup failed. We have been notified and will fix it.", stop: the operator follows the [failed provision runbook](implementation/tenant-fleet-runbooks.md#1-failed-provision). If it shows "All free workspaces are in use. Try again later.", the free-tenant cap is full; the [workspace setup state](user-portal.md#workspace-setup-state) gives each message.
 
