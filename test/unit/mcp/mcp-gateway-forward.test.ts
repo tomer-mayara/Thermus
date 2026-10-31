@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { setImmediate } from 'node:timers/promises';
-import { context, controlledBody, fetchCall, gatewayOf, internalUrl, organizationId, post } from './fixtures/gateway-harness.ts';
+import type { GatewayRoute } from '../../../src/interfaces/mcp/mcp-gateway-tenants.ts';
+import { context, controlledBody, fetchCall, gatewayOf, internalUrl, liveRoute, organizationId, post } from './fixtures/gateway-harness.ts';
 
 test('Given a live tenant, when a call is forwarded, then the tenant gets the method, the body, the path and query, the client headers without the hop-by-hop headers, a cookie, or a client context, and the signed context of the access', async (t) => {
   const { forward, calls, signed } = gatewayOf(t);
@@ -123,6 +124,67 @@ for (const [label, answer, cause] of restarts) {
     assert.deepEqual(registry.active, []);
   });
 }
+
+// Records SO-03 and SO-12: the private address of a new tenant refuses connections for about 76 s after its live record.
+const coldStart: GatewayRoute = { ...liveRoute, sinceChangeMs: 30_000 };
+const startingWords = 'Your workspace is not ready yet. Try again in 15 seconds.';
+
+for (const [label, answer, cause] of restarts) {
+  test(`Given a live row that changed 30 s ago and ${label}, when a tool call fails, then it is the cold start of the tenant: the client gets one tool error with the starting words, and the log gets one info line and no operator report`, async (t) => {
+    const { forward, upstream, log, registry } = gatewayOf(t, coldStart);
+    const body = controlledBody();
+    upstream.answer = () => answer(body);
+
+    const response = await forward(post(fetchCall));
+
+    assert.deepEqual(await response.json(), { jsonrpc: '2.0', id: 7, result: { content: [{ type: 'text', text: startingWords }], isError: true, resultType: 'complete' } });
+    assert.deepEqual(log.lines, [`INFO MCP gateway tenant starting: {"organizationId":"org_A","cause":"${cause}","secondsSinceLive":30}`]);
+    assert.deepEqual(registry.active, []);
+  });
+}
+
+test('Given live rows that changed just under and exactly 2 minutes ago, when the connection fails before the first answer byte, then the first is a cold start and the second a restart', async (t) => {
+  const lines: string[] = [];
+  for (const sinceChangeMs of [119_999, 120_000]) {
+    const { forward, upstream, log } = gatewayOf(t, { ...liveRoute, sinceChangeMs });
+    upstream.answer = async () => { throw new TypeError('fetch failed'); };
+    await (await forward(post(fetchCall))).text();
+    lines.push(...log.lines);
+  }
+
+  assert.deepEqual(lines, [
+    'INFO MCP gateway tenant starting: {"organizationId":"org_A","cause":"connection","secondsSinceLive":119.9}',
+    'ERROR MCP gateway tenant restart: {"organizationId":"org_A","phase":"before-answer","cause":"connection"}',
+  ]);
+});
+
+test('Given a cold start, when the request is not a tool call, then each request gets a JSON-RPC error with the starting words, and a body without a request gets 503 with Retry-After: 15', async (t) => {
+  const { forward, upstream } = gatewayOf(t, coldStart);
+  upstream.answer = async () => { throw new TypeError('fetch failed'); };
+
+  const listed = await forward(post({ jsonrpc: '2.0', id: 'list-1', method: 'tools/list' }));
+  const notification = await forward(post({ jsonrpc: '2.0', method: 'notifications/cancelled', params: { requestId: 7 } }));
+
+  assert.deepEqual(await listed.json(), { jsonrpc: '2.0', id: 'list-1', error: { code: -32603, message: startingWords } });
+  assert.deepEqual([notification.status, notification.headers.get('Retry-After')], [503, '15']);
+  assert.deepEqual(await notification.json(), { error: 'temporarily_unavailable', error_description: startingWords });
+});
+
+test('Given a live row that changed 30 s ago and an answer stream that started, when the connection of the tenant resets, then the tenant answered before, so it is a restart with one operator report', async (t) => {
+  const { forward, upstream, log, tracked } = gatewayOf(t, coldStart);
+  const answer = controlledBody();
+  upstream.answer = async () => new Response(answer.body, { status: 200, headers: { 'Content-Type': 'text/event-stream' } });
+  answer.send('event: message\ndata: first\n\n');
+
+  const response = await forward(post(fetchCall));
+  const reader = response.body?.getReader();
+  await reader?.read();
+  answer.fail();
+  await reader?.read();
+  await Promise.all(tracked);
+
+  assert.deepEqual(log.lines, ['ERROR MCP gateway tenant restart: {"organizationId":"org_A","phase":"during-answer","cause":"connection"}']);
+});
 
 test('Given a tenant failure before the first answer byte, when the request is not a tool call, then each request gets a JSON-RPC error with the restart words, and a body without a request gets 503 with Retry-After: 60', async (t) => {
   const { forward, upstream } = gatewayOf(t);

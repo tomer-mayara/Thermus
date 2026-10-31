@@ -18,8 +18,10 @@ export class TenantTableFake extends TenantFleetStoreFake implements TenantRegis
     return { status: 'inserted' };
   }
 
+  // The time since the last change of each row, by the clock of the fake, as updated_at gives it in the database.
   async readRoutes(): Promise<ReadRoutesResult> {
-    const routes = new Map<string, TenantRoute>([...this.rows].map(([organizationId, { state, internalUrl }]) => [organizationId, { state, internalUrl }]));
+    const now = this.clock?.() ?? 0;
+    const routes = new Map<string, TenantRoute>([...this.rows].map(([organizationId, { state, internalUrl, changedAtMs }]) => [organizationId, { state, internalUrl, sinceChangeMs: now - changedAtMs }]));
     return { status: 'complete', routes };
   }
 

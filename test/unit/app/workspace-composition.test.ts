@@ -18,7 +18,7 @@ function gatewayPortOf(route: GatewayRoute, request: GatewayTenantRequest = { st
 
 test('Given a row in the registry copy, when the portal asks for the workspace state, then it gets the state of the row and no tenant request', async () => {
   for (const state of ['requested', 'creating', 'deploying', 'live', 'suspended', 'failed', 'deleted'] as const) {
-    const port = gatewayPortOf({ status: 'found', state, internalUrl: null });
+    const port = gatewayPortOf({ status: 'found', state, internalUrl: null, sinceChangeMs: 0 });
     assert.equal(await workspaceTenantsOf(port).stateOf('org_A'), state);
     assert.deepEqual(port.calls, ['find org_A']);
   }
@@ -91,7 +91,7 @@ test('Given a new organization, when signup requests its tenant, then the tenant
 // The registry port of the gateway with a suspended row; the portal never resumes a tenant or writes its activity.
 function suspendedPort(): GatewayTenants {
   return {
-    ...gatewayPortOf({ status: 'found', state: 'suspended', internalUrl: 'http://thermus-tenant-org-a:8080' }),
+    ...gatewayPortOf({ status: 'found', state: 'suspended', internalUrl: 'http://thermus-tenant-org-a:8080', sinceChangeMs: 0 }),
     resume: async () => assert.fail('The portal must not resume a tenant.'),
     recordActive: () => assert.fail('The portal must not write the activity of a tenant.'),
   };

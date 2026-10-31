@@ -54,7 +54,9 @@ export class McpGateway {
     if (route.status === 'unavailable') return this.refusals.refuse(organizationId, { reason: 'registry-unavailable' });
     if (route.status === 'absent') return this.requestTenant(organizationId, signal);
     this.states.rowSeen(organizationId, route.state);
-    if (route.state === 'live' && route.internalUrl !== null) return this.live.forward(request, forwarded, route.internalUrl);
+    if (route.state === 'live' && route.internalUrl !== null) {
+      return this.live.forward(request, forwarded, { internalUrl: route.internalUrl, sinceChangeMs: route.sinceChangeMs });
+    }
     return this.answerState(organizationId, route, signal);
   }
 

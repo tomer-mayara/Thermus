@@ -1360,6 +1360,17 @@ call, and the fleet script can suspend a tenant too; each comes back this way.
   one `ERROR` line, `MCP gateway tenant restart: {...}`, with the organization,
   the phase, and the cause: the operator report, and the line of the restart
   alert of SO-11.
+- A failure before the first answer byte less than 2 minutes after the last
+  change of the live row, its live record, is the cold start of a new tenant
+  and not a restart: the private address of a new Render service refuses
+  connections until about 76 s after its first deploy is live (SO-03, and the
+  SO-12 rehearsal of 31 October 2026). Each request of the body then gets the
+  words "Your workspace is not ready yet. Try again in 15 seconds." in the
+  same forms, a body without a request gets `503` with `Retry-After: 15`, and
+  the gateway writes one `INFO` line, `MCP gateway tenant starting: {...}`,
+  with the organization, the cause, and the seconds since the live record.
+  The restart alert does not match it. The registry copy gives the time since
+  the last change of each row, from `updated_at` by the clock of the database.
 - 5 searches at a time pass across all tenants (answer 4): a request takes one
   place for each `tools/call` of `search` that it holds, until its answer
   stream ends. The sixth gets the tool error "Server busy. Try again later.",

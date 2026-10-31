@@ -164,7 +164,7 @@ test('Given production storage settings with the switch on, when a tenant is req
 
   assert.deepEqual(await storage.tenants?.requests.request(organizationA), { status: 'requested' });
   await until(site, [`${organizationA} live`]);
-  assert.deepEqual(await storage.tenants?.lookup.find(organizationA), { status: 'found', state: 'live', internalUrl: `http://${render.service(nameOf(organizationA))?.slug}:8080` });
+  assert.partialDeepStrictEqual(await storage.tenants?.lookup.find(organizationA), { status: 'found', state: 'live', internalUrl: `http://${render.service(nameOf(organizationA))?.slug}:8080` });
 
   await storage.close();
   const requests = render.requests.length;

@@ -1,7 +1,10 @@
 import type { InsertRequestedResult, ReadRoutesResult, RegistryCount, TenantRegistryStore, TenantRoute, TenantState } from '../../../../src/tenancy/tenants/tenant-registry-store.ts';
 
+// A row of the fake. Each read gives its time since the last change; 0 when the case does not set one.
+type FakeRoute = Omit<TenantRoute, 'sinceChangeMs'> & { readonly sinceChangeMs?: number };
+
 export class TenantRegistryStoreFake implements TenantRegistryStore {
-  readonly rows = new Map<string, TenantRoute>();
+  readonly rows = new Map<string, FakeRoute>();
   insertFailure?: 'unavailable' | 'unconfirmed';
   readFailure = false;
   readGate?: Promise<void>;
@@ -18,7 +21,8 @@ export class TenantRegistryStoreFake implements TenantRegistryStore {
   async readRoutes(): Promise<ReadRoutesResult> {
     this.reads += 1;
     await this.readGate;
-    return this.readFailure ? { status: 'unavailable' } : { status: 'complete', routes: new Map(this.rows) };
+    if (this.readFailure) return { status: 'unavailable' };
+    return { status: 'complete', routes: new Map([...this.rows].map(([organizationId, row]) => [organizationId, { sinceChangeMs: 0, ...row }])) };
   }
 
   private countFor(organizationId: string): RegistryCount {

@@ -72,7 +72,7 @@ test('Given a tenants row for organization A, when the gateway asks for A, then 
   const { site, requests, lookup } = await openRegistry(t);
   assert.deepEqual(await requests.request('org_A'), { status: 'requested' });
   await makeLive(site, 'org_A');
-  assert.deepEqual(await lookup.find('org_A'), { status: 'found', state: 'live', internalUrl: liveTenant.internalUrl });
+  assert.partialDeepStrictEqual(await lookup.find('org_A'), { status: 'found', state: 'live', internalUrl: liveTenant.internalUrl });
   assert.deepEqual(await lookup.find('org_B'), { status: 'absent' });
 });
 
@@ -80,18 +80,18 @@ test('Given a changed row, when the refresh bound passes, then the lookup gives 
   const { site, requests, lookup, clock } = await openRegistry(t);
   await requests.request('org_A');
   await makeLive(site, 'org_A');
-  assert.deepEqual(await lookup.find('org_A'), { status: 'found', state: 'live', internalUrl: liveTenant.internalUrl });
+  assert.partialDeepStrictEqual(await lookup.find('org_A'), { status: 'found', state: 'live', internalUrl: liveTenant.internalUrl });
   await site.ownerQuery("UPDATE thermus_admin.tenants SET state = 'suspended' WHERE organization_id = 'org_A'");
   clock.now = 9_999;
-  assert.deepEqual(await lookup.find('org_A'), { status: 'found', state: 'live', internalUrl: liveTenant.internalUrl }, 'Inside the 10 s bound the copy answers');
+  assert.partialDeepStrictEqual(await lookup.find('org_A'), { status: 'found', state: 'live', internalUrl: liveTenant.internalUrl }, 'Inside the 10 s bound the copy answers');
   clock.now = 10_000;
   const suspended = { status: 'found', state: 'suspended', internalUrl: liveTenant.internalUrl };
-  assert.deepEqual(await lookup.find('org_A'), suspended, 'At the bound the lookup reads the registry again');
+  assert.partialDeepStrictEqual(await lookup.find('org_A'), suspended, 'At the bound the lookup reads the registry again');
   await promisify(execFile)('docker', ['stop', '--time', '0', site.container]);
   clock.now = 20_000;
-  assert.deepEqual(await lookup.find('org_A'), suspended, 'A failed refresh keeps the copy that is younger than 60 s');
+  assert.partialDeepStrictEqual(await lookup.find('org_A'), suspended, 'A failed refresh keeps the copy that is younger than 60 s');
   clock.now = 69_999;
-  assert.deepEqual(await lookup.find('org_A'), suspended);
+  assert.partialDeepStrictEqual(await lookup.find('org_A'), suspended);
   clock.now = 70_000;
   assert.deepEqual(await lookup.find('org_A'), { status: 'unavailable' }, 'The copy of 10 s is 60 s old: it is not served again');
   assert.deepEqual(await lookup.find('org_B'), { status: 'unavailable' });
@@ -164,7 +164,7 @@ test('Given the control plane role, when the registry store reads and writes the
   assert.equal(forced, 'billing_events, subscriptions, tenants');
   assert.deepEqual(await requests.request('org_A'), { status: 'requested' });
   assert.deepEqual(await requests.request('org_A'), { status: 'present', state: 'requested' });
-  assert.deepEqual(await lookup.find('org_A'), { status: 'found', state: 'requested', internalUrl: null });
+  assert.partialDeepStrictEqual(await lookup.find('org_A'), { status: 'found', state: 'requested', internalUrl: null });
   assert.deepEqual(await runtime.run((session) => session.query('DELETE FROM thermus_admin.tenants')), { status: 'unavailable' }, 'The role has no DELETE grant');
   assert.deepEqual(await tenantRows(site), ['org_A requested']);
 });

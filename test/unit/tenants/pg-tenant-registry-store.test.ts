@@ -10,7 +10,8 @@ type Rows = Record<string, unknown>[];
 const lock = 'LOCK TABLE thermus_admin.tenants IN SHARE ROW EXCLUSIVE MODE';
 const count = /^SELECT state, count\(\*\)::integer AS rows, bool_or\(organization_id = \$1\) AS current\s+FROM thermus_admin\.tenants GROUP BY state$/;
 const insert = "INSERT INTO thermus_admin.tenants (organization_id, state) VALUES ($1, 'requested')";
-const routes = 'SELECT organization_id, state, internal_url FROM thermus_admin.tenants';
+const routes = `SELECT organization_id, state, internal_url, extract(epoch FROM now() - updated_at)::float8 * 1000 AS since_change_ms
+  FROM thermus_admin.tenants`;
 
 function registryStore(t: TestContext, answer: (text: string) => Rows | Error) {
   const queries: { readonly text: string; readonly values?: unknown[] }[] = [];
@@ -82,14 +83,14 @@ test('Given failed acquisition, when a request or a read runs, then no write is 
   assert.deepEqual(await store.readRoutes(), { status: 'unavailable' });
 });
 
-test('Given registry rows, when the routes are read, then one plain read maps each organization to its state and internal address', async (t) => {
+test('Given registry rows, when the routes are read, then one plain read maps each organization to its state, its internal address, and the time since the last change of its row', async (t) => {
   const { store, queries, releases } = registryStore(t, (text) => text === routes ? [
-    { organization_id: 'org_A', state: 'live', internal_url: 'http://thermus-tenant-org-a:8080' },
-    { organization_id: 'org_B', state: 'requested', internal_url: null },
+    { organization_id: 'org_A', state: 'live', internal_url: 'http://thermus-tenant-org-a:8080', since_change_ms: 30_000.25 },
+    { organization_id: 'org_B', state: 'requested', internal_url: null, since_change_ms: 4.5 },
   ] : new Error('unexpected statement'));
   assert.deepEqual(await store.readRoutes(), { status: 'complete', routes: new Map([
-    ['org_A', { state: 'live', internalUrl: 'http://thermus-tenant-org-a:8080' }],
-    ['org_B', { state: 'requested', internalUrl: null }],
+    ['org_A', { state: 'live', internalUrl: 'http://thermus-tenant-org-a:8080', sinceChangeMs: 30_000.25 }],
+    ['org_B', { state: 'requested', internalUrl: null, sinceChangeMs: 4.5 }],
   ]) });
   assert.deepEqual(queries, [{ text: routes, values: undefined }]);
   assert.deepEqual(releases, [false]);
