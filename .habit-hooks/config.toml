@@ -26,3 +26,14 @@ args = ["--config", ".habit-hooks/eslint.config.mjs"]
 
 [sensors.jscpd]
 disabled = true
+
+# Test files have no file-size limit. The four document bundles hold legal text that a SHA-256 pins: data, not logic.
+[sensors.line-count]
+files = [
+  "**/*",
+  "!test/**",
+  "!src/accounts/providers/workos/workos-approved-organization-documents.ts",
+  "!src/accounts/providers/workos/workos-approved-signup-documents.ts",
+  "!src/accounts/providers/workos/workos-organization-audit-documents.ts",
+  "!src/accounts/providers/workos/workos-organization-removal-documents.ts",
+]
