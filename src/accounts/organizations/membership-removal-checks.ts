@@ -4,7 +4,7 @@ import type { OrganizationDirectory, OrganizationMemberFacts, OrganizationMember
 import type { MemberRemovalRequest } from './removal-operation-store.ts';
 
 type RemovalRefusal = 'denied' | 'stale' | 'unsupported' | 'last-admin';
-type CurrentRead = <T>(read: (signal: AbortSignal) => Promise<T>) => Promise<T>;
+type DirectoryRead = <T>(read: (directory: OrganizationDirectory, signal: AbortSignal) => Promise<T>) => Promise<T>;
 const REMOVAL_PAGE_LIMIT = 10;
 
 const adminPermissions = ['product:access', 'user-grants:manage', 'admin-grants:manage'];
@@ -14,14 +14,14 @@ export function currentAdmin(memberships: readonly OrganizationMembership[], org
     && member.organizationName.trim() !== '' && adminGrants(member.grants));
 }
 
-export async function checkRemoval(directory: OrganizationDirectory, user: AuthenticatedUser, request: MemberRemovalRequest, read: CurrentRead): Promise<RemovalRefusal | undefined> {
-  if (!currentAdmin(await read(signal => directory.membershipsOf(user, signal)), request.organizationId)) return 'denied';
-  const target = await read(signal => directory.member(request.membershipId, signal));
+export async function checkRemoval(user: AuthenticatedUser, request: MemberRemovalRequest, read: DirectoryRead): Promise<RemovalRefusal | undefined> {
+  if (!currentAdmin(await read((directory, signal) => directory.membershipsOf(user, signal)), request.organizationId)) return 'denied';
+  const target = await read((directory, signal) => directory.member(request.membershipId, signal));
   if (target === undefined) return 'stale';
   const refusal = targetRefusal(target, request);
   if (refusal !== undefined) return refusal;
   const originalFacts = targetFacts(target);
-  const pages = await readDirectoryPages(cursor => read(signal => directory.memberFactsPage({ organizationId: request.organizationId, statuses: ['active'], cursor, signal })), REMOVAL_PAGE_LIMIT);
+  const pages = await readDirectoryPages(cursor => read((directory, signal) => directory.memberFactsPage({ organizationId: request.organizationId, statuses: ['active'], cursor, signal })), REMOVAL_PAGE_LIMIT);
   const members = latestOfEach(pages, member => member.membershipId).filter(member => member.organizationId === request.organizationId && member.status === 'active');
   const currentTarget = members.find(member => member.membershipId === request.membershipId);
   if (currentTarget === undefined || targetFacts(currentTarget) !== originalFacts) return 'stale';

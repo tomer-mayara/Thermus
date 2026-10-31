@@ -14,7 +14,9 @@ export class PendingInvitationsBrowser {
     assert.equal(await this.disclosure.getAttribute('open') !== null, count > 0);
     await tabTo(this.page, this.disclosure.locator('summary'));
     const focus = await this.disclosure.locator('summary').evaluate(element => {
-      const style = element.ownerDocument.defaultView!.getComputedStyle(element);
+      const view = element.ownerDocument.defaultView;
+      if (view === null) throw new Error('The pending invitations summary has no browser window');
+      const style = view.getComputedStyle(element);
       return { width: style.outlineWidth, color: style.outlineColor };
     });
     assert.deepEqual(focus, { width: '3px', color: 'rgb(243, 242, 238)' });
@@ -45,18 +47,24 @@ export class PendingInvitationsBrowser {
     assert.deepEqual(await this.disclosure.locator('time').evaluateAll(elements => elements.map(element => [element.getAttribute('datetime'), element.textContent])), Array.from({ length: 2 }, () => ['2099-10-26T12:00:00.000Z', '2099-10-26 12:00:00 UTC']));
     assert.deepEqual(await this.disclosure.locator('.invitation-role').evaluateAll(elements => elements.map(element => element.lastChild?.textContent?.trim())), ['User', 'Admin']);
     const styles = await row.getByRole('button').first().evaluate(element => {
-      const view = element.ownerDocument.defaultView!;
+      const view = element.ownerDocument.defaultView;
+      if (view === null) throw new Error('The pending invitation action has no browser window');
+      const disclosure = element.closest('details');
+      if (disclosure === null) throw new Error('The pending invitation action is outside its disclosure');
       const style = view.getComputedStyle(element);
-      return { text: style.color, border: style.borderColor, background: style.backgroundColor, surface: view.getComputedStyle(element.closest('details')!).backgroundColor };
+      return { text: style.color, border: style.borderColor, background: style.backgroundColor, surface: view.getComputedStyle(disclosure).backgroundColor };
     });
     assert.deepEqual(styles, { text: 'rgb(243, 242, 238)', border: 'rgb(123, 126, 136)', background: 'rgba(0, 0, 0, 0)', surface: 'rgb(33, 34, 40)' });
     await this.checkTargets(width);
     await this.screenshot('rows');
     const title = await this.page.locator('body').evaluate(body => {
-      const view = body.ownerDocument.defaultView!;
+      const view = body.ownerDocument.defaultView;
+      if (view === null) throw new Error('The members page has no browser window');
       const sizes = [...body.querySelectorAll('*')].map(element => ({ element, size: Number.parseFloat(view.getComputedStyle(element).fontSize) }));
       for (const { element, size } of sizes) element.style.fontSize = `${size * 2}px`;
-      return view.getComputedStyle(body.querySelector('h1')!).fontSize;
+      const heading = body.querySelector('h1');
+      if (heading === null) throw new Error('The members page has no heading');
+      return view.getComputedStyle(heading).fontSize;
     });
     assert.equal(title, '64px');
     await this.checkTargets(width);

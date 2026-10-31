@@ -29,7 +29,7 @@ for (const changedAfterSend of [false, true]) {
     await service.save('tenant-a', input);
     const before = saved;
     assert.ok(before);
-    const result = await service.test('tenant-a', { ...input, expectedRevision: 'r1', token: '' }, actor);
+    const result = await service.test({ organizationId: 'tenant-a', actor }, { ...input, expectedRevision: 'r1', token: '' });
     assert.deepEqual(result, changedAfterSend ? { status: 'conflict' } : { status: 'tested', revision: 'r1', outcome: { kind: 'accepted' } });
     assert.equal(writes, 1);
     assert.ok(saved);

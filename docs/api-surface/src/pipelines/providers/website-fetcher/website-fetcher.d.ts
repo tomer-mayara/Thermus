@@ -24,5 +24,5 @@ export declare class WebsiteFetchLaunchError extends WebsiteFetchFailure {
     readonly kind = "launch";
     readonly code: string;
     readonly failure: 'missing' | 'cannot-start';
-    constructor(code: unknown, message: string, options?: ErrorOptions, diagnostic?: FetchDiagnostic);
+    constructor(code: unknown, message: string, options?: ErrorOptions);
 }

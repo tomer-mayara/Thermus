@@ -1,5 +1,52 @@
 # Test inventory
 
+## Current habit-hooks cleanup inventory scope
+
+PR 3 of the habit-hooks cleanup stack changes the structure of code to correct
+the enforced habit-hooks findings, without a change of behavior. Four new unit
+files record the current behavior of code that the change splits. Inventory
+presence is not a passing result; the pull request records the runs.
+
+- `test/unit/logging/audit/destination-endpoint.test.ts` (32 cases) checks the
+  endpoint check of a saved Audit logs destination: 10 accepted endpoints (DNS
+  names in any case, with a final dot, or with a port; exactly 2,048
+  characters; the public IPv4 addresses next to the special ranges; a global
+  IPv6 address) and 22 refused endpoints (2,049 characters; an uppercase
+  scheme; an empty user name; a space, a control character, or a backslash; no
+  host or a host of one dot; forms of localhost; the IPv4 addresses of this
+  network, shared address space, benchmark testing, multicast, and broadcast;
+  the IPv6 documentation, link-local, unique local, and unspecified addresses,
+  and addresses outside global unicast).
+- `test/unit/mcp/fetch-tool-server.test.ts` (7 cases) checks the answers of the
+  MCP tool server: one customer completion with the input, the public text, and
+  the named actor; the safe text and status of withheld search content or a
+  failed operation; only the operator completion for invalid arguments, a
+  refusal of the arguments, or an unknown tool; a fetch without text; a server
+  without customer audit; a shutdown during a call; and only fixed public text
+  for each kind of error.
+- `test/unit/html/administration-routes.test.ts` (6 cases) checks the
+  invitation and member-removal changes of the administration routes: the
+  redirect to Members with one record, a refused resend, a form of another
+  organization (stale, with no write), a failed write, the removal pages, and
+  the refusal of a post that is not a valid same-origin form, before any write
+  or record.
+- `test/unit/auth-workos/workos-profile-name.test.ts` (17 cases) checks the
+  name of a WorkOS profile: a native text name is used as it is; else the
+  trimmed split parts; no name for a missing profile, another user, the wrong
+  types, blank parts, or a split part with a control character.
+
+Two existing files gain cases: `test/integration/auth/workos-signup.test.ts`
+(1 case: a subject that the acceptance record cannot hold gets no provider
+write) and `test/unit/html/logging-form.test.ts` (2 cases: the settings expect
+the saved revision, and a tenant or revision that is not visible ASCII text is
+refused). The other changed test files change their structure: they put
+expected outcomes in tables, name their steps, or replace non-null assertions
+with checks that fail with a clear message.
+
+```sh
+npm run build && node --test dist/test/unit/logging/audit/destination-endpoint.test.js dist/test/unit/mcp/fetch-tool-server.test.js dist/test/unit/html/administration-routes.test.js dist/test/unit/auth-workos/workos-profile-name.test.js dist/test/integration/auth/workos-signup.test.js dist/test/unit/html/logging-form.test.js
+```
+
 ## Current SO-11a inventory scope
 
 SO-11a of the [self on-boarding plan](../implementation/self-onboarding-plan.md#slice-2-free-tier-end-to-end)

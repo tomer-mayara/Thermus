@@ -22,7 +22,7 @@ export class TenantFleetStoreFake extends TenantProvisioningStoreFake implements
   }
 
   async markDeleted(organizationId: string, from: RemovableState, serviceId: string | null): Promise<FleetWrite> {
-    return this.fleetMove('deleted', organizationId, { from: [from], serviceId }, (row) => {
+    return this.fleetMove('deleted', { organizationId, from: [from], serviceId }, (row) => {
       this.moveTo(row, 'deleted');
       row.internalUrl = null;
     });
@@ -39,15 +39,15 @@ export class TenantFleetStoreFake extends TenantProvisioningStoreFake implements
   }
 
   async markSuspended(organizationId: string, serviceId: string): Promise<FleetWrite> {
-    return this.fleetMove('suspended', organizationId, { from: ['live'], serviceId }, (row) => this.moveTo(row, 'suspended'));
+    return this.fleetMove('suspended', { organizationId, from: ['live'], serviceId }, (row) => this.moveTo(row, 'suspended'));
   }
 
   async markResumed(organizationId: string, serviceId: string): Promise<FleetWrite> {
-    return this.fleetMove('resumed', organizationId, { from: ['suspended'], serviceId }, (row) => this.moveTo(row, 'deploying'));
+    return this.fleetMove('resumed', { organizationId, from: ['suspended'], serviceId }, (row) => this.moveTo(row, 'deploying'));
   }
 
   async recordDigest(organizationId: string, serviceId: string, imageDigest: string): Promise<FleetWrite> {
-    return this.fleetMove('digest', organizationId, { from: ['live'], serviceId }, (row) => { row.imageDigest = imageDigest; });
+    return this.fleetMove('digest', { organizationId, from: ['live'], serviceId }, (row) => { row.imageDigest = imageDigest; });
   }
 
   /** The state of the row of the organization, or undefined without a row. */
@@ -56,10 +56,10 @@ export class TenantFleetStoreFake extends TenantProvisioningStoreFake implements
   }
 
   // A change applies only to a row in one of its start states and on the service that the caller read.
-  private fleetMove(operation: FleetOperation, organizationId: string, start: { readonly from: readonly TenantState[]; readonly serviceId: string | null }, apply: (row: FakeTenantRow) => void): FleetWrite {
-    this.beforeChange(operation, organizationId);
+  private fleetMove(operation: FleetOperation, start: { readonly organizationId: string; readonly from: readonly TenantState[]; readonly serviceId: string | null }, apply: (row: FakeTenantRow) => void): FleetWrite {
+    this.beforeChange(operation, start.organizationId);
     if (this.fleetUnavailable.has(operation)) return { status: 'unavailable' };
-    const row = this.rows.get(organizationId);
+    const row = this.rows.get(start.organizationId);
     if (row === undefined || !start.from.includes(row.state) || row.serviceId !== start.serviceId) return { status: 'moved' };
     apply(row);
     return { status: 'recorded' };

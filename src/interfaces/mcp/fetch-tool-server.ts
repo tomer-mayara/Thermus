@@ -17,13 +17,33 @@ export interface ToolOperations {
   readonly search: SearchOperation;
 }
 
-export function createFetchToolServer(context: RequestContext, dependencies: {
+export interface ToolServerDependencies {
   operations: ToolOperations;
   logger: SystemLog;
   audit?: Pick<AuditLog, 'toolCompleted'>;
-}, lifetime?: McpRequestLifetime): Server {
+}
+
+interface ToolServer {
+  readonly server: Server;
+  readonly context: RequestContext;
+  readonly dependencies: ToolServerDependencies;
+}
+
+type ValidatedCall = { tool: 'search'; input: { query: string; reason: string } } | { tool: 'getURLAsMarkdown'; input: { url: string; reason: string } };
+
+export function createFetchToolServer(context: RequestContext, dependencies: ToolServerDependencies, lifetime?: McpRequestLifetime): Server {
   const server = new Server({ name: 'thermus', version: '0.0.0' }, { capabilities: { tools: {} } });
-  server.setRequestHandler('tools/list', () => ({ tools: [{
+  const tools: ToolServer = { server, context, dependencies };
+  server.setRequestHandler('tools/list', () => ({ tools: toolDescriptors() }));
+  server.setRequestHandler('tools/call', (request, requestContext) => {
+    const task = new ToolCall(tools, request.params, callSignal(requestContext, lifetime)).run();
+    return lifetime?.track(task) ?? task;
+  });
+  return server;
+}
+
+function toolDescriptors() {
+  return [{
     name: 'getURLAsMarkdown',
     description: 'Fetch a known web page URL as Markdown. For web searches, use search instead of fetching a search engine results URL. Give the reason the agent needs the page.',
     inputSchema: fetchToolInputSchema,
@@ -31,70 +51,105 @@ export function createFetchToolServer(context: RequestContext, dependencies: {
     name: 'search',
     description: 'Search the web with a text query and return cleaned results as Markdown. Use this tool for web searches; search engines may block generic page-fetch requests. Use getURLAsMarkdown to read a result page. Give the reason the agent needs the search.',
     inputSchema: searchToolInputSchema,
-  }] }));
-  const callTool = async (request: CallToolRequest, requestContext: ServerContext) => {
-    const operationId = randomUUID();
-    const startedAt = performance.now();
-    const call = request.params;
-    const signal = lifetime === undefined ? requestContext.mcpReq.signal : AbortSignal.any([requestContext.mcpReq.signal, lifetime.signal]);
-    let status: CompletionStatus = 'processing_failed';
-    let validated: { tool: 'search'; input: { query: string; reason: string } } | { tool: 'getURLAsMarkdown'; input: { url: string; reason: string } } | undefined;
-    let projected: CallToolResult | undefined;
-    try {
-      if (call.name === 'search') {
-        const args = await parseSearchToolArguments(call.arguments);
-        if (args === undefined) throw new Error('Invalid tool arguments');
-        validated = { tool: 'search', input: { query: args.query, reason: args.reason } };
-        signal.throwIfAborted();
-        const outcome = await dependencies.operations.search(args.query, context, { signal, operationId });
-        signal.throwIfAborted();
-        const result = projectSearchOutcome(outcome);
-        status = result.isError ? 'withheld' : 'success';
-        return projected = server.projectCallToolResult(result, undefined);
-      }
-      if (call.name !== 'getURLAsMarkdown') {
-        status = 'unknown_tool';
-        throw new ProtocolError(ProtocolErrorCode.InvalidParams, 'Unknown tool');
-      }
-      const args = await parseFetchToolArguments(call.arguments);
-      if (args === undefined) throw new Error('Invalid tool arguments');
-      validated = { tool: 'getURLAsMarkdown', input: { url: args.url, reason: args.reason } };
-      signal.throwIfAborted();
-      const markdown = await dependencies.operations.fetch(args.url, context, { signal, operationId });
-      signal.throwIfAborted();
-      if (typeof markdown !== 'string') throw new Error('Page processing failed');
-      status = 'success';
-      return projected = server.projectCallToolResult({ content: [{ type: 'text', text: markdown }] }, undefined);
-    } catch (error) {
-      if (status === 'unknown_tool') throw error;
-      const failure = safeFailure(error, signal, call.name === 'search');
-      status = failure.status;
-      const result: CallToolResult = { content: [{ type: 'text', text: failure.message }], isError: true };
-      return projected = server.projectCallToolResult(result, undefined);
-    } finally {
-      const durationMs = Math.max(0, performance.now() - startedAt);
-      if (dependencies.audit !== undefined && validated !== undefined && projected !== undefined && status !== 'invalid_arguments' && status !== 'unknown_tool') {
-        captureCompletion(dependencies.audit, {
-          ...validated, timestamp: new Date().toISOString(), organizationId: context.tenantId,
-          actor: { authority: context.user.authority, subject: context.user.subject, ...(context.user.name === undefined ? {} : { name: context.user.name }) },
-          operationId, status, durationMs,
-          result: projected.content.filter((entry) => entry.type === 'text').map((entry) => entry.text).join(''),
-        });
-      }
-      emitCompletion(dependencies.logger, formatToolCompletion(context, {
-        operationId, name: call.name, status, durationMs,
-      }));
-    }
-  };
-  server.setRequestHandler('tools/call', (request, requestContext) => {
-    const task = callTool(request, requestContext);
-    return lifetime?.track(task) ?? task;
-  });
-  return server;
+  }];
 }
 
-function safeFailure(error: unknown, signal: AbortSignal, search: boolean): { status: CompletionStatus; message: string } {
-  if (search) return safeSearchFailure(error, signal);
+function callSignal(requestContext: ServerContext, lifetime: McpRequestLifetime | undefined): AbortSignal {
+  const signal = requestContext.mcpReq.signal;
+  return lifetime === undefined ? signal : AbortSignal.any([signal, lifetime.signal]);
+}
+
+class ToolCall {
+  private readonly operationId = randomUUID();
+  private readonly startedAt = performance.now();
+  private status: CompletionStatus = 'processing_failed';
+  private validated: ValidatedCall | undefined;
+  private projected: CallToolResult | undefined;
+
+  constructor(private readonly tools: ToolServer, private readonly call: CallToolRequest['params'], private readonly signal: AbortSignal) {}
+
+  async run(): Promise<CallToolResult> {
+    try {
+      return this.project(await this.result());
+    } catch (error) {
+      if (this.status === 'unknown_tool') throw error;
+      const failure = this.failure(error);
+      this.status = failure.status;
+      return this.project({ content: [{ type: 'text', text: failure.message }], isError: true });
+    } finally {
+      this.complete();
+    }
+  }
+
+  private result(): Promise<CallToolResult> {
+    if (this.call.name === 'search') return this.search();
+    if (this.call.name === 'getURLAsMarkdown') return this.fetch();
+    this.status = 'unknown_tool';
+    throw new ProtocolError(ProtocolErrorCode.InvalidParams, 'Unknown tool');
+  }
+
+  private async search(): Promise<CallToolResult> {
+    const args = await parseSearchToolArguments(this.call.arguments);
+    if (args === undefined) throw new Error('Invalid tool arguments');
+    this.validated = { tool: 'search', input: { query: args.query, reason: args.reason } };
+    this.signal.throwIfAborted();
+    const outcome = await this.tools.dependencies.operations.search(args.query, this.tools.context, { signal: this.signal, operationId: this.operationId });
+    this.signal.throwIfAborted();
+    const result = projectSearchOutcome(outcome);
+    this.status = result.isError ? 'withheld' : 'success';
+    return result;
+  }
+
+  private async fetch(): Promise<CallToolResult> {
+    const args = await parseFetchToolArguments(this.call.arguments);
+    if (args === undefined) throw new Error('Invalid tool arguments');
+    this.validated = { tool: 'getURLAsMarkdown', input: { url: args.url, reason: args.reason } };
+    this.signal.throwIfAborted();
+    const markdown = await this.tools.dependencies.operations.fetch(args.url, this.tools.context, { signal: this.signal, operationId: this.operationId });
+    this.signal.throwIfAborted();
+    if (typeof markdown !== 'string') throw new Error('Page processing failed');
+    this.status = 'success';
+    return { content: [{ type: 'text', text: markdown }] };
+  }
+
+  private failure(error: unknown): { status: CompletionStatus; message: string } {
+    return this.call.name === 'search' ? safeSearchFailure(error, this.signal) : safeFetchFailure(error, this.signal);
+  }
+
+  private project(result: CallToolResult): CallToolResult {
+    return this.projected = this.tools.server.projectCallToolResult(result, undefined);
+  }
+
+  private complete(): void {
+    const durationMs = Math.max(0, performance.now() - this.startedAt);
+    this.captureCustomerCompletion(durationMs);
+    emitCompletion(this.tools.dependencies.logger, formatToolCompletion(this.tools.context, {
+      operationId: this.operationId, name: this.call.name, status: this.status, durationMs,
+    }));
+  }
+
+  private captureCustomerCompletion(durationMs: number): void {
+    const { audit } = this.tools.dependencies;
+    const { validated, projected, status } = this;
+    if (audit === undefined || validated === undefined || projected === undefined || !isCapturedStatus(status)) return;
+    captureCompletion(audit, {
+      ...validated, timestamp: new Date().toISOString(), organizationId: this.tools.context.tenantId,
+      actor: actorOf(this.tools.context),
+      operationId: this.operationId, status, durationMs,
+      result: projected.content.filter((entry) => entry.type === 'text').map((entry) => entry.text).join(''),
+    });
+  }
+}
+
+function isCapturedStatus(status: CompletionStatus): status is ToolCompletion['status'] {
+  return status !== 'invalid_arguments' && status !== 'unknown_tool';
+}
+
+function actorOf({ user }: RequestContext): ToolCompletion['actor'] {
+  return { authority: user.authority, subject: user.subject, ...(user.name === undefined ? {} : { name: user.name }) };
+}
+
+function safeFetchFailure(error: unknown, signal: AbortSignal): { status: CompletionStatus; message: string } {
   let failure: { status: CompletionStatus; message: string } = { status: 'processing_failed', message: 'Page processing failed' };
   try {
     if (signal.aborted || (error instanceof Error && error.name === 'AbortError')) {

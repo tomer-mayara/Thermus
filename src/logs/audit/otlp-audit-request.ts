@@ -4,11 +4,13 @@ import { AUDIT_SEND_LIMITS, AuditSendFailure } from './audit-send.ts';
 import type { AuditSendOutcome } from './audit-send.ts';
 import { interpretAuditResponse } from './otlp-audit-response.ts';
 
+export interface AuditExportRequest { readonly url: URL; readonly body: Buffer; readonly authorization?: string; readonly axiomDataset?: string }
+
 /** Uses only a completed, checked TLS socket. Node's global agents and OTel defaults are not consulted. */
-export function requestAuditExport(socket: TLSSocket, url: URL, body: Buffer, headers: { readonly authorization?: string; readonly axiomDataset?: string }, signal: AbortSignal): Promise<AuditSendOutcome> {
+export function requestAuditExport(socket: TLSSocket, { url, body, authorization, axiomDataset }: AuditExportRequest, signal: AbortSignal): Promise<AuditSendOutcome> {
   signal.throwIfAborted();
   return new Promise((resolve, reject) => {
-    const request = https.request({ hostname: url.hostname, port: url.port || 443, path: url.pathname, method: 'POST', createConnection: () => socket, maxHeaderSize: AUDIT_SEND_LIMITS.headerBytes, signal, headers: { 'content-type': 'application/json', 'content-length': body.length, connection: 'close', ...(headers.authorization === undefined ? {} : { authorization: headers.authorization }), ...(headers.axiomDataset === undefined ? {} : { 'x-axiom-dataset': headers.axiomDataset }) } }, (response) => {
+    const request = https.request({ hostname: url.hostname, port: url.port || 443, path: url.pathname, method: 'POST', createConnection: () => socket, maxHeaderSize: AUDIT_SEND_LIMITS.headerBytes, signal, headers: { 'content-type': 'application/json', 'content-length': body.length, connection: 'close', ...(authorization === undefined ? {} : { authorization }), ...(axiomDataset === undefined ? {} : { 'x-axiom-dataset': axiomDataset }) } }, (response) => {
       const chunks: Buffer[] = [];
       let received = 0;
       response.on('data', (chunk: Buffer) => {

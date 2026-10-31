@@ -14,8 +14,10 @@ import { existingRow, FleetStepError, rowLine } from './fleet-rows.ts';
 
 type ServiceRow = FleetRow & { readonly serviceId: string };
 
+const START_RULES = { live: 'Only a live tenant is suspended.', suspended: 'Only a suspended tenant is resumed.' } as const;
+
 export async function suspendTenant(parts: CommandParts, organizationId: string): Promise<void> {
-  const row = await rowIn(parts, organizationId, 'live', 'Only a live tenant is suspended.');
+  const row = await rowIn(parts, organizationId, 'live');
   if (!await confirmed(parts.io, [rowLine(row), `Suspend the Render service ${row.serviceId} of ${organizationId}, then set the row suspended. A suspended tenant costs nothing. Until SO-10 connects the resume of the gateway, only fleet.ts resume brings it back: each MCP call of the organization gets a 503 with a retry time and writes one operator report.`])) return;
   const platform = await parts.context.platform();
   changed(await platform.suspendService(row.serviceId, parts.signal), 'suspend');
@@ -25,7 +27,7 @@ export async function suspendTenant(parts: CommandParts, organizationId: string)
 }
 
 export async function resumeTenant(parts: CommandParts, organizationId: string): Promise<void> {
-  const row = await rowIn(parts, organizationId, 'suspended', 'Only a suspended tenant is resumed.');
+  const row = await rowIn(parts, organizationId, 'suspended');
   if (!await confirmed(parts.io, [rowLine(row), `Resume the Render service ${row.serviceId} of ${organizationId}, set the row deploying, and wait until the deploy of the resume is live; then the row is live.`])) return;
   const { platform, stores } = { platform: await parts.context.platform(), stores: await parts.context.stores() };
   const before = await newestDeployBefore(platform, row.serviceId, parts.signal);
@@ -43,9 +45,9 @@ export async function resumeTenant(parts: CommandParts, organizationId: string):
   parts.io.line(recorded.status === 'recorded' ? `Done: ${live}, and the row is live.` : `${live}; the row was not recorded (${recorded.status}): another writer changed it.`);
 }
 
-async function rowIn(parts: CommandParts, organizationId: string, state: 'live' | 'suspended', rule: string): Promise<ServiceRow> {
+async function rowIn(parts: CommandParts, organizationId: string, state: keyof typeof START_RULES): Promise<ServiceRow> {
   const row = await existingRow((await parts.context.stores()).fleet, parts.prefix, organizationId);
-  if (row.state !== state || row.serviceId === null) throw new FleetStepError(`The tenant of ${organizationId} is ${row.state}. ${rule} Nothing changed.`);
+  if (row.state !== state || row.serviceId === null) throw new FleetStepError(`The tenant of ${organizationId} is ${row.state}. ${START_RULES[state]} Nothing changed.`);
   return row as ServiceRow;
 }
 

@@ -465,11 +465,10 @@ describe('S2.5 production signup documents', () => {
     };
     const visitor = new HostedBrowser(site.transport, site.publicBaseUrl);
     const publicPage = await visitor.open('signup');
-    const publicDocument = parseHTML(publicPage.body).document;
+    const publicNotice = servedDocument(parseHTML(publicPage.body).document, 'privacy-notice');
     const privacy = await readFile('docs/legal/organization-removal-2026-10-26-proposal-v1/privacy.md', 'utf8');
-    const expectedNotice = parseHTML(`<div id=expected>${micromark(privacy, { extensions: [gfm()], htmlExtensions: [gfmHtml()] })}</div>`).document.querySelector('#expected')?.textContent;
-    assert.equal(publicDocument.querySelector('#privacy-notice .document-reader')?.textContent, expectedNotice);
-    assert.equal(publicDocument.querySelector('#privacy-notice')?.getAttribute('data-document-version'), expected.notice.version);
+    assert.equal(publicNotice.text, renderedText(privacy));
+    assert.equal(publicNotice.version, expected.notice.version);
     assert.deepEqual(formsIn(publicPage.body), []);
     assert.deepEqual(site.world.fake.takeRequests(), []);
     const user = { id: 'user_AUDIT_CREATOR', email: 'creator@example.com', firstName: 'Creator', emailVerified: true };
@@ -478,15 +477,15 @@ describe('S2.5 production signup documents', () => {
     const answer = await browser.open('signup');
     assert.equal(answer.status, 200, answer.body);
     const document = parseHTML(answer.body).document;
-    for (const [id, file, hash] of [
-      ['terms', 'terms.md', expected.terms.sha256],
-      ['privacy-notice', 'privacy.md', expected.notice.sha256],
-    ]) {
+    for (const [id, file, legal] of [
+      ['terms', 'terms.md', expected.terms],
+      ['privacy-notice', 'privacy.md', expected.notice],
+    ] as const) {
       const source = await readFile(`docs/legal/organization-removal-2026-10-26-proposal-v1/${file}`, 'utf8');
-      assert.equal(createHash('sha256').update(source).digest('hex'), hash);
-      const expectedText = parseHTML(`<div id=expected>${micromark(source, { extensions: [gfm()], htmlExtensions: [gfmHtml()] })}</div>`).document.querySelector('#expected')?.textContent;
-      assert.equal(document.querySelector(`#${id} .document-reader`)?.textContent, expectedText);
-      assert.equal(document.querySelector(`#${id}`)?.getAttribute('data-document-version'), id === 'terms' ? expected.terms.version : expected.notice.version);
+      assert.equal(createHash('sha256').update(source).digest('hex'), legal.sha256);
+      const served = servedDocument(document, id);
+      assert.equal(served.text, renderedText(source));
+      assert.equal(served.version, legal.version);
     }
     const checkbox = document.querySelector('input[name="agreement"]');
     assert.equal(document.querySelectorAll('input[type="checkbox"]').length, 1);
@@ -547,4 +546,12 @@ for (const part of ['terms', 'notice'] as const) {
       assert.deepEqual(world?.fake.takeRequests(), []);
     });
   }
+}
+
+function renderedText(markdown: string) {
+  return parseHTML(`<div id=expected>${micromark(markdown, { extensions: [gfm()], htmlExtensions: [gfmHtml()] })}</div>`).document.querySelector('#expected')?.textContent;
+}
+
+function servedDocument(page: ReturnType<typeof parseHTML>['document'], id: string) {
+  return { text: page.querySelector(`#${id} .document-reader`)?.textContent, version: page.querySelector(`#${id}`)?.getAttribute('data-document-version') };
 }

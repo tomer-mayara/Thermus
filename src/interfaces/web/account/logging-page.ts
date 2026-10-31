@@ -74,19 +74,27 @@ ${page.settings === undefined ? `<p><a href="${escapeHtml(page.navigation.loggin
 function destinationForm(page: LoggingPage, settings: PublicDestinationSettings, notice: string): string {
   return `<form method="post" action="${escapeHtml(page.action)}">
 ${hiddenField('csrf_token', page.csrfToken)}${hiddenField('organization_id', page.tenantId)}${hiddenField('expected_revision', settings.revision ?? '')}
-<fieldset id="logging-destination"><legend>Destination</legend><label class="role-option"><input type="radio" name="destination" value="axiom" required${settings.axiomDataset ? ' checked' : ''}> Axiom</label>
-<label class="role-option"><input type="radio" name="destination" value="custom" required${settings.axiomDataset ? '' : ' checked'}> Custom</label></fieldset>
+${destinationChoices(settings)}
 <label for="logging-endpoint">OTLP logs endpoint</label><input id="logging-endpoint" name="endpoint" type="url" maxlength="2048" required pattern="https://.*" aria-describedby="logging-endpoint-help" value="${escapeHtml(settings.endpoint)}">
 <p id="logging-endpoint-help">Use an HTTPS OTLP/HTTP JSON logs endpoint.</p>
 <div id="logging-axiom-fields"><label for="logging-dataset">Axiom dataset</label><input id="logging-dataset" name="axiom_dataset" type="text" maxlength="128" pattern="[A-Za-z0-9\\-]{1,128}" aria-describedby="logging-dataset-help" value="${escapeHtml(settings.axiomDataset ?? '')}">
 <p id="logging-dataset-help">Required for Axiom: 1–128 letters, digits, or hyphens.</p></div>
 <noscript><p>For Axiom, enter a dataset. For Custom, clear the Axiom dataset.</p></noscript>
 ${hiddenField('auth', 'bearer')}
-<label for="logging-token">Bearer token</label><input id="logging-token" name="token" type="password" autocomplete="new-password" maxlength="8192"${settings.tokenPresent ? '' : ' required'} aria-describedby="logging-token-help" placeholder="${escapeHtml(settings.tokenPreview ?? '')}" value="">
-<p id="logging-token-help">${settings.tokenPresent ? 'A token is saved. Leave Token blank to keep it for the same endpoint.' : 'No token is saved. Enter a Bearer token.'} A changed endpoint needs a new token.${settings.revision && settings.auth === 'none' ? ' Enter a Bearer token to Save or Test.' : ''}</p>
+${tokenField(settings)}
 <label class="logging-switch"><input type="checkbox" name="enabled" role="switch"${settings.enabled ? ' checked' : ''}><span class="logging-switch-track" aria-hidden="true"></span><span>Enable export</span><span class="logging-switch-off" aria-hidden="true">Off</span><span class="logging-switch-on" aria-hidden="true">On</span></label>
 ${notice}<p class="logging-save-status" role="status"><span id="logging-saved">${page.saved ? 'saved' : ''}</span></p>
 <div class="logging-actions"><button type="submit">Save</button>
 <button type="submit" class="secondary-action" formaction="${escapeHtml(page.testAction)}">Test</button></div></form>
 <p>Test saves these settings, then sends one synthetic event, even when export is disabled. Check your destination for receipt.</p>`;
+}
+
+function destinationChoices(settings: PublicDestinationSettings): string {
+  return `<fieldset id="logging-destination"><legend>Destination</legend><label class="role-option"><input type="radio" name="destination" value="axiom" required${settings.axiomDataset ? ' checked' : ''}> Axiom</label>
+<label class="role-option"><input type="radio" name="destination" value="custom" required${settings.axiomDataset ? '' : ' checked'}> Custom</label></fieldset>`;
+}
+
+function tokenField(settings: PublicDestinationSettings): string {
+  return `<label for="logging-token">Bearer token</label><input id="logging-token" name="token" type="password" autocomplete="new-password" maxlength="8192"${settings.tokenPresent ? '' : ' required'} aria-describedby="logging-token-help" placeholder="${escapeHtml(settings.tokenPreview ?? '')}" value="">
+<p id="logging-token-help">${settings.tokenPresent ? 'A token is saved. Leave Token blank to keep it for the same endpoint.' : 'No token is saved. Enter a Bearer token.'} A changed endpoint needs a new token.${settings.revision && settings.auth === 'none' ? ' Enter a Bearer token to Save or Test.' : ''}</p>`;
 }

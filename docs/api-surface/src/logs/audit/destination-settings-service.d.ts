@@ -1,8 +1,7 @@
-import type { AuditContext } from './audit-log.ts';
 import type { DestinationSettingsStore } from './destination-settings-store.ts';
 import type { AuditDestination } from './audit-send.ts';
-import type { DestinationTestResult, DestinationTestSender } from './destination-test.ts';
-export type { DestinationTestResult } from './destination-test.ts';
+import type { DestinationTestResult, DestinationTestSender, TestRequester } from './destination-test.ts';
+export type { DestinationTestResult, TestRequester } from './destination-test.ts';
 export interface PublicDestinationSettings {
     readonly revision: string | null;
     readonly endpoint: string;
@@ -48,7 +47,7 @@ export declare class DestinationSettingsService {
     private readonly tests;
     constructor(store: DestinationSettingsStore, key: Uint8Array, sender: DestinationTestSender);
     authorizeExport(tenantId: string, expectedRevision: string, signal?: AbortSignal): Promise<ExportAuthorization>;
-    test(tenantId: string, input: DestinationSettingsSaveInput, actor: AuditContext['actor'], signal?: AbortSignal): Promise<DestinationTestResult>;
+    test(requester: TestRequester, input: DestinationSettingsSaveInput, signal?: AbortSignal): Promise<DestinationTestResult>;
     private testSaved;
     read(tenantId: string): Promise<DestinationSettingsReadResult>;
     save(tenantId: string, input: DestinationSettingsSaveInput): Promise<DestinationSettingsSaveResult>;

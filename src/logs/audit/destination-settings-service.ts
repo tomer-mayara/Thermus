@@ -1,13 +1,12 @@
 import { auditActorName } from './audit-content.ts';
-import type { AuditContext } from './audit-log.ts';
 import { DestinationCredentialCodec } from './destination-credential-codec.ts';
 import { validDestinationEndpoint } from './destination-endpoint.ts';
-import type { DestinationSettingsStore, StoredDestinationSettings } from './destination-settings-store.ts';
+import type { DestinationSettingsStore, ReadSettingsResult, SaveSettingsResult, StoredDestinationSettings } from './destination-settings-store.ts';
 import type { AuditDestination, AuditSendOutcome } from './audit-send.ts';
-import { DestinationTestLifetime } from './destination-test.ts';
-import type { DestinationTestResult, DestinationTestSender } from './destination-test.ts';
+import { confirmedTest, DestinationTestLifetime, testEvent } from './destination-test.ts';
+import type { DestinationTestResult, DestinationTestSender, TestRequester } from './destination-test.ts';
 
-export type { DestinationTestResult } from './destination-test.ts';
+export type { DestinationTestResult, TestRequester } from './destination-test.ts';
 
 export interface PublicDestinationSettings {
   readonly revision: string | null;
@@ -38,6 +37,8 @@ export type ExportAuthorization =
   | { readonly status: 'ready'; readonly destination: AuditDestination }
   | { readonly status: 'changed' | 'unavailable' };
 
+interface SavePlan { readonly token: string; readonly ciphertext?: string }
+
 export class DestinationSettingsService {
   private readonly codec: DestinationCredentialCodec;
   private readonly tests = new DestinationTestLifetime();
@@ -50,25 +51,26 @@ export class DestinationSettingsService {
     try {
       if (signal?.aborted) return { status: 'unavailable' };
       const current = await this.readStored(tenantId);
-      if (signal?.aborted || current.status === 'unavailable') return { status: 'unavailable' };
-      if (current.status !== 'found') return { status: 'changed' };
-      const settings = { ...current.settings };
-      if (settings.enabled !== true || settings.revision !== expectedRevision) return { status: 'changed' };
+      const settings = signal?.aborted ? 'unavailable' : exportableSettings(current, expectedRevision);
+      if (typeof settings === 'string') return { status: settings };
       const token = this.token(tenantId, settings);
       if (token === null) return { status: 'unavailable' };
-      return { status: 'ready', destination: { endpoint: settings.endpoint, ...(settings.axiomDataset ? { axiomDataset: settings.axiomDataset } : {}), auth: settings.auth === 'bearer' ? { type: 'bearer', token } : { type: 'none' } } };
+      return { status: 'ready', destination: { endpoint: settings.endpoint, ...axiomDatasetOf(settings), auth: settings.auth === 'bearer' ? { type: 'bearer', token } : { type: 'none' } } };
     } catch { return { status: 'unavailable' }; }
   }
 
   /** Tenant and actor come from the caller's current trusted Admin context. */
-  test(tenantId: string, input: DestinationSettingsSaveInput, actor: AuditContext['actor'], signal?: AbortSignal): Promise<DestinationTestResult> {
+  test(requester: TestRequester, input: DestinationSettingsSaveInput, signal?: AbortSignal): Promise<DestinationTestResult> {
     const desired = { ...input };
+    const { organizationId, actor } = requester;
     const name = auditActorName(actor.name);
     const trustedActor = Object.freeze({ authority: actor.authority, subject: actor.subject, ...(name === undefined ? {} : { name }) });
-    return this.tests.run(control => this.testSaved(tenantId, desired, trustedActor, control), signal);
+    const trusted: TestRequester = { organizationId, actor: trustedActor };
+    return this.tests.run(control => this.testSaved(trusted, desired, control), signal);
   }
 
-  private async testSaved(tenantId: string, desired: DestinationSettingsSaveInput, actor: AuditContext['actor'], signal: AbortSignal): Promise<DestinationTestResult> {
+  private async testSaved(requester: TestRequester, desired: DestinationSettingsSaveInput, signal: AbortSignal): Promise<DestinationTestResult> {
+    const tenantId = requester.organizationId;
     const current = await this.readStored(tenantId);
     if (signal.aborted) return { status: 'cancelled' };
     if (current.status === 'unavailable') return { status: 'unavailable' };
@@ -76,20 +78,16 @@ export class DestinationSettingsService {
     const settings = { ...current.settings };
     const token = this.token(tenantId, settings);
     if (token === null) return { status: 'unavailable' };
-    if (settings.revision !== desired.expectedRevision) return { status: 'conflict' };
-    if (!matchesSavedSettings(desired, settings)) return { status: 'unsaved' };
+    const mismatch = testMismatch(desired, settings);
+    if (mismatch !== undefined) return mismatch;
     let outcome: AuditSendOutcome;
     try {
-      outcome = await this.sender.send({ endpoint: settings.endpoint, ...(settings.axiomDataset ? { axiomDataset: settings.axiomDataset } : {}), auth: settings.auth === 'bearer' ? { type: 'bearer', token } : { type: 'none' } }, {
-        eventName: 'audit.destination.test', timestamp: new Date().toISOString(), organizationId: tenantId, actor, destinationRevision: settings.revision,
-      }, signal);
+      outcome = await this.sender.send({ endpoint: settings.endpoint, ...axiomDatasetOf(settings), auth: settings.auth === 'bearer' ? { type: 'bearer', token } : { type: 'none' } }, testEvent(requester, settings.revision), signal);
     } catch { outcome = { kind: 'unconfirmed', reason: 'transport' }; }
     if (signal.aborted) return { status: 'cancelled' };
     const after = await this.readStored(tenantId);
     if (signal.aborted) return { status: 'cancelled' };
-    if (after.status === 'unavailable') return { status: 'unconfirmed' };
-    if (after.status !== 'found' || after.settings.revision !== settings.revision) return { status: 'conflict' };
-    return { status: 'tested', revision: settings.revision, outcome };
+    return confirmedTest(after, settings.revision, outcome);
   }
 
   async read(tenantId: string): Promise<DestinationSettingsReadResult> {
@@ -112,14 +110,11 @@ export class DestinationSettingsService {
     const settings = current.status === 'found' ? current.settings : undefined;
     const previousToken = settings ? this.token(tenantId, settings) : '';
     if (previousToken === null) return { status: 'unavailable' };
-    if ((settings?.revision ?? null) !== desired.expectedRevision) return { status: 'conflict' };
-    const token = retainedToken(desired, settings, previousToken);
-    if (token === null) return { status: 'invalid', reason: 'token' };
-    const encryptedCredential = desired.auth === 'none' ? null
-      : token === previousToken && settings?.encryptedCredential ? settings.encryptedCredential : this.codec.encrypt(tenantId, token);
-    const result = await this.store.save(tenantId, desired.expectedRevision, { endpoint: desired.endpoint, ...(desired.axiomDataset ? { axiomDataset: desired.axiomDataset } : {}), auth: desired.auth, enabled: desired.enabled, encryptedCredential }).catch(() => ({ status: 'unconfirmed' as const }));
-    if (result.status === 'saved' || result.status === 'unchanged') return { status: result.status, settings: project(result.settings, token) };
-    return { status: result.status };
+    const plan = savePlan(desired, settings, previousToken);
+    if (!('token' in plan)) return plan;
+    const encryptedCredential = desired.auth === 'none' ? null : plan.ciphertext ?? this.codec.encrypt(tenantId, plan.token);
+    const result = await this.store.save(tenantId, desired.expectedRevision, { endpoint: desired.endpoint, ...axiomDatasetOf(desired), auth: desired.auth, enabled: desired.enabled, encryptedCredential }).catch(() => ({ status: 'unconfirmed' as const }));
+    return publicSaveResult(result, plan.token);
   }
 
   private async readStored(tenantId: string) {
@@ -128,13 +123,24 @@ export class DestinationSettingsService {
   }
 
   private token(tenant: string, settings: StoredDestinationSettings): string | null {
-    if (invalidInput({ ...settings, expectedRevision: settings.revision, token: '' })
-      || typeof settings.revision !== 'string' || settings.revision.trim() === '') return null;
+    if (!validStoredSettings(settings)) return null;
     if (settings.auth === 'none') return settings.encryptedCredential === null ? '' : null;
     if (typeof settings.encryptedCredential !== 'string') return null;
     const token = this.codec.decrypt(tenant, settings.encryptedCredential);
-    return token !== null && token !== '' && !invalidInput({ ...settings, expectedRevision: settings.revision, token }) ? token : null;
+    return token !== null && token !== '' && validToken(token) ? token : null;
   }
+}
+
+function exportableSettings(current: ReadSettingsResult, expectedRevision: string): StoredDestinationSettings | 'changed' | 'unavailable' {
+  if (current.status === 'unavailable') return 'unavailable';
+  if (current.status !== 'found') return 'changed';
+  const settings = { ...current.settings };
+  return settings.enabled === true && settings.revision === expectedRevision ? settings : 'changed';
+}
+
+function testMismatch(desired: DestinationSettingsSaveInput, saved: StoredDestinationSettings): DestinationTestResult | undefined {
+  if (saved.revision !== desired.expectedRevision) return { status: 'conflict' };
+  return matchesSavedSettings(desired, saved) ? undefined : { status: 'unsaved' };
 }
 
 function matchesSavedSettings(input: DestinationSettingsSaveInput, saved: StoredDestinationSettings): boolean {
@@ -142,12 +148,34 @@ function matchesSavedSettings(input: DestinationSettingsSaveInput, saved: Stored
 }
 
 function invalidInput(input: DestinationSettingsSaveInput): 'endpoint' | 'dataset' | 'token' | 'settings' | undefined {
-  if (!['none', 'bearer'].includes(input.auth) || typeof input.enabled !== 'boolean'
-    || !(input.expectedRevision === null || typeof input.expectedRevision === 'string')) return 'settings';
+  if (!validSettingsFields(input)) return 'settings';
   if (typeof input.endpoint !== 'string' || !validDestinationEndpoint(input.endpoint)) return 'endpoint';
-  if (input.axiomDataset !== undefined && (typeof input.axiomDataset !== 'string' || (input.axiomDataset !== '' && !/^[A-Za-z0-9-]{1,128}$/.test(input.axiomDataset)))) return 'dataset';
-  if (typeof input.token !== 'string' || input.token.length > 8192 || (input.token !== '' && !/^[A-Za-z0-9._~+/-]+=*$/.test(input.token))) return 'token';
+  if (!validDataset(input.axiomDataset)) return 'dataset';
+  if (!validToken(input.token)) return 'token';
   return undefined;
+}
+
+function validSettingsFields(input: DestinationSettingsSaveInput): boolean {
+  return ['none', 'bearer'].includes(input.auth) && typeof input.enabled === 'boolean' && (input.expectedRevision === null || typeof input.expectedRevision === 'string');
+}
+
+function validDataset(dataset: unknown): boolean {
+  return dataset === undefined || (typeof dataset === 'string' && (dataset === '' || /^[A-Za-z0-9-]{1,128}$/.test(dataset)));
+}
+
+function validToken(token: unknown): boolean {
+  return typeof token === 'string' && token.length <= 8192 && (token === '' || /^[A-Za-z0-9._~+/-]+=*$/.test(token));
+}
+
+function validStoredSettings(settings: StoredDestinationSettings): boolean {
+  return invalidInput({ ...settings, expectedRevision: settings.revision, token: '' }) === undefined && typeof settings.revision === 'string' && settings.revision.trim() !== '';
+}
+
+function savePlan(desired: DestinationSettingsSaveInput, saved: StoredDestinationSettings | undefined, savedToken: string): SavePlan | { readonly status: 'conflict' } | { readonly status: 'invalid'; readonly reason: 'token' } {
+  if ((saved?.revision ?? null) !== desired.expectedRevision) return { status: 'conflict' };
+  const token = retainedToken(desired, saved, savedToken);
+  if (token === null) return { status: 'invalid', reason: 'token' };
+  return { token, ciphertext: token === savedToken && saved?.encryptedCredential ? saved.encryptedCredential : undefined };
 }
 
 function retainedToken(input: DestinationSettingsSaveInput, current: StoredDestinationSettings | undefined, previous: string): string | null {
@@ -156,6 +184,14 @@ function retainedToken(input: DestinationSettingsSaveInput, current: StoredDesti
   return current?.auth === 'bearer' && current.endpoint === input.endpoint ? previous : null;
 }
 
+function publicSaveResult(result: SaveSettingsResult, token: string): DestinationSettingsSaveResult {
+  return result.status === 'saved' || result.status === 'unchanged' ? { status: result.status, settings: project(result.settings, token) } : { status: result.status };
+}
+
+function axiomDatasetOf(settings: { readonly axiomDataset?: string }): { readonly axiomDataset?: string } {
+  return settings.axiomDataset ? { axiomDataset: settings.axiomDataset } : {};
+}
+
 function project(settings: StoredDestinationSettings, token: string): PublicDestinationSettings {
-  return { revision: settings.revision, endpoint: settings.endpoint, ...(settings.axiomDataset ? { axiomDataset: settings.axiomDataset } : {}), auth: settings.auth, enabled: settings.enabled, tokenPresent: settings.auth === 'bearer', ...(settings.auth === 'bearer' ? { tokenPreview: `${token.length > 4 ? token.slice(0, 4) : ''}****` } : {}) };
+  return { revision: settings.revision, endpoint: settings.endpoint, ...axiomDatasetOf(settings), auth: settings.auth, enabled: settings.enabled, tokenPresent: settings.auth === 'bearer', ...(settings.auth === 'bearer' ? { tokenPreview: `${token.length > 4 ? token.slice(0, 4) : ''}****` } : {}) };
 }

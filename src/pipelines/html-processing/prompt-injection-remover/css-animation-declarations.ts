@@ -55,18 +55,31 @@ function resetsToInitial(value: string): boolean {
   return ['initial', 'unset'].includes(ident.decode(value).toLowerCase());
 }
 
-function expandShorthand(node: Declaration, value: string, parts: SyntaxMatchNode[] | undefined): Declaration[] {
-  const single = parts?.length === 1 && parts[0].syntax?.name === 'single-animation' ? parts[0] : undefined;
+function singleAnimation(parts: SyntaxMatchNode[] | undefined): SyntaxMatchNode | undefined {
+  return parts?.length === 1 && parts[0].syntax?.name === 'single-animation' ? parts[0] : undefined;
+}
+
+function longhandOf(part: SyntaxMatchNode): [name: string, value: string] | undefined {
+  const name = shorthandParts[part.syntax?.name ?? ''];
+  const parsed = firstNode(part);
+  return name && parsed !== undefined ? [name, parsed] : undefined;
+}
+
+function longhandValues(single: SyntaxMatchNode | undefined): Record<string, string> {
   const values: Record<string, string> = { ...defaults };
+  for (const part of single?.match ?? []) {
+    const longhand = longhandOf(part);
+    if (longhand !== undefined) values[longhand[0]] = longhand[1];
+  }
+  return values;
+}
+
+function expandShorthand(node: Declaration, value: string, parts: SyntaxMatchNode[] | undefined): Declaration[] {
+  const single = singleAnimation(parts);
   if (!resetsToInitial(value) && !single) {
     return Object.keys(defaults).map((name) => declaration(node, name, value));
   }
-  for (const part of single?.match ?? []) {
-    const name = shorthandParts[part.syntax?.name ?? ''];
-    const parsed = firstNode(part);
-    if (name && parsed !== undefined) values[name] = parsed;
-  }
-  return Object.entries(values).map(([name, parsed]) => declaration(node, name, parsed));
+  return Object.entries(longhandValues(single)).map(([name, parsed]) => declaration(node, name, parsed));
 }
 
 export function animationDeclarations(node: Declaration): Declaration[] | undefined {

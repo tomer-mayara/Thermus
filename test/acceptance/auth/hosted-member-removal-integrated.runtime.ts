@@ -5,7 +5,7 @@ import { test } from 'node:test';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/client';
 import { createHostedToolOperations } from '../../../src/app/fetch-tool.ts';
 import type { AuditSendOutcome } from '../../../src/logs/audit/audit-send.ts';
-import { formsIn, formLabelled } from '../../support/drivers/browser/hosted-browser.ts';
+import { formsIn, formLabelled, type HostedBrowser } from '../../support/drivers/browser/hosted-browser.ts';
 import { connectMcpClient } from '../../support/drivers/mcp/mcp-sdk-client.ts';
 import { signInThroughServer } from '../../support/dsl/workos-sign-in.ts';
 import { removalForm } from '../../support/dsl/hosted-member-removal.ts';
@@ -16,6 +16,7 @@ import { organization, otherOrganization, ordinaryUser, remainingAdmin, removing
 
 for (const reauthentication of [false, true]) {
   test(`Given a password-only hosted composition with two Admins, a User, other memberships and personal factors, when Members removes the User and then its Admin ${reauthentication ? 'and the provider requires reauthentication' : 'with its session retained'}, then current SQL receipts, counts, access denial, scope and usable selection agree`, { timeout: 60_000 }, async t => {
+    const removedAccessStatus = reauthentication ? 401 : 403;
     const site = await serveIntegratedRemovalSite(t, { reauthentication });
     const { browser: admin } = await signInThroughServer(site, removingAdmin, organization);
     const { browser: user } = await signInThroughServer(site, ordinaryUser, organization);
@@ -41,7 +42,7 @@ for (const reauthentication of [false, true]) {
     assert.equal(userReceipt.operation.membershipId, userId);
     assert.equal(userReceipt.operation.outcome, 'applied');
     assert.match((await admin.open('members')).body, /Active product members: 2/);
-    assert.equal((await user.open('portal/access')).status, reauthentication ? 401 : 403);
+    assert.equal((await user.open('portal/access')).status, removedAccessStatus);
     assert.equal((await site.discover(userToken)).status, 403);
     const otherAccess = reauthentication ? (await signInThroughServer(site, ordinaryUser, otherOrganization)).browser : otherUser;
     assert.equal((await otherAccess.open('portal/access')).status, 200);
@@ -56,8 +57,8 @@ for (const reauthentication of [false, true]) {
     assert.equal(selfReceipt.status, 'found');
     assert.equal(selfReceipt.operation.membershipId, adminId);
     assert.equal(selfReceipt.operation.outcome, 'applied');
-    assert.equal((await admin.open('portal/access')).status, reauthentication ? 401 : 403);
-    assert.equal((await admin.open('members')).status, reauthentication ? 401 : 403);
+    assert.equal((await admin.open('portal/access')).status, removedAccessStatus);
+    assert.equal((await admin.open('members')).status, removedAccessStatus);
     assert.equal((await site.discover(adminToken)).status, 403);
     for (const token of otherTokens) assert.equal((await site.discover(token)).status, 200);
     const current = await survivor.open('members');
@@ -73,16 +74,7 @@ for (const reauthentication of [false, true]) {
     assert.equal(refusalReceipt.operation.outcome, 'no-effect');
     assert.match((await survivor.open('members')).body, /Active product members: 1/);
 
-    if (reauthentication) {
-      assert.equal((await admin.open('organizations')).status, 401);
-      const signInLink = /href="([^\"]*\/login[^\"]*)"/.exec(removedSelf.body)?.[1];
-      assert.ok(signInLink, 'Self-removal must offer sign-in guidance');
-      const start = await admin.open(signInLink);
-      const state = start.location?.searchParams.get('state');
-      assert.ok(state);
-      const callback = await admin.open(`callback?code=${site.world.codeFor(removingAdmin)}&state=${encodeURIComponent(state)}`);
-      assert.equal(callback.location?.pathname, '/team/organizations');
-    }
+    if (reauthentication) await signInAgainFromRemovalGuidance(site, admin, removedSelf.body);
     const selector = await admin.open('organizations');
     assert.equal(selector.status, 200, selector.body);
     assert.doesNotMatch(selector.body, /membership_id|revision|Member removed|not confirmed/);
@@ -98,6 +90,17 @@ for (const reauthentication of [false, true]) {
     ]);
     t.diagnostic('Real hosted HTTP composition and disposable verified-TLS PostgreSQL; WorkOS Password sessions and personal-factor sentinels are controlled. Factor preservation proves adapter scope only, not live provider semantics or MFA feasibility.');
   });
+}
+
+async function signInAgainFromRemovalGuidance(site: Awaited<ReturnType<typeof serveIntegratedRemovalSite>>, admin: HostedBrowser, guidance: string): Promise<void> {
+  assert.equal((await admin.open('organizations')).status, 401);
+  const signInLink = /href="([^\"]*\/login[^\"]*)"/.exec(guidance)?.[1];
+  assert.ok(signInLink, 'Self-removal must offer sign-in guidance');
+  const start = await admin.open(signInLink);
+  const state = start.location?.searchParams.get('state');
+  assert.ok(state);
+  const callback = await admin.open(`callback?code=${site.world.codeFor(removingAdmin)}&state=${encodeURIComponent(state)}`);
+  assert.equal(callback.location?.pathname, '/team/organizations');
 }
 
 test('Given password-only access and enabled SQL-backed customer export, when Members confirms removal while the export sender fails, then the durable deletion stays confirmed without replay or an MFA or paid-feature requirement', { timeout: 60_000 }, async t => {

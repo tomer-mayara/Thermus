@@ -1,4 +1,4 @@
-import { safeProcessCode, WebsiteFetchFailure, type FetchDiagnostic } from './fetch-diagnostic.ts';
+import { processDiagnostic, safeProcessCode, WebsiteFetchFailure, type FetchDiagnostic } from './fetch-diagnostic.ts';
 export { WebsiteFetchFailure, type FetchDiagnostic } from './fetch-diagnostic.ts';
 export interface WebsiteFetchResult {
   requestedUrl: string;
@@ -48,8 +48,8 @@ export class WebsiteFetchLaunchError extends WebsiteFetchFailure {
   public readonly code: string;
   public readonly failure: 'missing' | 'cannot-start';
 
-  public constructor(code: unknown, message: string, options?: ErrorOptions, diagnostic: FetchDiagnostic = { category: 'launch', phase: 'renderer_launch' }) {
-    super(message, diagnostic, options);
+  public constructor(code: unknown, message: string, options?: ErrorOptions) {
+    super(message, { category: 'launch', phase: 'renderer_launch', ...processDiagnostic(options?.cause) }, options);
     this.name = 'WebsiteFetchLaunchError';
     this.code = systemErrorName(code);
     this.failure = this.code === 'ENOENT' ? 'missing' : 'cannot-start';

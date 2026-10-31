@@ -16,8 +16,7 @@ export class DestinationSettingsFake implements DestinationSettingsStore {
     this.writes += 1;
     const previous = this.settings.get(tenantId);
     if ((previous?.revision ?? null) !== expectedRevision) return { status: 'conflict' };
-    const unchanged = previous !== undefined && previous.endpoint === desired.endpoint && previous.axiomDataset === desired.axiomDataset && previous.auth === desired.auth
-      && previous.enabled === desired.enabled && previous.encryptedCredential === desired.encryptedCredential;
+    const unchanged = sameSettings(previous, desired);
     const settings = unchanged ? previous : { ...desired, revision: randomUUID() };
     this.settings.set(tenantId, settings);
     if (this.unconfirmNextSave) {
@@ -26,4 +25,10 @@ export class DestinationSettingsFake implements DestinationSettingsStore {
     }
     return { status: unchanged ? 'unchanged' : 'saved', settings };
   }
+}
+
+const settingFields = ['endpoint', 'axiomDataset', 'auth', 'enabled', 'encryptedCredential'] as const;
+
+function sameSettings(previous: StoredDestinationSettings | undefined, desired: DestinationSettings): previous is StoredDestinationSettings {
+  return previous !== undefined && settingFields.every(field => previous[field] === desired[field]);
 }

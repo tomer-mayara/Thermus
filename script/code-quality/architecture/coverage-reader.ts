@@ -14,10 +14,11 @@ export function coverageInFile(path: string): CoverageReport {
   if (fields.suite !== undefined && coverageSuitesIn(fields.suite) === undefined) invalid(path);
   const entries = requiredArray(fields.files, check);
   const version = fields.version as number;
-  const unmeasured = unmeasuredFunctions(fields.unmeasuredFunctions, check, version);
+  const format = { version, check };
+  const unmeasured = unmeasuredFunctions(fields.unmeasuredFunctions, format);
   return {
     version, commit: json.textOf(fields.commit), suite: fields.suite as CoverageReport['suite'], measurementVersion: json.textOf(fields.measurementVersion),
-    provenance: coverageProvenanceIn(fields.provenance), files: entries.map((entry) => coverageFileIn(json.objectOf(entry), check, unmeasured, version)),
+    provenance: coverageProvenanceIn(fields.provenance), files: entries.map((entry) => coverageFileIn(json.objectOf(entry), format, unmeasured)),
   };
 }
 

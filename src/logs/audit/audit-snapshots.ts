@@ -110,17 +110,19 @@ export class AuditSnapshots implements AuditEventSink {
       if (this.now() >= load.until) { this.expire(tenant, load); return; }
       const snapshot = snapshotFrom(result, this.now() + this.bounds.freshMs, this.bounds.revisionBytes);
       if (snapshot === undefined) this.expire(tenant, load);
-      else {
-        load.resident.snapshot = snapshot; load.resident.retryAt = 0;
-        try { this.downstream.settingsObserved?.(tenant, snapshot.enabled ? snapshot.revision : null); }
-        catch { /* A downstream observation failure cannot invalidate a successful metadata load. */ }
-        this.flushPending(tenant, load, snapshot);
-      }
+      else this.applySnapshot(tenant, load, snapshot);
     } catch {
       this.expire(tenant, load);
     } finally {
       this.finish(tenant, load);
     }
+  }
+
+  private applySnapshot(tenant: string, load: SnapshotLoad, snapshot: Snapshot): void {
+    load.resident.snapshot = snapshot; load.resident.retryAt = 0;
+    try { this.downstream.settingsObserved?.(tenant, snapshot.enabled ? snapshot.revision : null); }
+    catch { /* A downstream observation failure cannot invalidate a successful metadata load. */ }
+    this.flushPending(tenant, load, snapshot);
   }
 
   private flushPending(tenant: string, load: SnapshotLoad, snapshot: Snapshot): void {

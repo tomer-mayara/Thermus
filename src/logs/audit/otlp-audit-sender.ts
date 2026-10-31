@@ -45,7 +45,7 @@ async function attempt(request: PreparedAuditRequest, signal: AbortSignal): Prom
     try {
       signal.throwIfAborted();
       if (request.body === undefined) throw new AuditSendFailure({ kind: 'cancelled' });
-      return await requestAuditExport(socket, request.url, request.body, request, signal);
+      return await requestAuditExport(socket, { ...request, body: request.body }, signal);
     } finally { await closeAuditSocket(socket); }
   } catch (error) { return failureOutcome(error); }
   finally { clear(); signal.removeEventListener('abort', clear); }

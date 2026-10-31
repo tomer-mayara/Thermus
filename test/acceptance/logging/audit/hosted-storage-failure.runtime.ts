@@ -9,7 +9,8 @@ import { createPgSettingsRuntime } from '../../../../src/runtime/sql/bounded-sql
 import { PgDestinationSettingsStore } from '../../../../src/logs/audit/pg-destination-settings-store.ts';
 import { OrganizationAdministration } from '../../../../src/accounts/organizations/organization-administration.ts';
 import { BillingFree } from '../../../../src/accounts/billing/billing-free.ts';
-import { WorkOSOrganizations, workosMembershipReads } from '../../../../src/accounts/providers/workos/workos-organizations.ts';
+import { WorkOSOrganizations } from '../../../../src/accounts/providers/workos/workos-organizations.ts';
+import { workosMembershipReads } from '../../../../src/accounts/providers/workos/workos-membership-reads.ts';
 import { workosAuthority } from '../../../../src/accounts/providers/workos/workos-settings.ts';
 import { WorkOSFake } from '../../../support/doubles/workos/workos-fake.ts';
 import { RendererProcessDouble } from '../../../support/doubles/website-fetcher/renderer-process-double.ts';

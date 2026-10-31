@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import { describe, test, type TestContext } from 'node:test';
 import type { Invitation, OrganizationMembership } from '@workos-inc/node';
-import { WorkOSOrganizations, workosMembershipReads, type WorkOSOrganizationsOptions } from '../../../../src/accounts/providers/workos/workos-organizations.ts';
+import { WorkOSOrganizations, type WorkOSOrganizationsOptions } from '../../../../src/accounts/providers/workos/workos-organizations.ts';
+import { workosMembershipReads } from '../../../../src/accounts/providers/workos/workos-membership-reads.ts';
 import { workosAuthority } from '../../../../src/accounts/providers/workos/workos-settings.ts';
 import { activeUserSeatCount } from '../../../../src/accounts/organizations/administration-overviews.ts';
 import { invitationsOf } from '../../../../src/accounts/organizations/directory-reads.ts';

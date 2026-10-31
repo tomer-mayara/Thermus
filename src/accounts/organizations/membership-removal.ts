@@ -43,34 +43,51 @@ export class MembershipRemoval {
     const admission = await lifetime.wait(() => store.admitRemoval(intent));
     if (admission.status === 'unconfirmed') return 'unknown';
     if (admission.status !== 'admitted') return admission.status;
-    return this.admitted(user, request, intent, store, lifetime);
+    return this.admitted(user, new AdmittedRemoval(store, intent, lifetime));
   }
 
-  private async admitted(user: AuthenticatedUser, request: MemberRemovalRequest, intent: RemovalIntent, store: RemovalOperationStore, lifetime: RemovalLifetime): Promise<RemovalResult> {
+  private async admitted(user: AuthenticatedUser, removal: AdmittedRemoval): Promise<RemovalResult> {
     try {
-      const refusal = await checkRemoval(this.directory, user, request, read => lifetime.wait(read));
-      if (refusal !== undefined) return this.complete(store, intent, 'no-effect', refusal, lifetime);
+      const refusal = await checkRemoval(user, removal.intent, read => removal.wait(signal => read(this.directory, signal)));
+      if (refusal !== undefined) return removal.complete('no-effect', refusal);
     } catch {
-      return this.complete(store, intent, 'no-effect', 'unavailable', lifetime);
+      return removal.complete('no-effect', 'unavailable');
     }
     try {
-      const result = await lifetime.wait(() => this.directory.deleteMembership(request.membershipId));
-      if (result.outcome === 'applied') return this.complete(store, intent, 'applied', 'applied', lifetime);
-      if (result.outcome === 'unsupported') return this.complete(store, intent, 'no-effect', 'unsupported', lifetime);
+      const result = await removal.wait(() => this.directory.deleteMembership(removal.intent.membershipId));
+      if (result.outcome === 'applied') return removal.complete('applied', 'applied');
+      if (result.outcome === 'unsupported') return removal.complete('no-effect', 'unsupported');
     } catch {
       return 'unknown';
     }
     return 'unknown';
   }
+}
 
-  private async complete(store: RemovalOperationStore, intent: RemovalIntent, terminal: RemovalTerminal, result: RemovalResult, lifetime: RemovalLifetime): Promise<RemovalResult> {
+class AdmittedRemoval {
+  readonly intent: RemovalIntent;
+  private readonly store: RemovalOperationStore;
+  private readonly lifetime: RemovalLifetime;
+
+  constructor(store: RemovalOperationStore, intent: RemovalIntent, lifetime: RemovalLifetime) {
+    this.store = store;
+    this.intent = intent;
+    this.lifetime = lifetime;
+  }
+
+  wait<T>(work: (signal: AbortSignal) => Promise<T>): Promise<T> {
+    return this.lifetime.wait(work);
+  }
+
+  async complete(terminal: RemovalTerminal, result: RemovalResult): Promise<RemovalResult> {
+    const { store, intent } = this;
     try {
-      const completed = await lifetime.wait(() => store.completeRemoval(intent.organizationId, intent.operationId, terminal));
+      const completed = await this.wait(() => store.completeRemoval(intent.organizationId, intent.operationId, terminal));
       if (completed.status === 'completed') return result;
       if (completed.status === 'mismatch') return 'unknown';
     } catch { /* Read the durable receipt before a success claim. */ }
     try {
-      const receipt = await lifetime.wait(() => store.readRemoval(intent.organizationId));
+      const receipt = await this.wait(() => store.readRemoval(intent.organizationId));
       if (receipt.status === 'found' && receipt.operation.organizationId === intent.organizationId
         && receipt.operation.operationId === intent.operationId && receipt.operation.outcome === terminal) return result;
     } catch { /* A missing receipt cannot prove completion. */ }

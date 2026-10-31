@@ -6,7 +6,7 @@ import type { Candidate } from './declarations.ts';
 import { normalizationVersion } from './types.ts';
 import type { FunctionIdentity, SourceEvidence } from './types.ts';
 
-interface SourceText { readonly path: string; readonly text: string }
+export interface SourceText { readonly path: string; readonly text: string }
 interface Evidence { readonly functions: readonly SnapshotFunction[]; readonly sourceEvidence: SourceEvidence }
 
 export function functionEvidenceOf(source: SourceText, functions: readonly SnapshotFunction[]): Evidence {
@@ -24,12 +24,17 @@ export function candidateIdentityOf(candidate: Candidate): FunctionIdentity | un
 }
 
 function identityFor(entry: SnapshotFunction, candidates: readonly Candidate[], functions: readonly SnapshotFunction[]): FunctionIdentity | undefined {
-  if (entry.identity) {
-    const match = candidates.find(({ node }) => node.getStart() === entry.identity?.start && node.getEnd() === entry.identity?.end);
-    const expected = match && candidateIdentityOf(match);
-    return expected && JSON.stringify(expected) === JSON.stringify(entry.identity) ? expected : undefined;
-  }
-  const { name } = entry;
+  if (entry.identity) return verifiedIdentity(entry.identity, candidates);
+  return identityByName(entry.name, candidates, functions);
+}
+
+function verifiedIdentity(stored: FunctionIdentity, candidates: readonly Candidate[]): FunctionIdentity | undefined {
+  const match = candidates.find(({ node }) => node.getStart() === stored.start && node.getEnd() === stored.end);
+  const expected = match && candidateIdentityOf(match);
+  return expected && JSON.stringify(expected) === JSON.stringify(stored) ? expected : undefined;
+}
+
+function identityByName(name: string, candidates: readonly Candidate[], functions: readonly SnapshotFunction[]): FunctionIdentity | undefined {
   if (name === '(anonymous)') return undefined;
   const matches = candidates.filter((entry) => metricNamesOf(entry).includes(metricName(name)));
   const candidate = matches[0];

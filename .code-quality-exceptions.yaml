@@ -234,3 +234,13 @@ exceptions:
     bound: 75
     reason: One step keeps the delete authority of the weekly sweep in one ordered flow - a complete registry read, a complete organization list, the bound of an empty list or more than 2 absent rows, the in-flight rule, the read by ID, the removal, and one operator line for each outcome. Its largest function has six paths. Sixteen unit, nine acceptance, and one real PostgreSQL case check each branch. A split would spread the order that makes a failed or doubtful list, or a failed read, delete nothing.
     expires: 2026-12-28
+  - path: src/accounts/providers/workos/workos-invitations.ts
+    metric: mi
+    bound: 67.61
+    reason: One invitation owner keeps the WorkOS invitation record, its five calls, and the invitation rules of the organization directory. The clock decides the state, only a pending invitation gives its role, a send refuses an address in use, and each answer after a send or a change must match the request. The largest function, changeInvitation, has six paths. The unit tests in test/unit/auth-workos/workos-organizations-invitations.test.ts and test/integration/auth/workos-provider-administration.test.ts cover it. A further split would separate each answer check from the call that it checks.
+    expires: 2026-12-31
+  - path: src/accounts/providers/workos/workos-membership-reads.ts
+    metric: mi
+    bound: 78.93
+    reason: One adapter keeps the membership record, the two membership reads of the pinned WorkOS SDK, and their transport reads, which keep missing management evidence unknown instead of the SDK default false. The largest function, getOrganizationMembership, has three paths. test/unit/auth-workos/workos-membership-reads.test.ts and the WorkOS integration tests, such as test/integration/auth/workos-member-facts.test.ts, cover it. The record and its two reads change together with the SDK, so a further split would separate the record from the only code that makes it.
+    expires: 2026-12-31

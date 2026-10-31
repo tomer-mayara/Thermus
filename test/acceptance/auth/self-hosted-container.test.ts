@@ -111,6 +111,18 @@ function assertRenewedToken(user: LocalMcpUser, owner: { readonly userId?: strin
   assert.equal(claims.sid, jwtClaims(firstToken).sid);
 }
 
+function assertOneFetchFailedCompletion(server: ServerContainer, tenant: string, subject: string | undefined): void {
+  const completions = server.completionRecords();
+  assert.equal(completions.length, 1);
+  const { operationId, durationMs, ...completion } = completions[0] as Record<string, unknown>;
+  assert.match(operationId as string, generatedOperationIdPattern);
+  assert.ok(typeof durationMs === 'number' && Number.isFinite(durationMs) && durationMs >= 0);
+  assert.deepEqual(completion, {
+    event: 'mcp.tool.completed', authority: `better-auth:${tenant.slice('local:'.length)}`,
+    subject, tenantId: tenant, tool: 'getURLAsMarkdown', status: 'fetch_failed',
+  });
+}
+
 function seamLines(server: ServerContainer, event: 'renderer launch' | 'page connection' | 'page request'): string[] {
   return [...server.output.matchAll(new RegExp(`^Container ${event}(?: (.*))?$`, 'gm'))].map((line) => line[1] ?? '');
 }
@@ -158,15 +170,7 @@ describe('Self-hosted evaluation container without outbound access', { skip: gat
 
     assert.deepEqual(connections.map(({ pages }) => pages), [['/sign-in', '/consent'], ['/sign-in', '/consent']]);
     assert.deepEqual([fetchCall.content, fetchCall.isError], [[{ type: 'text', text: 'Page fetch failed: Renderer connection failed' }], true]);
-    const completions = server.completionRecords();
-    assert.equal(completions.length, 1);
-    const { operationId, durationMs, ...completion } = completions[0] as Record<string, unknown>;
-    assert.match(operationId as string, generatedOperationIdPattern);
-    assert.ok(typeof durationMs === 'number' && Number.isFinite(durationMs) && durationMs >= 0);
-    assert.deepEqual(completion, {
-      event: 'mcp.tool.completed', authority: `better-auth:${tenant.slice('local:'.length)}`,
-      subject: setup.userIds.get(alice.email), tenantId: tenant, tool: 'getURLAsMarkdown', status: 'fetch_failed',
-    });
+    assertOneFetchFailedCompletion(server, tenant, setup.userIds.get(alice.email));
     assert.doesNotMatch(server.completionLines().join('\n'), /93\.184\.216\.34|Show the network limit|"url"|"query"|"reason"|"result"/);
     assert.doesNotMatch(server.output, /Renderer setup failure/);
     assert.notEqual(setup.clientIds[0], setup.clientIds[1]);

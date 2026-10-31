@@ -1,5 +1,5 @@
 import type { AuditEvent } from './audit-log.ts';
-import { retryDelay, type AuditCollectorBounds } from './audit-collector-state.ts';
+import { boundedCollectorText, retryDelay, type AuditCollectorBounds, type RetryBackoff } from './audit-collector-state.ts';
 import type { AuditSendOutcome } from './audit-send.ts';
 import type { AuditRelay } from './audit-relay-request.ts';
 
@@ -16,6 +16,7 @@ export interface RelayRoute {
   readonly target: URL;
   readonly clock: RelayClock;
   readonly bounds: AuditCollectorBounds;
+  readonly retries: RetryBackoff;
 }
 
 /** One pending relay of one event. Its event JSON stays until the relay ends or drops. */
@@ -39,7 +40,7 @@ export interface RelayItem {
  */
 export function relayItemOf(event: AuditEvent, context: string, route: RelayRoute): RelayItem | undefined {
   const tenant: unknown = event.organizationId;
-  if (context === '' || typeof tenant !== 'string' || tenant === '' || Buffer.byteLength(tenant) > 1_024) return undefined;
+  if (context === '' || !boundedCollectorText(tenant, 1_024)) return undefined;
   const body = JSON.stringify(event);
   const eventBytes = Buffer.byteLength(body);
   if (eventBytes > route.bounds.eventBytes) return undefined;
@@ -56,7 +57,7 @@ export async function attemptRelay(item: RelayItem, route: RelayRoute): Promise<
   item.controller = new AbortController();
   try {
     const outcome = await route.clock.post({ target: route.target, context: item.context, body: item.body ?? '' }, item.controller.signal);
-    const delay = item.disposed ? undefined : retryDelay(outcome, item.attempts, route.bounds, route.clock.random());
+    const delay = item.disposed ? undefined : retryDelay(outcome, item.attempts, route.retries);
     return delay === undefined || route.clock.now() + delay >= item.until ? undefined : delay;
   } catch {
     return undefined;

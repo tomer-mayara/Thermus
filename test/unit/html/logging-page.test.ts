@@ -42,13 +42,18 @@ test('Given editable destination settings, when the user switches Axiom and Cust
   const script = document.querySelector('script')?.textContent;
   assert.ok(script);
   runInNewContext(script, { document });
-  const dataset = document.querySelector('input[name="axiom_dataset"]')!;
-  const group = document.querySelector('#logging-axiom-fields')!;
-  const endpoint = document.querySelector('input[name="endpoint"]')!;
-  const token = document.querySelector('input[name="token"]')!;
+  const find = (selector: string) => {
+    const element = document.querySelector(selector);
+    assert.ok(element, `The page has no ${selector}.`);
+    return element;
+  };
+  const dataset = find('input[name="axiom_dataset"]');
+  const group = find('#logging-axiom-fields');
+  const endpoint = find('input[name="endpoint"]');
+  const token = find('input[name="token"]');
   endpoint.setAttribute('value', 'https://edited.example/v1/logs'); token.setAttribute('value', 'unsaved-token');
-  const axiom = document.querySelector('input[value="axiom"]')!;
-  const custom = document.querySelector('input[value="custom"]')!;
+  const axiom = find('input[value="axiom"]');
+  const custom = find('input[value="custom"]');
   for (const chooseAxiom of [false, true, false]) {
     axiom.toggleAttribute('checked', chooseAxiom); custom.toggleAttribute('checked', !chooseAxiom);
     custom.dispatchEvent(new window.Event('change', { bubbles: true }));
@@ -66,10 +71,13 @@ test('Given the destination script, when the page sets CSP, then only its hash p
   const { document } = parseHTML(await response.text());
   const script = document.querySelector('script')?.textContent;
   assert.ok(script);
-  const csp = response.headers.get('Content-Security-Policy')!;
+  const csp = response.headers.get('Content-Security-Policy');
+  assert.ok(csp);
   assert.ok(csp.includes(`script-src 'sha256-${createHash('sha256').update(script).digest('base64')}'`));
   assert.doesNotMatch(csp, /unsafe-inline|unsafe-eval/);
-  assert.doesNotMatch(membersPageLayout(navigation, '').headers.get('Content-Security-Policy')!, /script-src/);
+  const membersCsp = membersPageLayout(navigation, '').headers.get('Content-Security-Policy');
+  assert.ok(membersCsp);
+  assert.doesNotMatch(membersCsp, /script-src/);
 });
 
 test('Given a browser without scripts, when the destination form opens, then the dataset remains editable with Custom instructions', async () => {

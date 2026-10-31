@@ -23,11 +23,19 @@ export function collectorBounds(overrides: Partial<AuditCollectorBounds>): Audit
   return bounds;
 }
 
-export function retryDelay(outcome: AuditSendOutcome | 'unavailable', attempts: number, bounds: AuditCollectorBounds, random: number): number | undefined {
+export function boundedCollectorText(value: unknown, bytes: number): value is string {
+  return typeof value === 'string' && value !== '' && Buffer.byteLength(value) <= bytes;
+}
+
+export interface RetryBackoff { readonly bounds: AuditCollectorBounds; readonly random: () => number }
+
+export function retryDelay(outcome: AuditSendOutcome | 'unavailable', attempts: number, backoff: RetryBackoff): number | undefined {
+  const { bounds } = backoff;
+  const jitter = Math.max(0, Math.min(1, backoff.random()));
   if (attempts >= bounds.attempts) return undefined;
   if (outcome !== 'unavailable' && outcome.kind !== 'transient_failure' && outcome.kind !== 'busy') return undefined;
   const base = Math.min(bounds.backoffCapMs, bounds.backoffMs * 2 ** (attempts - 1));
-  const delay = base + Math.floor(base * 0.25 * Math.max(0, Math.min(1, random)));
+  const delay = base + Math.floor(base * 0.25 * jitter);
   const retryAfter = outcome === 'unavailable' ? 0 : outcome.retryAfterMs ?? 0;
   return Number.isFinite(retryAfter) && retryAfter >= 0 ? Math.max(delay, retryAfter) : undefined;
 }

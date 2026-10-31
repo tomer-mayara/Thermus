@@ -62,21 +62,34 @@ export class HostedPortal {
     return {
       handle: async (request) => {
         const path = new URL(request.url).pathname;
-        const read = request.method === 'GET' || request.method === 'HEAD';
-        if (path === '/healthz') {
-          if (!read) return new Response(null, { status: 405, headers: { Allow: 'GET, HEAD' } });
-          return new Response(request.method === 'HEAD' ? null : 'ok\n', { headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' } });
-        }
-        if (!read || (path !== '/' && !path.startsWith('/assets/'))) return application.handle(request);
-        const file = this.#files.get(path);
-        if (file === undefined) return new Response(request.method === 'HEAD' ? null : 'Not found\n', { status: 404, headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
-        return new Response(request.method === 'HEAD' ? null : file.body, {
-          headers: { ...this.#headers, 'Content-Type': file.type, 'Content-Length': String(file.body.length) },
-        });
+        if (path === '/healthz') return health(request);
+        if (!isRead(request) || !isPortalPath(path)) return application.handle(request);
+        return this.#portalFile(path, request.method === 'HEAD');
       },
       close: (listenerDrain) => application.close(listenerDrain),
     };
   }
+
+  #portalFile(path: string, head: boolean): Response {
+    const file = this.#files.get(path);
+    if (file === undefined) return new Response(head ? null : 'Not found\n', { status: 404, headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
+    return new Response(head ? null : file.body, {
+      headers: { ...this.#headers, 'Content-Type': file.type, 'Content-Length': String(file.body.length) },
+    });
+  }
+}
+
+function health(request: Request): Response {
+  if (!isRead(request)) return new Response(null, { status: 405, headers: { Allow: 'GET, HEAD' } });
+  return new Response(request.method === 'HEAD' ? null : 'ok\n', { headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' } });
+}
+
+function isRead(request: Request): boolean {
+  return request.method === 'GET' || request.method === 'HEAD';
+}
+
+function isPortalPath(path: string): boolean {
+  return path === '/' || path.startsWith('/assets/');
 }
 
 function formActionOrigin(value: string): string {
@@ -89,12 +102,11 @@ function validateIndex(files: ReadonlyMap<string, PortalFile>): void {
   const { document } = parseHTML(files.get('/')?.body.toString('utf8') ?? '');
   const scripts = [...document.querySelectorAll('script')];
   if (!scripts.some((script) => script.getAttribute('type') === 'module')) throw new Error('The build has no portal module.');
-  for (const script of scripts) {
-    const source = script.getAttribute('src') ?? '';
-    if (!assetPath.test(source) || !source.endsWith('.js') || !files.has(source)) throw new Error('The build has a missing portal module.');
-  }
-  for (const style of document.querySelectorAll('link[rel="stylesheet"]')) {
-    const source = style.getAttribute('href') ?? '';
-    if (!assetPath.test(source) || !source.endsWith('.css') || !files.has(source)) throw new Error('The build has a missing stylesheet.');
-  }
+  if (!scripts.every((script) => isBuildAsset(files, script.getAttribute('src') ?? '', '.js'))) throw new Error('The build has a missing portal module.');
+  const styles = [...document.querySelectorAll('link[rel="stylesheet"]')];
+  if (!styles.every((style) => isBuildAsset(files, style.getAttribute('href') ?? '', '.css'))) throw new Error('The build has a missing stylesheet.');
+}
+
+function isBuildAsset(files: ReadonlyMap<string, PortalFile>, source: string, extension: string): boolean {
+  return assetPath.test(source) && source.endsWith(extension) && files.has(source);
 }

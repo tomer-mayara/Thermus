@@ -1,5 +1,6 @@
 import { escapeHtml } from '../html-escape.ts';
 import { htmlDocument, NOTICE_HEADERS } from '../page-html.ts';
+import type { ChangeResult } from '../../../accounts/organizations/change-records.ts';
 import type { RemovalResult } from '../../../accounts/organizations/removal-operation-store.ts';
 
 export { organizationSelectionPage } from './organization-selection-page.ts';
@@ -86,6 +87,20 @@ export function unconfirmedInvitationPage(membersPage: string): Response {
       'A pending invitation does not confirm email delivery.',
     ],
   }, [`<p><a href="${escapeHtml(membersPage)}">Check status</a></p>`]);
+}
+
+const REFUSAL_NOTICES: Readonly<Record<Exclude<ChangeResult, 'applied' | 'unchanged'>, NoticeName>> = {
+  denied: 'changeDenied',
+  stale: 'changeStale',
+  'not-pending': 'invitationNotPending',
+  'address-in-use': 'invitationAddressInUse',
+  'limit-reached': 'invitationLimitReached',
+  unsupported: 'changeUnsupported',
+};
+
+export function changeResultPage(result: ChangeResult, membersUrl: string): Response {
+  if (result === 'applied' || result === 'unchanged') return seeOther(membersUrl);
+  return noticePage(REFUSAL_NOTICES[result]);
 }
 
 const REMOVAL_NOTICES: Readonly<Record<RemovalResult, Notice>> = {

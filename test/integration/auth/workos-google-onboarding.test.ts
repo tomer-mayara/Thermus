@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import { test, type TestContext } from 'node:test';
 import { WorkOSGoogleOnboarding } from '../../../src/accounts/providers/workos/workos-google-onboarding.ts';
-import { WorkOSOrganizations, workosMembershipReads } from '../../../src/accounts/providers/workos/workos-organizations.ts';
+import { WorkOSOrganizations } from '../../../src/accounts/providers/workos/workos-organizations.ts';
+import { workosMembershipReads } from '../../../src/accounts/providers/workos/workos-membership-reads.ts';
 import type { ChangeRecord } from '../../../src/accounts/organizations/change-records.ts';
 import { WorkOSFake, type FakeUser } from '../../support/doubles/workos/workos-fake.ts';
 

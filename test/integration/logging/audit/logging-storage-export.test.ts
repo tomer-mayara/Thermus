@@ -52,10 +52,10 @@ test('Given production logging storage with one sender, when export and Test hol
   assert.equal(storage.dispatch.admit({ destinationRevision: revisions[0], event: eventFor('tenant-a') }), true);
   assert.equal(storage.dispatch.admit({ destinationRevision: revisions[1], event: eventFor('tenant-b') }), true);
   await turn();
-  const tests = ['tenant-a', 'tenant-b'].map((tenant, index) => storage.service.test(tenant, { expectedRevision: revisions[index], endpoint, auth: 'none', token: '', enabled: true }, { authority: 'trusted', subject: 'admin' }, controllers[index].signal));
+  const tests = ['tenant-a', 'tenant-b'].map((tenant, index) => storage.service.test({ organizationId: tenant, actor: { authority: 'trusted', subject: 'admin' } }, { expectedRevision: revisions[index], endpoint, auth: 'none', token: '', enabled: true }, controllers[index].signal));
   await turn();
   assert.equal(pending.length, 4);
-  const busy = await storage.service.test('tenant-a', { expectedRevision: revisions[0], endpoint, auth: 'none', token: '', enabled: true }, { authority: 'trusted', subject: 'admin' });
+  const busy = await storage.service.test({ organizationId: 'tenant-a', actor: { authority: 'trusted', subject: 'admin' } }, { expectedRevision: revisions[0], endpoint, auth: 'none', token: '', enabled: true });
   assert.equal(busy.status, 'tested');
   if (busy.status === 'tested') assert.equal(busy.outcome.kind, 'busy');
   controllers.forEach(controller => controller.abort());

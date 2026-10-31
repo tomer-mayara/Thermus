@@ -56,5 +56,6 @@ export class AuditRelaySink {
 
 function relayRouteOf(target: URL, options: AuditRelayOptions): RelayRoute {
   const clock = { now: options.now ?? (() => performance.now()), random: options.random ?? Math.random, post: options.post ?? postAuditRelay };
-  return { target, clock, bounds: collectorBounds(options.bounds ?? {}) };
+  const bounds = collectorBounds(options.bounds ?? {});
+  return { target, clock, bounds, retries: { bounds, random: clock.random } };
 }
