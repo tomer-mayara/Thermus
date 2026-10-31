@@ -7,17 +7,14 @@ type Plan = { readonly plan: 'team' } | { readonly plan: 'free'; readonly member
 // that only the member limit cases meet a limit.
 export class BillingDouble implements Billing {
   readonly stateReads: string[] = [];
-  // Each seat update as "<organization>: <count>".
   readonly seatUpdates: string[] = [];
   private failure?: Error;
   private plan: Plan = { plan: 'team' };
 
-  // Makes each later call reject with this failure, or answer again with undefined.
   failWith(failure: Error | undefined): void {
     this.failure = failure;
   }
 
-  // Each later answer has this plan.
   answerWith(plan: Plan): void {
     this.plan = plan;
   }

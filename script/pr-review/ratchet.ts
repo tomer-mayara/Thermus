@@ -26,7 +26,6 @@ interface Context {
   readonly today: string;
 }
 
-// drop holds the values of a file whose raw MI dropped by the limit or more.
 interface FileOutcome {
   readonly line: string;
   readonly reasons: readonly Reason[];

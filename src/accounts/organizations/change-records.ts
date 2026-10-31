@@ -26,8 +26,8 @@ export interface ChangeRecord {
   readonly actor: { readonly authority: string; readonly subject: string };
   readonly organizationId: string;
   readonly target: ChangeTarget;
-  // 'invite', 'resend-invitation', 'revoke-invitation', or the action of a grant change as requested: 'grant',
-  // 'revoke'. Removal uses 'remove-member'. The opt-in sign-in policy uses 'automatic-enrollment' for a new User membership.
+  // 'invite', 'resend-invitation', 'revoke-invitation', or 'remove-member'. The opt-in sign-in policy uses
+  // 'automatic-enrollment' for a new User membership.
   readonly action: string;
   readonly role?: string;
   readonly outcome: ChangeOutcome;
@@ -37,10 +37,8 @@ export interface ChangeRecorder {
   record(entry: ChangeRecord): void;
 }
 
-// The rest of a change after its checks: its one directory change, which gives the result.
 export type DirectoryChange = () => Promise<ChangeResult>;
 
-// The record of a change in progress. The role of an invitation change is known after the invitation is read.
 export interface ChangeEntry {
   readonly actor: AuthenticatedUser;
   readonly organizationId: string;

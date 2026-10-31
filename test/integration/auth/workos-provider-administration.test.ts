@@ -17,12 +17,6 @@ import { TeamBillingStub } from '../../support/doubles/billing/team-billing-stub
 import { fakeClientId, type FakeAnswer } from '../../support/doubles/workos/workos-fake-api.ts';
 import { WorkOSFake, type FakeInvitation, type FakeMembership, type FakeUser } from '../../support/doubles/workos/workos-fake.ts';
 
-// The real WorkOSOrganizations and WorkOSAuthProvider with the pinned SDK against a local fake of the WorkOS API,
-// together with the real OrganizationAdministration, called directly as a service, and the real access resolution of
-// Connect tokens. The fake keeps the roles of each membership as single-role assignments, the invitations, and the
-// users, as the probes of WorkOS staging showed. Each test checks the result, the change records, and the WorkOS
-// requests that change something. These tests do not show what the WorkOS service sends; the hosted live gate does.
-
 const authority = workosAuthority(fakeClientId);
 const publicBaseUrl = 'https://thermus.example/team/';
 const acme = 'org_01ACME';
@@ -96,7 +90,6 @@ interface Access {
   readonly permissions: readonly string[];
 }
 
-// The access that a Connect token gives now: the provider verifies the token and resolves the current WorkOS grants.
 async function accessWith(site: Site, token: string): Promise<Access | string> {
   const decision = await site.provider.resolve((await site.provider.verifyAccessToken(token)).user);
   return decision.allowed ? { roles: decision.context.grants.map(({ role }) => role), permissions: decision.context.permissions } : decision.reason;
@@ -119,7 +112,6 @@ interface WorkOSChange {
   readonly body: unknown;
 }
 
-// The WorkOS requests since the last call, without the reads: only the requests that change something.
 function changesIn(site: Site): WorkOSChange[] {
   return site.world.fake.takeRequests().filter(({ method }) => method !== 'GET').map(({ method, path, body }) => ({ method, path, body }));
 }

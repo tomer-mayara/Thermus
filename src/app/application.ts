@@ -13,8 +13,6 @@ import { OrganizationAdministration } from '../accounts/organizations/organizati
 import type { OrganizationDirectory } from '../accounts/organizations/organization-directory.ts';
 import type { RemovalOperationStore } from '../accounts/organizations/removal-operation-store.ts';
 
-// The settings that only the server reads, such as AD_RULES_FILE and the WorkOS settings. The local commands share
-// DeploymentConfig.
 type Environment = Readonly<Record<string, string | undefined>>;
 
 type SelfHostedConfig = Extract<DeploymentConfig, { deployment: 'self-hosted' }>;
@@ -42,9 +40,6 @@ export interface HostedRequestHandlers {
   readonly internal?: RouteGroup;
 }
 
-// The parts that change with the hosted provider. The MCP endpoint answers the MCP resource and its
-// protected-resource metadata, and the application closes it. With MCP_TENANTS_ENABLED on, the internal routes take
-// /internal/: the audit relay of the tenants.
 export interface HostedProviderParts {
   readonly session: BrowserSession;
   readonly accessResolver: AccessResolver;
@@ -56,10 +51,8 @@ export interface HostedProviderParts {
 
 export interface HostedAccountParts {
   readonly reportFailure: AccountFailureReporter;
-  // Keeps the basic records of the privileged account changes.
   readonly changeRecords: ChangeRecorder;
   readonly audit?: Pick<AuditLog, 'administrationChanged' | 'destinationChanged'>;
-  // The one billing of the hosted organizations: BillingFree until a payment provider implementation replaces it.
   readonly billing: Billing;
   readonly operation?: AccountOperation;
   readonly signupUrl?: string;
@@ -146,7 +139,6 @@ async function createHostedApplication(config: HostedConfig, logger: SystemLog, 
   return openWorkOSApplication(config, logger, environment);
 }
 
-// The denial of an MCP request without product access, the same on the control plane and on a tenant.
 export function accessDeniedDescription(publicBaseUrl: string): string {
   return `Access denied. Open ${new URL('signup', publicBaseUrl).href} to check free signup availability. If you already have access, reauthorize this MCP client and choose the intended workspace.`;
 }
@@ -160,7 +152,6 @@ export function accountChangeRecorder(logger: SystemLog): ChangeRecorder {
   return { record: (entry) => logger.info(`Account change record: ${JSON.stringify(entry)}`) };
 }
 
-// Local operation and hosted operation without storage discard customer audit events.
 export function discardAuditLog(): AuditLog {
   return new AuditLog({ writeAuditEvent: () => {} });
 }

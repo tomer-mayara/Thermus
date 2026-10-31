@@ -1,4 +1,3 @@
-// The jar is the cookies that a browser keeps between requests, by name and without their attributes.
 export function keepCookies(jar: Map<string, string>, setCookieLines: Iterable<string>): void {
   for (const line of setCookieLines) {
     const [pair = ''] = line.split(';');

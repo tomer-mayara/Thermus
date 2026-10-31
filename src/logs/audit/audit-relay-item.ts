@@ -6,14 +6,12 @@ import type { AuditRelay } from './audit-relay-request.ts';
 // One relay attempt. Its outcome is never an exception.
 type AuditRelayPost = (relay: AuditRelay, signal: AbortSignal) => Promise<AuditSendOutcome>;
 
-/** The parts of a relay that a test can replace: the clock, the jitter of the backoff, and the attempt. */
 export interface RelayClock {
   readonly now: () => number;
   readonly random: () => number;
   readonly post: AuditRelayPost;
 }
 
-/** The route of the relays of a sink: the target, the clock, and the bounds of the audit collector. */
 export interface RelayRoute {
   readonly target: URL;
   readonly clock: RelayClock;
@@ -31,7 +29,6 @@ export interface RelayItem {
   disposed: boolean;
   active: boolean;
   controller?: AbortController;
-  // The end of the age of the event, and the wait before a retry.
   deadline?: ReturnType<typeof setTimeout>;
   retry?: ReturnType<typeof setTimeout>;
 }

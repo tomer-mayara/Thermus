@@ -6,8 +6,6 @@ type SnapshotSource =
   | { readonly kind: 'files'; readonly head: string; readonly base: string }
   | { readonly kind: 'repository'; readonly ref: string; readonly timeoutMs: number; readonly allowToolVersion: boolean };
 
-// touched is the --touched value as a list, which replaces the changed files of git. coverage, trendStore, and out are
-// the values of --coverage, --trend-store, and --out as the command line gives them, relative to the current folder.
 export type ArchitectureCommand =
   | { readonly kind: 'help' }
   | {

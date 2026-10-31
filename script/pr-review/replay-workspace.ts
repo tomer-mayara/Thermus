@@ -6,14 +6,12 @@ import { isJsonObject, jsonOf, type JsonObject } from '../code-quality/shared/js
 import { CommandError, git } from '../code-quality/shared/repository.ts';
 import { deletionFailure, failureOf, folderPrefix, folderRemovalFailure, messageOf, refsFolder, removalFailure, removeStale, type Notice } from './replay-sweep.ts';
 
-// The time limit of a network call, so that a call that hangs cannot stop the run for ever.
 export const networkLimitMs = 120_000;
 
 // The conventional exit statuses of a command that a signal stops: 128 and the number of the signal.
 const stopStatus = { SIGINT: 130, SIGTERM: 143 } as const;
 type StopSignal = keyof typeof stopStatus;
 
-// The steps whose failure the report records for one pull request, so that the run continues with the next.
 export type Stage = 'resolve' | 'install' | 'snapshots' | 'check';
 
 export class StageFailure extends CommandError {
@@ -129,7 +127,6 @@ export class Workspace {
     process.exit(stopStatus[signal]);
   }
 
-  // Gives the diagnostic of what stays, or undefined.
   #removeAll(): string | undefined {
     const worktree = this.#worktree;
     this.#worktree = undefined;

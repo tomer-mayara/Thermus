@@ -69,7 +69,6 @@ export interface ProbeStep {
   readonly name: string;
   readonly spec: string;
   run(context: ProbeContext): Promise<string>;
-  // The calls of the step, for the dry run. They are built by the same functions that real mode uses.
   readonly plan: Plan;
 }
 

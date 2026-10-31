@@ -28,31 +28,22 @@ import { MCPServer, type RequestServerBuilder } from '../interfaces/mcp/mcp-serv
 
 type Environment = Readonly<Record<string, string | undefined>>;
 
-// The connection to one WorkOS environment: its settings, an SDK client, and the AuthKit key set of the Connect
-// tokens. The production connection reaches WorkOS; a test can point the client and the key set at a local fake.
 export interface WorkOSConnection {
   readonly settings: WorkOSSettings;
   readonly workos: WorkOS;
   readonly authkitKeySet: JWTVerifyGetKey;
 }
 
-// The parts of the hosted application that a composition root chooses. Production supplies the shared fetch
-// operation; a development composition can supply another request-scoped tool server.
 export interface WorkOSApplicationParts {
   readonly logger: SystemLog;
   readonly loggingStorage?: HostedLoggingStorage;
-  // Explicit audit and tool-server overrides take precedence in development compositions.
   readonly audit?: AuditLog;
   readonly toolOperations?: ToolOperations;
-  // Explicit development composition can replace the customer dispatch sink.
   readonly auditSink?: RevisionBoundAuditSink;
   readonly snapshotOptions?: AuditSnapshotsOptions;
   readonly buildServer?: RequestServerBuilder;
-  // Omitted by production. A slice must select its enrollment organization explicitly.
   readonly onboarding?: GoogleOnboardingSettings;
-  // Explicit composition supplies its own documents. Production selects the approved organization removal bundle at startup.
   readonly signup?: { readonly enabled: boolean; readonly documents?: SignupDocuments };
-  // Explicit composition can supply the billing of its organizations. Production uses BillingFree.
   readonly billing?: Billing;
   // With MCP_TENANTS_ENABLED on: MCPServer forwards each admitted request to the tenant of the organization, and
   // /internal/audit takes the audit relays of the tenants. Without it, the control plane serves the tools as today.
@@ -89,7 +80,6 @@ export async function openWorkOSApplication(config: RouteConfig, logger: SystemL
   return portal.withApplication(application);
 }
 
-// With MCP_TENANTS_ENABLED off, the control plane reads none of the tenant settings (plan section 4.1).
 async function tenantProvisioningSettingsOf(environment: Environment): Promise<TenantProvisioningSettings | undefined> {
   const { loadMcpTenantsEnabled, loadTenantProvisioningSettings } = await import('../runtime/config/mcp-tenants-config.ts');
   return loadMcpTenantsEnabled(environment) ? loadTenantProvisioningSettings(environment) : undefined;
@@ -144,7 +134,6 @@ export async function composeWorkOSApplication(config: RouteConfig, connection: 
   return application;
 }
 
-// The portal reads the name of the active organization of the member and the billing state of that organization.
 function portalReads(organizations: WorkOSOrganizations, billing: Billing): PortalReads {
   return {
     organizationNameOf: (user, organizationId) => organizations.activeOrganizationName(user, organizationId),
@@ -170,8 +159,6 @@ async function workosProviderParts(config: RouteConfig, connection: WorkOSConnec
   const { settings, workos, authkitKeySet } = connection;
   const { logger, buildServer } = parts;
   const authority = workosAuthority(settings.clientId);
-  // One directory gives the current grants to access resolution, and the organizations, members, and invitations and
-  // their changes to the account routes.
   const organizations = new WorkOSOrganizations({ authority, memberships: workosMembershipReads(workos), userManagement: workos.userManagement, authorization: workos.authorization });
   const provider = new WorkOSAuthProvider({ authority, authkitIssuer: settings.authkitIssuer, mcpResourceUrl: config.mcpResourceUrl, keySet: authkitKeySet, grants: organizations, userManagement: workos.userManagement });
   const { WorkOSGoogleOnboarding } = await import('../accounts/providers/workos/workos-google-onboarding.ts');

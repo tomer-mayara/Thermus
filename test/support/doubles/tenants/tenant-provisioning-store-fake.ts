@@ -35,12 +35,10 @@ export class TenantProvisioningStoreFake implements TenantProvisioningStore {
   readonly unavailable = new Set<StoreOperation>();
   #time = 0;
 
-  /** A requested row, as a tenant request inserts it. */
   request(organizationId: string): void {
     this.put({ organizationId, state: 'requested' });
   }
 
-  /** A row in any state, as earlier work or another writer left it. */
   put(row: Partial<FakeTenantRow> & Pick<FakeTenantRow, 'organizationId' | 'state'>): void {
     this.rows.set(row.organizationId, {
       serviceName: null, serviceId: null, internalUrl: null, imageDigest: null, plan: null, appliedPlan: null, failureReason: null,

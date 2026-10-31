@@ -1,12 +1,10 @@
 import type { ServerCommunities, ServerCommunity, ServerEdge } from './input.ts';
 import { labelsOf } from './communities.ts';
 
-// The communities of the answer that have a member in src/, with their labels and the edges and cycles between them.
 export interface CommunityMap {
   readonly communities: readonly ServerCommunity[];
   readonly labels: ReadonlyMap<string, string>;
   readonly edges: readonly ServerEdge[];
-  // The sorted labels of the communities in each cycle.
   readonly cycles: readonly (readonly string[])[];
   communityOf(path: string): string | null;
 }

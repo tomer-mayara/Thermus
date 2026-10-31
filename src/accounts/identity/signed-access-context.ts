@@ -32,7 +32,6 @@ export type AccessContextVerification =
   | { readonly status: 'verified'; readonly context: VerifiedAccessContext }
   | { readonly status: 'refused'; readonly reason: AccessContextRefusal };
 
-/** The tokenHash claim: the SHA-256 of the bearer token of the request, in base64url. */
 export function accessTokenHash(bearerToken: string): string {
   return createHash('sha256').update(bearerToken).digest('base64url');
 }

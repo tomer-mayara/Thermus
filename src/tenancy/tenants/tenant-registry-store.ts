@@ -6,7 +6,6 @@ export interface TenantRoute {
   readonly internalUrl: string | null;
 }
 
-/** The registry as a tenant request sees it under the registry lock. */
 export interface RegistryCount {
   /** The state of the row of the requesting organization; absent when it has no row. */
   readonly current?: TenantState;

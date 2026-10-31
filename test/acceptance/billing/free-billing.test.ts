@@ -3,7 +3,6 @@ import { describe, test } from 'node:test';
 import type { Billing, BillingState } from '../../../src/accounts/billing/billing.ts';
 import { BillingFree } from '../../../src/accounts/billing/billing-free.ts';
 
-// A free organization has the member limit 5: its active members with product access and its pending invitations.
 function freeState(organizationId: string): BillingState {
   return { organizationId, plan: 'free', memberLimit: 5, billedSeats: 0 };
 }

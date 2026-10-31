@@ -1,14 +1,12 @@
 import { answerStream, tenantBodyOf, type StreamEnd } from './mcp-gateway-answer-stream.ts';
 import { answerHeaders } from './mcp-gateway-headers.ts';
 
-/** The failure of a tenant that restarts, before its first answer byte: HTTP 502, or a connection that resets. */
 export type RestartCause = 'http-502' | 'connection';
 
 export type TenantAnswer =
   | { readonly status: 'answered'; readonly response: Response; readonly ended: Promise<StreamEnd> }
   | { readonly status: 'restarted'; readonly cause: RestartCause };
 
-/** One forwarded request to the internal address of a tenant. */
 export interface TenantCall {
   readonly target: URL;
   readonly method: string;

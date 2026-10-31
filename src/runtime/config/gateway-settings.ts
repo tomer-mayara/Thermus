@@ -5,11 +5,9 @@ import { originWithSlashOf } from './setting-origins.ts';
 
 type Environment = Readonly<Record<string, string | undefined>>;
 
-/** The settings of the MCP gateway. The control plane reads them only with MCP_TENANTS_ENABLED=true (plan section 4.1). */
 export interface GatewaySettings {
   /** GATEWAY_SIGNING_KEY: the Ed25519 private key that signs each access context. Only the control plane holds it. */
   readonly signingKey: KeyObject;
-  /** The public key of the signing key: the relay route checks the context of each relay with it. */
   readonly verifyingKey: KeyObject;
   /**
    * CONTROL_PLANE_INTERNAL_URL: the origin of the control plane on the private network, without a final slash. Each
@@ -71,7 +69,6 @@ function privateKeyOf(pem: string): KeyObject | undefined {
   }
 }
 
-// The origin without its final slash, as the tenant role reads it.
 function internalOriginOf(value: string): string {
   const origin = originWithSlashOf(value, ['http:', 'https:']);
   if (origin === undefined) throw new DeploymentConfigError(INTERNAL_URL_RULE);

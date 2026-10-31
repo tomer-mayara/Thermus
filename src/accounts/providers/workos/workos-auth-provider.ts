@@ -14,13 +14,11 @@ interface ActiveGrantReader {
 }
 
 export interface WorkOSTokenVerifierOptions {
-  // The one authority of the WorkOS environment, from workosAuthority(). The client ID of an MCP client never changes it.
   readonly authority: string;
   // Exactly as written: each Connect access token must carry this issuer.
   readonly authkitIssuer: string;
   // Each Connect access token must have this MCP resource as its audience.
   readonly mcpResourceUrl: string;
-  // The AuthKit key set. In production: createRemoteJWKSet(<authkitIssuer>/oauth2/jwks).
   readonly keySet: JWTVerifyGetKey;
 }
 

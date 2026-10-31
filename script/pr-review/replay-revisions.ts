@@ -16,8 +16,6 @@ interface PullRequest {
   readonly state: string;
 }
 
-// The commits that a target names. baseRef is the base as the replay chose it, and base is its commit. notes tell how
-// the replay chose the commits, where that is not the plain case.
 export interface Revision extends Revisions {
   readonly pullRequest?: PullRequest;
   readonly baseRef: string;
@@ -38,7 +36,6 @@ interface Choice {
   readonly notes: readonly string[];
 }
 
-// The label of the report row, and the file of its check result.
 export function namesOf(target: Target): { readonly label: string; readonly file: string } {
   if (target.kind === 'pull-request') return { label: String(target.number), file: `check-${target.number}.json` };
   const fileNamePart = (ref: string) => ref.replace(/[^\w.-]/gu, '_');

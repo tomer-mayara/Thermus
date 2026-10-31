@@ -17,7 +17,6 @@ import { answer, portalFiles, portalHeaders, type PortalSite } from './portal-fr
 import { browserRedirectUri, localOrigin, localSitePort, type HostedLiveSettings } from './settings.ts';
 
 const publicBaseUrl = `${localOrigin}/`;
-// Writes key.pem and cert.pem into the directory and gives their PEM contents.
 export async function selfSignedCertificate(directory: string): Promise<{ key: Buffer; cert: Buffer }> {
   const key = join(directory, 'key.pem');
   const cert = join(directory, 'cert.pem');
@@ -30,11 +29,9 @@ export async function selfSignedCertificate(directory: string): Promise<{ key: B
 
 interface LocalHttpsSiteOptions {
   readonly signupDocuments?: SignupDocuments;
-  // A scoped live proof can use its disposable SQL environment with the default production composition.
   readonly storageEnvironment?: Readonly<Partial<Record<'DATABASE_URL' | 'DATABASE_CA_CERT_PATH' | 'LOGGING_DESTINATION_ENCRYPTION_KEY', string>>>;
   // Only a custom application uses the static front. Its default portal build is src/interfaces/user-portal/dist/.
   readonly portalBuild?: string;
-  // The default application checks this executable. The live gate uses LIGHTPANDA_BIN from its environment.
   readonly rendererExecutable?: string;
   // The port of both fronts. The default is localSitePort, the port of the registered WorkOS URIs. A case that needs no
   // registered URI gives 0 and sends its requests to frontUrl. Its application keeps the public base URL of localOrigin,
@@ -50,8 +47,6 @@ interface LocalHttpsSiteOptions {
   readonly application?: (logger: SystemLog) => Promise<Application>;
 }
 
-// The HTTPS front sends every live gate request to the production application, including portal and health requests.
-// A work slice with a custom application keeps the static portal front. Failed starts release their resources.
 export class LocalHttpsSite {
   readonly log: OperatorLogSpy;
   readonly #thermus: HttpServer;
@@ -66,12 +61,10 @@ export class LocalHttpsSite {
     this.log = parts.log;
   }
 
-  // The plain HTTP address of Thermus behind the front. MCP clients of the test call it directly.
   get thermusUrl(): URL {
     return this.#thermus.url;
   }
 
-  // The address of the HTTPS front. With the default port, it is the public base URL of the application.
   get frontUrl(): URL {
     return new URL(`https://localhost:${this.#frontPort}/`);
   }

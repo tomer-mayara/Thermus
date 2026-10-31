@@ -1,9 +1,7 @@
-// Risk across two snapshots, with proven correspondence and the covered shares of the head.
 import { correspondenceOf, type Correspondence } from './correspondence.ts';
 import { coverageShareOf, fileCrapOf, type FileCrap } from './crap.ts';
 import type { MapSources } from './types.ts';
 
-// Each file of the head and of the base, by path.
 interface SnapshotCrap {
   readonly head: ReadonlyMap<string, FileCrap>;
   readonly base: ReadonlyMap<string, FileCrap>;

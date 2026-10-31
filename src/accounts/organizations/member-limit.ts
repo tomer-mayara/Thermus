@@ -8,7 +8,6 @@ import type { InvitationState, OrganizationDirectory, OrganizationMemberFacts } 
 export class MemberLimit {
   private readonly directory: OrganizationDirectory;
   private readonly billing: Billing;
-  // The end of the last send of each organization that is queued or running.
   private readonly sends = new Map<string, Promise<void>>();
 
   constructor(directory: OrganizationDirectory, billing: Billing) {

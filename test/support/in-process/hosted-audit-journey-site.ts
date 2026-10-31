@@ -37,7 +37,6 @@ export async function runHostedAuditJourney(t: TestContext, destination: { endpo
   t.after(() => snapshots.close());
   const audit = new AuditLog(snapshots);
   const toolLog = new OperatorLogSpy();
-  // Both public channels share capture. The page operation itself is controlled.
   const site = await serveWorkOSSite(t, {
     config: hostedRootConfig, organizations: [organizationId], loggingStorage: storage, audit,
     buildServer: (context, lifetime) => createFetchToolServer(context, {

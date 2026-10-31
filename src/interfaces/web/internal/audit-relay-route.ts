@@ -27,11 +27,8 @@ const STATUS_OF: Readonly<Record<RelayRefusal['reason'], number>> = { body: 400,
  * under /internal/ gets 404.
  */
 export class AuditRelayRoute {
-  /** The rule of the relay check, the capture, and the report of each refusal. */
   private readonly options: AuditRelayRouteOptions;
-  /** The host of the internal origin, in lower case. */
   private readonly internalHost: string;
-  /** The operation IDs that the route accepted, so that a repeat is not captured again. */
   private readonly accepted: AcceptedRelays;
 
   constructor(options: AuditRelayRouteOptions) {
@@ -60,7 +57,6 @@ export class AuditRelayRoute {
     return new Response(null, { status: 202 });
   }
 
-  /** A refusal: one report line for the operator, and an answer that tells the tenant whether to try again. */
   private refused(refusal: RelayRefusal, status = STATUS_OF[refusal.reason]): Response {
     this.options.reportRefusal(refusal);
     return Response.json({ error: status === 503 ? 'temporarily_unavailable' : 'relay_refused' }, { status });

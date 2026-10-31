@@ -1,5 +1,3 @@
-// The CRAP change of each head function against the base controls the bands.
-// See docs/implementation/ast-metrics-review.md, "Show the architecture delta": bands judge the change, not the total.
 import { crapLimit, isOver, type FileCrap, type FunctionCrap } from './crap.ts';
 import { compareCrap } from './crap-score.ts';
 import type { FunctionCorrespondence } from './correspondence.ts';
@@ -20,14 +18,12 @@ interface JudgedFile {
   readonly incomplete?: true;
 }
 
-// Each file of the head with its judged functions, and each file of the base, by path.
 export interface CrapDelta {
   readonly head: ReadonlyMap<string, JudgedFile>;
   readonly base: ReadonlyMap<string, FileCrap>;
   readonly unknownIdentity: number;
 }
 
-// Without coverage, the report has no bands.
 export function crapDeltaOf(sources: MapSources): CrapDelta | undefined {
   const crap = snapshotCrapOf(sources);
   if (crap === undefined) return undefined;

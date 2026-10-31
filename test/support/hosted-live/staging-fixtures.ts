@@ -114,7 +114,6 @@ export class FixtureFactory {
   }
 }
 
-// The organizations, users, memberships, and Connect applications of one run. Each name has the run ID.
 export async function createStagingFixtures(workos: WorkOS, registry: FixtureRegistry): Promise<StagingFixtures> {
   await registry.deleteStaleFixtures();
   const make = new FixtureFactory(workos, registry);

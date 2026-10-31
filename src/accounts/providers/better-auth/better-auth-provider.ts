@@ -11,7 +11,6 @@ import { InvalidAccessTokenError, type IdentityVerifier, type VerifiedIdentity }
 import type { LocalAuth, ResourceServerClient } from './better-auth-runtime.ts';
 
 export interface BetterAuthProviderSettings {
-  // The exact issuer of local access tokens: the provider base URL, such as http://localhost:8080/api/auth.
   readonly issuer: string;
   // Each accepted token must have this MCP resource in its audience.
   readonly mcpResourceUrl: string;

@@ -1,6 +1,5 @@
 import type { User } from '@workos-inc/node';
 
-// The facts of a WorkOS session check, refresh, or code exchange that the browser session reads.
 export interface SessionFacts {
   readonly user: Pick<User, 'id' | 'email' | 'firstName' | 'lastName'>;
   readonly organizationId?: string;
@@ -23,7 +22,6 @@ export interface StoredSession {
   readonly accessToken?: string;
 }
 
-// The CookieSession of the SDK.
 export interface WorkOSSealedSession {
   authenticate(): Promise<SealCheck>;
   refresh(options?: { organizationId?: string }): Promise<SealRefresh>;
@@ -34,7 +32,6 @@ interface SealOptions {
   cookiePassword: string;
 }
 
-// The part of the pinned WorkOS SDK client that the browser session calls.
 export interface WorkOSSessionClient {
   readonly userManagement: {
     getAuthorizationUrlWithPKCE(options: { provider: 'authkit'; redirectUri: string; clientId: string }): Promise<{ url: string; state: string; codeVerifier: string }>;
@@ -61,7 +58,6 @@ function fieldOf(error: unknown, field: 'name' | 'code' | 'status' | 'error'): u
   return typeof error === 'object' && error !== null ? (error as Readonly<Record<string, unknown>>)[field] : undefined;
 }
 
-// The cached key set does not have the key of the token yet.
 export function isNewSigningKey(error: unknown): boolean {
   return fieldOf(error, 'code') === 'ERR_JWKS_NO_MATCHING_KEY';
 }

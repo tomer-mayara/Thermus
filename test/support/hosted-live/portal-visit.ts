@@ -19,8 +19,6 @@ export interface ServerAnswer {
   readonly location: string | undefined;
 }
 
-// A sign-in through the portal of the local HTTPS site: the Sign in link, /login, the AuthKit pages, and the
-// callback of the server. The browser keeps the cookies of the server, as a user's browser does.
 export async function signInThroughPortal(run: LiveRun, user: LiveUser, organizationName?: string, expectedLanding: 'portal' | 'organizations' = 'portal'): Promise<PortalVisit> {
   await run.site();
   const authkitHost = new URL(run.settings.authkitIssuer).host;
@@ -53,7 +51,6 @@ export async function acceptInvitationThroughPortal(run: LiveRun, user: LiveUser
   return { page, pages, signedInAt: Date.now() };
 }
 
-// A request of the browser with its cookies, which follows no redirect.
 export async function serverGet(page: Page, path: string): Promise<ServerAnswer> {
   const answer = await page.context().request.get(new URL(path, `${localOrigin}/`).href, { maxRedirects: 0 });
   return { status: answer.status(), body: await answer.text(), setCookies: setCookiesOf(answer.headersArray()), location: answer.headers().location };

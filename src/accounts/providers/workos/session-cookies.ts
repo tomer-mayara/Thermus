@@ -2,7 +2,6 @@ import { createCipheriv, createDecipheriv, hkdfSync, randomBytes, timingSafeEqua
 
 // The facts of a browser session that the sealed session of WorkOS does not keep across a refresh.
 export interface SessionEnvelope {
-  // The sealed session of WorkOS.
   readonly seal: string;
   // It stays the same for the whole session, also after a refresh or an organization switch.
   readonly csrf: string;
@@ -57,7 +56,6 @@ export class SealedCookie<Content> {
     return setCookieValue(this.name, '', 0);
   }
 
-  // True when the Cookie header has a cookie of this name, also one that does not open.
   isSentIn(cookieHeader: string | null): boolean {
     return cookieValues(cookieHeader, this.name).length > 0;
   }

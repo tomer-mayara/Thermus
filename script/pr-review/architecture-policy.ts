@@ -17,8 +17,6 @@ export interface ArchitectureOutcome {
   readonly compareByHand: boolean;
 }
 
-// declared: the dependency facts that the rules of HEAD list. surface: the candidates of a changed public surface
-// among the changed files, the public modules and the contract documents.
 export interface SourceFacts {
   readonly declared: readonly Declaration[];
   readonly surface: readonly Reason[];
@@ -83,12 +81,10 @@ function surfaceOutcome(candidate: Candidate, rules: LoadedRules, surface: reado
   };
 }
 
-// A surface candidate is a module, or a module that imports a changed file: "<module> (imports changed <file>)".
 function moduleOf(fact: string): string {
   return fact.replace(/ \(imports changed .+\)$/u, '');
 }
 
-// The tier that the facts select, then a phrase for each key with a fact.
 function summaryOf(groups: readonly FactGroup[]): string {
   const found = groups.filter((group) => group.facts.length > 0);
   if (found.length === 0) return 'T0: no architecture fact';

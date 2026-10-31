@@ -26,7 +26,6 @@ async function readBody(request: Request): Promise<URLSearchParams | undefined> 
   return readChunks(request.body, request.signal);
 }
 
-// A client that disconnects cancels the reading.
 async function readChunks(body: ReadableStream<Uint8Array>, signal: AbortSignal): Promise<URLSearchParams | undefined> {
   const reader = body.getReader();
   const cancelOnAbort = () => { void reader.cancel(signal.reason).catch(() => undefined); };

@@ -12,7 +12,6 @@ export interface WorkOSBrowserSessionOptions {
   readonly onboarding?: SignInOnboarding;
   readonly workos: WorkOSSessionClient;
   readonly settings: Pick<WorkOSSettings, 'clientId' | 'redirectUri' | 'cookiePassword'>;
-  // From workosAuthority(), so that browser sessions and Connect tokens map their users into the same authority.
   readonly authority: string;
   // Milliseconds since the Unix epoch.
   readonly clock?: () => number;
@@ -22,8 +21,6 @@ type SignedOut = Extract<ProfiledBrowserSessionState, { status: 'signed-out' }>;
 type RefreshFailure = Extract<SealRefresh, { authenticated: false }>;
 type RefreshSuccess = Extract<SealRefresh, { authenticated: true }>;
 
-// The hosted browser session of WorkOS AuthKit. The session cookie holds the sealed WorkOS session together with the
-// CSRF token, because the WorkOS seal changes at each refresh.
 export class WorkOSBrowserSession implements BrowserSessionControls {
   private readonly userManagement: WorkOSSessionClient['userManagement'];
   private readonly cookiePassword: string;

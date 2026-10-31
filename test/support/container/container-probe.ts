@@ -1,4 +1,3 @@
-// Runs in a one-off container to read or reset the local installation data.
 import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';

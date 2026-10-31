@@ -42,8 +42,6 @@ export function controlledRenderer(t: TestContext) {
   return { child, lookup, execute, launched, finish: (...args: Parameters<ProcessCompletion>) => finish(...args) };
 }
 
-// Stands in for the Lightpanda process and DNS at their Node APIs, so the production fetcher and pipeline run offline.
-// Each public host resolves to a public address. A URL without a page gives the renderer's HTTP 404 failure.
 export class RendererProcessDouble {
   readonly launches: RendererLaunch[] = [];
   readonly lookups: string[] = [];

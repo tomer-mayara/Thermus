@@ -1,7 +1,6 @@
 import type { CallToolRequestParams, Client, RequestOptions, Tool } from '@modelcontextprotocol/client';
 import { CommandError } from '../shared/repository.ts';
 
-// What the work of withAstMetricsServer can ask: tool gives the answer text of a tool, and tools gives the tool list.
 export interface AstMetricsServer {
   tool(name: string, args: Readonly<Record<string, unknown>>): Promise<string>;
   tools(): Promise<Tool[]>;
@@ -18,7 +17,6 @@ async function answerText(client: Client, call: CallToolRequestParams, callOptio
   return texts[0];
 }
 
-// Each request of the work gets the options of the call, such as the signal of the deadline.
 export function serverOf(client: Client, callOptions: RequestOptions): AstMetricsServer {
   return {
     tool: (name, args) => answerText(client, { name, arguments: args }, callOptions),

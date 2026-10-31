@@ -18,14 +18,12 @@ export interface FunctionCrap {
   readonly crap: number;
 }
 
-// Each function has exact CRAP or a lower bound. Unmatched counts unknown covered shares.
 export interface FileCrap {
   readonly functions: readonly FunctionCrap[];
   readonly unmatched: number;
   readonly incomplete?: true;
 }
 
-// Gives the covered share, or undefined when it cannot be measured.
 type ShareRule = (fn: MapFunction, index: number) => number | undefined;
 
 export function isOver(entry: FunctionCrap): boolean {

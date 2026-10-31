@@ -6,7 +6,6 @@ export type ResumeMark =
   | { readonly status: 'resuming'; readonly serviceId: string }
   | { readonly status: 'moved' | 'unavailable' };
 
-/** The registry writes of the MCP gateway: the resume of a suspended tenant, and the time of the last use of a tenant. */
 export interface TenantGatewayStore {
   /** suspended to deploying, before the one resume call (answer 3 of 27 October 2026). */
   markResuming(organizationId: string): Promise<ResumeMark>;

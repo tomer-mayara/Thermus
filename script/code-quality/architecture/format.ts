@@ -1,9 +1,7 @@
-// Numeric values and their changes in the graph and the complexity table use the same precision and arrows.
 import type { TableFile } from './types.ts';
 
 const notMeasured = 'not measured';
 
-// The value of one side of a cell, or the word for a side without it.
 export type Side = number | 'new' | 'gone' | typeof notMeasured;
 
 interface Measure {
@@ -40,8 +38,6 @@ function textOf(side: Side, digits: number): string {
   return typeof side === 'number' ? side.toFixed(digits) : side;
 }
 
-// The change follows the value as an arrow and its size, in the map and in the complexity table. A change that rounds
-// to zero, or that has no value, shows nothing.
 export function changeText(change: number | undefined, digits: number): string {
   const text = (change ?? 0).toFixed(digits);
   if (Number(text) === 0) return '';

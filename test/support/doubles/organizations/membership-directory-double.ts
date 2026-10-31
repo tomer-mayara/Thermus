@@ -12,8 +12,8 @@ export interface MembershipRecord extends MemberSeed {
   readonly active: boolean;
 }
 
-// Reads the configured memberships for access resolution and for the organization work, as the hosted provider will
-// read the same provider state for both. A grant change takes effect in the next access resolution.
+// Access resolution and the organization work read the same configured memberships, as the hosted provider reads one
+// provider state for both. A grant change takes effect in the next access resolution.
 export class MembershipDirectoryDouble extends OrganizationDirectoryDouble implements AccessResolver {
   readonly calls: AuthenticatedUser[] = [];
   private readonly paused = new Map<string, Promise<void>>();

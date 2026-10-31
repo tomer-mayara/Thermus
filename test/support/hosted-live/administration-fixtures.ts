@@ -23,12 +23,9 @@ interface MembershipSetting {
 export type AdministrationMembershipName = keyof ReturnType<typeof membershipsToMake>;
 
 export interface AdministrationFixtures {
-  // The organization of the AUTH-08W cases of the hosted server. It has an external ID.
   readonly organizationC: LiveOrganization;
-  // The organization of the AUTH-08W provider proofs. It has no external ID.
   readonly organizationD: LiveOrganization;
   readonly users: Readonly<Record<AdministrationUserLabel, LiveUser>>;
-  // The ID of each membership that the fixtures made.
   readonly memberships: Readonly<Record<AdministrationMembershipName, string>>;
 }
 
@@ -59,21 +56,8 @@ function membershipsToMake({ make, workos, users, organizationC, organizationD }
   };
 }
 
-// The data of the AUTH-08W proofs and cases, after the staging fixtures of the run, with the same run ID. Each user is
-// new, so that no other proof or case changes it. Organization C has
-// the external ID thermus-live-<run ID>-c, as each customer organization of the operator runbook has an external ID,
-// and organization D has none.
-// Organization D, of the provider proofs:
-// - d-seat-user-admin: User and Admin; d-seat-admin: Admin; d-seat-user: User; d-seat-default: only
-//   the default role; d-seat-inactive: an inactive membership with User; d-seat-pending: a pending membership with
-//   User, from an invitation;
-// - d-member: User, the address of an active member;
-// - d-invitee: no membership.
-// Organization C, of the server cases:
-// - c-admin-only and c-administrator: only Admin;
-// - c-target: User;
-// - c-invitee-admin: an inactive membership with User and Admin;
-// - c-invitee-user and c-invitee-revoked: no membership.
+// Each user is new, so that no other proof or case changes it. Organization C has an external ID, as each customer
+// organization of the operator runbook has one; organization D has none.
 export async function createAdministrationFixtures(workos: WorkOS, registry: FixtureRegistry, staging: StagingFixtures): Promise<AdministrationFixtures> {
   const make = new FixtureFactory(workos, registry, staging.runId);
   const [organizationC, organizationD] = await settled([make.organization('C', `thermus-live-${staging.runId}-c`), make.organization('D')]);

@@ -41,7 +41,6 @@ function hostedSettings(directory: string): ServerSettings {
   };
 }
 
-// The operator commands must not need the rules file or the renderer.
 function guardedSettings(settings: ServerSettings, emptyDirectory: string): ServerSettings {
   const missing = { AD_RULES_FILE: join(emptyDirectory, 'missing-ad-rules.txt'), LIGHTPANDA_BIN: join(emptyDirectory, 'missing-lightpanda') };
   return withPreload({ ...settings, ...missing }, serverOnlyModuleGuard);

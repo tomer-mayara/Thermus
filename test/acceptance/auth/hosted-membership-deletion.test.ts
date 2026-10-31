@@ -10,7 +10,6 @@ const acme = 'org_01ACME';
 const globex = 'org_02GLOBEX';
 const alice = { id: 'user_01ALICE', email: 'alice@example.com', firstName: 'Alice' };
 
-// This slice exposes a directory collaborator. A browser removal route belongs to the next slice.
 test('Given an ordinary active membership, another membership, an account, and a personal factor, when the directory deletes the exact membership and WorkOS confirms completion, then only that membership is absent on reread', async (t) => {
   const world = await WorkOSFake.start(t, hostedConfig.publicBaseUrl, [acme, globex]);
   world.users = [alice];

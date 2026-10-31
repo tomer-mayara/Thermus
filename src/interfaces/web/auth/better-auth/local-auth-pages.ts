@@ -18,7 +18,6 @@ export interface LocalPagePaths {
 }
 
 export interface LocalAuthPagesSettings {
-  // The provider base URL, such as http://localhost:8080/api/auth.
   readonly issuer: string;
   readonly paths: LocalPagePaths;
 }

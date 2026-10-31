@@ -4,13 +4,6 @@ import { userGrant } from '../../support/fixtures/hosted-roles.ts';
 import { gatewayOrganization, gatewayUser, openHostedGatewaySite } from '../../support/in-process/hosted-gateway-site.ts';
 import { fetchCall, sourceUrl, tenantMarkdown } from './fixtures/gateway-calls.ts';
 
-// The MCP gateway of the control plane (SO-05). With MCP_TENANTS_ENABLED on, MCPServer forwards each request that
-// passes the bearer check and the access check to the tenant of the organization, with a signed access context. The
-// site composes the real control plane with the WorkOS fake, the real registry rules over an in-memory registry, a
-// spy of the resume operation, and a fake tenant upstream that verifies the context and serves MCP. This file holds
-// the admission and the registry copy; hosted-gateway-states.test.ts holds the row states, and
-// hosted-gateway-forward.test.ts the streaming forward.
-
 test('Given the switch on and a live tenant for organization A, when a client of A calls a tool, then the tenant answers through the gateway, the control plane exports the audit event, and the audience and the metadata URLs stay public', { timeout: 30_000 }, async (t) => {
   const site = await openHostedGatewaySite(t);
   site.registry.live(gatewayOrganization, site.tenant.origin);

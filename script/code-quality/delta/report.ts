@@ -1,11 +1,8 @@
-// The report of the delta check: a line for each delta file and the result line. It knows the goal for the production
-// files, and nothing about git or the ast-metrics run.
 type MeasuredFile = { readonly file: string; readonly score: number };
 
 // The measured delta files, lowest score first, and the delta files that ast-metrics does not measure.
 export type DeltaMeasurement = { readonly measured: readonly MeasuredFile[]; readonly notMeasured: readonly string[] };
 
-// The groups of the delta files in the order of the report. Each group of measured files is lowest score first.
 type DeltaGroups = {
   readonly production: readonly MeasuredFile[];
   readonly belowGoal: readonly MeasuredFile[];

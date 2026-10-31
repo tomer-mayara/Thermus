@@ -1,4 +1,3 @@
-/** The suspended service of the tenant of an organization. */
 export interface ResumedService {
   readonly organizationId: string;
   readonly serviceId: string;

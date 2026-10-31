@@ -9,14 +9,12 @@ const SET_BY_GATEWAY = ['host', 'content-length', 'cookie', ACCESS_CONTEXT_HEADE
 // The fetch of Node decodes a compressed answer, so its length and its encoding no longer describe the body.
 const SET_BY_BRIDGE = ['content-length', 'content-encoding'];
 
-/** The headers that reach the tenant: those of the client without the hop-by-hop headers, with the signed context. */
 export function tenantHeaders(headers: Headers, context: string): Headers {
   const forwarded = withoutHeaders(headers, [...HOP_BY_HOP, ...SET_BY_GATEWAY]);
   forwarded.set(ACCESS_CONTEXT_HEADER, context);
   return forwarded;
 }
 
-/** The headers of the answer of the tenant that reach the client. */
 export function answerHeaders(headers: Headers): Headers {
   return withoutHeaders(headers, [...HOP_BY_HOP, ...SET_BY_BRIDGE]);
 }

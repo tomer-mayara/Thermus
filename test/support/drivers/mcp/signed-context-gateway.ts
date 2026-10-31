@@ -1,7 +1,6 @@
 import { createHash, type KeyObject } from 'node:crypto';
 import { SignJWT } from 'jose';
 
-// The access that the control plane resolved for one user. The gateway signs it into each context.
 export interface GatewayAccess {
   readonly authority: string;
   readonly subject: string;
@@ -10,7 +9,6 @@ export interface GatewayAccess {
   readonly name?: string;
 }
 
-// The changes of one context: another organization, another key, another token, or an earlier signature time.
 export interface ContextChanges extends Partial<GatewayAccess> {
   readonly key?: KeyObject;
   readonly tokenOfHash?: string;
@@ -29,9 +27,8 @@ type FetchLike = (url: string | URL, init?: RequestInit) => Promise<Response>;
 const header = 'Thermus-Access';
 const lifetimeSeconds = 120;
 
-// The gateway of the control plane, as the tests stand in for it until SO-05 adds it: it signs a new context for each
-// request that it forwards, with the header contract of the authentication design. The tests write this contract
-// with jose directly, so the tenant check does not rely on the production signer.
+// The tests write the header contract of the authentication design with jose directly, so the tenant check does not
+// rely on the production signer.
 export class SignedContextGateway {
   readonly requests: GatewayRequest[] = [];
 
@@ -55,7 +52,6 @@ export class SignedContextGateway {
       .sign(changes.key ?? this.key);
   }
 
-  // The fetch of an MCP client transport: each request gets a new context for the token, as a forward does.
   fetchFor(token: string): FetchLike {
     return async (url, init = {}) => {
       const context = await this.contextFor(token);
@@ -67,7 +63,6 @@ export class SignedContextGateway {
     };
   }
 
-  // The context of the first forwarded request of a JSON-RPC method, such as tools/call.
   contextOf(rpcMethod: string): string | undefined {
     return this.requests.find((request) => request.rpcMethod === rpcMethod)?.context;
   }

@@ -11,9 +11,6 @@ import { nowInSeconds, SigningKey } from '../../support/doubles/workos/jwt-signi
 import { fakeClientId, WorkOSFakeApi, workosClientFor, type FakeAnswer } from '../../support/doubles/workos/workos-fake-api.ts';
 import { adminGrant, userGrant } from '../../support/fixtures/hosted-roles.ts';
 
-// The real provider and organization reads with the pinned SDK client. The answers come from a local fake in the
-// WorkOS wire format, so these tests do not show what the WorkOS service sends.
-
 const authority = workosAuthority(fakeClientId);
 const mcpResourceUrl = 'https://localhost:46443/mcp';
 const alice = 'user_01ALICE';

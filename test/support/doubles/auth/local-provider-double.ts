@@ -75,7 +75,6 @@ export class LocalProviderDouble {
   readonly failures = new Map<ProviderOperation, Error>();
   readonly resourceServerClient = new ResourceServerClientRecordDouble();
   readonly auth: LocalAuth;
-  // When true, a confidential client gets no secret.
   withholdClientSecrets = false;
   private lastId = 0;
 

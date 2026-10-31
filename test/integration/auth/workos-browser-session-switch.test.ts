@@ -13,9 +13,6 @@ import {
   tokenAnswer,
 } from './fixtures/workos-session-fixtures.ts';
 
-// The real browser session with the pinned WorkOS SDK, pointed at a local fake of the WorkOS API. These tests show
-// the collaboration with the SDK, not the behavior of the WorkOS service.
-
 describe('WorkOSBrowserSession with the pinned WorkOS SDK: organization switch and logout', () => {
   allowOnlyLoopbackRequests();
 

@@ -47,7 +47,6 @@ function labelOf(user: LiveUser): string {
 // Registers the AUTH-07W cases of the hosted server. It returns the case that needs an expired access token of the
 // selection session: the caller registers it after the AUTH-06 cases, whose 300-second wait lets the token expire.
 export function describeOrganizationServerCases(run: LiveRun): () => void {
-  // The member signs in to A one time and selects B. The later cases use the same session.
   const selection = once(async (): Promise<SelectionVisit> => {
     const { organizationA, organizationB } = await run.fixtures();
     const { users } = await run.organizationFixtures();

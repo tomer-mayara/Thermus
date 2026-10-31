@@ -26,7 +26,6 @@ interface HostedConfig extends PublicUrls {
 
 // The settings of THERMUS_ROLE=tenant (plan section 4.1). A tenant holds no secret: only public keys and addresses.
 export interface TenantSettings {
-  // The one organization that this tenant serves.
   readonly organizationId: string;
   // The Ed25519 public keys of the gateway. A context of any of them verifies, for a key rotation.
   readonly gatewayPublicKeys: readonly KeyObject[];
@@ -36,7 +35,6 @@ export interface TenantSettings {
   readonly authkitIssuer: string;
 }
 
-// The same hosted image in the tenant role: it serves /healthz and /mcp for one organization.
 interface TenantConfig extends PublicUrls {
   readonly deployment: 'hosted';
   readonly role: 'tenant';

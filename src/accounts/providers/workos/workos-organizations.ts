@@ -33,7 +33,6 @@ interface MembershipRecord {
   readonly status: OrganizationMembershipStatus;
   // WorkOS changes it with each change of the roles or the status.
   readonly updatedAt: string;
-  // True when a directory connection manages the membership.
   readonly directoryManaged?: unknown;
   readonly roles?: readonly { readonly slug: string }[];
 }
@@ -58,7 +57,6 @@ interface WorkOSList<T> {
 // The calls of the pinned SDK client that access resolution and organization administration need. The client fits this
 // shape. Membership deletion names one exact ID. There is no user, factor, role, creation, or status writer.
 export interface WorkOSOrganizationsOptions {
-  // The one authority of the WorkOS environment, from workosAuthority(). Only its users have WorkOS memberships.
   readonly authority: string;
   readonly memberships: {
     listOrganizationMemberships(options: ListOrganizationMembershipsOptions): Promise<WorkOSList<MembershipRecord>>;
@@ -76,7 +74,6 @@ export interface WorkOSOrganizationsOptions {
   readonly authorization: {
     listOrganizationRoles(organizationId: string): Promise<{ readonly data: readonly RoleRecord[] }>;
   };
-  // The time that decides the expiry of an invitation. The default is the system clock.
   readonly clock?: () => Date;
 }
 
@@ -84,7 +81,6 @@ export interface WorkOSOrganizationsOptions {
 const MEMBERSHIP_READ_LIMIT = 10;
 // The largest page that WorkOS gives.
 const PAGE_SIZE = 100;
-// The page limit bounds the read of the memberships of one user.
 const MEMBERSHIP_PAGE_LIMIT = 10;
 const NO_MEMBERSHIPS: readonly OrganizationMembership[] = Object.freeze([]);
 const APPLIED = Object.freeze({ outcome: 'applied' as const });
@@ -275,7 +271,6 @@ export class WorkOSOrganizations implements OrganizationDirectory {
     return Object.freeze({ ...facts, email });
   }
 
-  // The membership with this ID in any organization. A WorkOS 404 gives undefined.
   private async currentMembership(membershipId: string, signal?: AbortSignal): Promise<MembershipRecord | undefined> {
     const record = await readWhileActive(signal, () => unlessNotFound(() => this.memberships.getOrganizationMembership(membershipId)));
     if (record !== undefined && record.id !== membershipId) throw new Error('WorkOS answered a membership that the read did not ask for');
@@ -302,7 +297,6 @@ export class WorkOSOrganizations implements OrganizationDirectory {
     return record !== undefined && invitationStateOf(record, this.clock()) !== 'pending';
   }
 
-  // The invitation with this ID. A WorkOS 404 gives undefined.
   private async currentInvitation(invitationId: string): Promise<InvitationRecord | undefined> {
     const record = await unlessNotFound(() => this.userManagement.getInvitation(invitationId));
     if (record !== undefined && record.id !== invitationId) throw new Error('WorkOS answered an invitation that the read did not ask for');
@@ -316,7 +310,6 @@ function memberFactsOf(record: MembershipRecord, organizationRoles: readonly Rol
   return Object.freeze({ membershipId, subject, organizationId, status, management: managementOf(record), grants, revision: revisionOf(record) });
 }
 
-// Stop later reads without claiming that the provider cancelled a request already sent.
 async function readWhileActive<T>(signal: AbortSignal | undefined, read: () => Promise<T>): Promise<T> {
   signal?.throwIfAborted();
   try {

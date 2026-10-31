@@ -70,7 +70,6 @@ export function providerRefusal(status: number, code: string, headers: Readonly<
   return providerJson(status, { code, message: 'Provider message text' }, { ...headers, 'Set-Cookie': 'better-auth.session_token=refused; Path=/' });
 }
 
-// A browser request as the HTTP bridge gives it: the public URL and the client address from the socket.
 export function browserRequest(target: string, init: RequestInit = {}): Request {
   const headers = new Headers(init.headers);
   headers.set(CLIENT_ADDRESS_HEADER, '127.0.0.1');

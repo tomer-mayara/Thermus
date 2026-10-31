@@ -5,11 +5,9 @@ const MEMORY_SIZE = 16_384;
 
 export type RelayAdmission = 'new' | 'repeated' | 'full';
 
-/** The operation IDs of the accepted relays of each tenant, for as long as a repeat can still pass the context check. */
 export class AcceptedRelays {
   /** A monotonic clock in milliseconds; tests give a double. */
   private readonly now: () => number;
-  /** For each tenant and operation ID, the time until which a repeat is dropped. */
   private readonly until = new Map<string, number>();
 
   constructor(now: () => number) {

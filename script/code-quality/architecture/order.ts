@@ -3,8 +3,6 @@ import type { MapEdge, MapNode, TableFile } from './types.ts';
 
 const rankedFiles = 10;
 
-// The nodes come in the order of their labels, and the edges in the order of the labels of their ends, so that the
-// Mermaid text diffs well.
 export function byLabel(first: MapNode, second: MapNode): number {
   return textOrder(first.label, second.label);
 }

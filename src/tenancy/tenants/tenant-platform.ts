@@ -2,18 +2,15 @@
 // the sweeps. A platform adapter under src/tenancy/providers/ implements it. Each operation gives a result for each
 // answer of the platform; it rejects only when the caller's signal stops it.
 
-/** A service of the platform with its exact name. */
 export interface PlatformService {
   readonly id: string;
   readonly name: string;
 }
 
-/** The services that have the exact name of the search, from one complete answer of the platform. */
 export type ServiceSearch =
   | { readonly status: 'found'; readonly services: readonly PlatformService[] }
   | { readonly status: 'unavailable'; readonly reason: string };
 
-/** A new private service: its name, its plan, and each variable of its first deploy. */
 export interface TenantServiceRequest {
   readonly name: string;
   readonly plan: string;
@@ -36,20 +33,16 @@ export type DeployProgress = 'pending' | 'live' | 'failed';
 export interface PlatformDeploy {
   readonly id: string;
   readonly progress: DeployProgress;
-  // The status of the platform, such as update_in_progress or update_failed.
   readonly status: string;
-  // The digest of the image that the deploy runs, when the platform gives it.
   readonly imageDigest?: string;
 }
 
-/** The newest deploy of a service. gone means that the service no longer exists. */
 export type DeployRead =
   | { readonly status: 'found'; readonly deploy: PlatformDeploy }
   | { readonly status: 'none' }
   | { readonly status: 'gone' }
   | { readonly status: 'unavailable'; readonly reason: string };
 
-/** The address of a service on the private network. pending: the platform does not give it yet. */
 export type AddressRead =
   | { readonly status: 'found'; readonly internalUrl: string }
   | { readonly status: 'pending' }

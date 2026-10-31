@@ -101,7 +101,6 @@ async function main(args: readonly string[]): Promise<void> {
   writeReport(folder, report, texts);
 }
 
-// The targets keep the order of the command line.
 function optionsOf(args: readonly string[]): ReplayOptions | { readonly help: true } {
   const { values, tokens } = parseCommandArguments({ args, options: shape, tokens: true });
   if (values.help) return { help: true };
@@ -141,7 +140,6 @@ async function rowOf(workspace: Workspace, request: { readonly target: Target; r
   }
 }
 
-// Only the failure of a step stays in the report. Another error stops the run.
 function failedRow(row: Row, error: unknown): Row {
   if (!(error instanceof StageFailure)) throw error;
   return { ...row, failure: { stage: error.stage, message: error.message } };

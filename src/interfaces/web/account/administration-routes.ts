@@ -114,7 +114,6 @@ export class AdministrationRoutes {
     return route === undefined ? undefined : (request, session, context) => this.withScope(request, { session, context }, route);
   }
 
-  // The organization and user come from the decided context.
   private async withScope(request: Request, signedIn: { session: SignedInBrowserSession; context: RequestContext }, route: ScopedRoute): Promise<Response> {
     const { session, context } = signedIn;
     if (context.organizationId === undefined) return accessDeniedPage(this.organizationsPage);

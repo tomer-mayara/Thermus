@@ -8,7 +8,6 @@ import type { RelayQueue } from './audit-relay-queue.ts';
 export class RelayScheduler {
   // The attempts that run now: at most the active bound. A relay that waits for its retry holds no place.
   private active = 0;
-  // After close, no pump starts, so no attempt starts.
   private closed = false;
   private scheduled?: ReturnType<typeof setImmediate>;
 
@@ -41,7 +40,6 @@ export class RelayScheduler {
     }
   }
 
-  // An attempt holds one active place until it settles. Its retry waits on its own timer, outside the active bound.
   private async attempt(item: RelayItem): Promise<void> {
     this.active++; item.active = true;
     const wait = await attemptRelay(item, this.route);
@@ -52,7 +50,6 @@ export class RelayScheduler {
   }
 }
 
-// The event and the timers of an ended relay go at once. An active attempt aborts, so its request stops too.
 function release(item: RelayItem): void {
   item.disposed = true; item.body = undefined;
   clearTimeout(item.deadline); clearTimeout(item.retry);

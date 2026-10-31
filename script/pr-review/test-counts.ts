@@ -8,7 +8,6 @@ export interface TestCounts {
   readonly skippedOrTodo: readonly string[];
 }
 
-// A removed line belongs to the old path, and an added line to the new path.
 interface DiffState {
   oldFile: string;
   newFile: string;

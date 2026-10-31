@@ -13,7 +13,6 @@ const CHECKS = {
   maxTokenAge: ACCESS_CONTEXT_LIFETIME_SECONDS,
 };
 
-/** The keys that a reader of a context trusts, and the organization that it pins. */
 export interface ContextTrust {
   readonly keys: readonly KeyObject[];
   readonly organizationId: string;

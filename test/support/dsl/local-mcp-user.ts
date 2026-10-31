@@ -71,7 +71,6 @@ export async function issuedGrants(directory: string, clientId: string, accounts
   });
 }
 
-// An SDK client that sends the current value of token() as its Bearer token, so a test can change the token between calls.
 export async function connectWithToken(t: TestContext, connection: { server: ServerAddress; token: () => string; era?: McpProtocolEra }): Promise<Client> {
   const transport = new StreamableHTTPClientTransport(new URL(mcpResourceUrl), {
     authProvider: { token: async () => connection.token() },

@@ -1,6 +1,5 @@
 import { escapeHtml } from './html-escape.ts';
 
-// The headers of each account page. A notice posts no form.
 export const NOTICE_HEADERS: Readonly<Record<string, string>> = {
   'Content-Type': 'text/html; charset=utf-8',
   'Cache-Control': 'no-store',
@@ -9,7 +8,6 @@ export const NOTICE_HEADERS: Readonly<Record<string, string>> = {
   'X-Frame-Options': 'DENY',
 };
 
-// The forms of a page post only to this site.
 export const FORM_HEADERS: Readonly<Record<string, string>> = {
   ...NOTICE_HEADERS,
   'Content-Security-Policy': "default-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'",

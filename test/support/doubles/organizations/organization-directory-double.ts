@@ -19,9 +19,6 @@ import { chunks, memberOf, pageAt, roleGrantOf, stateOf, withRole, type Invitati
 
 type ConfiguredMemberships = readonly OrganizationMembership[] | Error;
 
-// A stateful provider directory: invitation changes take effect in later reads. Acceptance activates the invited
-// role. A test can lay
-// out the pages of each read, make a read or a change fail, give a change another result, or hold the changes.
 export class OrganizationDirectoryDouble extends ChangeAnswers implements OrganizationDirectory {
   readonly membershipReads: AuthenticatedUser[] = [];
   readonly memberPageReads: MemberPageRequest[] = [];
@@ -47,7 +44,6 @@ export class OrganizationDirectoryDouble extends ChangeAnswers implements Organi
     for (const [subject, configured] of memberships) this.configure(subject, configured);
   }
 
-  // Replaces the memberships of one user, or makes the reads of its memberships fail.
   configure(subject: string, memberships: ConfiguredMemberships): void {
     this.members = this.members.filter((member) => member.subject !== subject);
     this.membershipFailures.delete(subject);

@@ -37,8 +37,6 @@ function page(data: readonly MembershipRecord[], after: string | null = null): M
   return { data, listMetadata: { before: null, after } };
 }
 
-// The memberships reads of the pinned SDK client. Each read gets the page of its after cursor: page 0 without a
-// cursor, and page n with the cursor "cursor-n". Each read is kept, so that a test can check the exact query.
 class MembershipReadsDouble {
   readonly membershipReads: ListOrganizationMembershipsOptions[] = [];
   readonly roleReads: string[] = [];

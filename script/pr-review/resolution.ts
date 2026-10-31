@@ -1,7 +1,6 @@
 import { posix } from 'node:path';
 import { targetOf } from '../code-quality/dependencies/resolve.ts';
 
-// code holds the files that an import can name as a module; all holds every path under src/ at HEAD.
 export interface SourceFiles {
   readonly code: ReadonlySet<string>;
   readonly all: ReadonlySet<string>;

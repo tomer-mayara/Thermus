@@ -1,7 +1,6 @@
 import type { AssignableRole, OrganizationMembership } from './organization-directory.ts';
 
 const ASSIGNABLE_ROLES: readonly AssignableRole[] = Object.freeze(['user', 'admin']);
-// The permission needed to invite each customer role. User gives neither permission; Admin gives both.
 const MANAGING_PERMISSION: Readonly<Record<AssignableRole, string>> = Object.freeze({ user: 'user-grants:manage', admin: 'admin-grants:manage' });
 const BILLING_PERMISSION = 'billing:manage';
 

@@ -4,8 +4,6 @@ import type { MapCommunity, MapEdge, MapSnapshot } from './types.ts';
 
 type SnapshotEdge = MapCommunity['edges'][number];
 
-// Each dependency of the head: kept when the base has it between the partners of its two communities, else new. A
-// dependency on a community that the snapshot does not have is not on the map.
 export function headEdgesOf(head: MapSnapshot, matching: Matching, nodes: NodeIndex): MapEdge[] {
   return head.communities.flatMap((community) => community.edges.flatMap((edge): MapEdge[] => {
     const [from, to] = [nodes.head.get(community.id), nodes.head.get(edge.to)];

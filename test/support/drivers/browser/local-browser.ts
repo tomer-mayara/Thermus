@@ -142,7 +142,6 @@ function publicUrl(url: string | URL): URL {
   return parsed;
 }
 
-// The MCP client reaches the server at its listen address and keeps the public URLs that the server gives it.
 export function serverFetch(server: ServerAddress) {
   return async (url: string | URL, init?: RequestInit): Promise<Response> => {
     const target = new URL(url);

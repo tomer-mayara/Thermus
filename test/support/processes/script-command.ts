@@ -7,7 +7,6 @@ export interface ScriptResult {
   readonly stderr: string;
 }
 
-// Sends the signal to the command as soon as when gives true. when is checked every 20 ms while the command runs.
 interface ScriptStop {
   readonly signal: NodeJS.Signals;
   readonly when: () => boolean;
@@ -23,7 +22,6 @@ export interface ScriptLine {
   readonly stop?: ScriptStop;
 }
 
-// Runs a command under script/ in a child Node process and collects its exit status and output.
 export async function runScript(t: TestContext, script: string, line: ScriptLine = {}): Promise<ScriptResult> {
   const child = spawn(process.execPath, [script, ...(line.args ?? [])], {
     cwd: line.cwd,

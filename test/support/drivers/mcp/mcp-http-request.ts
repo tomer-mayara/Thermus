@@ -53,7 +53,6 @@ export async function rpcResult(response: Response): Promise<Record<string, unkn
   return message.result;
 }
 
-/** The status, the Retry-After header, and the OAuth error body of an answer that refuses a request before MCP runs. */
 export interface HttpRefusal {
   readonly status: number;
   readonly retryAfter: string | null;

@@ -20,13 +20,11 @@ export interface Change {
   readonly path: string;
 }
 
-// The entry of the rules file that would list a fact.
 export interface Declaration {
   readonly key: string;
   readonly value: string;
 }
 
-// A dependency fact of the candidate. key is the trigger of the rules file. source names a file that causes the fact.
 export interface Fact {
   readonly key: string;
   readonly text: string;
@@ -34,8 +32,6 @@ export interface Fact {
   readonly source?: string;
 }
 
-// A fact that the check establishes from the rules and the files of both revisions. detail is the full diff of a
-// changed declaration snapshot.
 export interface ArchitectureFact {
   readonly key: string;
   readonly fact: string;
@@ -52,8 +48,6 @@ export interface FactGroup {
   readonly blockers?: readonly Reason[];
 }
 
-// policy is facts when the rules of the merge base have the section architecture, and earlier when they do not.
-// summary is one line: the tier that the facts select, and what they are.
 export interface ArchitectureResult {
   readonly policy: 'facts' | 'earlier';
   readonly facts: readonly ArchitectureFact[];

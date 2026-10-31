@@ -13,7 +13,6 @@ export interface ProbeInputs {
   readonly keep: boolean;
 }
 
-// The shared runner of the probes gives exit code 2 for this error class.
 export { UsageError };
 
 export const USAGE = [

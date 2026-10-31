@@ -8,11 +8,9 @@ import { TeamBillingStub } from '../../support/doubles/billing/team-billing-stub
 import type { FakeMembership, FakeUser } from '../../support/doubles/workos/workos-fake.ts';
 import { serveWorkOSSite, type WorkOSSite } from '../../support/in-process/workos-site.ts';
 
-// The real hosted composition with the WorkOS provider and the WorkOS organization administration, behind the real HTTP
-// server on a loopback port. A local fake of the WorkOS API stands in for WorkOS: it keeps the roles of each membership
-// as single-role assignments, the invitations, and the users, as the probes of WorkOS staging showed. These
-// specifications prove the application side only. The hosted live gate proves the same flows against WorkOS.
-
+// A local fake stands in for WorkOS. It keeps the roles of each membership as single-role assignments, as the probes
+// of WorkOS staging showed. These specifications prove the application side only; the hosted live gate proves the same
+// flows against WorkOS.
 const acme = 'org_01ACME';
 const globex = 'org_01GLOBEX';
 const organizationNames = { [acme]: 'Acme', [globex]: 'Globex' };
@@ -34,8 +32,6 @@ const gus = person('gus');
 const pia = person('pia');
 const removalLabels = (actor: FakeUser) => [sam, dan, cal, ada, bea, hal].map(person => person.id === actor.id ? 'Leave Acme' : `Remove ${person.email}`);
 
-// Acme: Sam, Dan, and Cal have Admin; Ada and Hal have User and Admin; Bea has User. Gus has only the default role,
-// and Eve is inactive. Globex: Bea and Pia have User. Acme has six active product members.
 const memberships: readonly FakeMembership[] = [
   { userId: sam.id, organizationId: acme, roles: ['admin'] },
   { userId: dan.id, organizationId: acme, roles: ['admin'] },

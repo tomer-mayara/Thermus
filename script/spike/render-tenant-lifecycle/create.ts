@@ -31,8 +31,6 @@ export async function sendCreate(target: CreateTarget, step: string, call: Call)
   return { service, deployId: renderId(fieldJson(answer.json, 'deployId'), 'deployId'), ms: answer.ms };
 }
 
-// The services that a create of the run made: the ID of the create answer, or, when that answer was lost, each service
-// with the exact name of the run. Each one becomes a service that the client may touch.
 export async function createdIds(lister: Lister, state: { readonly serviceId?: string; readonly createSent: boolean; readonly name: string }): Promise<readonly string[]> {
   if (state.serviceId !== undefined) return [state.serviceId];
   if (!state.createSent) return [];

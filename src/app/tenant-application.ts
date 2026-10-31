@@ -11,7 +11,6 @@ import { routeTenantRequests } from './tenant-requests.ts';
 type Environment = Readonly<Record<string, string | undefined>>;
 type TenantConfig = Extract<DeploymentConfig, { role: 'tenant' }>;
 
-/** The parts of a tenant that a composition root chooses. Production reaches AuthKit and the control plane. */
 export interface TenantParts extends Omit<TenantMcpParts, 'relay'> {
   readonly relay?: AuditRelayOptions;
 }

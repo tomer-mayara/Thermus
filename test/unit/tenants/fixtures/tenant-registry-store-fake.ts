@@ -1,6 +1,5 @@
 import type { InsertRequestedResult, ReadRoutesResult, RegistryCount, TenantRegistryStore, TenantRoute, TenantState } from '../../../../src/tenancy/tenants/tenant-registry-store.ts';
 
-/** A working registry in memory. The failure fields and the read gate stand in for storage faults and slow reads. */
 export class TenantRegistryStoreFake implements TenantRegistryStore {
   readonly rows = new Map<string, TenantRoute>();
   insertFailure?: 'unavailable' | 'unconfirmed';

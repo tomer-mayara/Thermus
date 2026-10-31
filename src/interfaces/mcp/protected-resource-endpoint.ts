@@ -4,9 +4,7 @@ import type { MCPServer } from './mcp-server.ts';
 export interface ProtectedResourceEndpointOptions {
   readonly server: Pick<MCPServer, 'fetch' | 'close'>;
   readonly mcpResourceUrl: string;
-  // The metadata URL that the Bearer challenges of the MCP server name.
   readonly resourceMetadataUrl: string;
-  // The issuer of the authorization server of the MCP resource, such as the AuthKit domain.
   readonly authorizationServer: string;
 }
 

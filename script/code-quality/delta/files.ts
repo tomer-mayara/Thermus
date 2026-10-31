@@ -1,12 +1,9 @@
-// The delta rule of script/code-quality/ast-metrics-delta.ts. A module of its own, because the architecture command gives the same
-// files as the changed files of a pull request.
 import { git } from '../shared/repository.ts';
 import { validateChanges, type FileChange } from './changes.ts';
 import { changesInDiff } from './status.ts';
 
 const typeScriptFiles = ['*.ts', '*.tsx', '*.mts', '*.cts'];
 
-// Deleted files have no current score. Renamed files use their new path.
 export function deltaFiles(root: string, base: string): string[] {
   return deltaChanges(root, base).filter((change) => change.status !== 'D').map((change) => change.path).sort();
 }

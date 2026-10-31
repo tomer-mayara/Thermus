@@ -46,7 +46,6 @@ function assertSentToMembers(answer: BrowserAnswer): void {
   assert.deepEqual([answer.status, answer.location?.href], [303, membersPage], answer.body);
 }
 
-// Waits until the condition holds, or gives false after the time.
 async function within(milliseconds: number, condition: () => boolean): Promise<boolean> {
   const end = Date.now() + milliseconds;
   while (!condition()) {

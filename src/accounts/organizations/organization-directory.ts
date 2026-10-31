@@ -36,7 +36,6 @@ export interface OrganizationInvitation {
   readonly invitationId: string;
   readonly organizationId: string;
   readonly email: string;
-  // The one role that the acceptance grants.
   readonly role: string;
   readonly state: InvitationState;
   // The provider expiry time in ISO 8601 format.
@@ -74,7 +73,6 @@ export type AssignableRole = 'user' | 'admin';
 export interface InvitationRequest {
   readonly organizationId: string;
   readonly email: string;
-  // The invitation assigns this role. Admin includes product access.
   readonly role: AssignableRole;
 }
 

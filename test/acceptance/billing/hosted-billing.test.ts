@@ -12,8 +12,6 @@ function billedSeatsIn(body: string): number | undefined {
   return match === null ? undefined : Number(match[1]);
 }
 
-// The administration site of the hosted acceptance tests, with BillingFree behind a recorder at the payment boundary.
-// Acme (org-a) has 6 active product members: sam, otto, cy, fay, eve, and una.
 async function serve(t: TestContext) {
   const billing = new BillingRecorder();
   return { ...(await serveAdministrationSite(t, { billing })), billing };

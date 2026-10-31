@@ -47,7 +47,6 @@ function fileMaintainabilityOf(value: unknown, path: string): number | undefined
 export interface ServerCommunities {
   readonly modularity: number;
   readonly crossShare: number;
-  // The ids of the communities in each cycle.
   readonly cycles: readonly (readonly string[])[];
   readonly communities: readonly ServerCommunity[];
   readonly edges: readonly ServerEdge[];
@@ -75,8 +74,6 @@ export interface ServerEdge {
   readonly inCycle: boolean;
 }
 
-// ast-metrics leaves out each value of zero, so the parse accepts a missing value, and an entry that is not an object
-// gives no values.
 export function serverCommunitiesOf(text: string): ServerCommunities {
   const answer = jsonOf(text);
   if (!isJsonObject(answer)) throw new CommandError('get_communities gave an unexpected answer: expected a JSON object.');

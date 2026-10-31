@@ -30,11 +30,9 @@ export interface SiteSetup {
   readonly reportFailure: AccountFailureReporter;
   // Each of these users has the MCP token "<subject>-token", which carries the organization that the user selected.
   readonly mcpUsers?: readonly AuthenticatedUser[];
-  // More MCP tokens, each with the user and the organization that it carries.
   readonly mcpTokens?: ReadonlyMap<string, AuthenticatedUser>;
   // The memberships of the directory. The default is `members`.
   readonly memberships?: readonly MembershipRecord[];
-  // Gets each change record too, after the site keeps it in `records`.
   readonly changeRecords?: ChangeRecorder;
   // The billing of the hosted composition. The default is BillingFree.
   readonly billing?: Billing;
@@ -52,11 +50,6 @@ export interface OrganizationSite {
   callTool(token: string): Promise<Record<string, unknown>>;
 }
 
-// The real hosted composition, account routes, OrganizationAdministration, access contracts, and MCPServer, in this
-// process. Doubles stand at the provider boundaries: the browser session, the membership directory, and the MCP token
-// verifier. Two test-only spies stand in for the product: AccountOperationSpy gives the destinations, each with
-// the permission that it checks, and ProtectedToolSpy gives the MCP tool, which records its request context. No
-// WorkOS setting, SDK, or credential exists.
 export function openOrganizationSite(t: TestContext, setup: SiteSetup): OrganizationSite {
   const parts = composeSite(setup);
   t.after(() => parts.application.close());

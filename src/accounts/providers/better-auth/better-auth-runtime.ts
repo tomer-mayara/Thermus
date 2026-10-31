@@ -36,11 +36,9 @@ export interface ResourceServerClient {
   readonly clientSecret: string;
 }
 
-// The resource-server client of the MCP resource of this runtime, which is the MCP resource of PUBLIC_BASE_URL.
 export interface ResourceServerClientRecord {
   // Gives undefined when no client is stored, or when the stored client is for another MCP resource.
   current(): ResourceServerClient | undefined;
-  // Replaces a stored client. The client is durable when this returns.
   record(client: ResourceServerClient): void;
 }
 

@@ -23,7 +23,6 @@ export function tenantCreateCall(create: TenantCreate): Call {
   return createServiceCall({ ...create.source, serviceType: 'web_service', variables: create.variables }, create.name, create.credentialId);
 }
 
-// The deploy of a plan change or a variable update uses the image of the probe, the image of the service.
 export function probeImage(image: ImageRef): PlanImage {
   const named = (deploy: DeployView): boolean => sameDigest(deploy.imageSha, image.digest) || deploy.imageRef?.includes(image.digest) === true;
   return { url: image.ref, label: 'the probe image', nameOf: (deploy) => (named(deploy) ? 'the probe image' : `ref ${shown(deploy.imageRef)}, sha ${shown(deploy.imageSha)}`) };

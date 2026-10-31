@@ -1,4 +1,3 @@
-// Git operations shared by the ast-metrics commands.
 import { spawnSync } from 'node:child_process';
 import { CommandError } from './command-error.ts';
 import { outputLimit } from './subprocess.ts';

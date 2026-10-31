@@ -24,7 +24,6 @@ function describeRecord(t: TestContext, record: OperatorRecord): void {
 
 export function describeOperatorSetupProofs(run: LiveRun): void {
   const { workos, settings } = run;
-  // The application reads of the hosted edition, against the staging environment.
   const directory = new WorkOSOrganizations({
     authority: workosAuthority(settings.clientId),
     memberships: workosMembershipReads(workos),
