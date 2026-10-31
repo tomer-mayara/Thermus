@@ -14,18 +14,19 @@
 import { parseArgs } from 'node:util';
 import { RENDER_COMMANDS, type CommandInput } from './rehearsal-render-commands.ts';
 import { RehearsalUsageError } from './rehearsal-settings.ts';
+import { STEP_COMMANDS } from './rehearsal-step-commands.ts';
 import { WORKOS_COMMANDS } from './rehearsal-workos-commands.ts';
 
-const COMMANDS = { ...RENDER_COMMANDS, ...WORKOS_COMMANDS };
+const COMMANDS = { ...RENDER_COMMANDS, ...WORKOS_COMMANDS, ...STEP_COMMANDS };
 
 const USAGE = `Usage: node --env-file=<main checkout>/.env.local script/release/rehearsal/rehearsal.ts <command> [options]
 Render, with the fleet key: services, credential, create, show [--service <tenant>], wait --deploy <id> [--service <tenant>],
   events [--service <tenant>], logs --since <ISO time> [--match <a|b>] [--type app|build] [--service <tenant>], health,
   login-redirect, set-host, set NAME=value..., switch-on --sweep-hour <0-23>, tenant-vars --service <tenant>, to-image,
-  to-git, delete-control
+  to-git, delete-control, cancel --deploy <id>, watch [--seconds <10-1800>] [--service <tenant>], signup-page
 WorkOS Staging, through the launcher: resources, add-resource, fixtures, signup-user, authorize --org A|B,
-  call --org A|B [--until-answer] [--no-renew], signup --name <organization name>, view, resume-check, delete-org --org A|B,
-  cleanup-workos, orgs-since --since <ISO time>, run-objects
+  call --org A|B [--until-answer] [--no-renew], signup --name <organization name>, view --org A|B, resume-check,
+  delete-org --org A|B, cleanup-workos, orgs-since --since <ISO time>, run-objects, fleet -- <fleet.ts command and options>
 Staging database: db-counts, db-tenants. State: state`;
 
 async function main(argv: readonly string[]): Promise<number> {
@@ -37,6 +38,7 @@ async function main(argv: readonly string[]): Promise<number> {
       options: {
         service: { type: 'string' }, deploy: { type: 'string' }, since: { type: 'string' }, match: { type: 'string' }, type: { type: 'string' },
         'sweep-hour': { type: 'string' }, org: { type: 'string' }, name: { type: 'string' }, 'until-answer': { type: 'boolean' }, 'no-renew': { type: 'boolean' },
+        seconds: { type: 'string' },
       },
     });
     const [name, ...rest] = positionals;

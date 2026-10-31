@@ -48,7 +48,11 @@ export async function addResource({ settings, dir, print }: WorkOSSession, uri: 
   await printResources(settings, print);
 }
 
-/** R6: the client owner organization, organization A, its user with the roles user and admin, and the Connect application. */
+/**
+ * R6: the client owner organization, organization A, its user with an Admin membership (the role admin gives
+ * product:access, as the first member of a signup gets it), and the Connect application. The application belongs to
+ * the client owner organization, so it stays when step R13 removes organization A.
+ */
 export async function makeFixtures({ workos, dir, print }: WorkOSSession, runId: string): Promise<void> {
   const make = new FixtureFactory(workos, new FixtureRegistry(workos), runId);
   const owner = await make.organization('client owner');
@@ -57,7 +61,7 @@ export async function makeFixtures({ workos, dir, print }: WorkOSSession, runId:
   updateState(dir, (state) => { state.organizations.A = { id: organization.id, name: organization.name }; });
   const user = await make.user('a');
   updateState(dir, (state) => { state.users.A = user; });
-  const membership = await make.membership(user, organization, ['user', 'admin']);
+  const membership = await make.membership(user, organization, ['admin']);
   updateState(dir, (state) => { state.memberships.A = membership; });
   const application = await workos.connect.createApplication({
     applicationType: 'oauth', name: `Thermus live ${runId} MCP client`, isFirstParty: false, organizationId: owner.id, usesPkce: true,
@@ -65,7 +69,7 @@ export async function makeFixtures({ workos, dir, print }: WorkOSSession, runId:
   });
   updateState(dir, (state) => { state.application = { id: application.id, clientId: application.clientId }; });
   print(`Client owner organization ${owner.id} "${owner.name}"; organization A ${organization.id} "${organization.name}"`);
-  print(`User A ${user.id} ${user.email}; membership ${membership} with the roles user and admin`);
+  print(`User A ${user.id} ${user.email}; membership ${membership} with the role admin`);
   print(`Connect application ${application.id}, client ${application.clientId}, callback ${CONNECT_CALLBACK}, owner ${owner.id}`);
 }
 

@@ -35,10 +35,10 @@ function endpointOf(dir: string): URL {
   return new URL('mcp', `${savedControl(readState(dir)).origin}/`);
 }
 
-/** The sign-in of user B for organization B at the staging control plane. */
-function visitOfB(current: WorkOSSession): PortalVisit {
+/** The sign-in of the user of a label for the organization of the label at the staging control plane. */
+function visitOf(current: WorkOSSession, who: string): PortalVisit {
   const state = readState(current.dir);
-  return { settings: current.settings, origin: savedControl(state).origin, user: savedUser(state, 'B'), organizationName: savedOrganization(state, 'B').name };
+  return { settings: current.settings, origin: savedControl(state).origin, user: savedUser(state, who), organizationName: savedOrganization(state, who).name };
 }
 
 /** One MCP call for A or B; with --until-answer, one call every 15 s until a call answers, and the time to it. */
@@ -60,12 +60,14 @@ async function call(input: CommandInput): Promise<void> {
   if (attempts > 1) throw new Error(`No call answered within ${attempts} calls.`);
 }
 
+/** A sign-in through the Sign in link of the portal, then the landing page and the Connect view. */
 async function view(input: CommandInput): Promise<void> {
   const current = session(input);
-  const visit = visitOfB(current);
+  const visit = visitOf(current, label(input));
   const browser = new LiveBrowser(async () => {});
   try {
     const page = await signIn(browser, visit);
+    input.print(`${utcNow()} the sign-in of ${label(input)} ended at ${new URL(page.url()).pathname} on ${new URL(page.url()).origin}`);
     await page.goto(`${visit.origin}/`);
     input.print(viewLine(await connectView(page)));
   } finally {
@@ -76,7 +78,7 @@ async function view(input: CommandInput): Promise<void> {
 /** R10 and R11: the Connect view of the paused workspace, the first call, the view during the resume, and the calls until one answers. */
 async function resumeCheck(input: CommandInput): Promise<void> {
   const current = session(input);
-  const visit = visitOfB(current);
+  const visit = visitOf(current, 'B');
   const browser = new LiveBrowser(async () => {});
   try {
     const page = await signIn(browser, visit);

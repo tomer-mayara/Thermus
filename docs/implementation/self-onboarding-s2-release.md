@@ -461,15 +461,48 @@ Do the cleanup at the end, and also after a failure. Order:
 
 ### 3.7 Part B findings
 
-Part B ran on 31 October 2026 (UTC), with the run ID `20261031-2029`. It used
-the helper [`rehearsal.ts`](../../script/release/rehearsal/rehearsal.ts)
+Part B ran two times on 31 October 2026 (UTC). It used the helper
+[`rehearsal.ts`](../../script/release/rehearsal/rehearsal.ts)
 ([Rehearse the SO-12 release](../../script/README.md#rehearse-the-so-12-release))
 for the calls that the fleet script, the release workflow, and the probes do
-not make. The [record](#7-record) has the result of each step.
+not make. The [record](#7-record) has the result of each step, with the run.
+
+- **Run 1**, run ID `20261031-2029`: R0 passed, and R1 failed (item 1 below).
+  Steps R2 to R14 did not run, and the cleanup ran.
+- **Run 2**, run ID `20261031-2052`, in the changed order of the manager
+  decision below.
+
+**Manager decision of 31 October 2026.** Run the rehearsal again in this order:
+
+1. R1': create `thermus-spike-control` as a Git build, as R1 says, with the
+   same variables, the secret file, and `autoDeploy: no`, and record the
+   service ID, the `slug`, the public host, and the first deploy ID. Do not
+   wait for the Git build, and do not depend on it: the check of R1 on the Git
+   build is dropped for this run. The case of item 1 depends on the timing of
+   the builder of Render; a fix of the case is a separate source pull request
+   that the manager proposes to the owner. If the first deploy is still
+   building at R4, cancel it with
+   `POST /v1/services/<ID>/deploys/<deploy ID>/cancel`, and record that.
+2. R4 at once, with the same checks.
+3. R5.
+4. R2: correct the host variables if the public host differs from the guess,
+   and deploy again with the workflow, or record that nothing changed.
+5. R3: the owner adds the redirect URI
+   `https://thermus-spike-control.onrender.com/callback` before part B reaches
+   R3. If the redirect list holds the URI of the actual public host, part B
+   records it and goes on with R3b without a stop; else part B stops and names
+   the URI.
+6. R6 to R14 and the cleanup, as written. The check that the sign-in of the
+   portal starts with the redirect URI of the public host moves from R2 to the
+   first sign-in of R6.
+
+The consequence: run 2 does not rehearse a live Git build of the staging
+control plane. Production runs a Git build today, and item 1 stands. R14 still
+measures the switch back to the Git build, as a measure only.
 
 What differed from the expected values:
 
-1. **R1 stopped the rehearsal.** The first Git build of `main` (`c40b9912`, the
+1. **R1 stopped run 1.** The first Git build of `main` (`c40b9912`, the
    candidate and the documents of part A) ended as `build_failed` 262 s after
    the create call. The check stage of `Dockerfile.hosted`
    (`npm run build:hosted` under `--network=none`) failed one test of the 222
@@ -481,10 +514,8 @@ What differed from the expected values:
    source and tests, passed `npm run build:hosted` in run 41232469232 and in
    the manager round. So the case depends on the timing of the build machine:
    on the builder of Render it took 11.6 s. The effects:
-   - Steps R2 to R14 did not run, and the cleanup ran. The expected values of
-     R4 (the switch of a Git build to the image), R7 (a deploy after a variable
-     update), and R14 (the switch back to the Git build) stay unmeasured.
-     Item 12 of [section 6](#6-owner-steps-outstanding) stays open.
+   - In run 1, steps R2 to R14 did not run, and the cleanup ran. Run 2 used
+     the changed order of the manager decision above.
    - Production builds from Git today, with the same `Dockerfile.hosted`. A Git
      deploy of production can fail in the same way until step 5 moves
      production to the image. A rollback to a Git build meets the same check.
@@ -783,11 +814,11 @@ no secret.
 | --- | --- | --- | --- |
 | 1.4 Application checks | 18:36:51 to 19:01:29 (manager round); 20:26:45 to 20:29:21 (Render interface gate) | Passed | [1.4](#14-application-checks-of-the-candidate-part-b): the manager round on `3050d706`, the same tree as `fa787be4` ([verification](https://github.com/tomer-mayara/Thermus/pull/295#issuecomment-6547815686)), and the Render interface gate of part B before step R1. |
 | R0 Preflight | 20:29:59 to 20:30:32 | Passed. Run ID `20261031-2029`. | The owner confirmed the window ([3.1](#31-inputs-for-part-b)). The service list of Thermus AI held only `srv-db8mnqg473hc739d529g`. `rgc-dbg1h0142hec73da9ra0` (`ghcr-thermus-hosted-read`) has the registry `GITHUB` and the user `tomer-mayara`. WorkOS Staging, kept for the cleanup check: the redirect URIs `https://localhost:24443/callback` (default, `redir_01M5YQXX5MZ202HY1SJAXBR180`) and `https://localhost:46443/callback` (`redir_01M5Z30C8MKYE38WW92WNB2VR6`); the sign-out URIs `https://localhost:24443/` (default) and `https://localhost:46443/`; the initiate-login URI `https://localhost:24443/login`; the OAuth resources `https://localhost:24443/mcp` (`authkit_oauth_resource_01M5YQXZ9GZ4VVYFQYQZZXTP41`) and `https://localhost:46443/mcp` (`authkit_oauth_resource_01M5Z30RTN19ZAJGV5TR7HFPEM`). No organization, user, or Connect application held the run ID. With `STAGING_DATABASE_URL` and the CA, with verified TLS, the five tables of `thermus_admin` had 0 rows. The production variable `PORT` is `8080` (one read at 20:30:32). |
-| R1 Git build of `thermus-spike-control` | 20:30:40 (create) to 20:35:04 (`build_failed`) | Failed: the first deploy ended as `build_failed`. The rehearsal stopped here. | `POST /v1/services` answered `201` after 2.3 s, with `Ratelimit-Remaining` 17 of 20 and `Ratelimit-Reset` 1,759 s: service `srv-dbj4vs6c6qcc73bfrgv0`, slug `thermus-spike-control`, public URL `https://thermus-spike-control.onrender.com` (the guessed host), first deploy `dep-dbj4vsmc6qcc73bfri00` (trigger `manual`, commit `c40b9912`). The create call held the 13 variables of R1 and the secret file `supabase-ca.crt`. The build ran `RUN --network=none npm run build:hosted` of `Dockerfile.hosted`: `npm run check` and the integration run (1,260 of 1,260) passed, and the acceptance selection failed 1 of 222: `dist/test/acceptance/mcp/hosted-tenant-capacity.test.js:59`, "Given OPERATION_CAPACITY=5 and 5 running calls, when a 6th call arrives, then it gets Server busy with completion busy and the relay receives its busy event" (11.6 s). The relay statuses were `busy, busy, success, success, success, success`, not one `busy` and five `success`. Events: `deploy_started` and `build_started` at 20:30:42, `build_ended` at 20:35:03, `deploy_ended` at 20:35:04. See [3.7](#37-part-b-findings). |
-| R2 Host settings | — | Not run: the rehearsal stopped at the failed check of R1 ([3.2](#32-rules-of-the-rehearsal)). | — |
+| R1 Git build of `thermus-spike-control` | Run 1: 20:30:40 (create) to 20:35:04 (`build_failed`). Run 2 (R1'): 20:53:10 (create) to 20:53:21 (cancel) | Run 1: failed, the first deploy ended as `build_failed`, and run 1 stopped here. Run 2: R1' as the manager decision of 31 October 2026 says ([3.7](#37-part-b-findings)): created, the Git build canceled, and its check dropped. | Run 2: `POST /v1/services` answered `201` after 1.6 s, with `Ratelimit-Remaining` 16 of 20 and `Ratelimit-Reset` 409 s: service `srv-dbj5advf3r2c73f08rf0`, slug `thermus-spike-control`, public host `thermus-spike-control.onrender.com` (the guessed host), first deploy `dep-dbj5ae7f3r2c73f08sbg` (trigger `manual`, commit `c40b9912`, `build_in_progress`). `POST /v1/services/srv-dbj5advf3r2c73f08rf0/deploys/dep-dbj5ae7f3r2c73f08sbg/cancel` answered `200` after 0.2 s at 20:53:21; the deploy is `canceled`, finished at 20:53:21.4. Events: `build_started` and `deploy_started` at 20:53:12, `deploy_ended` and `build_ended` at 20:53:21. Run 1: `POST /v1/services` answered `201` after 2.3 s, with `Ratelimit-Remaining` 17 of 20 and `Ratelimit-Reset` 1,759 s: service `srv-dbj4vs6c6qcc73bfrgv0`, slug `thermus-spike-control`, public URL `https://thermus-spike-control.onrender.com` (the guessed host), first deploy `dep-dbj4vsmc6qcc73bfri00` (trigger `manual`, commit `c40b9912`). The create call held the 13 variables of R1 and the secret file `supabase-ca.crt`. The build ran `RUN --network=none npm run build:hosted` of `Dockerfile.hosted`: `npm run check` and the integration run (1,260 of 1,260) passed, and the acceptance selection failed 1 of 222: `dist/test/acceptance/mcp/hosted-tenant-capacity.test.js:59`, "Given OPERATION_CAPACITY=5 and 5 running calls, when a 6th call arrives, then it gets Server busy with completion busy and the relay receives its busy event" (11.6 s). The relay statuses were `busy, busy, success, success, success, success`, not one `busy` and five `success`. Events: `deploy_started` and `build_started` at 20:30:42, `build_ended` at 20:35:03, `deploy_ended` at 20:35:04. See [3.7](#37-part-b-findings). |
+| R2 Host settings | Run 2: 20:57 | Run 2: passed; nothing changed. | The public host is the guessed host `thermus-spike-control.onrender.com`, so `PUBLIC_BASE_URL` and `WORKOS_REDIRECT_URI` of R1 stay, and no deploy was needed. The check of the sign-in moved to R6 (manager decision). Run 1: not run. |
 | R3 WorkOS Staging entries | — | Not run: the rehearsal stopped at the failed check of R1 ([3.2](#32-rules-of-the-rehearsal)). | — |
-| R4 Switch to the image | — | Not run: the rehearsal stopped at the failed check of R1 ([3.2](#32-rules-of-the-rehearsal)). | — |
-| R5 Deploy of the candidate | — | Not run: the rehearsal stopped at the failed check of R1 ([3.2](#32-rules-of-the-rehearsal)). | — |
+| R4 Switch to the image | Run 2: 20:53:27 (update) to 20:55:44 (end of the watch) | Run 2: passed. Render accepts the switch of a Git build service to the image, and it starts no deploy. | `PATCH /v1/services/srv-dbj5advf3r2c73f08rf0` with `image.ownerId`, `image.imagePath` of the candidate, `image.registryCredentialId`, and `serviceDetails.runtime` `image` answered `200` after 1.3 s, with `Ratelimit-Remaining` 9 of 10. The answer and `GET /v1/services/srv-dbj5advf3r2c73f08rf0` show the runtime `image`, `imagePath` `ghcr.io/tomer-mayara/thermus-hosted@sha256:8025ae1b…`, the credential `rgc-dbg1h0142hec73da9ra0` (`ghcr-thermus-hosted-read`), no `repo` and no `branch`, and `autoDeploy` `no`. Render started no deploy in the 120 s after the update: a watch of the deploys and the events every 10 s, to 20:55:44, showed only the canceled Git build and no new event. Run 1: not run. |
+| R5 Deploy of the candidate | Run 2: 20:56:07 (dispatch) to 20:57:21 | Run 2: passed. | Run [41241201078](https://github.com/tomer-mayara/Thermus/actions/runs/41241201078): the job summary says "Deploy: live". Deploy `dep-dbj5c48473hc73b75bug` was `live` 29.6 s after the deploy call (Render: createdAt 20:56:49.9, finishedAt 20:57:11.8); the live deploy and `imagePath` name the candidate digest; `GET https://thermus-spike-control.onrender.com/healthz` answered `200` with `ok` at the first request, with no `502`. The log of the start has `Listening on http://0.0.0.0:8080` at 20:57:04, and no `Logging storage is unavailable:` line, no tenant provisioner line, and no `FATAL` line. Run 1: not run. |
 | R6 Organization A and the call with the switch off | — | Not run: the rehearsal stopped at the failed check of R1 ([3.2](#32-rules-of-the-rehearsal)). | — |
 | R7 Switch on | — | Not run: the rehearsal stopped at the failed check of R1 ([3.2](#32-rules-of-the-rehearsal)). | — |
 | R8 Provisioning of A | — | Not run: the rehearsal stopped at the failed check of R1 ([3.2](#32-rules-of-the-rehearsal)). | — |
