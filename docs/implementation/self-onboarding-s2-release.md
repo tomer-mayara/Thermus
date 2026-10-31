@@ -688,8 +688,8 @@ steps; step 1 reads them.
 - **Check:** the credential has the registry `GITHUB` and the user
   `tomer-mayara`. The rehearsal tenants pulled the candidate with it. The
   operator record has the expiry date.
-- **Go-ahead:** —
-- **Result:** —
+- **Go-ahead:** the read came with the go-ahead of step 3 (31 October 2026, 22:24 UTC); the owner answered the token question at 22:28 UTC.
+- **Result:** done, 31 October 2026, 22:26 to 22:28 UTC. The manager read `GET /v1/registrycredentials/rgc-dbg1h0142hec73da9ra0`: name `ghcr-thermus-hosted-read`, registry `GITHUB`, user `tomer-mayara`, updated 27 October 2026 03:20 UTC. The rehearsal tenants of run 2 pulled the candidate image with it (steps R8 and R9). The owner: "The GitHub token of ghcr-thermus-hosted-read has no expiry date. It is noted in the operator record." So no rotation is due before step 5; the rotation of that token follows the interval that the owner sets ([runbook 5.4](tenant-fleet-runbooks.md#54-github-token-of-the-registry-credential)).
 
 ### Step 5. Control plane deploy with the gateway switch off
 
@@ -919,7 +919,7 @@ no secret.
 | 1 WorkOS inventory and D-10 cleanup | 31 October 2026, 21:51 to 22:16 | done: 2 organizations kept, 6 deleted by the owner, 2 users, 0 invitations; `SELF_SERVE_SIGNUP_ENABLED` set to `false` through the API without a deploy | [Step 1](#step-1-fresh-workos-inventory-and-the-d-10-cleanup); the board ticket `5f858d` |
 | 2 Release holds | 31 October 2026, 22:18 | done: three native-flow holds accepted as documented limits; the S2.5-02 gates closed by the 26 October release; the $0 constraint superseded; no stop | [Step 2](#step-2-disposition-of-the-open-release-holds) |
 | 3 Database migration | 31 October 2026, 22:19 to 22:25 | done: migration `20261031222505` applied; three empty tables with forced RLS; runtime grants SELECT, INSERT, UPDATE only; no advisor finding; production health `200` | [Step 3](#step-3-database-migration-of-so-04) |
-| 4 Registry credential | — | — | — |
+| 4 Registry credential | 31 October 2026, 22:26 to 22:28 | done: credential `GITHUB`, user `tomer-mayara`; the token has no expiry date, noted in the operator record | [Step 4](#step-4-registry-credential) |
 | 5 Deploy with the switch off | — | — | — |
 | 6 Switch on | — | — | — |
 | 7 Kept organizations | — | — | — |
