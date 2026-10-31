@@ -36,6 +36,16 @@ async function composeTenant(t: TestContext, settings: Readonly<Record<string, s
   return { application, relay, call, url: (path: string) => new URL(path, config.publicBaseUrl) };
 }
 
+// The tenant sends a relay again when its answer comes after the 5 s limit of an audit send. Then the relay route gets
+// the same event again. The control plane keeps one event for each operation ID (SO-05), and so does this count.
+function relayedStatuses(relay: AuditRelayRouteSpy): unknown[] {
+  return [...new Map(relay.received.map(({ event }) => [event.operationId, event.status] as const)).values()];
+}
+
+async function untilRelayedOperations(relay: AuditRelayRouteSpy, count: number): Promise<void> {
+  while (relayedStatuses(relay).length < count) await relay.untilReceived(relay.received.length + 1);
+}
+
 test('Given the tenant composition, when requests reach it, then it serves /healthz and /mcp only: health answers GET and HEAD and refuses other methods, an MCP request without a context gets 403, and each other path gets 404', { timeout: 10_000 }, async (t) => {
   const { application, url } = await composeTenant(t);
 
@@ -77,11 +87,11 @@ test('Given OPERATION_CAPACITY=2, when the tenant holds a fetch and a search and
   for (const gate of held) gate.resolve();
   const fetched = await rpcResult(await fetch);
   await search;
-  await relay.untilReceived(3);
+  await untilRelayedOperations(relay, 3);
 
   assert.deepEqual(busy.content, [{ type: 'text', text: 'Server busy. Try again later.' }]);
   assert.match(JSON.stringify(fetched.content), /Page content/);
-  assert.deepEqual(relay.received.map(({ event }) => event.status).toSorted(), ['busy', 'success', 'success']);
+  assert.deepEqual(relayedStatuses(relay).toSorted(), ['busy', 'success', 'success']);
   assert.ok(relay.received.some(({ context }) => context === fetchRequest.headers.get('Thermus-Access')));
   assert.deepEqual(new Set(relay.received.map(({ path }) => path)), new Set(['/internal/audit']));
 });

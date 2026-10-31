@@ -14,23 +14,21 @@
     "uncertain": false
   },
   "architecture": {
-    "modelUpdated": true,
-    "summary": "Documents and an operator tool only. SO-12 part B records the rehearsal in docs/implementation/self-onboarding-s2-release.md: the application checks of section 1.4; run 1, which stopped at R1 because the Git build of the staging control plane failed one timing-dependent acceptance case in the check stage of Dockerfile.hosted on the builder of Render, with its cleanup; the manager decision of 31 October 2026 on a changed order; and run 2, in which R1' to R14 and the cleanup passed (Render accepts the switch of a Git build service to the image and back, a variable update starts no deploy, the fleet commands, the signup, the suspend and resume, the upgrade, the removal, and the rollback work on thermus-spike-* services). The Part B findings name the stale marker of example.com, the window of about 75 s after live in which a new tenant refuses calls, and the two provisioner loops during the overlap of a control plane deploy; their consequences go into steps 6 to 8 of the production order and item 15 of the owner steps, and docs/free-subscription-guide.md gets the current words of the test call and says that the restart answer can also come in the first minute after Connect shows the connection guide. It adds the rehearsal helper script/release/rehearsal/, its knip entry and its section in script/README.md, and one row in the Containers and source owners table of architecture/components.md. The helper is outside src and no component: it composes the public bounded SQL runtime of sql and the hosted live test support, and calls the Render and WorkOS APIs itself. No source, test, workflow, migration, or Mermaid block changes, so no component, edge, public module, declaration, or runtime behavior of a server changes.",
+    "modelUpdated": false,
+    "summary": "Test only, hardening. The OPERATION_CAPACITY=2 case of test/integration/mcp/hosted-tenant-composition.test.ts counted raw relay deliveries, as the tenant capacity case did before #302. The tenant sends a relay again when its answer comes after the 5 s limit of an audit send, and the relay route of the control plane keeps one event for each operation ID (AcceptedRelays), so a repeated delivery is expected behavior. The case now waits for three operations and compares their statuses; the context and path checks stay on each delivery. No repeated delivery was reproduced in this case: its relay request is written only after the pipelines end. docs/testing/test-list.md describes the count. No source, support, configuration, workflow, dependency, or Mermaid block changes, so no component, edge, public module, declaration, or runtime behavior changes, and the registry stays accurate.",
     "views": [
-      "Containers and source owners table of architecture/components.md: one row added for the rehearsal helper (prose, no Mermaid block)",
-      "All 24 Mermaid views of architecture/components.md unchanged (checked: no server container, component, or runtime change)"
+      "All 24 Mermaid views of architecture/components.md unchanged (checked: one integration test and the test list)"
     ],
     "evidence": [
-      "docs/implementation/self-onboarding-s2-release.md#37-part-b-findings",
-      "docs/implementation/self-onboarding-s2-release.md#7-record",
-      "docs/implementation/self-onboarding-s2-release.md#4-production-order",
-      "docs/free-subscription-guide.md#4-test-a-real-thermus-call",
-      "script/release/rehearsal/rehearsal.ts",
-      "script/release/rehearsal/rehearsal-db.ts",
-      "script/README.md#rehearse-the-so-12-release",
-      "architecture/components.md#containers-and-source-owners",
-      "src/runtime/sql/bounded-sql-runtime.ts",
-      "docs/implementation/pr-review-rules.yaml"
+      "test/integration/mcp/hosted-tenant-composition.test.ts",
+      "docs/testing/test-list.md",
+      "test/acceptance/mcp/hosted-tenant-capacity.test.ts",
+      "test/support/doubles/logging/audit-relay-route-spy.ts",
+      "src/logs/audit/audit-relay-request.ts",
+      "src/logs/audit/audit-collector-state.ts",
+      "src/interfaces/web/internal/audit-relay-route.ts",
+      "src/interfaces/web/internal/accepted-relays.ts",
+      "architecture/components.md"
     ]
   }
 }

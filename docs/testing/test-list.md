@@ -591,7 +591,7 @@ control plane, and the test plays the gateway with its own Ed25519 key pair.
 - `test/integration/mcp/hosted-tenant-composition.test.ts` (2 cases) runs
   `composeTenantApplication()` with the real `mcp`, `identity`, `audit-logs`,
   and `config` packages: only `/healthz` and `/mcp`, and the capacity of
-  `OPERATION_CAPACITY` with relayed events.
+  `OPERATION_CAPACITY` with relayed events, one event for each operation ID.
 - `test/integration/mcp/request-scope.test.ts` (4 cases) checks the request
   scope of `MCPServer.fetch()`: the access and the tool server of the scope,
   the configured access without a scope, the bearer check first, and a denial.
