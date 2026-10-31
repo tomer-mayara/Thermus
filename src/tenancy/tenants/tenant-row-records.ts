@@ -1,6 +1,8 @@
 import type { SystemLog } from '../../logs/system/system-logger.ts';
+import type { WatchOutcome } from './tenant-deploy-watch.ts';
 import { ProvisioningLog } from './tenant-provisioning-log.ts';
 import type { LiveRecord, ProvisioningRow, RecordResult, TenantProvisioningStore } from './tenant-provisioning-store.ts';
+import type { ServiceOutcome } from './tenant-service-attempt.ts';
 
 /** done: the row has its end state or is left to another writer. store-failed: the row waits for the next claim. */
 export type RowOutcome = 'done' | 'store-failed';
@@ -21,6 +23,17 @@ export class RowRecords {
 
   claimed(row: ProvisioningRow, resumed: boolean): void {
     this.lines.record(row, row.state, resumed ? { resumed: true } : {});
+  }
+
+  /** The end of the work before the row has a service: failed on the service of its claim (none for a creating row), or the claim lost. */
+  async unserved(row: ProvisioningRow, outcome: Exclude<ServiceOutcome, { status: 'service' }>): Promise<RowOutcome> {
+    return outcome.status === 'lost' ? this.unrecorded(row, outcome.claim) : this.failed(row, row.serviceId, outcome.reason);
+  }
+
+  /** The end of the watch of the deploy of serviceId: live, failed, or the claim lost. */
+  async watched(row: ProvisioningRow, serviceId: string, outcome: WatchOutcome): Promise<RowOutcome> {
+    if (outcome.status === 'lost') return this.unrecorded(row, outcome.claim);
+    return outcome.status === 'failed' ? this.failed(row, serviceId, outcome.reason) : this.live(row, serviceId, outcome.live);
   }
 
   /** creating to deploying. Undefined when the work goes on, else the outcome that ends it. */

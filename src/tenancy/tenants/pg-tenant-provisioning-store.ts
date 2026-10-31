@@ -35,11 +35,11 @@ export class PgTenantProvisioningStore implements TenantProvisioningStore {
 
   // A failed release changes nothing: the lease of the row ends by itself.
   async releaseClaim(row: ProvisioningRow): Promise<void> {
-    await this.runtime.run((session) => session.query(RELEASE_CLAIM, [row.organizationId, row.holder], true));
+    await this.change(RELEASE_CLAIM, [row.organizationId, row.holder]);
   }
 
   async releaseUnworkedClaim(row: ProvisioningRow): Promise<void> {
-    await this.runtime.run((session) => session.query(RELEASE_UNWORKED_CLAIM, [row.organizationId, row.holder], true));
+    await this.change(RELEASE_UNWORKED_CLAIM, [row.organizationId, row.holder]);
   }
 
   recordService(row: ProvisioningRow, serviceId: string): Promise<RecordResult> {

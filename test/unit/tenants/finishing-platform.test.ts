@@ -1,27 +1,24 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { FinishingPlatform } from '../../../src/tenancy/tenants/finishing-platform.ts';
-import type { TenantPlatform } from '../../../src/tenancy/tenants/tenant-platform.ts';
+import { FinishingPlatform, type LoopPlatform } from '../../../src/tenancy/tenants/finishing-platform.ts';
 import { TenantPlatformFake } from './fixtures/tenant-platform-fake.ts';
 
 const window = { startMs: 0, endMs: 1 };
 const request = { name: 'thermus-tenant-org-a', plan: '0.5c-512mb', environment: new Map<string, string>() };
 
-// Each operation of the contract with its call record in the fake.
-const operations: readonly [string, (platform: TenantPlatform, signal: AbortSignal) => Promise<unknown>][] = [
+// Each platform call of the tenant loops with its call record in the fake.
+const operations: readonly [string, (platform: LoopPlatform, signal: AbortSignal) => Promise<unknown>][] = [
   ['find thermus-tenant-org-a', (platform, signal) => platform.findServices('thermus-tenant-org-a', signal)],
   ['create thermus-tenant-org-a', (platform, signal) => platform.createService(request, signal)],
   ['deploy srv-a', (platform, signal) => platform.newestDeploy('srv-a', signal)],
   ['address srv-a', (platform, signal) => platform.internalAddress('srv-a', signal)],
   ['delete srv-a', (platform, signal) => platform.deleteService('srv-a', signal)],
-  ['deploy-image srv-a image', (platform, signal) => platform.deployImage('srv-a', 'image', signal)],
   ['suspend srv-a', (platform, signal) => platform.suspendService('srv-a', signal)],
-  ['resume srv-a', (platform, signal) => platform.resumeService('srv-a', signal)],
   ['memory srv-a', (platform, signal) => platform.memoryUse(['srv-a'], window, signal)],
   ['restarts srv-a', (platform, signal) => platform.restartCount('srv-a', window, signal)],
 ];
 
-test('Given a loop that stopped, when it starts a platform call, then each operation refuses with the stop reason before the platform gets it', async () => {
+test('Given a loop that stopped, when it starts a platform call, then each of the eight calls of the loops refuses with the stop reason before the platform gets it', async () => {
   const inner = new TenantPlatformFake();
   const platform = new FinishingPlatform(inner, new AbortController().signal);
   const stop = new AbortController();
@@ -60,7 +57,7 @@ test('Given a call in flight, when the in-flight signal aborts at the end of the
     seen.push(signal);
     signal.addEventListener('abort', () => held.reject(signal.reason), { once: true });
     return held.promise;
-  } } as unknown as TenantPlatform;
+  } } as unknown as LoopPlatform;
   const inFlight = new AbortController();
   const platform = new FinishingPlatform(inner, inFlight.signal);
 
@@ -72,15 +69,14 @@ test('Given a call in flight, when the in-flight signal aborts at the end of the
 });
 
 // The fake with each signal that its operations get.
-function recordingSignals(inner: TenantPlatformFake, signals: AbortSignal[]): TenantPlatform {
+function recordingSignals(inner: TenantPlatformFake, signals: AbortSignal[]): LoopPlatform {
   const record = <A extends unknown[], R>(operation: (...args: A) => Promise<R>) => (...args: A): Promise<R> => {
     signals.push(args.at(-1) as AbortSignal);
     return operation.apply(inner, args);
   };
   return {
     findServices: record(inner.findServices), createService: record(inner.createService), newestDeploy: record(inner.newestDeploy),
-    internalAddress: record(inner.internalAddress), deleteService: record(inner.deleteService), deployImage: record(inner.deployImage),
-    suspendService: record(inner.suspendService), resumeService: record(inner.resumeService), memoryUse: record(inner.memoryUse),
-    restartCount: record(inner.restartCount),
+    internalAddress: record(inner.internalAddress), deleteService: record(inner.deleteService), suspendService: record(inner.suspendService),
+    memoryUse: record(inner.memoryUse), restartCount: record(inner.restartCount),
   };
 }

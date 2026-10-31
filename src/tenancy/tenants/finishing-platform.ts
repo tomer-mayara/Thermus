@@ -1,7 +1,10 @@
 import type {
-  AddressRead, DeployRead, DeployStart, MemoryRead, RestartRead, ServiceChange, ServiceCreation, ServiceDeletion, ServiceSearch, TenantPlatform,
+  AddressRead, DeployRead, MemoryRead, RestartRead, ServiceChange, ServiceCreation, ServiceDeletion, ServiceSearch, TenantPlatform,
   TenantServiceRequest, TimeWindow,
 } from './tenant-platform.ts';
+
+/** The platform calls of the tenant loops: the provisioner and the sweeps. The deploy and the resume are not theirs. */
+export type LoopPlatform = Pick<TenantPlatform, 'findServices' | 'createService' | 'newestDeploy' | 'internalAddress' | 'deleteService' | 'suspendService' | 'memoryUse' | 'restartCount'>;
 
 /**
  * The platform of a loop of the control plane, such as the provisioner or the sweeps, for its stop (SO-12 rehearsal
@@ -10,11 +13,11 @@ import type {
  * still reach the registry; the owner of the loop aborts the in-flight signal when the grace of the stop ends. The
  * repeats of a read in the adapter are part of its call.
  */
-export class FinishingPlatform implements TenantPlatform {
-  private readonly platform: TenantPlatform;
+export class FinishingPlatform implements LoopPlatform {
+  private readonly platform: LoopPlatform;
   private readonly inFlight: AbortSignal;
 
-  constructor(platform: TenantPlatform, inFlight: AbortSignal) {
+  constructor(platform: LoopPlatform, inFlight: AbortSignal) {
     this.platform = platform;
     this.inFlight = inFlight;
   }
@@ -39,16 +42,8 @@ export class FinishingPlatform implements TenantPlatform {
     return this.started(signal, (inFlight) => this.platform.deleteService(serviceId, inFlight));
   }
 
-  deployImage(serviceId: string, image: string, signal: AbortSignal): Promise<DeployStart> {
-    return this.started(signal, (inFlight) => this.platform.deployImage(serviceId, image, inFlight));
-  }
-
   suspendService(serviceId: string, signal: AbortSignal): Promise<ServiceChange> {
     return this.started(signal, (inFlight) => this.platform.suspendService(serviceId, inFlight));
-  }
-
-  resumeService(serviceId: string, signal: AbortSignal): Promise<ServiceChange> {
-    return this.started(signal, (inFlight) => this.platform.resumeService(serviceId, inFlight));
   }
 
   memoryUse(serviceIds: readonly string[], window: TimeWindow, signal: AbortSignal): Promise<MemoryRead> {

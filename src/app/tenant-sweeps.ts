@@ -1,7 +1,7 @@
 import { WorkOSOrganizationInventory, type WorkOSInventoryClient } from '../accounts/providers/workos/workos-organization-inventory.ts';
 import type { SystemLog } from '../logs/system/system-logger.ts';
 import type { TenantProvisioningSettings } from '../runtime/config/mcp-tenants-config.ts';
-import { FinishingPlatform } from '../tenancy/tenants/finishing-platform.ts';
+import { FinishingPlatform, type LoopPlatform } from '../tenancy/tenants/finishing-platform.ts';
 import { FleetSummary, fleetSummaryStep } from '../tenancy/tenants/fleet-summary.ts';
 import { IdleSweep } from '../tenancy/tenants/idle-sweep.ts';
 import { OrganizationSweep } from '../tenancy/tenants/organization-sweep.ts';
@@ -43,7 +43,7 @@ export function startTenantSweeps(parts: TenantSweepsParts): TenantSweepsLifetim
   return lifetime;
 }
 
-function sweepsOf(parts: TenantSweepsParts, platform: TenantPlatform): TenantSweeps {
+function sweepsOf(parts: TenantSweepsParts, platform: LoopPlatform): TenantSweeps {
   const { settings, fleet, logger } = parts;
   const inventory = new WorkOSOrganizationInventory(parts.workos);
   const sweep = new OrganizationSweep({ store: fleet, inventory, platform, log: logger });
