@@ -21,6 +21,11 @@ The public entry uses the [approved design](design/portal-design.md) and its
 exact product copy. Sign in opens `login`. Start free access opens `signup`.
 These are native links. The signup route decides whether activation is open
 and whether the user can activate access. The public page does not grant access.
+The **Start free** link of the marketing site opens
+`https://app.thermus.ai/signup?tier=free`. Only the free tier exists, so the
+route ignores the `tier` value (SO-07). The
+[free subscription guide](free-subscription-guide.md) gives the switch and a
+test signup.
 
 The desktop page shows a static flow with three nodes. Agents send Request +
 reason to Thermus, and Thermus sends Approved requests to the web. Raw pages

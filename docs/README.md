@@ -5,7 +5,7 @@ runtime guides stay current after implementation.
 
 ## Working guidance
 
-- [Free subscription guide](free-subscription-guide.md): turn signup on or off, then connect, test, and disconnect Claude Code.
+- [Free subscription guide](free-subscription-guide.md): turn signup on or off, sign up for the free tier at `https://app.thermus.ai/signup?tier=free`, then connect, test, and disconnect Claude Code, with the workspace setup state and a paused workspace.
 - [Coding principles](coding-principles.md): design and verification guidance.
 - [Lightpanda runtime](lightpanda-runtime.md): runtime installation and renderer checks.
 - [Test gate policy](implementation/test-gate-policy.md): suite commands, required runs before Ready, the container gate, the renderer gate, the hosted offline checks, the self-hosted release checks, and later release gates.
@@ -15,6 +15,7 @@ runtime guides stay current after implementation.
 - [Container installation](../README.md#container-installation): the self-hosted evaluation image, its data volume, the stopped-server commands, backup and restore, and recovery.
 - [Hosted organization setup and recovery](implementation/hosted-organization-setup.md): the operator runbook to set up a hosted organization and its Super Admin, and to revoke, replace, or recover a Super Admin in WorkOS.
 - [Tenant fleet runbooks](implementation/tenant-fleet-runbooks.md): the operator steps for a failed provision, an orphaned Render service, a paused Supabase project, and the deletion of a tenant; the rotation of the Render API keys, the gateway key pair, the settings encryption key, and the GitHub token of the registry credential; the monthly GHCR pruning, the shared Brave search limit, and the alerts.
+- [Self on-boarding Slice 2 release record](implementation/self-onboarding-s2-release.md): the free-tier release of SO-12: the release candidate, the removal proof, the rehearsal in WorkOS Staging and Thermus AI with its cleanup, the ten production steps with their checks and go-ahead slots, the rollback, and the open owner steps.
 
 ## Current reference
 
