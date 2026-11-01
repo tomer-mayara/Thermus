@@ -7,14 +7,14 @@ const starting = 'Your workspace is not ready yet. Try again in 15 seconds.';
 const unavailable = 'The service is temporarily unavailable. Try again in 15 seconds.';
 const resuming = 'Your workspace is restarting after a pause. Try again in a minute.';
 const stateAnswers: ReadonlyArray<readonly [string, GatewayRoute, number, string | null, string]> = [
-  ['requested', { status: 'found', state: 'requested', internalUrl: null }, 503, '15', starting],
-  ['creating', { status: 'found', state: 'creating', internalUrl: null }, 503, '15', starting],
-  ['deploying', { status: 'found', state: 'deploying', internalUrl: null }, 503, '15', starting],
-  ['a deploying row that keeps the address of its last live deploy, as after a resume', { status: 'found', state: 'deploying', internalUrl }, 503, '60', resuming],
-  ['suspended', { status: 'found', state: 'suspended', internalUrl: null }, 503, '60', resuming],
-  ['failed', { status: 'found', state: 'failed', internalUrl: null }, 503, null, 'Workspace setup failed. We have been notified and will fix it.'],
-  ['deleted', { status: 'found', state: 'deleted', internalUrl: null }, 503, null, 'Your workspace is not available. Contact Thermus support.'],
-  ['a live row without an address', { status: 'found', state: 'live', internalUrl: null }, 503, '15', unavailable],
+  ['requested', { status: 'found', state: 'requested', internalUrl: null, sinceChangeMs: 600_000 }, 503, '15', starting],
+  ['creating', { status: 'found', state: 'creating', internalUrl: null, sinceChangeMs: 600_000 }, 503, '15', starting],
+  ['deploying', { status: 'found', state: 'deploying', internalUrl: null, sinceChangeMs: 600_000 }, 503, '15', starting],
+  ['a deploying row that keeps the address of its last live deploy, as after a resume', { status: 'found', state: 'deploying', internalUrl, sinceChangeMs: 600_000 }, 503, '60', resuming],
+  ['suspended', { status: 'found', state: 'suspended', internalUrl: null, sinceChangeMs: 600_000 }, 503, '60', resuming],
+  ['failed', { status: 'found', state: 'failed', internalUrl: null, sinceChangeMs: 600_000 }, 503, null, 'Workspace setup failed. We have been notified and will fix it.'],
+  ['deleted', { status: 'found', state: 'deleted', internalUrl: null, sinceChangeMs: 600_000 }, 503, null, 'Your workspace is not available. Contact Thermus support.'],
+  ['a live row without an address', { status: 'found', state: 'live', internalUrl: null, sinceChangeMs: 600_000 }, 503, '15', unavailable],
   ['an unavailable registry copy', { status: 'unavailable' }, 503, '15', unavailable],
 ];
 
@@ -32,7 +32,7 @@ for (const [label, route, status, retryAfter, words] of stateAnswers) {
 }
 
 test('Given a suspended row, when calls arrive, then each asks the registry to resume the tenant one time and gets 503 with Retry-After: 60', async (t) => {
-  const { forward, registry } = gatewayOf(t, { status: 'found', state: 'suspended', internalUrl: null });
+  const { forward, registry } = gatewayOf(t, { status: 'found', state: 'suspended', internalUrl: null, sinceChangeMs: 600_000 });
   registry.resume = { status: 'pending' };
 
   const answers = await Promise.all([forward(post(fetchCall)), forward(post(fetchCall))]);
@@ -42,12 +42,12 @@ test('Given a suspended row, when calls arrive, then each asks the registry to r
 });
 
 test('Given a suspended row that resumes and then goes live, when a call arrives at each step, then the client gets 503 with Retry-After: 60 until the row is live, and then the call reaches the tenant', async (t) => {
-  const { forward, registry, calls, log } = gatewayOf(t, { status: 'found', state: 'suspended', internalUrl });
+  const { forward, registry, calls, log } = gatewayOf(t, { status: 'found', state: 'suspended', internalUrl, sinceChangeMs: 600_000 });
 
   const atTheResume = await refusalOf(await forward(post(fetchCall)));
-  registry.route = { status: 'found', state: 'deploying', internalUrl };
+  registry.route = { status: 'found', state: 'deploying', internalUrl, sinceChangeMs: 600_000 };
   const whileDeploying = await refusalOf(await forward(post(fetchCall)));
-  registry.route = { status: 'found', state: 'live', internalUrl };
+  registry.route = { status: 'found', state: 'live', internalUrl, sinceChangeMs: 600_000 };
   const live = await forward(post(fetchCall));
 
   for (const refusal of [atTheResume, whileDeploying]) {
@@ -60,7 +60,7 @@ test('Given a suspended row that resumes and then goes live, when a call arrives
 });
 
 test('Given a resume that fails, when a call arrives, then the client gets 503 with Retry-After: 60 and the one log line is an operator report with the reason', async (t) => {
-  const { forward, registry, log } = gatewayOf(t, { status: 'found', state: 'suspended', internalUrl: null });
+  const { forward, registry, log } = gatewayOf(t, { status: 'found', state: 'suspended', internalUrl: null, sinceChangeMs: 600_000 });
   registry.resume = { status: 'failed', reason: 'Render answered 429' };
 
   const answer = await forward(post(fetchCall));
@@ -71,7 +71,7 @@ test('Given a resume that fails, when a call arrives, then the client gets 503 w
 });
 
 test('Given a failed row, when two calls arrive, then the first refusal line is an operator report and the second is not', async (t) => {
-  const { forward, log } = gatewayOf(t, { status: 'found', state: 'failed', internalUrl: null });
+  const { forward, log } = gatewayOf(t, { status: 'found', state: 'failed', internalUrl: null, sinceChangeMs: 600_000 });
 
   await forward(post(fetchCall));
   await forward(post(fetchCall));

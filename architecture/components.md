@@ -645,7 +645,10 @@ destroys the client, so PostgreSQL rolls back; an unconfirmed insert gives an
 unavailable result, and a repeat finds the committed row.
 
 [TenantLookup](../src/tenancy/tenants/tenant-lookup.ts) keeps an in-memory copy of
-every row's state and internal address. It reads the registry on demand, at the
+every row's state, internal address, and time of its last change: the read gives
+the time since `updated_at` by the clock of the database, and the copy ages it
+from the start of the read, so it never understates. The gateway uses it for the
+cold start of a new tenant. It reads the registry on demand, at the
 first ask and at an ask 10 s or more after the start of the last successful read;
 concurrent asks share one read. After a failed read, it serves the copy until it
 is 60 s old, then reports unavailable. It has no timer and opens no connection at
@@ -841,7 +844,10 @@ server. The gateway reads the row of the organization through the port that
 `mcp` imports no registry module. For a live row, it signs a context with
 [`AccessContextSigner`](../src/accounts/identity/access-context-signer.ts),
 removes the hop-by-hop headers, the cookie, and each client context, and
-streams the answer of the tenant back; each other state gets `503`. A
+streams the answer of the tenant back; each other state gets `503`. A refused
+connection to a live tenant is its cold start when the row changed less than 2
+minutes before; each other failure, and a refusal after that, is a restart
+([gateway call scenario](#scenario-hosted-mcp-call-through-the-gateway)). A
 `suspended` row and a `deploying` row that keeps its address, the row of a
 resume, get `Retry-After: 60`; the first of them sends the one resume (SO-10).
 It reads only the id, the method, and the tool name of the JSON-RPC messages
@@ -1363,12 +1369,15 @@ sequenceDiagram
     MCP-->>Client: 401 or 403 of today
   else Trusted access context
     MCP->>Gateway: Forward with context, token, and lifetime
-    Gateway->>Registry: Row of the organization from the lookup copy
+    Gateway->>Registry: Row of the organization and the time since its last change, from the lookup copy
     alt Live row
       Gateway->>Tenant: Same method, path, and body, with a signed Thermus-Access
-      alt Restart before the first answer byte
-        Tenant-->>Gateway: HTTP 502 or a reset connection
-        Gateway-->>Client: Tool error "Server restarted. Try again in a minute."
+      alt Connection refused, less than 2 minutes after the last change of the row
+        Tenant-->>Gateway: Refused: the private address of a new tenant does not answer yet
+        Gateway-->>Client: Tool error "Your workspace is not ready yet. Try again in 15 seconds.", info line
+      else Other failure before the first answer byte
+        Tenant-->>Gateway: HTTP 502, a reset connection, or a refusal after the 2 minutes
+        Gateway-->>Client: Tool error "Server restarted. Try again in a minute.", operator report
       else Answer
         Tenant-->>Gateway: Status, headers, and first answer byte
         Gateway->>Registry: Activity, at most one write a minute
@@ -1393,7 +1402,18 @@ The client abort reaches the tenant on two paths: before the tenant answers,
 the gateway aborts its pending fetch; after that, it cancels the answer body of
 the tenant. A restart after the first answer byte ends the answer stream. Each
 refusal writes one system log line and no audit event, and the restart line is
-the operator report. The [gateway](../src/interfaces/mcp/mcp-gateway.ts), its
+the operator report. A refused connection less than 2 minutes after the last
+change of a live row (its live record, or the digest record of a fleet upgrade)
+is the cold start of a new tenant, not a restart: the private address of a new
+Render service refused connections until about 76 s after its first deploy was
+live (SO-03, and the
+[SO-12 rehearsal](../docs/implementation/self-onboarding-s2-release.md#37-part-b-findings)
+of 31 October 2026). So the client gets the starting words, and the line
+`MCP gateway tenant starting:` is an info line that the restart alert does not
+match. A reset connection, a broken answer, or HTTP `502` means that the tenant
+took the call, so it is a restart also in those 2 minutes, as each failure after
+the first answer byte is. The
+[gateway](../src/interfaces/mcp/mcp-gateway.ts), its
 [upstream call](../src/interfaces/mcp/mcp-gateway-stream.ts) and
 [answer stream](../src/interfaces/mcp/mcp-gateway-answer-stream.ts), the
 [registry rules](../src/tenancy/tenants/tenant-resumes.ts), and the
@@ -2081,7 +2101,7 @@ surface and the narrower file-context restrictions.
 | `billing` — [`src/accounts/billing/`](../src/accounts/billing/) | Report plan state, `free` with its member limit or `team`, and accept seat updates. `BillingFree` is the current implementation. | [Billing roles](../src/accounts/billing/billing.ts); app selects the implementation. |
 | `workos` — [`src/accounts/providers/workos/`](../src/accounts/providers/workos/) | Hosted token/access verification, sessions, organization operations, signup/onboarding, settings, cookies, and signup-document validation. `WorkOSTokenVerifier` is the Connect token check alone, for a tenant. The [organization inventory](../src/accounts/providers/workos/workos-organization-inventory.ts) gives the sweeps every organization, the read by ID, and the default-role memberships, from complete pages or not at all. | App constructs provider/SDK objects. Web uses neutral supplied session, signup, and account roles; its WorkOS auth area still uses provider cookie and document-validation helpers. The inventory imports only the contract types of tenants. |
 | `better-auth` — [`src/accounts/providers/better-auth/`](../src/accounts/providers/better-auth/) | Local authentication, access resolution, user/client administration, installation storage, data-directory lock, and cleanup. | Provider, runtime-opening, and administration-opening modules for app; storage and lock mechanics remain private. |
-| `mcp` — [`src/interfaces/mcp/`](../src/interfaces/mcp/) | Adapt protocol requests to trusted access contexts and supplied tool operations. Own schemas, metadata, protocol errors, request lifetimes, and completion presentation. A request can carry its own scope: the access resolver and the tool server of an admitted tenant request. With a forward step, MCPServer gives each admitted request to the MCP gateway, which forwards it to the tenant of the organization, answers the other states of the registry, and lets 5 searches run at a time across tenants. | Server/tool composition modules, protected-resource endpoint, and client-visible schema modules. SDK adaptation stays inside this owner. |
+| `mcp` — [`src/interfaces/mcp/`](../src/interfaces/mcp/) | Adapt protocol requests to trusted access contexts and supplied tool operations. Own schemas, metadata, protocol errors, request lifetimes, and completion presentation. A request can carry its own scope: the access resolver and the tool server of an admitted tenant request. With a forward step, MCPServer gives each admitted request to the MCP gateway, which forwards it to the tenant of the organization, answers the other states of the registry, tells the cold start of a new tenant from a restart, and lets 5 searches run at a time across tenants. | Server/tool composition modules, protected-resource endpoint, and client-visible schema modules. SDK adaptation stays inside this owner. |
 | `web` — [`src/interfaces/web/`](../src/interfaces/web/) | Account/admin/organization-selection routes, portal access, the workspace status route `GET /workspace/status` with its words, the notice of a paused workspace, and its one report of a failed setup, sign-in/out, signup with its free-tenant cap and tenant request through ports of app, consent, forms, pages, escaping, and browser request protection; the relay route `/internal/audit` of the private network. `account/`, `auth/`, and `internal/` are private areas of this one owner. | Route constructors for app; shared account-form, page-html, and html-escape modules. Provider-specific browser adapters have narrower access than the whole owner. |
 | `cli` — [`src/interfaces/cli/`](../src/interfaces/cli/) | Parse local user/client commands, use supplied administration and hidden-input roles, format output and exit status. | [Local command](../src/interfaces/cli/local-auth-command.ts). App opens and closes administration/input resources. |
 | `user-portal` — [`src/interfaces/user-portal/`](../src/interfaces/user-portal/) | Browser portal behavior, connection instructions, the workspace setup state with its meta refresh, the notice of a paused workspace above the guide, styles, and static assets; Vite build configuration and declarations. | Browser HTTP interactions and rendered output. Vite runs in Node; browser modules cannot inherit its server/build access. |
@@ -2313,6 +2333,21 @@ The following limits affect architectural decisions today:
 - After the first answer byte, the gateway can only end the answer stream of a
   tenant that fails; a client then sees no result and waits for its own request
   timeout.
+- The cold start of a new tenant is a refused connection inside a time bound,
+  2 minutes after the last change of its live row, not a check of the tenant.
+  Two measurements bound the refused window: refused 16.5 s and answered 76.4 s
+  after the first deploy was live (SO-03), and refused up to 61 s and answered
+  76 s after the live record (SO-12 rehearsal of 31 October 2026). A container
+  that restarts inside the bound gives the restart line for the call that it
+  broke, but only info lines for the calls that its address refuses while it
+  starts again; a cold start longer than the bound gives restart lines. A live
+  record after a resume and the digest record of a fleet upgrade also start the
+  bound, because each changes `updated_at`; a resumed tenant answered at once
+  in the rehearsal, so there the bound only hides refusals. The time is that of
+  the lookup of the call, and a refusal comes when the body is read and the
+  context is signed. The provisioner records `live` when the deploy is live and
+  the address is known, so Connect shows the connection guide while the private
+  address still refuses connections.
 - The claim of a resumed `deploying` row waits a time, 15 s after the resume
   mark, not a deploy identity: the answer of a resume names no deploy. Render
   made the deploy of a resume about 2 s after the call (SO-01c, SO-09). A resume

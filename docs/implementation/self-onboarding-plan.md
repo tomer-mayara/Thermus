@@ -385,7 +385,12 @@ Two more answers of 27 October 2026 for a forwarded call:
   When the tenant fails before the first answer byte, the client gets one tool
   error with `isError: true` and the words "Server restarted. Try again in a
   minute.". When the answer stream has started, the gateway ends the stream.
-  Both cases log one line and report to the operator.
+  Both cases log one line and report to the operator. Since 31 October 2026, a
+  refused connection less than 2 minutes after the live record of the row is
+  the cold start of a new tenant, not a restart
+  ([SO-12 rehearsal](self-onboarding-s2-release.md#37-part-b-findings), item
+  5): the client gets "Your workspace is not ready yet. Try again in 15
+  seconds.", and the gateway writes one info line and no operator report.
 - The gateway allows 5 searches at a time across all tenants. The sixth gets
   the search busy message. A Brave API key or a dedicated outbound IP stays an
   option for later.

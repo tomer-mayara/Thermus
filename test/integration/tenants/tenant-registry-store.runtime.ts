@@ -67,9 +67,24 @@ test('Given the migration and the scoped role, when the store requests and reads
   assert.deepEqual(await requests.request('org_A'), { status: 'requested' });
   assert.deepEqual(await requests.request('org_A'), { status: 'present', state: 'requested' });
   await site.ownerQuery("UPDATE thermus_admin.tenants SET state = 'live', render_service_id = 'srv-d0tenantaaaaaaaaaaaa', internal_url = 'http://thermus-tenant-org-a:8080' WHERE organization_id = 'org_A'");
-  assert.deepEqual(await store.readRoutes(), { status: 'complete', routes: new Map([['org_A', { state: 'live', internalUrl: 'http://thermus-tenant-org-a:8080' }]]) });
-  assert.deepEqual(await new TenantLookup(store, () => 0).find('org_A'), { status: 'found', state: 'live', internalUrl: 'http://thermus-tenant-org-a:8080' });
+  const read = await store.readRoutes();
+  assert.partialDeepStrictEqual(read, { status: 'complete', routes: new Map([['org_A', { state: 'live', internalUrl: 'http://thermus-tenant-org-a:8080' }]]) });
+  assert.equal(read.status === 'complete' ? read.routes.size : 0, 1);
+  assert.partialDeepStrictEqual(await new TenantLookup(store, () => 0).find('org_A'), { status: 'found', state: 'live', internalUrl: 'http://thermus-tenant-org-a:8080' });
   assert.equal(await site.ownerQuery("SELECT created_at = updated_at AND created_at > now() - interval '1 minute' FROM thermus_admin.tenants"), 't');
+});
+
+test('Given a live row whose last change was 90 s ago by the clock of the database, when the routes are read, then the row has the time since that change in milliseconds', { timeout: 60_000 }, async (t) => {
+  const site = await postgresSettingsSite(t);
+  const store = storeOn(t, site);
+  assert.deepEqual(await new TenantRequests(store, 25).request('org_A'), { status: 'requested' });
+  await site.ownerQuery(`UPDATE thermus_admin.tenants SET state = 'live', render_service_id = 'srv-d0tenantaaaaaaaaaaaa', internal_url = 'http://thermus-tenant-org-a:8080',
+    updated_at = now() - interval '90 seconds' WHERE organization_id = 'org_A'`);
+
+  const read = await store.readRoutes();
+
+  const sinceChangeMs = read.status === 'complete' ? read.routes.get('org_A')?.sinceChangeMs : undefined;
+  assert.ok(typeof sinceChangeMs === 'number' && sinceChangeMs >= 90_000 && sinceChangeMs < 100_000, `The time since the change was ${sinceChangeMs} ms`);
 });
 
 test('Given requests for one organization from two pools that wait on the same lock, when the lock frees, then one row is inserted and the other request finds it', { timeout: 60_000 }, async (t) => {
@@ -104,7 +119,7 @@ test('Given a tenant request that holds the registry lock, when the gateway read
   assert.deepEqual(await new TenantRequests(store, 25).request('org_A'), { status: 'requested' });
   const lock = await holdRegistry(t, site, 'SHARE ROW EXCLUSIVE');
   const started = performance.now();
-  assert.deepEqual(await new TenantLookup(store, () => 0).find('org_A'), { status: 'found', state: 'requested', internalUrl: null });
+  assert.partialDeepStrictEqual(await new TenantLookup(store, () => 0).find('org_A'), { status: 'found', state: 'requested', internalUrl: null });
   assert.ok(performance.now() - started < 1_000);
   await lock.release();
 });
@@ -158,7 +173,7 @@ test('Given production storage configuration, when the tenant registry requests 
   t.after(() => storage.close());
   assert.deepEqual(await storage.tenants.requests.request('org_A'), { status: 'requested' });
   assert.deepEqual(await storage.tenants.requests.request('org_B'), { status: 'full' }, 'The composition applies the supplied FREE_TENANT_LIMIT');
-  assert.deepEqual(await storage.tenants.lookup.find('org_A'), { status: 'found', state: 'requested', internalUrl: null });
+  assert.partialDeepStrictEqual(await storage.tenants.lookup.find('org_A'), { status: 'found', state: 'requested', internalUrl: null });
   assert.deepEqual(await storage.tenants.gateway.recordActive('org_A'), { status: 'recorded' }, 'The writes of the gateway use the same store');
   assert.equal(await site.settingsConnections(), 1, 'The registry and the settings store share one pool');
   assert.equal((await storage.store.save('org_A', null, { endpoint: 'https://collector.example/v1/logs', auth: 'none', enabled: false, encryptedCredential: null })).status, 'saved');

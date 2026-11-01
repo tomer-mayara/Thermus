@@ -16,13 +16,15 @@ export const context: RequestContext = Object.freeze({
   permissions: Object.freeze(['product:access']),
 });
 export const fetchCall = { jsonrpc: '2.0', id: 7, method: 'tools/call', params: { name: 'getURLAsMarkdown', arguments: { url: 'https://source.example/', reason: 'Read it' } } };
+// A live row that changed 10 minutes ago, long after the cold start of a new tenant.
+export const liveRoute: Extract<GatewayRoute, { readonly status: 'found' }> = Object.freeze({ status: 'found', state: 'live', internalUrl, sinceChangeMs: 600_000 });
 
 interface UpstreamCall {
   readonly url: string;
   readonly init: RequestInit;
 }
 
-export function gatewayOf(t: TestContext, route: GatewayRoute = { status: 'found', state: 'live', internalUrl }) {
+export function gatewayOf(t: TestContext, route: GatewayRoute = liveRoute) {
   const log = new OperatorLogSpy();
   const signed: Array<{ readonly claims: AccessContextClaims; readonly token: string }> = [];
   const registry = {

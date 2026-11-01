@@ -18,6 +18,12 @@ interface ForwardParts {
   readonly refusals: GatewayRefusals;
 }
 
+/** The live tenant of a row: its internal address, and the time since the last change of the row. */
+export interface LiveTenant {
+  readonly internalUrl: string;
+  readonly sinceChangeMs: number;
+}
+
 export class LiveForward {
   private readonly searches = new GatewaySearches();
   private readonly parts: ForwardParts;
@@ -28,13 +34,13 @@ export class LiveForward {
 
   /**
    * The steps in their order: the body, the search places, the signed call, then the answer. A failed call and a
-   * restart free the places at once; an answer frees them at the end of its stream.
+   * failure before the first answer byte free the places at once; an answer frees them at the end of its stream.
    */
-  async forward(request: Request, forwarded: McpForwardedRequest, internalUrl: string): Promise<Response> {
+  async forward(request: Request, forwarded: McpForwardedRequest, tenant: LiveTenant): Promise<Response> {
     const organizationId = forwarded.context.organizationId ?? '';
     const read = await readForwardedBody(request, forwarded.lifetime.signal);
     if (read.status === 'too-large') return tooLargeAnswer();
-    const call = callOf(request, internalUrl, read.body);
+    const call = callOf(request, tenant.internalUrl, read.body);
     const release = this.searches.take(read.body);
     if (release === undefined) return this.parts.refusals.searchBusy(organizationId, read.body);
     const answer = await this.signedCall(forwarded, call).catch((error: unknown) => {
@@ -44,7 +50,7 @@ export class LiveForward {
     });
     if (answer.status === 'restarted') {
       release();
-      return this.parts.refusals.restarted(organizationId, read.body, answer.cause);
+      return this.parts.refusals.failedBeforeAnswer(organizationId, read.body, { cause: answer.cause, sinceChangeMs: tenant.sinceChangeMs });
     }
     forwarded.lifetime.track(answer.ended.then((end) => {
       release();

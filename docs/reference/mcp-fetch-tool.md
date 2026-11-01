@@ -256,7 +256,8 @@ gives the rules.
 | The tenant was deleted | HTTP `503`, "Your workspace is not available. Contact Thermus support." |
 | No free tenant place is left | HTTP `503`, "All free workspaces are in use. Try again later." |
 | The tenant registry cannot be read for more than 60 s | HTTP `503`, `Retry-After: 15`, "The service is temporarily unavailable. Try again in 15 seconds." |
-| The tenant restarts before its first answer byte: HTTP `502` or a reset connection | One tool error with `isError: true` and `Server restarted. Try again in a minute.` for the call; no completion record or audit event, because the tool did not end in the tenant |
+| The tenant does not answer yet: its private address refuses the connection in the first 2 minutes after its setup, a resume, or an upgrade ended | One tool error with `isError: true` and `Your workspace is not ready yet. Try again in 15 seconds.` for the call; no completion record or audit event |
+| The tenant restarts before its first answer byte: HTTP `502`, a reset connection, or a refused connection 2 minutes or more after its setup, a resume, or an upgrade ended | One tool error with `isError: true` and `Server restarted. Try again in a minute.` for the call; no completion record or audit event, because the tool did not end in the tenant |
 | The tenant restarts after its answer started | The gateway ends the answer stream; the client gets no result |
 
 Each `503` has the JSON body

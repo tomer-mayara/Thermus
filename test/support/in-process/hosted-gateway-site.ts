@@ -64,18 +64,23 @@ export interface SiteTenancy {
 }
 
 export async function openHostedGatewaySite(t: TestContext, options: HostedGatewaySiteOptions = {}) {
-  const registry = new TenantRegistryFake();
+  // The registry records each change on the clock of the site, so a row ages as the test moves the clock on.
+  let siteClock = (): number => 0;
+  const registry = new TenantRegistryFake(() => siteClock());
   const resume = new TenantResumeSpy();
-  const site = await serveHostedGatewaySite(t, ({ keys, internalUrl, clock, storage }) => ({
-    storage,
-    gateway: options.tenantsEnabled === false ? undefined : {
-      settings: { signingKey: keys.privateKey, verifyingKey: createPublicKey(keys.publicKeyPem), controlPlaneInternalUrl: internalUrl },
-      tenants: gatewayTenantsOf({
-        lookup: new TenantLookup(registry, clock), requests: new TenantRequests(registry, options.freeTenantLimit ?? 25),
-        resumes: new TenantResumes(registry, resume), activity: new TenantActivity(registry, clock),
-      }),
-    },
-  }));
+  const site = await serveHostedGatewaySite(t, ({ keys, internalUrl, clock, storage }) => {
+    siteClock = clock;
+    return {
+      storage,
+      gateway: options.tenantsEnabled === false ? undefined : {
+        settings: { signingKey: keys.privateKey, verifyingKey: createPublicKey(keys.publicKeyPem), controlPlaneInternalUrl: internalUrl },
+        tenants: gatewayTenantsOf({
+          lookup: new TenantLookup(registry, clock), requests: new TenantRequests(registry, options.freeTenantLimit ?? 25),
+          resumes: new TenantResumes(registry, resume), activity: new TenantActivity(registry, clock),
+        }),
+      },
+    };
+  });
   return {
     ...site, registry, resume,
     addTenant: async (organizationId: string) => {

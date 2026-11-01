@@ -89,7 +89,7 @@ Send Claude this prompt:
 
 A successful test shows a **Thermus tool call** and the returned Markdown of example.com. Today it starts with **This domain is for use in documentation examples**; an older version of the page has the title **Example Domain**. Connected status or plausible text alone does not prove success.
 
-While the workspace is still being set up, the server answers each MCP call with HTTP `503`, `Retry-After: 15`, and "Your workspace is not ready yet. Try again in 15 seconds." Wait until Connect shows the connection guide, then send the prompt again. If the tool answers "Server restarted. Try again in a minute.", the container of the workspace restarted during the call; send the prompt again after a minute. This answer can also come in the first minute after Connect shows the connection guide, while the new container starts.
+While the workspace is still being set up, the server answers each MCP call with HTTP `503`, `Retry-After: 15`, and "Your workspace is not ready yet. Try again in 15 seconds." Wait until Connect shows the connection guide, then send the prompt again. A new workspace can need about one more minute to answer after the guide shows. Until then, `/mcp` can show the Thermus connection as failed, and a tool call answers "Your workspace is not ready yet. Try again in 15 seconds." Wait a minute, reconnect Thermus in `/mcp`, and send the prompt again. If the tool answers "Server restarted. Try again in a minute.", the container of the workspace restarted during the call; send the prompt again after a minute.
 
 If Claude uses an old Thermus account, repeat the credential-clearing and login steps above, then start a new Claude session.
 

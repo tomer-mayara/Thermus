@@ -1,9 +1,14 @@
 export type TenantState = 'requested' | 'creating' | 'deploying' | 'live' | 'suspended' | 'failed' | 'deleted';
 
-/** The way to the container of one organization. The internal address is null until the provisioner records it. */
+/**
+ * The way to the container of one organization. The internal address is null until the provisioner records it. The
+ * time since the last change of the row counts at the read; for a live row, the last change is its live record or
+ * the digest record of a fleet upgrade.
+ */
 export interface TenantRoute {
   readonly state: TenantState;
   readonly internalUrl: string | null;
+  readonly sinceChangeMs: number;
 }
 
 export interface RegistryCount {
