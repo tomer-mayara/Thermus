@@ -69,7 +69,7 @@ If you used the previous endpoint, follow [Disconnect Claude Code](#6-disconnect
    claude mcp login thermus-production
    ```
 
-   If the browser does not open, use `claude mcp login thermus-production --no-browser` and follow the displayed instructions. See [command-line authentication](https://code.claude.com/docs/en/mcp#authenticate-from-the-command-line).
+   If the browser does not open, use `claude mcp login thermus-production --no-browser` and follow the displayed instructions. The browser window that opens the link gives its WorkOS session to the login: for a fresh-account test, open the link in a private window where the fresh account is signed in, or sign out of the portal first. With the session of another account, that account connects, and the call lands in its organization (seen on 1 November 2026). See [command-line authentication](https://code.claude.com/docs/en/mcp#authenticate-from-the-command-line).
 
 5. In the browser, sign in with the same account that you used for the new subscription. Select the organization that you created, and approve the Claude connection.
 6. Check the server, then start a new Claude session:
