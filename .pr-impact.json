@@ -7,25 +7,22 @@
     "deployment": false,
     "crossCutting": false,
     "component": false,
-    "internalInterface": true,
+    "internalInterface": false,
     "sensitiveBehavior": false,
     "dependencyRisk": false,
     "policy": false,
     "uncertain": false
   },
   "architecture": {
-    "modelUpdated": true,
-    "summary": "Document only: the selected C4 component view of the hosted tenant registry, provisioning, and sweeps becomes readable at the pull request width of 800 px. The view no longer draws the four composition arrows without a label from app to sql, audit-logs, render, and workos; the prose of the view gives each of these compositions (the composition of the settings and removal adapter of audit-logs on the SQL runtime is now explicit), and its legend says that the view does not draw them. Every labeled arrow, the two implements arrows, the call of audit-logs to sql, and the connections to PostgreSQL, the Render API, and WorkOS stay. In Mermaid 11.4.1 at 800 px, the natural width goes from 1,781 to 1,132 px, the text from 7.2 to 11.3 px, and the edges under a label from 4 to 0. No source, test, configuration, migration, contract, composition, or deployment changes: app composes the same owners as before. The flag internalInterface names the changed drawing of the collaboration between components inside the Node server container, because fact e (an edited registry view) needs an architect flag; the collaboration in the code does not change.",
+    "modelUpdated": false,
+    "summary": "Documents only. The SO-12 release record docs/implementation/self-onboarding-s2-release.md records step 8 of the production order on 1 November 2026: signup open from 04:02 to 05:45 UTC, the canary signup of a fresh account that made the organization AlphaSig and its tenant in 106 s, the canary's tool call through its tenant, the login lesson, and the closing deploy; the owner items 11 and the record row 8 take their status. The free subscription guide docs/free-subscription-guide.md gains one note in section 3: the login reuses the WorkOS session of the browser window, so a fresh-account test opens the login link in a private window of that account. No source, test, configuration, workflow, migration, or Mermaid block changes; the registry stays accurate.",
     "views": [
-      "Selected C4 components: hosted tenant registry, provisioning, and sweeps in the Node server (edited: the four composition arrows without a label from app to sql, audit-logs, render, and workos removed; prose: the composition of audit-logs on the SQL runtime made explicit, and the legend says that the view does not draw those four compositions)",
-      "All other 23 Mermaid views of architecture/components.md unchanged (byte-identical; checked for consistency: the membership removal view, which draws the composition of sql and audit-logs by app with labels, the MCP gateway view, and the collaboration overview)"
+      "All 24 Mermaid views of architecture/components.md unchanged (checked: the release record and the guide are in no view, and no container, component, or runtime change)"
     ],
     "evidence": [
-      "src/app/logging-storage.ts",
-      "src/app/tenant-provisioning.ts",
-      "src/app/tenant-sweeps.ts",
-      "architecture/components.md",
-      "Render check: Mermaid 11.4.1 in Chromium 156.0.8078.4 (Playwright 1.64.0) at 800 px, before (merge base) and after: natural width 1,780.6 to 1,131.7 px, text 7.2 to 11.3 px, title clearance 8.1 to 12.7 px, edges under a label 4 to 0, every arrow end within 3.4 px of its target"
+      "docs/implementation/self-onboarding-s2-release.md (step 8, section 6, and section 7)",
+      "docs/free-subscription-guide.md (section 3, step 4)",
+      "the registry rows read through the Supabase connector, the tenant services and logs read through the Render API, the organizations and users read through the WorkOS connector, and the Axiom dataset system-log"
     ]
   }
 }
