@@ -15,36 +15,28 @@
   },
   "architecture": {
     "modelUpdated": true,
-    "summary": "The claim of a tenant row becomes a lease, and the stop of the tenant loops lets the Render call in flight end: the SO-12 release rehearsal of 31 October 2026 measured that Render keeps the old instance of the control plane for about 120 s after a new deploy is live, and in R9 the old provisioner loop claimed a row 0.4 s after the new loop recorded its service, 81.7 s before the old instance got SIGTERM. Inside the hosted Node server, tenants claims a row for the claim holder of its loop (claimed_by, new at each start) until claimed_until, 60 s later, renews it right before each create and before each read of the deploy, names the holder in each record, frees the row at the end (a creating row only when its lease ends), and leaves a row that another holder holds; app starts the provisioner and the sweeps with a stop signal that ends claims, waits, and new Render calls at once, and an in-flight signal that ends the call in flight 3 s later, inside the hosted deadline of 10 s (FinishingPlatform of tenants, tenant loop of app); a claim that commits during the stop starts no work and frees its row. The data contract of the tenants table gains two columns with a pair check (migration 20261031221342_tenant_claim_lease.sql, applied before the deploy), and the fleet resume records live without a claim. No component, container, public module, dependency, or declaration snapshot changes. The scenario view tenant provisioning changes; the prose of the tenant registry view, the writers of each transition, the deployment view, and the known limits record the lease, the stop, and the residual risk that the sweeps of two instances both run when the daily tick falls inside a deploy.",
+    "summary": "The tenant sweeps claim each daily tick in the tenant registry, so one instance of the control plane runs it: the SO-12 release rehearsal of 31 October 2026 measured that Render keeps the old instance for about 120 s after a new deploy is live, and a tick inside that time ran the organization sweep, the idle sweep, and the fleet summary in both instances, so Render could get a suspend or a delete two times and the summary line came two times. Inside the hosted Node server, the runner of tenants inserts the row of the tick (keyed by the tick time, with the claim holder of the sweeps, new at each start) into the new table thermus_admin.tenant_sweep_ticks before its steps, through a new statement of the fleet store on the sql runtime; only the instance whose insert adds the row runs the steps, the other writes one INFO line, and a claim without an answer runs no step and writes one ERROR line. App passes the fleet store and the holder to the runner and names the holder in the start line. The data contract of thermus_admin gains the table with SELECT and INSERT for the runtime role and forced row-level security (migration 20261101023017_tenant_sweep_ticks.sql, applied before the deploy). No component, container, public module, dependency, external call, or declaration snapshot changes. The selected C4 component view of the tenant registry changes (the label of tenants, the tick claims on the edge to sql, and the new table in PostgreSQL), the weekly sweep scenario gains the claim of the tick, and the idle sweep scenario names the claimed tick; the prose of the registry, the writers, the deployment view, the behavior section, and the known limits record the claim and the residual risk: when the old instance claims a tick and gets SIGTERM before its steps end, the rest of the tick waits until the next tick.",
     "views": [
-      "Scenario: tenant provisioning (edited: the claim for 60 s, the renewal before the create and in the loop of deploy reads, the live record that frees the claim, and the stop with the call in flight and the release)",
-      "Selected C4 components: hosted tenant registry, provisioning, and sweeps in the Node server (diagram unchanged; prose: the stop, the claim lease, the claim migration, the finishing platform, the writers)",
-      "Deployment view (diagram unchanged; prose: two instances during a deploy and the claim migration not applied)",
-      "All other views of architecture/components.md unchanged (checked: the hosted containers view, the MCP gateway view, the gateway, resume, weekly sweep, and idle sweep scenarios)"
+      "Selected C4 components: hosted tenant registry, provisioning, and sweeps in the Node server (edited: the claim of each tick in tenants, the tick claims on the edge to sql, and the table tenant_sweep_ticks in PostgreSQL; prose: the tick migration, the claim, the writer of a tick row, the statements of the sweeps)",
+      "Scenario: weekly organization sweep (edited: the participant is the runner of the sweeps, and the claim of the tick comes first, with a break for a tick that another instance claimed or a claim without an answer)",
+      "Scenario: daily idle sweep (edited: the note names the tick that this instance claimed)",
+      "Deployment view (diagram unchanged; prose: the tick migration not applied, and the claim of each tick for the two instances of a deploy)",
+      "All other views of architecture/components.md unchanged (checked: the hosted and local containers views, the tenant role view, the MCP gateway view, the collaboration overview, the tenant provisioning, gateway, and resume scenarios)"
     ],
     "evidence": [
-      "src/tenancy/tenants/pg-tenant-claim.ts",
-      "src/tenancy/tenants/pg-tenant-provisioning-store.ts",
-      "src/tenancy/tenants/tenant-provisioning-store.ts",
-      "src/tenancy/tenants/tenant-provisioner.ts",
-      "src/tenancy/tenants/tenant-row-provisioning.ts",
-      "src/tenancy/tenants/tenant-row-records.ts",
-      "src/tenancy/tenants/tenant-service-attempt.ts",
-      "src/tenancy/tenants/tenant-service-creation.ts",
-      "src/tenancy/tenants/tenant-deploy-watch.ts",
-      "src/tenancy/tenants/finishing-platform.ts",
-      "src/app/tenant-loop.ts",
-      "src/app/tenant-provisioning.ts",
+      "src/tenancy/tenants/tenant-sweeps.ts",
+      "src/tenancy/tenants/tenant-fleet-store.ts",
+      "src/tenancy/tenants/pg-tenant-fleet-store.ts",
       "src/app/tenant-sweeps.ts",
-      "src/index.ts",
-      "src/app/application.ts",
-      "script/fleet/fleet-power.ts",
-      "sql/migrations/20261031221342_tenant_claim_lease.sql",
-      "test/acceptance/tenants/provisioner-instances.runtime.ts",
-      "test/integration/tenants/provisioner-registry.runtime.ts",
-      "test/acceptance/tenants/idle-suspension.test.ts",
+      "sql/migrations/20261101023017_tenant_sweep_ticks.sql",
+      "test/acceptance/tenants/sweep-instances.runtime.ts",
+      "test/integration/tenants/sweep-ticks.runtime.ts",
+      "test/unit/tenants/tenant-sweeps.test.ts",
+      "test/unit/tenants/pg-tenant-fleet-store.test.ts",
+      "test/support/doubles/tenants/tenant-fleet-store-fake.ts",
       "architecture/components.md",
-      "docs/implementation/tenant-fleet-runbooks.md"
+      "docs/implementation/tenant-fleet-runbooks.md",
+      "docs/implementation/admin-s2-01a-database-setup.md"
     ]
   }
 }

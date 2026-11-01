@@ -100,7 +100,7 @@ prefix too. A tenant writes to standard error only.
 | `Hosted signup could not read the free-tenant cap.` | ERROR | [`src/interfaces/web/auth/workos/workos-signup-tenants.ts`](../../src/interfaces/web/auth/workos/workos-signup-tenants.ts) | With the switch on, the database does not answer and the registry copy of the gateway is 60 s old, so signup cannot check the cap and answers "Activation is temporarily unavailable. Try again later.". |
 | `Hosted signup could not request the tenant of the new organization.` | ERROR | `workos-signup-tenants.ts` | The tenant request after a signup failed. The organization exists; its first workspace status read requests the tenant again. |
 | `Audit relay refusal: {json}` | ERROR | [`src/app/mcp-gateway-composition.ts`](../../src/app/mcp-gateway-composition.ts) | The relay route refused an audit event of a tenant, so the event is not exported. The fields are `reason` (`body`, `event`, `organization`, `context`, `actor`, or `memory`), `detail` (the reason of a refused context, for example `signature`), and `organizationId` when it is known. The line never shows the context or the event. |
-| `The tenant sweeps run each day at` | INFO | [`src/app/tenant-sweeps.ts`](../../src/app/tenant-sweeps.ts) | The start began the tenant sweeps. The line names the hour of `TENANT_SWEEP_HOUR_UTC` and the days of `FREE_TENANT_IDLE_DAYS`. |
+| `The tenant sweeps run each day at` | INFO | [`src/app/tenant-sweeps.ts`](../../src/app/tenant-sweeps.ts) | The start began the tenant sweeps. The line names the hour of `TENANT_SWEEP_HOUR_UTC`, the days of `FREE_TENANT_IDLE_DAYS`, and the tick claim holder: the mark that the claims of the ticks of this instance write to `claimed_by` of `tenant_sweep_ticks` ([the sweeps during a deploy](#the-sweeps-during-a-deploy)). |
 | `Tenant fleet summary: {json}` | INFO | [`src/tenancy/tenants/fleet-summary.ts`](../../src/tenancy/tenants/fleet-summary.ts) | Once a day at the tick, the daily summary. The fields are in [the summary fields](#the-summary-fields). |
 | `Tenant fleet summary stopped: {json}` | ERROR | `fleet-summary.ts` | The tick could not read the registry, so no summary line came. The field is `reason`. |
 | `Organization sweep: {json}` | INFO | [`src/tenancy/tenants/organization-sweep.ts`](../../src/tenancy/tenants/organization-sweep.ts) | On Mondays at the tick, the counts of the organization sweep: `rows` (not deleted), `organizations` (in the WorkOS list), `deleted`, `foundOnRead` (left out by the list, found by the read by ID), `unreadable`, `inFlight` (`creating` or `deploying`, left for the next sweep), `moved`, and `failed`. |
@@ -114,6 +114,8 @@ prefix too. A tenant writes to standard error only.
 | `Tenant suspension failed: {json}` | ERROR | `idle-sweep.ts` | The suspension of one tenant failed; the row stays `live`, and the next sweep tries again. The fields are `organizationId`, `serviceId`, and `reason`. For a refused or limited call, Render changed nothing. When the reason says that the registry did not take the suspended state, the service is suspended while the row is `live`: run `fleet.ts suspend --organization <organization ID>`, which suspends again and records the row, before the next call of the organization meets the stopped service. |
 | `The idle sweep leaves organization` | INFO | `idle-sweep.ts` | Another writer changed the row during the suspension, for example a delete, so the sweep left it. |
 | `Tenant sweep step failed: {json}` | ERROR | [`src/tenancy/tenants/tenant-sweeps.ts`](../../src/tenancy/tenants/tenant-sweeps.ts) | A defect in a step of the tick. The fields are `step` and `reason`. The next step runs. |
+| `The tenant sweeps leave the tick of` | INFO | `tenant-sweeps.ts` | Another instance of the control plane claimed the tick first, so this instance runs no step of it. It comes when the tick falls inside the 2 minutes of a deploy, while two instances run; the other instance writes the lines of the tick ([the sweeps during a deploy](#the-sweeps-during-a-deploy)). |
+| `Tenant sweep tick stopped: {json}` | ERROR | `tenant-sweeps.ts` | The claim of the tick got no answer from the registry, so this instance runs no step of the tick. The fields are `tick` and `reason`. The next tick claims again. A registry that does not answer gives it ([runbook 3](#3-paused-supabase-project)). So does a registry without the [tick migration](../../sql/migrations/20261101023017_tenant_sweep_ticks.sql): then the line comes each day, and no sweep runs. Apply the migration as the [database setup](admin-s2-01a-database-setup.md) says. |
 | `System log export failed:` | ERROR | [`src/app/system-log-failure-line.ts`](../../src/app/system-log-failure-line.ts) | An export to Axiom failed, after the retries of the exporter, and its lines are not in `system-log`; standard error still has them. The line names the cause: an HTTP status such as `HTTP 401` (a refused token) or `HTTP 403`, an error code such as `ECONNREFUSED`, or `no answer in time`. It comes at most once a minute and counts the failures that had no line. It is on standard error only: Axiom never gets it, so the [precondition check](#73-axiom-monitors) reads the Render log. |
 
 ### The summary fields
@@ -132,6 +134,38 @@ ID only, never a person.
 | `restarts`, `restartList` | The count of the restarts outside a deploy that Render reports for the live tenants (the events `server_failed` and `server_restarted`), and each tenant with one or more, with `organizationId`, `serviceId`, and `restarts`. Render does not report each restart (SO-01e). |
 | `highestMemoryShare`, `memory` | The highest `peakShare`, and one item for each live tenant with a memory point: `organizationId`, `serviceId`, `peakBytes`, `limitBytes`, and `peakShare`, the peak divided by the limit with 3 decimals. The points are 10 minutes apart. `highestMemoryShare` is `null` without a share. |
 | `unavailable` | One text for each read that failed, such as `memory: Render answered 503`. The other fields keep what answered. |
+
+### The sweeps during a deploy
+
+Render keeps the old instance of the control plane for about 120 s after a new
+deploy is `live` (SO-12 rehearsal of 31 October 2026). When the daily tick at
+`TENANT_SWEEP_HOUR_UTC` falls inside that time, both instances reach it. Each
+one claims the tick in the table `tenant_sweep_ticks` before its steps. The
+first claim adds the row of the tick, and that instance runs the organization
+sweep (on Mondays), the idle sweep, and the summary; the other instance writes
+`The tenant sweeps leave the tick of` and runs nothing
+([`tenant-sweeps.ts`](../../src/tenancy/tenants/tenant-sweeps.ts)). So Render
+gets each suspend and delete one time, and the summary line comes one time.
+
+To see which instance ran a tick, read the last rows as the administrative
+owner:
+
+```sql
+SELECT tick_at, claimed_by, claimed_at FROM thermus_admin.tenant_sweep_ticks ORDER BY tick_at DESC LIMIT 7;
+```
+
+`claimed_by` is the tick claim holder that the `The tenant sweeps run each day
+at` line of that instance names.
+
+When the old instance claims the tick and gets `SIGTERM` before its steps end,
+no instance runs the rest of the tick. An idle tenant then stays live until the
+next tick, a tenant of an absent organization until the next Monday, and the
+summary line of that day does not come. The log of the old instance then shows
+`Stopping after SIGTERM` before the summary line. `fleet.ts summary` gives a
+summary of the last 24 hours; for a tenant that must not wait, use
+`fleet.ts suspend` or [runbook 4](#4-deletion-of-a-tenant). An old instance of a version before
+the tick claim ignores the claims, so the first deploy with the claim can still
+run a tick in both instances: deploy it away from the sweep hour.
 
 ## 1. Failed provision
 
@@ -367,10 +401,13 @@ the database, so 7 days without use can pause the project.
 - Billing, from Slice 3. The Stripe webhook route and the daily reconciliation
   cannot apply a status. Stripe sends a failed webhook again, and the
   reconciliation corrects each status within a day after the resume.
-- The daily sweeps. The fleet summary gives no line but
-  `Tenant fleet summary stopped:`, the idle sweep suspends nothing and gives
-  `Idle sweep stopped:`, and the organization sweep of a Monday deletes
-  nothing and gives `Organization sweep stopped:`.
+- The daily sweeps. The claim of the tick gets no answer, so the tick runs no
+  step and gives one `Tenant sweep tick stopped:` line: no summary line, no
+  suspend, and no delete. When the registry stops after the claim, the steps
+  give their own lines: the organization sweep of a Monday deletes nothing and
+  gives `Organization sweep stopped:`, the idle sweep suspends nothing and
+  gives `Idle sweep stopped:`, and the fleet summary gives
+  `Tenant fleet summary stopped:`.
 - Resumes. The gateway cannot move a `suspended` row, so the MCP calls of a
   suspended tenant get `503` with `Retry-After: 15` and
   `"reason":"registry-unavailable"`, and no resume goes to Render.
@@ -992,8 +1029,10 @@ Keep the prefix `Tenant fleet summary: ` stable: the match monitors use it with
   tell the owner. For `restarts` above 0, do what the Tenant restart monitor
   says for each tenant of `restartList`. Each text of `unavailable` names a read
   that failed: look for the same text in the next summary. A day without this
-  email, or a `Tenant fleet summary stopped:` line, means that the control
-  plane, its registry, its daily sweep, or the log path stopped: examine them.
+  email, or a `Tenant fleet summary stopped:` or `Tenant sweep tick stopped:`
+  line, means that the control plane, its registry, its daily sweep, or the log
+  path stopped: examine them. After a deploy at the sweep hour, read the rows
+  of the ticks first ([the sweeps during a deploy](#the-sweeps-during-a-deploy)).
 
 ### 7.4 Owner steps for the alerts
 

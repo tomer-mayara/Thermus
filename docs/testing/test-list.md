@@ -1,5 +1,46 @@
 # Test inventory
 
+## Current SO-12 sweep tick claim inventory scope
+
+The SO-12 release rehearsal of 31 October 2026 measured that Render keeps the
+old instance of the control plane for about 120 s after a new deploy is
+`live`, so a daily tick of the tenant sweeps inside that time came in two
+instances. This change claims each tick in the new table `tenant_sweep_ticks`
+before its steps, so one instance runs it, and adds the tick migration.
+Inventory presence is not a passing result; the pull request records the runs.
+
+- `test/acceptance/tenants/sweep-instances.runtime.ts` has the three cases on
+  one disposable PostgreSQL 17, one fake of the Render API, and one WorkOS
+  fake, with two control planes that each have their own pool and reach the
+  same tick: on a Tuesday with one idle free tenant, Render gets one suspend
+  call, and the logs have one idle sweep line and one fleet summary line; on a
+  Monday with one tenant of an absent organization, Render gets one delete
+  call, and the logs have one organization sweep line and one fleet summary
+  line. In both, the other control plane sends no Render call and writes one
+  `The tenant sweeps leave the tick of` line, and the row of the tick names
+  the claim holder of the control plane that ran it. A Render call of the tick
+  waits until the other control plane is past the tick, so a second run cannot
+  end before the first. Without the table of the ticks, one control plane runs
+  no step, sends no Render call, and writes one `Tenant sweep tick stopped:`
+  line. It runs in `npm run test:logging:postgres`.
+- `test/integration/tenants/sweep-ticks.runtime.ts` has the claim on the real
+  registry with the runtime role: the first claim of a tick adds its row with
+  the holder and the time of the claim, each later claim of that tick, also of
+  its own holder, is taken, and the next tick has its own row; the role has
+  only SELECT and INSERT on the table, with forced row-level security; six
+  claims of one tick from two pools give one claimed claim; claims that wait
+  for an uncommitted claim of another session are taken after its commit, and
+  one of them is claimed after its rollback; a registry without the table
+  gives an unavailable claim. It runs in `npm run test:logging:postgres`.
+- `test/unit/tenants/tenant-sweeps.test.ts` adds the claim of the runner: the
+  claim names the tick and the holder before the steps, a taken tick runs no
+  step and gives one line, a claim without an answer gives one stop line, a
+  stop during the claim runs no step, and the next tick claims again.
+  `pg-tenant-fleet-store.test.ts` checks the insert of the claim, its values,
+  and its claimed, taken, and unavailable results. The registry fake
+  (`test/support/doubles/tenants/tenant-fleet-store-fake.ts`) keeps the holder
+  of each claimed tick.
+
 ## Current SO-12 claim lease inventory scope
 
 The SO-12 release rehearsal of 31 October 2026 found two provisioner loops on
@@ -1489,7 +1530,8 @@ A fake of the tenant platform, a fake of the organization inventory, the fleet r
 [V] A list that is not complete or a registry that cannot be read deletes nothing and gives one `Organization sweep stopped:` line; a deleted row is not read or deleted again; a found, unreadable, `creating`, or `deploying` row stays; a failed removal is reported and the next row goes on; a row that moved, also a replacement with a new service in the same state, is left for the next sweep; the sweep runs on the Monday tick only
 [V] The summary counts the rows that are not deleted by state and plan with 7 USD a month for a running free tenant and 25 USD for another plan, reads the memory of all live tenants in one read and the restarts of each, names each read that failed, counts the default-role memberships and lists the first 50, and gives no record without the registry
 [V] The runner ticks each day at the hour in UTC, runs the steps of that day in their order, reports a failed step and runs the next one, and ends at the stop
-[V] The fleet statements name their start states and the service that the caller read: deleted from the state and the service that the caller read (the route goes; a row without a service binds to none), live to suspended and suspended to deploying on that service, the digest of a live row on its service, and the revive of a deleted row under the registry lock inside the cap as a new request; a removal whose row a delete, a revive, and a new provision replaced with another service in the same state is moved, and the replacement stays
+[V] The runner claims each tick with its holder before the steps; a tick that another instance claimed first runs no step and gives one line, a claim without an answer runs no step and gives one `Tenant sweep tick stopped:` line, a stop during the claim runs no step, and the next tick claims again
+[V] The fleet statements name their start states and the service that the caller read: deleted from the state and the service that the caller read (the route goes; a row without a service binds to none), live to suspended and suspended to deploying on that service, the digest of a live row on its service, and the revive of a deleted row under the registry lock inside the cap as a new request; a removal whose row a delete, a revive, and a new provision replaced with another service in the same state is moved, and the replacement stays; the claim of a tick is one insert of the tick and the holder, claimed when it adds the row, taken when the row exists, and unavailable without a confirmed answer
 [V] The deploy wait of the fleet writes follows the deploy that a `201` answer names until it is live or failed, and a newer deploy with another ID superseded it; after a `202` answer, and after a resume, it takes the first deploy other than the newest one before the write, with an unconfirmed identity; the deploy from before the write, a failed read, and no deploy are pending; a gone service ends it, and it stops after 15 minutes with the last state seen
 [V] An upgrade deploy may record its digest only when the live deploy names the requested digest; a live deploy without a digest or with another digest stops the upgrade and the registry keeps its digest; a failed read before the write, or a deploy call that the platform does not take, starts nothing and gives the reason
 
