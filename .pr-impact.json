@@ -15,13 +15,13 @@
   },
   "architecture": {
     "modelUpdated": false,
-    "summary": "Documents only. The SO-12 release record docs/implementation/self-onboarding-s2-release.md records that the repository secret RENDER_API_KEY was deleted on 1 November 2026 after the release, so the release key lives only in the GitHub environment production: the owner item 5 and a step 5 addendum take the fact. No source, test, configuration, workflow, migration, or Mermaid block changes; the registry stays accurate.",
+    "summary": "Documents only. The SO-12 release record docs/implementation/self-onboarding-s2-release.md records the deferred hosted live gate: the four invitation cases that the WorkOS Staging email quota deferred passed on main e75ab0dc on 1 November 2026 (30 of 30 in 685 s), so section 1.4 and the record row 1.4 take the result. No source, test, configuration, workflow, migration, or Mermaid block changes; the registry stays accurate.",
     "views": [
       "All 24 Mermaid views of architecture/components.md unchanged (checked: the release record is in no view, and no container, component, or runtime change)"
     ],
     "evidence": [
-      "docs/implementation/self-onboarding-s2-release.md (step 5 and section 6)",
-      "gh secret list --repo tomer-mayara/Thermus and gh secret list --env production, before and after the deletion"
+      "docs/implementation/self-onboarding-s2-release.md (sections 1.4 and 7)",
+      "the run of npm run test:hosted-live in the main checkout at e75ab0dc, 06:36:26 to 06:47:55 UTC on 1 November 2026"
     ]
   }
 }
