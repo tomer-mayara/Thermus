@@ -7,21 +7,25 @@
     "deployment": false,
     "crossCutting": false,
     "component": false,
-    "internalInterface": false,
+    "internalInterface": true,
     "sensitiveBehavior": false,
     "dependencyRisk": false,
     "policy": false,
     "uncertain": false
   },
   "architecture": {
-    "modelUpdated": false,
-    "summary": "Documents only. The SO-12 release record docs/implementation/self-onboarding-s2-release.md records step 7 of the production order on 1 November 2026: the first real MCP call of a member of a kept organization through the production gateway, the tenant that the provisioner made in 76 s with the candidate digest and capacity 5, the cold start with INFO lines only, the call after the setup state that answered, the Axiom export of the lines, the owner's decision that the second kept organization gets no tenant until its first use, and the first daily sweep run. No source, test, configuration, workflow, migration, or Mermaid block changes; the registry stays accurate.",
+    "modelUpdated": true,
+    "summary": "Document only: the selected C4 component view of the hosted tenant registry, provisioning, and sweeps becomes readable at the pull request width of 800 px. The view no longer draws the four composition arrows without a label from app to sql, audit-logs, render, and workos; the prose of the view gives each of these compositions (the composition of the settings and removal adapter of audit-logs on the SQL runtime is now explicit), and its legend says that the view does not draw them. Every labeled arrow, the two implements arrows, the call of audit-logs to sql, and the connections to PostgreSQL, the Render API, and WorkOS stay. In Mermaid 11.4.1 at 800 px, the natural width goes from 1,781 to 1,132 px, the text from 7.2 to 11.3 px, and the edges under a label from 4 to 0. No source, test, configuration, migration, contract, composition, or deployment changes: app composes the same owners as before. The flag internalInterface names the changed drawing of the collaboration between components inside the Node server container, because fact e (an edited registry view) needs an architect flag; the collaboration in the code does not change.",
     "views": [
-      "All 24 Mermaid views of architecture/components.md unchanged (checked: the release record is in no view, and no container, component, or runtime change)"
+      "Selected C4 components: hosted tenant registry, provisioning, and sweeps in the Node server (edited: the four composition arrows without a label from app to sql, audit-logs, render, and workos removed; prose: the composition of audit-logs on the SQL runtime made explicit, and the legend says that the view does not draw those four compositions)",
+      "All other 23 Mermaid views of architecture/components.md unchanged (byte-identical; checked for consistency: the membership removal view, which draws the composition of sql and audit-logs by app with labels, the MCP gateway view, and the collaboration overview)"
     ],
     "evidence": [
-      "docs/implementation/self-onboarding-s2-release.md (step 7 and section 7)",
-      "the registry row read through the Supabase connector, the tenant service and its log read through the Render API, and the Axiom dataset system-log"
+      "src/app/logging-storage.ts",
+      "src/app/tenant-provisioning.ts",
+      "src/app/tenant-sweeps.ts",
+      "architecture/components.md",
+      "Render check: Mermaid 11.4.1 in Chromium 156.0.8078.4 (Playwright 1.64.0) at 800 px, before (merge base) and after: natural width 1,780.6 to 1,131.7 px, text 7.2 to 11.3 px, title clearance 8.1 to 12.7 px, edges under a label 4 to 0, every arrow end within 3.4 px of its target"
     ]
   }
 }

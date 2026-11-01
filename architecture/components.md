@@ -570,8 +570,8 @@ Scope: one hosted Node server container, the control plane of the self
 on-boarding plan. App reads the switch `MCP_TENANTS_ENABLED` through config.
 Only with the switch on, it reads `FREE_TENANT_LIMIT` (else the cap is 25), the
 tenant settings, the hour of the tenant sweeps, and `FREE_TENANT_IDLE_DAYS`. It
-opens the one bounded SQL runtime of the `sql` owner and composes the `tenants`
-owner on it next to the settings and removal adapter of audit-logs. With the
+opens the one bounded SQL runtime of the `sql` owner. On that runtime, it composes
+the `tenants` owner and the settings and removal adapter of audit-logs. With the
 switch on, app also composes the `render` adapter with its write guard and the
 WorkOS organization inventory of the `workos` owner on the WorkOS client of the
 hosted connection, and starts the provisioner loop and the tenant sweeps of
@@ -579,7 +579,9 @@ hosted connection, and starts the provisioner loop and the tenant sweeps of
 stop they start no claim and no Render call, and a call in flight gets 3 s to
 end. The MCP
 gateway (SO-05) calls the registry through a port that app composes, with the
-resume operation on the adapter of the sweeps (SO-10). Thick arrows show composition; solid
+resume operation on the adapter of the sweeps (SO-10). Thick arrows show
+composition. The view does not draw the composition of `sql`, audit-logs,
+`render`, and `workos`, which the sentences above give. Solid
 arrows show runtime calls, and their labels name only the calls that this
 container makes; the dashed arrows are the type-only source dependencies of the
 two adapters on the `TenantPlatform` and `OrganizationInventory` contracts of
@@ -609,10 +611,6 @@ flowchart TB
     tenancy_app ==>|composes; starts and stops the loop and the sweeps| tenancy_tenants
     tenancy_app ==>|registry port of the gateway| tenancy_mcp
     tenancy_app ==>|signup and status ports| tenancy_web
-    tenancy_app ==> tenancy_render
-    tenancy_app ==> tenancy_workos
-    tenancy_app ==> tenancy_audit
-    tenancy_app ==> tenancy_sql
     tenancy_mcp -->|find, request, resume, activity| tenancy_tenants
     tenancy_web -->|row counts, request, row| tenancy_tenants
     tenancy_tenants -->|find, create, deploys, address; delete, suspend, resume, memory, restarts| tenancy_render
