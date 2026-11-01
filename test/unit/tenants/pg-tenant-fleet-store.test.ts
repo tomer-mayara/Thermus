@@ -19,6 +19,7 @@ const recordDigest = /^UPDATE thermus_admin\.tenants SET image_digest = \$3, upd
 const lock = 'LOCK TABLE thermus_admin.tenants IN SHARE ROW EXCLUSIVE MODE';
 const count = /^SELECT state, count\(\*\)::integer AS rows, bool_or\(organization_id = \$1\) AS current\s+FROM thermus_admin\.tenants GROUP BY state$/;
 const claimTick = /^INSERT INTO thermus_admin\.tenant_sweep_ticks \(tick_at, claimed_by\) VALUES \(\$1::timestamptz, \$2\)\s+ON CONFLICT \(tick_at\) DO NOTHING RETURNING tick_at$/;
+const tickHolder = 'SELECT claimed_by FROM thermus_admin.tenant_sweep_ticks WHERE tick_at = $1::timestamptz';
 const revive = /^UPDATE thermus_admin\.tenants SET state = 'requested', render_service_id = NULL, service_name = NULL, internal_url = NULL,\s+plan = NULL, applied_plan = NULL, image_digest = NULL, last_active_at = NULL, failure_reason = NULL, created_at = now\(\), updated_at = now\(\)\s+WHERE organization_id = \$1 AND state = 'deleted'$/;
 
 function fleetStore(t: TestContext, answer: (text: string) => Rows | Error) {
@@ -141,9 +142,19 @@ test('Given a tick that no holder claimed, when a holder claims it, then one INS
   assert.deepEqual(releases, [false]);
 });
 
-test('Given a tick that another holder claimed, or a claim that fails, when a holder claims it, then the claim is taken or unavailable', async (t) => {
-  const taken = fleetStore(t, () => []);
-  assert.deepEqual(await taken.store.claimTick('2026-11-03T04:00:00.000Z', 'holder-b'), { status: 'taken' });
+test('Given a tick that another holder claimed, when a holder claims it, then the INSERT adds nothing, the read of the holder finds the other one, and the claim is taken', async (t) => {
+  const { store, queries } = fleetStore(t, (text) => text === tickHolder ? [{ claimed_by: 'holder-a' }] : []);
+  assert.deepEqual(await store.claimTick('2026-11-03T04:00:00.000Z', 'holder-b'), { status: 'taken' });
+  assert.match(queries[0]?.text ?? '', claimTick);
+  assert.deepEqual(queries.slice(1), [{ text: tickHolder, values: ['2026-11-03T04:00:00.000Z'] }]);
+});
+
+test('Given a tick that this holder claimed while the answer got lost, when it claims the tick again, then the read of the holder finds it, and the claim is claimed', async (t) => {
+  const { store } = fleetStore(t, (text) => text === tickHolder ? [{ claimed_by: 'holder-a' }] : []);
+  assert.deepEqual(await store.claimTick('2026-11-03T04:00:00.000Z', 'holder-a'), { status: 'claimed' });
+});
+
+test('Given a claim that fails, when a holder claims a tick, then the claim is unavailable', async (t) => {
   const missing = fleetStore(t, () => new Error('relation "thermus_admin.tenant_sweep_ticks" does not exist'));
   assert.deepEqual(await missing.store.claimTick('2026-11-03T04:00:00.000Z', 'holder-b'), { status: 'unavailable' }, 'An unconfirmed claim is unavailable too');
   assert.deepEqual(missing.releases, [true]);

@@ -29,6 +29,8 @@ const REVIVE_DELETED = `UPDATE thermus_admin.tenants SET state = 'requested', re
 // nothing. No lock stays held while the steps of the tick run.
 const CLAIM_TICK = `INSERT INTO thermus_admin.tenant_sweep_ticks (tick_at, claimed_by) VALUES ($1::timestamptz, $2)
   ON CONFLICT (tick_at) DO NOTHING RETURNING tick_at`;
+// After a conflict, the holder of the tick: a repeat of a claim whose answer got lost finds its own holder.
+const TICK_HOLDER = 'SELECT claimed_by FROM thermus_admin.tenant_sweep_ticks WHERE tick_at = $1::timestamptz';
 
 /** The fleet statements of the tenants table and the claim of the ticks of the sweeps, on the shared SQL runtime. */
 export class PgTenantFleetStore implements TenantFleetStore {
@@ -75,9 +77,13 @@ export class PgTenantFleetStore implements TenantFleetStore {
     return this.change(RECORD_DIGEST, [organizationId, serviceId, imageDigest]);
   }
 
-  // A claim without a confirmed answer is unavailable: its row can exist, so the caller cannot know that the tick is its own.
+  // A claim without a confirmed answer is unavailable: its row can exist, so the caller claims again to know.
   async claimTick(tickAt: string, holder: string): Promise<TickClaim> {
-    const result = await this.runtime.run(async (session) => (await session.query(CLAIM_TICK, [tickAt, holder], true)).length > 0);
+    const result = await this.runtime.run(async (session) => {
+      if ((await session.query(CLAIM_TICK, [tickAt, holder], true)).length > 0) return true;
+      const [row] = await session.query(TICK_HOLDER, [tickAt]);
+      return row?.claimed_by === holder;
+    });
     if (result.status !== 'complete') return { status: 'unavailable' };
     return { status: result.value ? 'claimed' : 'taken' };
   }

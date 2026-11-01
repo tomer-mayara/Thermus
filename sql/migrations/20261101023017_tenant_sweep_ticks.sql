@@ -3,7 +3,7 @@
 -- Render keeps the old instance of the control plane for about 120 s after a new deploy is live (SO-12 release
 -- rehearsal of 31 October 2026), so the daily tick of the tenant sweeps can come in two instances. Each instance
 -- inserts the row of the tick before its steps, and only the instance whose insert adds the row runs them. One row a
--- day stays as the record of the instance that ran the tick.
+-- day stays as the record of the instance that claimed the tick.
 BEGIN;
 
 CREATE TABLE thermus_admin.tenant_sweep_ticks (

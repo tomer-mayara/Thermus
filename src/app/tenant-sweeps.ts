@@ -35,7 +35,7 @@ export interface TenantSweepsLifetime {
  * then the idle sweep of the free tenants, then the fleet summary line, which so counts the tenants that the idle sweep
  * suspended. App owns their lifetime and closes them before the SQL runtime. A suspend or delete in flight at the stop
  * ends, so its mark reaches the registry. The claim holder is new for each start, so the claims of the ticks name the
- * instance that ran each tick, also during a deploy, when the old instance runs too.
+ * instance that claimed each tick, also during a deploy, when the old instance runs too.
  */
 export function startTenantSweeps(parts: TenantSweepsParts): TenantSweepsLifetime {
   const { settings, logger } = parts;

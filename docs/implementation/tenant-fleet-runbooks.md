@@ -115,7 +115,7 @@ prefix too. A tenant writes to standard error only.
 | `The idle sweep leaves organization` | INFO | `idle-sweep.ts` | Another writer changed the row during the suspension, for example a delete, so the sweep left it. |
 | `Tenant sweep step failed: {json}` | ERROR | [`src/tenancy/tenants/tenant-sweeps.ts`](../../src/tenancy/tenants/tenant-sweeps.ts) | A defect in a step of the tick. The fields are `step` and `reason`. The next step runs. |
 | `The tenant sweeps leave the tick of` | INFO | `tenant-sweeps.ts` | Another instance of the control plane claimed the tick first, so this instance runs no step of it. It comes when the tick falls inside the 2 minutes of a deploy, while two instances run; the other instance writes the lines of the tick ([the sweeps during a deploy](#the-sweeps-during-a-deploy)). |
-| `Tenant sweep tick stopped: {json}` | ERROR | `tenant-sweeps.ts` | The claim of the tick got no answer from the registry, so this instance runs no step of the tick. The fields are `tick` and `reason`. The next tick claims again. A registry that does not answer gives it ([runbook 3](#3-paused-supabase-project)). So does a registry without the [tick migration](../../sql/migrations/20261101023017_tenant_sweep_ticks.sql): then the line comes each day, and no sweep runs. Apply the migration as the [database setup](admin-s2-01a-database-setup.md) says. |
+| `Tenant sweep tick stopped: {json}` | ERROR | `tenant-sweeps.ts` | Three claims of the tick got no answer from the registry: the first at the tick, the next 10 s and 60 s later. So this instance runs no step of the tick. The fields are `tick`, `claims` (3), and `reason`. The next tick claims again. A registry that does not answer gives it ([runbook 3](#3-paused-supabase-project)). So does a registry without the [tick migration](../../sql/migrations/20261101023017_tenant_sweep_ticks.sql): then the line comes each day, and no sweep runs. Apply the migration as the [database setup](admin-s2-01a-database-setup.md) says. |
 | `System log export failed:` | ERROR | [`src/app/system-log-failure-line.ts`](../../src/app/system-log-failure-line.ts) | An export to Axiom failed, after the retries of the exporter, and its lines are not in `system-log`; standard error still has them. The line names the cause: an HTTP status such as `HTTP 401` (a refused token) or `HTTP 403`, an error code such as `ECONNREFUSED`, or `no answer in time`. It comes at most once a minute and counts the failures that had no line. It is on standard error only: Axiom never gets it, so the [precondition check](#73-axiom-monitors) reads the Render log. |
 
 ### The summary fields
@@ -147,7 +147,7 @@ first claim adds the row of the tick. That instance runs the organization sweep
 ([`tenant-sweeps.ts`](../../src/tenancy/tenants/tenant-sweeps.ts)). So Render
 gets each suspend and delete one time, and the summary line comes one time.
 
-To see which instance ran a tick, read the last rows as the administrative
+To see which instance claimed a tick, read the last rows as the administrative
 owner:
 
 ```sql
@@ -160,13 +160,15 @@ at` line of that instance names.
 When the old instance claims the tick and gets `SIGTERM` before its steps end,
 no instance runs the rest of the tick. Then an idle tenant stays live until the
 next tick, and a tenant of an absent organization until the next Monday. The
-summary line of that day does not come, and the log of the old instance shows
-`Stopping after SIGTERM` before the summary line. `fleet.ts summary` gives a
+summary line of that day does not come: the log of the old instance shows
+`Stopping after SIGTERM` and no summary line after it. `fleet.ts summary` gives a
 summary of the last 24 hours. For a tenant that must not wait, use
 `fleet.ts suspend` or [runbook 4](#4-deletion-of-a-tenant). An old instance of
 a version before the tick claim ignores the claims. So the first deploy with
-the claim can still run a tick in both instances: deploy it away from the sweep
-hour.
+the claim, and a rollback to such a version, can still run a tick in both
+instances: deploy them away from the sweep hour. A claim without an answer
+tries again after 10 s and after 60 s, and a repeat claim of the same holder is
+claimed again, so a short outage of the registry at the tick costs no run.
 
 ## 1. Failed provision
 
@@ -402,9 +404,9 @@ the database, so 7 days without use can pause the project.
 - Billing, from Slice 3. The Stripe webhook route and the daily reconciliation
   cannot apply a status. Stripe sends a failed webhook again, and the
   reconciliation corrects each status within a day after the resume.
-- The daily sweeps. The claim of the tick gets no answer, so the tick runs no
-  step and gives one `Tenant sweep tick stopped:` line: no summary line, no
-  suspend, and no delete. When the registry stops after the claim, the steps
+- The daily sweeps. The three claims of the tick, in about 70 s, get no
+  answer, so the tick runs no step and gives one `Tenant sweep tick stopped:`
+  line: no summary line, no suspend, and no delete. When the registry stops after the claim, the steps
   give their own lines: the organization sweep of a Monday deletes nothing and
   gives `Organization sweep stopped:`, the idle sweep suspends nothing and
   gives `Idle sweep stopped:`, and the fleet summary gives

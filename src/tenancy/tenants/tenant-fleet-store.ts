@@ -72,8 +72,9 @@ export interface TenantFleetStore {
   /** The digest of a live row, after an upgrade deploy on the same service reached live. */
   recordDigest(organizationId: string, serviceId: string, imageDigest: string): Promise<FleetWrite>;
   /**
-   * The claim of a tick of the sweeps, at tickAt (ISO 8601 in UTC), for the holder of the claim. Only the first claim of
-   * a tick is claimed, so one instance of the control plane runs it; the claim stays as the record of that instance.
+   * The claim of a tick of the sweeps, at tickAt (ISO 8601 in UTC), for the holder of the claim. The first claim of a
+   * tick holds it, so one instance of the control plane runs it; the claim stays as the record of that instance. A
+   * repeat claim of the same holder, as after an answer that got lost, is claimed again.
    */
   claimTick(tickAt: string, holder: string): Promise<TickClaim>;
 }

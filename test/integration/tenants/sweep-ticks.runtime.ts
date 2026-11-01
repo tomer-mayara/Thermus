@@ -14,8 +14,9 @@ type Site = Awaited<ReturnType<typeof postgresSettingsSite>>;
 
 const tuesdayTick = '2026-11-03T04:00:00.000Z';
 const wednesdayTick = '2026-11-04T04:00:00.000Z';
-// The claims of the wait case wait for the insert of another session; these bounds keep them waiting.
-const insertWait: Partial<SqlBounds> = { operationMs: 10_000, statementMs: 8_000 };
+// A busy host can take more than the production bounds to open a connection or to queue a claim, and the claims of the
+// wait case wait for the insert of another session; these bounds keep a claim from failing for those reasons.
+const busyHost: Partial<SqlBounds> = { acquisitionMs: 5_000, operationMs: 10_000, statementMs: 8_000 };
 
 // The tenant registry of one case on disposable PostgreSQL 17, with the pools of the instances that claim its ticks.
 class Registry {
@@ -32,8 +33,8 @@ class Registry {
   }
 
   /** The pool and the fleet store of one instance of the control plane. */
-  instance(bounds: Partial<SqlBounds> = {}) {
-    const runtime = createPgSettingsRuntime({ ...this.site.connection, bounds });
+  instance() {
+    const runtime = createPgSettingsRuntime({ ...this.site.connection, bounds: busyHost });
     this.#t.after(() => runtime.close());
     return { runtime, store: new PgTenantFleetStore(runtime) };
   }
@@ -75,14 +76,14 @@ class Registry {
   }
 }
 
-test('Given the migration and the scoped role, when holders claim ticks through the real SQL runtime, then the first claim of a tick adds its row with the holder, each later claim of the tick finds it taken, and the role can only read and add the rows', { timeout: 60_000 }, async (t) => {
+test('Given the migration and the scoped role, when holders claim ticks through the real SQL runtime, then the first claim of a tick adds its row with the holder, a claim of another holder finds it taken, a repeat claim of its holder is claimed again, and the role can only read and add the rows', { timeout: 60_000 }, async (t) => {
   const registry = await Registry.start(t);
   const { runtime, store } = registry.instance();
   const { site } = registry;
 
   assert.deepEqual(await store.claimTick(tuesdayTick, 'holder-a'), { status: 'claimed' });
   assert.deepEqual(await store.claimTick(tuesdayTick, 'holder-b'), { status: 'taken' });
-  assert.deepEqual(await store.claimTick(tuesdayTick, 'holder-a'), { status: 'taken' }, 'A tick is claimed one time, also for its own holder');
+  assert.deepEqual(await store.claimTick(tuesdayTick, 'holder-a'), { status: 'claimed' }, 'A repeat claim of the holder, as after an answer that got lost, is claimed again');
   assert.deepEqual(await store.claimTick(wednesdayTick, 'holder-b'), { status: 'claimed' }, 'The next tick has its own claim');
 
   assert.deepEqual(await registry.claimedTicks(), ['2026-11-03 04:00 holder-a', '2026-11-04 04:00 holder-b']);
@@ -112,7 +113,7 @@ test('Given claims of one tick from two pools at the same time, when they run, t
 
 test('Given the claim of a tick that another instance inserted and has not committed, when it commits, then a waiting claim of each pool finds the tick taken; and when it rolls back, the first waiting claim is claimed', { timeout: 60_000 }, async (t) => {
   const registry = await Registry.start(t);
-  const pools = [registry.instance(insertWait).store, registry.instance(insertWait).store] as const;
+  const pools = [registry.instance().store, registry.instance().store] as const;
 
   const committing = await registry.uncommittedClaim(tuesdayTick, 'holder-old');
   const afterCommit = Promise.all(pools.map((pool, index) => pool.claimTick(tuesdayTick, `holder-${index}`)));

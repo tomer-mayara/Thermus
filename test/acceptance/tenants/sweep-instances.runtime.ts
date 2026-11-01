@@ -14,6 +14,7 @@ import { workosClientFor } from '../../support/doubles/workos/workos-fake-api.ts
 import { WorkOSFake } from '../../support/doubles/workos/workos-fake.ts';
 import { controlPlaneEnvironment, controlPlanePublicBaseUrl } from '../../support/fixtures/control-plane-tenants.ts';
 import { postgresSettingsSite } from '../../support/in-process/postgres-settings-site.ts';
+import { serviceNameOf } from './fixtures/sweep-harness.ts';
 import { TickClock } from './fixtures/tick-clock.ts';
 
 // The SO-12 release rehearsal of 31 October 2026 (release record, section 3.7, item 6): during each deploy of the
@@ -34,12 +35,9 @@ const tuesdayBeforeTheSweep = Date.parse('2026-11-03T03:59:00Z');
 const fifteenDaysBeforeTuesday = '2026-10-19T12:00:00.000Z';
 const recentUse = '2026-11-02T12:00:00.000Z';
 const WAIT_LIMIT_MS = 30_000;
-
-// The name rule of 27 October 2026 (SO-06): the organization ID in lower case, each character outside a-z, 0-9, and
-// hyphen as a hyphen.
-function nameOf(organizationId: string): string {
-  return `thermus-tenant-${organizationId.toLowerCase().replace(/[^a-z0-9-]/g, '-')}`;
-}
+// A busy host can take more than the production bounds of the SQL runtime to open the first connection of a pool, and a
+// claim without an answer waits 10 s before it tries again; these bounds keep the claims of the cases answered.
+const busyHost = { acquisitionMs: 5_000, operationMs: 10_000, statementMs: 8_000 };
 
 interface ControlPlane {
   readonly log: OperatorLogSpy;
@@ -70,7 +68,7 @@ class Deploy {
 
   /** A live free tenant: its Render service and its registry row with the last use. */
   async liveTenant(organizationId: string, lastActiveAt: string): Promise<FakeService> {
-    const service = this.render.addService(nameOf(organizationId));
+    const service = this.render.addService(serviceNameOf(organizationId));
     await this.#site.ownerQuery(`INSERT INTO thermus_admin.tenants (organization_id, state, render_service_id, service_name, internal_url, plan, applied_plan, last_active_at)
       VALUES ('${organizationId}', 'live', '${service.id}', '${service.name}', 'http://${service.slug}:8080', '${settings.freePlan}', '${settings.freePlan}', '${lastActiveAt}')`);
     return service;
@@ -78,11 +76,12 @@ class Deploy {
 
   /**
    * One control plane instance: its own pool, Render adapter, and tenant sweeps on the shared registry, with a wall
-   * clock that gives one tick from startMs. The fetch of the instance keeps each Render request that it sends; the fake
-   * records the request before its first wait.
+   * clock from startMs whose first `sleeps` waits end at once: one for the tick, and one for each later claim of the
+   * tick. The fetch of the instance keeps each Render request that it sends; the fake records the request before its
+   * first wait.
    */
-  instance(startMs: number): ControlPlane {
-    const runtime = createPgSettingsRuntime(this.#site.connection);
+  instance(startMs: number, sleeps = 1): ControlPlane {
+    const runtime = createPgSettingsRuntime({ ...this.#site.connection, bounds: busyHost });
     const log = new OperatorLogSpy();
     const sent: RenderRequest[] = [];
     const fetch: typeof globalThis.fetch = (input, init) => {
@@ -91,7 +90,7 @@ class Deploy {
       sent.push(...this.render.requests.slice(before));
       return answer;
     };
-    const clock = new TickClock(startMs, 1);
+    const clock = new TickClock(startMs, sleeps);
     const platform = tenantPlatformOf({ settings, store: new PgTenantProvisioningStore(runtime), fetch, clock: new VirtualClock() });
     const sweeps = startTenantSweeps({
       settings, platform, fleet: new PgTenantFleetStore(runtime), workos: workosClientFor(this.workos.fake), logger: log, sweepClock: clock,
@@ -198,17 +197,17 @@ test('Given two control planes on one tenant registry and a tenant whose organiz
   assert.deepEqual(linesOf(planes, 'ERROR'), []);
 });
 
-test('Given a control plane whose tenant registry has no table of the ticks, as before its migration, when the daily tick comes, then the sweeps run no step and send no Render call, and the operator gets one stop line', { timeout: 120_000 }, async (t) => {
+test('Given a control plane whose tenant registry has no table of the ticks, as before its migration, when the daily tick comes, then the three claims of the tick fail, the sweeps run no step and send no Render call, and the operator gets one stop line', { timeout: 120_000 }, async (t) => {
   const deploy = await Deploy.start(t, [organizationA]);
   await deploy.liveTenant(organizationA, fifteenDaysBeforeTuesday);
   await deploy.dropTheTableOfTheTicks();
-  const plane = deploy.instance(tuesdayBeforeTheSweep);
+  const plane = deploy.instance(tuesdayBeforeTheSweep, 3);
 
   await until(() => plane.ended(), 'the end of the tick');
 
   assert.deepEqual(plane.sent, [], 'No Render call');
   assert.equal(await deploy.stateOf(organizationA), 'live');
   assert.deepEqual(plane.log.lines.filter((line) => !line.startsWith('INFO The tenant sweeps run each day at')), [
-    `ERROR Tenant sweep tick stopped: ${JSON.stringify({ tick: '2026-11-03T04:00:00.000Z', reason: 'The tenant registry did not answer the claim of the tick' })}`,
+    `ERROR Tenant sweep tick stopped: ${JSON.stringify({ tick: '2026-11-03T04:00:00.000Z', claims: 3, reason: 'The tenant registry did not answer the claim of the tick' })}`,
   ]);
 });

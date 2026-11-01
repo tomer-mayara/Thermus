@@ -2,7 +2,7 @@ import type { FleetRead, FleetRow, FleetWrite, RemovableState, ReviveResult, Ten
 import type { RegistryCount, TenantState } from '../../../../src/tenancy/tenants/tenant-registry-store.ts';
 import { fakeCreatedAt, TenantProvisioningStoreFake, type FakeTenantRow } from './tenant-provisioning-store-fake.ts';
 
-export type FleetOperation = 'read' | 'idle' | 'deleted' | 'revive' | 'suspended' | 'resumed' | 'digest' | 'tick';
+export type FleetOperation = 'read' | 'idle' | 'deleted' | 'revive' | 'suspended' | 'resumed' | 'digest';
 
 /**
  * The registry fake of the provisioner (a fake) with the statements of the fleet commands and the sweeps. Each change
@@ -59,12 +59,11 @@ export class TenantFleetStoreFake extends TenantProvisioningStoreFake implements
     return this.fleetMove('digest', { organizationId, from: ['live'], serviceId }, (row) => { row.imageDigest = imageDigest; });
   }
 
-  // As the insert of the SQL adapter: only the first claim of a tick adds it.
+  // As the claim of the SQL adapter: the first claim of a tick adds it, and only its holder gets claimed.
   async claimTick(tickAt: string, holder: string): Promise<TickClaim> {
-    if (this.fleetUnavailable.has('tick')) return { status: 'unavailable' };
-    if (this.ticks.has(tickAt)) return { status: 'taken' };
-    this.ticks.set(tickAt, holder);
-    return { status: 'claimed' };
+    const claimedBy = this.ticks.get(tickAt) ?? holder;
+    this.ticks.set(tickAt, claimedBy);
+    return { status: claimedBy === holder ? 'claimed' : 'taken' };
   }
 
   /** The state of the row of the organization, or undefined without a row. */

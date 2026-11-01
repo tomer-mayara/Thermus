@@ -176,19 +176,44 @@ test('Given a tick that another instance of the control plane claimed first, whe
   assert.deepEqual(clock.waits, [5 * 3_600_000, 86_400_000]);
 });
 
-test('Given a claim of the tick that the registry does not answer, when the tick comes, then no step runs, one error line names the tick, and the next tick is claimed again', async () => {
+test('Given three claims of the tick that the registry does not answer, when the tick comes, then the claim tries again after 10 s and after 60 s, no step runs, one error line names the tick, and the next tick is claimed again', async () => {
+  const clock = new TicksClock(sundayEvening, 4);
+  const stepSpy = new SweepStepSpy();
+  const log = new OperatorLogSpy();
+  const sweeps = sweepsWith({ steps: [stepSpy.step('daily', () => true)], clock, log, ticks: new TickClaimStub(stepSpy.ran, ['unavailable', 'unavailable', 'unavailable']) });
+
+  await runTicks(sweeps, clock);
+
+  const monday = `claim 2026-11-02T04:00:00.000Z by ${holder}`;
+  assert.deepEqual(stepSpy.ran, [monday, monday, monday, `claim 2026-11-03T04:00:00.000Z by ${holder}`, 'daily 2026-11-03T04:00:00.000Z']);
+  assert.deepEqual(clock.waits, [5 * 3_600_000, 10_000, 60_000, 86_400_000 - 70_000], 'The next tick keeps its hour');
+  assert.deepEqual(log.lines, [`ERROR Tenant sweep tick stopped: ${JSON.stringify({ tick: '2026-11-02T04:00:00.000Z', claims: 3, reason: 'The tenant registry did not answer the claim of the tick' })}`]);
+});
+
+test('Given a claim of the tick without an answer, when the next claim after 10 s is claimed, then the steps of the day run, with no line', async () => {
   const clock = new TicksClock(sundayEvening, 2);
+  const stepSpy = new SweepStepSpy();
+  const log = new OperatorLogSpy();
+  const sweeps = sweepsWith({ steps: [stepSpy.step('weekly', isMonday), stepSpy.step('daily', () => true)], clock, log, ticks: new TickClaimStub(stepSpy.ran, ['unavailable']) });
+
+  await runTicks(sweeps, clock);
+
+  const claim = `claim 2026-11-02T04:00:00.000Z by ${holder}`;
+  assert.deepEqual(stepSpy.ran, [claim, claim, 'weekly 2026-11-02T04:00:00.000Z', 'daily 2026-11-02T04:00:00.000Z'], 'The steps keep the time of the tick');
+  assert.deepEqual(clock.waits, [5 * 3_600_000, 10_000]);
+  assert.deepEqual(log.lines, []);
+});
+
+test('Given a claim of the tick without an answer, when the stop comes during the wait before the next claim, then the run ends with no step and no line', async () => {
+  const clock = new TicksClock(sundayEvening, 1);
   const stepSpy = new SweepStepSpy();
   const log = new OperatorLogSpy();
   const sweeps = sweepsWith({ steps: [stepSpy.step('daily', () => true)], clock, log, ticks: new TickClaimStub(stepSpy.ran, ['unavailable']) });
 
   await runTicks(sweeps, clock);
 
-  assert.deepEqual(stepSpy.ran, [
-    `claim 2026-11-02T04:00:00.000Z by ${holder}`,
-    `claim 2026-11-03T04:00:00.000Z by ${holder}`, 'daily 2026-11-03T04:00:00.000Z',
-  ]);
-  assert.deepEqual(log.lines, [`ERROR Tenant sweep tick stopped: ${JSON.stringify({ tick: '2026-11-02T04:00:00.000Z', reason: 'The tenant registry did not answer the claim of the tick' })}`]);
+  assert.deepEqual(stepSpy.ran, [`claim 2026-11-02T04:00:00.000Z by ${holder}`]);
+  assert.deepEqual(log.lines, []);
 });
 
 test('Given a stop while the claim of the tick runs, when the claim then succeeds, then no step runs', async () => {

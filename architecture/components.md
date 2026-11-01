@@ -762,9 +762,11 @@ row of the tick, keyed by its time, with its claim holder, which is new at each
 start. Only the instance whose insert adds the row runs the steps, so during a
 deploy, when the old instance runs too, Render gets each suspend and delete one
 time and the summary comes one time; the other instance writes one
-`The tenant sweeps leave the tick of` line. A claim without an answer runs no
-step and writes one `Tenant sweep tick stopped:` line (SO-12 rehearsal of 31
-October 2026). Each
+`The tenant sweeps leave the tick of` line. A claim without an answer tries
+again after 10 s and after 60 s; a repeat claim of the same holder, as after an
+answer that got lost, is claimed again. After the third claim without an
+answer, the tick runs no step and writes one `Tenant sweep tick stopped:` line
+(SO-12 rehearsal of 31 October 2026). Each
 day the idle sweep reads the live free rows whose last use, or creation when
 they never served a call, is `FREE_TENANT_IDLE_DAYS` (default 14) or more
 before the tick, suspends each service on the platform, and then moves each
@@ -1788,11 +1790,11 @@ sequenceDiagram
   participant WorkOS as WorkOS API
   participant API as Render API
   App->>Sweep: Start the sweeps
+  Note over Sweep,Store: Monday tick: the organization sweep, then the idle sweep and the fleet summary
   Sweep->>Store: Claim the tick: insert its row, unless an instance did
-  break Another instance claimed the tick first, or the claim has no answer
+  break Another instance claimed the tick first, or three claims have no answer
     Note over Sweep,Store: One line, and no step of the tick runs
   end
-  Note over Sweep,Store: Monday tick: the organization sweep, then the idle sweep and the fleet summary
   Sweep->>Store: Read every row
   Sweep->>Inv: List every organization
   Inv->>WorkOS: GET /organizations, page after page
@@ -1829,9 +1831,9 @@ read keeps the tenant until the next sweep. A failed platform delete changes no
 row and gives one `Tenant removal failed:` line; a row that another writer
 moved, also a replacement with a new service in the same state, is left for the
 next sweep. The idle sweep and the fleet summary of the same tick then run; on
-the other days, the tick runs those two only. The claim comes before each step
-of a tick: during a deploy, the two instances reach the tick together, and only
-the instance whose insert adds the row of the tick runs it.
+the other days, the tick runs those two only. One claim of the tick comes
+before its first step: during a deploy, the two instances reach the tick
+together, and only the instance whose insert adds the row of the tick runs it.
 
 ### Scenario: daily idle sweep
 
@@ -2015,13 +2017,15 @@ configuration or claims a deployed Axiom destination.
 Current replica count and activated database settings are unknown here. The
 [removal-operation migration](../sql/migrations/20261025082850_membership_removal_operations.sql)
 still needs deployment verification; this map does not claim that the live target
-has its new table. The [tenant registry migration](../sql/migrations/20261027175430_tenant_registry_and_billing.sql)
-is not applied there: SO-12 of the self on-boarding plan applies it. Nor is
-the [claim migration](../sql/migrations/20261031221342_tenant_claim_lease.sql),
+has its new table. Step 3 of the SO-12 release applied the
+[tenant registry migration](../sql/migrations/20261027175430_tenant_registry_and_billing.sql)
+there on 31 October 2026
+([release record](../docs/implementation/self-onboarding-s2-release.md)). The
+[claim migration](../sql/migrations/20261031221342_tenant_claim_lease.sql),
 which comes after it and before the deploy of a control plane that claims with
-a lease, or the [tick migration](../sql/migrations/20261101023017_tenant_sweep_ticks.sql),
+a lease, and the [tick migration](../sql/migrations/20261101023017_tenant_sweep_ticks.sql),
 which comes before the deploy of a control plane that claims the ticks of the
-sweeps. A deploy of the Render service starts a new instance and keeps the
+sweeps, are not recorded as applied. A deploy of the Render service starts a new instance and keeps the
 old one for about 120 s after the new deploy is live (SO-12 rehearsal of
 31 October 2026), so two Node server processes run for about 2 minutes; the
 claim lease of the [tenant provisioning](#scenario-tenant-provisioning)
@@ -2380,7 +2384,9 @@ The following limits affect architectural decisions today:
   steps end, no instance runs the rest: it waits until the next tick, a week
   for the organization sweep, and the summary line of that day does not come.
   An old instance of a version before the tick claim ignores the claims, so the
-  first deploy with it can still run a tick in both instances. A slow
+  first deploy with it, and a rollback to such a version, can still run a tick
+  in both instances. A new `TENANT_SWEEP_HOUR_UTC` makes a new tick, so a later
+  hour on the day of the change runs the sweeps again that day. A slow
   deploy holds the queue for up to 15 minutes, and the creates of one hour are
   20 for each Render user. The tenants run in the region oregon, the region
   of the control plane, as a constant of the adapter.
@@ -2432,7 +2438,8 @@ The following limits affect architectural decisions today:
   SO-09 ("delete, then request") uses its own registry operation, the revive of
   a `deleted` row inside the cap, from the fleet command `request` only.
 - The tenant sweeps tick once a day in one process. A tick that falls while the
-  control plane is down, for example during a deploy, waits until the next day,
+  control plane is down, for example after a crash or while its service is
+  stopped, waits until the next day,
   so the weekly sweep can wait two weeks; the runner keeps no record of a missed
   tick. A second instance of the control plane, such as the old instance of a
   deploy, leaves a tick that the other instance claimed first, and a claim
