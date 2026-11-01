@@ -192,7 +192,12 @@ change), and neither fix changes invitation code. The owner accepted the
 deferral in the architect approval of #307 (02:17 UTC on 1 November). The four
 cases run on `main` after the quota resets, and the [record](#7-record) takes
 the result; until then the live gate has not passed in full on a tree that
-holds #306.
+holds #306. **Result, 1 November 2026:** the quota had reset by 06:36 UTC, and
+`npm run test:hosted-live` on `main` `e75ab0dc` (the tree with #306, #307,
+#311, and the record changes), in the main checkout through the WorkOS
+Staging launcher, passed 30 of 30 in 685 s from 06:36:26 to 06:47:55 UTC with
+no quota refusal. The four invitation cases are covered, and the live gate has
+passed in full on a tree that holds #306.
 
 ## 2. Before production
 
@@ -1018,7 +1023,7 @@ no secret.
 | 3 Database migration | 31 October 2026, 22:19 to 22:25 | done: migration `20261031222505` applied; three empty tables with forced RLS; runtime grants SELECT, INSERT, UPDATE only; no advisor finding; production health `200` | [Step 3](#step-3-database-migration-of-so-04) |
 | 4 Registry credential | 31 October 2026, 22:26 to 22:28 | done: credential `GITHUB`, user `tomer-mayara`; the token has no expiry date, noted in the operator record | [Step 4](#step-4-registry-credential) |
 | 5 Deploy with the switch off | 31 October 2026, 23:12 to 23:17 | done: 5a the service is an image service with the candidate (no automatic deploy); 5b run 41251739613 deployed `dep-dbj7d949v7es739ag7vg` live in 28 s, health `200`, signup closed | [Step 5](#step-5-control-plane-deploy-with-the-gateway-switch-off) |
-| 1.4 Checks of the current candidate | 1 November 2026: 00:38 to 00:50 (manager round 2 on `ad921500`); 02:18:54 to 02:26:33 (run 41264668222) | Passed, except the hosted live gate: 26 of 30 on the tree of the current candidate; four invitation cases deferred on the WorkOS Staging email quota, to a run on `main` after the reset | [1.4](#14-application-checks-of-the-candidate-part-b), the checks of the current candidate |
+| 1.4 Checks of the current candidate | 1 November 2026: 00:38 to 00:50 (manager round 2 on `ad921500`); 02:18:54 to 02:26:33 (run 41264668222) | Passed. The hosted live gate got 26 of 30 on the tree of the current candidate at first (four invitation cases deferred on the WorkOS Staging email quota) and then 30 of 30 on `main` `e75ab0dc` at 06:36 to 06:47 UTC on 1 November 2026 | [1.4](#14-application-checks-of-the-candidate-part-b), the checks of the current candidate |
 | 3a Claim lease migration | 1 November 2026, 02:20 (pre-check) and 02:32 | done: migration `20261101023213` `tenant_claim_lease` applied on the owner's decision; 14 columns, the check `tenants_claim_pair`, 0 rows; grants and RLS unchanged; no advisor finding; health `200` | [Step 3](#step-3-database-migration-of-so-04), the claim lease paragraph |
 | 5c Deploy of the current candidate | 1 November 2026, 02:33 to 02:36 | done: run 41265679864 deployed `dep-dbjaa27lk1mc738m7vo0`, `live` in 22 s with `sha256:72f51715…`; health `200`, portal `200`, signup closed; the old instance stopped 120 s after `live` | [Step 5](#step-5-control-plane-deploy-with-the-gateway-switch-off), result 5c; [1.2](#12-release-candidate) |
 | 6a Switch on: the plain variables | 1 November 2026, 02:50 to 02:54 | done: ten variables set through the API without a deploy (`MCP_TENANTS_ENABLED` `true` last); 24 variables on the service; no deploy and no event in the watch to 02:54:45; the running instance is unchanged, and a deploy before 6b would stop at the start | [Step 6](#step-6-the-gateway-switch-on-with-the-system-log-settings), result 6a |
