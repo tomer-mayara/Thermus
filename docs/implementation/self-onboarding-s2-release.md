@@ -801,8 +801,14 @@ first time at step 5b.
 
 ### Step 6. The gateway switch on, with the system log settings
 
-The new settings are read only with the switch on (answer 6 of 27 October
-2026), so they come with this step.
+The tenant settings are read only with the switch on (answer 6 of 27 October
+2026). The system log export settings are read at each start of the hosted
+control plane, with or without the switch, and invalid settings stop the
+start ([`src/app/system-log-export.ts`](../../src/app/system-log-export.ts),
+[runbook 5.6](tenant-fleet-runbooks.md#56-axiom-ingest-token-of-the-system-log)):
+with the endpoint or the dataset set and the token absent, the start fails.
+So all of them come with this step, and the secrets go in before the next
+deploy.
 
 - **Who:** the owner enters each secret in the Render dashboard. The agent
   reads the `slug` of the production service and checks the start.
@@ -849,8 +855,8 @@ The new settings are read only with the switch on (answer 6 of 27 October
   that window ([section 6](#6-owner-steps-outstanding), item 15). A reset, a
   `502`, or a refusal from 2 minutes on still gives the ERROR line and an
   email.
-- **Go-ahead:** —
-- **Result:** —
+- **Go-ahead (6a, the plain variables):** the owner, 1 November 2026 at about 02:50 UTC: "Yes: set the eleven plain step 6 variables on the production service through the Render API now, without a deploy, with TENANT_IMAGE as the current candidate. I enter the three secrets and use Save and deploy when my items are done." The go-ahead for 6b (the public key, the three secrets, and the deploy) comes with items 1, 4, 9, and 10 of [section 6](#6-owner-steps-outstanding).
+- **Result 6a (the plain variables):** done, 1 November 2026, 02:50:56 to 02:54:45 UTC, by the manager with the fleet key, without a deploy. Before: the 14 variables of [1.3](#13-production-state-on-31-october-2026) (names read at 02:50:56 UTC). Ten `PUT /v1/services/srv-db8mnqg473hc739d529g/env-vars/<name>` from 02:52:32.3 to 02:52:33.5 UTC, each `200` with the value echoed, in the bucket of 100 writes (`Ratelimit-Remaining` 99 to 90), `MCP_TENANTS_ENABLED` last: `CONTROL_PLANE_INTERNAL_URL` `http://thermus:8080` (the slug `thermus`, read from the API), `RENDER_OWNER_ID` `tea-db8i6ceq1p3s73dev9og`, `RENDER_REGISTRY_CREDENTIAL_ID` `rgc-dbg1h0142hec73da9ra0`, `TENANT_IMAGE` `ghcr.io/tomer-mayara/thermus-hosted@sha256:72f51715…` (the current candidate of [1.2](#12-release-candidate)), `TENANT_PLAN_FREE` `0.5c-512mb`, `FREE_TENANT_LIMIT` `25`, `FREE_TENANT_IDLE_DAYS` `14`, `SYSTEM_LOG_OTLP_ENDPOINT` `https://us-east-1.aws.edge.axiom.co/v1/logs`, `SYSTEM_LOG_AXIOM_DATASET` `system-log`, and `MCP_TENANTS_ENABLED` `true`. The list read back at 02:52:33 UTC holds 24 variables: the 14 kept and the 10 new; `TENANT_NAME_PREFIX`, `TENANT_SWEEP_HOUR_UTC`, and `OPERATION_CAPACITY` stay as the table says. A watch of the deploys and the events every 15 s from 02:52:12 to 02:54:45 UTC, which covers 132 s after the first write, showed no new deploy and no event; the live deploy stayed `dep-dbjaa27lk1mc738m7vo0`, and `https://app.thermus.ai/healthz` answers `200`. The running instance keeps the configuration of its deploy: Render applies a variable change at the next deploy, and a restart "always uses the exact same Git commit and configuration as the running instance" ([Render docs, deploys](https://render.com/docs/deploys)). Until the save of 6b, a deploy of production stops at the start, because the stored variables need `SYSTEM_LOG_OTLP_TOKEN` (the export settings are read with or without the switch) and, with the switch on, `RENDER_API_KEY`, `GATEWAY_SIGNING_KEY`, and `GATEWAY_PUBLIC_KEY`; such a deploy fails, and the service "continues running its most recent successful deploy" with zero downtime (the same page). So no workflow deploy and no **Save and deploy** before the four values are in. Open, 6b: the owner enters `GATEWAY_PUBLIC_KEY` and the three secrets in one save with **Save and deploy** ([runbook 5.2](tenant-fleet-runbooks.md#52-gateway-key-pair), step 1, and [5.6](tenant-fleet-runbooks.md#56-axiom-ingest-token-of-the-system-log)); then the checks of this step.
 
 ### Step 7. One real MCP call for each kept organization
 
@@ -1013,7 +1019,8 @@ no secret.
 | 1.4 Checks of the current candidate | 1 November 2026: 00:38 to 00:50 (manager round 2 on `ad921500`); 02:18:54 to 02:26:33 (run 41264668222) | Passed, except the hosted live gate: 26 of 30 on the tree of the current candidate; four invitation cases deferred on the WorkOS Staging email quota, to a run on `main` after the reset | [1.4](#14-application-checks-of-the-candidate-part-b), the checks of the current candidate |
 | 3a Claim lease migration | 1 November 2026, 02:20 (pre-check) and 02:32 | done: migration `20261101023213` `tenant_claim_lease` applied on the owner's decision; 14 columns, the check `tenants_claim_pair`, 0 rows; grants and RLS unchanged; no advisor finding; health `200` | [Step 3](#step-3-database-migration-of-so-04), the claim lease paragraph |
 | 5c Deploy of the current candidate | 1 November 2026, 02:33 to 02:36 | done: run 41265679864 deployed `dep-dbjaa27lk1mc738m7vo0`, `live` in 22 s with `sha256:72f51715…`; health `200`, portal `200`, signup closed; the old instance stopped 120 s after `live` | [Step 5](#step-5-control-plane-deploy-with-the-gateway-switch-off), result 5c; [1.2](#12-release-candidate) |
-| 6 Switch on | — | — | — |
+| 6a Switch on: the plain variables | 1 November 2026, 02:50 to 02:54 | done: ten variables set through the API without a deploy (`MCP_TENANTS_ENABLED` `true` last); 24 variables on the service; no deploy and no event in the watch to 02:54:45; the running instance is unchanged, and a deploy before 6b would stop at the start | [Step 6](#step-6-the-gateway-switch-on-with-the-system-log-settings), result 6a |
+| 6b Switch on: the public key, the secrets, and the deploy | — | — | — |
 | 7 Kept organizations | — | — | — |
 | 8 Canary signup | — | — | — |
 | 9 Marketing publication | — | — | — |
