@@ -15,14 +15,14 @@
   },
   "architecture": {
     "modelUpdated": false,
-    "summary": "Documents only. The SO-12 release record docs/implementation/self-onboarding-s2-release.md records step 6a of the production order: the ten plain step 6 variables set on the production service through the Render API on 1 November 2026 without a deploy, the watch that followed, the Render rule that a variable change applies at the next deploy and not at a restart, and the condition that a deploy before the secrets of 6b stops at the start. It also refines the step 6 introduction: the system log export settings are read at each start of the hosted control plane, with or without the gateway switch. No source, test, configuration, workflow, migration, or Mermaid block changes; the registry stays accurate.",
+    "summary": "Documents only. The SO-12 release record docs/implementation/self-onboarding-s2-release.md records result 6b of step 6 of the production order on 1 November 2026: the owner saved the public key and the three secrets on the production service, the first workflow deploy failed at the start on bare base64 keys and Render kept the live instance, the second deploy went live with the provisioner and sweeps start lines and the Listening on line in the Axiom dataset system-log, and the manager made the Tenant restart monitor through the Axiom connector. The owner items 1, 4, 9, and 10 of section 6 and the record row 6b take their status. No source, test, configuration, workflow, migration, or Mermaid block changes; the registry stays accurate.",
     "views": [
       "All 24 Mermaid views of architecture/components.md unchanged (checked: the release record is in no view, and no container, component, or runtime change)"
     ],
     "evidence": [
-      "docs/implementation/self-onboarding-s2-release.md (step 6 and section 7)",
-      "src/app/system-log-export.ts (read only; the start condition of the export settings)",
-      "https://render.com/docs/deploys"
+      "docs/implementation/self-onboarding-s2-release.md (step 6, section 6, and section 7)",
+      "https://github.com/tomer-mayara/Thermus/actions/runs/41268854698",
+      "https://github.com/tomer-mayara/Thermus/actions/runs/41269410689"
     ]
   }
 }
