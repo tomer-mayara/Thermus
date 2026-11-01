@@ -15,14 +15,14 @@
   },
   "architecture": {
     "modelUpdated": false,
-    "summary": "Documents only. The SO-12 release record docs/implementation/self-onboarding-s2-release.md takes the candidate change of 1 November 2026: the current candidate is the image of main 322a2a3a (run 41264668222), with #306 (the claim lease of the provisioner) and #307 (the cold start of a new tenant in the MCP gateway); the first candidate 8025ae1b is the rollback image. The record adds the checks of the current candidate (1.4), the claim lease migration on the production project (step 3), the workflow deploy of the new digest (step 5, result 5c), the new image in the step 6 variables, the step 7 precondition, the rollback command, the owner items 14 and 15, the record rows, and the status of the rehearsal findings 5 and 6. No source, test, configuration, workflow, migration, or Mermaid block changes; the registry stays accurate.",
+    "summary": "Documents only. The SO-12 release record docs/implementation/self-onboarding-s2-release.md records step 6a of the production order: the ten plain step 6 variables set on the production service through the Render API on 1 November 2026 without a deploy, the watch that followed, the Render rule that a variable change applies at the next deploy and not at a restart, and the condition that a deploy before the secrets of 6b stops at the start. It also refines the step 6 introduction: the system log export settings are read at each start of the hosted control plane, with or without the gateway switch. No source, test, configuration, workflow, migration, or Mermaid block changes; the registry stays accurate.",
     "views": [
       "All 24 Mermaid views of architecture/components.md unchanged (checked: the release record is in no view, and no container, component, or runtime change)"
     ],
     "evidence": [
-      "docs/implementation/self-onboarding-s2-release.md (sections 1.2, 1.4, 3.7, 4, 5, 6, and 7)",
-      "https://github.com/tomer-mayara/Thermus/actions/runs/41264668222",
-      "https://github.com/tomer-mayara/Thermus/actions/runs/41265679864"
+      "docs/implementation/self-onboarding-s2-release.md (step 6 and section 7)",
+      "src/app/system-log-export.ts (read only; the start condition of the export settings)",
+      "https://render.com/docs/deploys"
     ]
   }
 }
