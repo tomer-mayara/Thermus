@@ -31,6 +31,9 @@ export type ReviveResult =
   | { readonly status: 'refused'; readonly count: RegistryCount }
   | { readonly status: 'unavailable' | 'unconfirmed' };
 
+/** claimed: the tick is for the holder of the claim to run. taken: another holder claimed it first. unavailable: the claim can be absent or present. */
+export type TickClaim = { readonly status: 'claimed' | 'taken' | 'unavailable' };
+
 /** A state that a row can leave for deleted. */
 export type RemovableState = Exclude<TenantState, 'deleted'>;
 
@@ -68,4 +71,9 @@ export interface TenantFleetStore {
   markResumed(organizationId: string, serviceId: string): Promise<FleetWrite>;
   /** The digest of a live row, after an upgrade deploy on the same service reached live. */
   recordDigest(organizationId: string, serviceId: string, imageDigest: string): Promise<FleetWrite>;
+  /**
+   * The claim of a tick of the sweeps, at tickAt (ISO 8601 in UTC), for the holder of the claim. Only the first claim of
+   * a tick is claimed, so one instance of the control plane runs it; the claim stays as the record of that instance.
+   */
+  claimTick(tickAt: string, holder: string): Promise<TickClaim>;
 }

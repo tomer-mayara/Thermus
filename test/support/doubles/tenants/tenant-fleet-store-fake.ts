@@ -1,17 +1,19 @@
-import type { FleetRead, FleetRow, FleetWrite, RemovableState, ReviveResult, TenantFleetStore } from '../../../../src/tenancy/tenants/tenant-fleet-store.ts';
+import type { FleetRead, FleetRow, FleetWrite, RemovableState, ReviveResult, TenantFleetStore, TickClaim } from '../../../../src/tenancy/tenants/tenant-fleet-store.ts';
 import type { RegistryCount, TenantState } from '../../../../src/tenancy/tenants/tenant-registry-store.ts';
 import { fakeCreatedAt, TenantProvisioningStoreFake, type FakeTenantRow } from './tenant-provisioning-store-fake.ts';
 
-export type FleetOperation = 'read' | 'idle' | 'deleted' | 'revive' | 'suspended' | 'resumed' | 'digest';
+export type FleetOperation = 'read' | 'idle' | 'deleted' | 'revive' | 'suspended' | 'resumed' | 'digest' | 'tick';
 
 /**
  * The registry fake of the provisioner (a fake) with the statements of the fleet commands and the sweeps. Each change
  * names the state and the service that it starts from, as the guarded updates of the SQL adapter do; changes lists each
  * state that a row takes, in order. An operation in fleetUnavailable stands in for a storage failure of that operation, and
- * beforeChange runs before each change, so a test can play another writer at that moment.
+ * beforeChange runs before each change, so a test can play another writer at that moment. ticks keeps the holder of
+ * each claimed tick of the sweeps, as the table of the ticks does.
  */
 export class TenantFleetStoreFake extends TenantProvisioningStoreFake implements TenantFleetStore {
   readonly fleetUnavailable = new Set<FleetOperation>();
+  readonly ticks = new Map<string, string>();
   beforeChange: (operation: FleetOperation, organizationId: string) => void = () => {};
 
   async readFleet(): Promise<FleetRead> {
@@ -55,6 +57,14 @@ export class TenantFleetStoreFake extends TenantProvisioningStoreFake implements
 
   async recordDigest(organizationId: string, serviceId: string, imageDigest: string): Promise<FleetWrite> {
     return this.fleetMove('digest', { organizationId, from: ['live'], serviceId }, (row) => { row.imageDigest = imageDigest; });
+  }
+
+  // As the insert of the SQL adapter: only the first claim of a tick adds it.
+  async claimTick(tickAt: string, holder: string): Promise<TickClaim> {
+    if (this.fleetUnavailable.has('tick')) return { status: 'unavailable' };
+    if (this.ticks.has(tickAt)) return { status: 'taken' };
+    this.ticks.set(tickAt, holder);
+    return { status: 'claimed' };
   }
 
   /** The state of the row of the organization, or undefined without a row. */

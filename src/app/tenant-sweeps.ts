@@ -34,21 +34,23 @@ export interface TenantSweepsLifetime {
  * Starts the tenant sweeps of the control plane: each day at TENANT_SWEEP_HOUR_UTC, the organization sweep on Mondays,
  * then the idle sweep of the free tenants, then the fleet summary line, which so counts the tenants that the idle sweep
  * suspended. App owns their lifetime and closes them before the SQL runtime. A suspend or delete in flight at the stop
- * ends, so its mark reaches the registry.
+ * ends, so its mark reaches the registry. The claim holder is new for each start, so the claims of the ticks name the
+ * instance that ran each tick, also during a deploy, when the old instance runs too.
  */
 export function startTenantSweeps(parts: TenantSweepsParts): TenantSweepsLifetime {
   const { settings, logger } = parts;
-  const lifetime = startTenantLoop(({ stop, inFlight }) => sweepsOf(parts, new FinishingPlatform(parts.platform, inFlight)).run(stop), parts.inFlightGraceMs);
-  logger.info(`The tenant sweeps run each day at ${String(settings.sweepHourUtc).padStart(2, '0')}:00 UTC: the organization sweep on Mondays, the idle sweep of the free tenants after ${settings.freeTenantIdleDays} days without a call, then the fleet summary.`);
+  const holder = crypto.randomUUID();
+  const lifetime = startTenantLoop(({ stop, inFlight }) => sweepsOf(parts, holder, new FinishingPlatform(parts.platform, inFlight)).run(stop), parts.inFlightGraceMs);
+  logger.info(`The tenant sweeps run each day at ${String(settings.sweepHourUtc).padStart(2, '0')}:00 UTC: the organization sweep on Mondays, the idle sweep of the free tenants after ${settings.freeTenantIdleDays} days without a call, then the fleet summary. The instance whose claim of a tick is first runs it; tick claim holder ${holder}.`);
   return lifetime;
 }
 
-function sweepsOf(parts: TenantSweepsParts, platform: LoopPlatform): TenantSweeps {
+function sweepsOf(parts: TenantSweepsParts, holder: string, platform: LoopPlatform): TenantSweeps {
   const { settings, fleet, logger } = parts;
   const inventory = new WorkOSOrganizationInventory(parts.workos);
   const sweep = new OrganizationSweep({ store: fleet, inventory, platform, log: logger });
   const idle = new IdleSweep({ store: fleet, platform, freePlan: settings.freePlan, idleDays: settings.freeTenantIdleDays, log: logger });
   const summary = new FleetSummary({ store: fleet, platform, inventory, freePlan: settings.freePlan });
   const steps = [sweep, idle, fleetSummaryStep(summary, logger)];
-  return new TenantSweeps({ steps, hourUtc: settings.sweepHourUtc, clock: parts.sweepClock ?? wallClock, log: logger });
+  return new TenantSweeps({ steps, hourUtc: settings.sweepHourUtc, ticks: fleet, holder, clock: parts.sweepClock ?? wallClock, log: logger });
 }
