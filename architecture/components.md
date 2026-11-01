@@ -2040,12 +2040,12 @@ still needs deployment verification; this map does not claim that the live targe
 has its new table. Step 3 of the SO-12 release applied the
 [tenant registry migration](../sql/migrations/20261027175430_tenant_registry_and_billing.sql)
 there on 31 October 2026
-([release record](../docs/implementation/self-onboarding-s2-release.md)). The
-[claim migration](../sql/migrations/20261031221342_tenant_claim_lease.sql),
-which comes after it and before the deploy of a control plane that claims with
-a lease, and the [tick migration](../sql/migrations/20261101023017_tenant_sweep_ticks.sql),
+([release record](../docs/implementation/self-onboarding-s2-release.md)), and
+step 3a applied the [claim migration](../sql/migrations/20261031221342_tenant_claim_lease.sql)
+on 1 November 2026, before the deploy of a control plane that claims with a
+lease. The [tick migration](../sql/migrations/20261101023017_tenant_sweep_ticks.sql),
 which comes before the deploy of a control plane that claims the ticks of the
-sweeps, are not recorded as applied. A deploy of the Render service starts a new instance and keeps the
+sweeps, is not recorded as applied. A deploy of the Render service starts a new instance and keeps the
 old one for about 120 s after the new deploy is live (SO-12 rehearsal of
 31 October 2026), so two Node server processes run for about 2 minutes; the
 claim lease of the [tenant provisioning](#scenario-tenant-provisioning)
