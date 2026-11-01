@@ -1,7 +1,8 @@
 import { answerStream, tenantBodyOf, type StreamEnd } from './mcp-gateway-answer-stream.ts';
 import { answerHeaders } from './mcp-gateway-headers.ts';
 
-export type RestartCause = 'http-502' | 'connection';
+/** refused: no server took the connection. connection: a connection broke, or the answer broke before its first byte. */
+export type RestartCause = 'http-502' | 'connection' | 'refused';
 
 export type TenantAnswer =
   | { readonly status: 'answered'; readonly response: Response; readonly ended: Promise<StreamEnd> }
@@ -15,6 +16,7 @@ export interface TenantCall {
 }
 
 const RESTARTED_CONNECTION: TenantAnswer = Object.freeze({ status: 'restarted', cause: 'connection' });
+const REFUSED_CONNECTION: TenantAnswer = Object.freeze({ status: 'restarted', cause: 'refused' });
 
 /**
  * Sends a forwarded request to the tenant over the private network and gives its answer as a stream that starts with
@@ -26,15 +28,21 @@ export async function callTenant(call: TenantCall, signal: AbortSignal): Promise
   let response: Response;
   try {
     response = await fetch(call.target, { method: call.method, headers: call.headers, body: call.body, signal, redirect: 'manual' });
-  } catch {
+  } catch (error) {
     signal.throwIfAborted();
-    return RESTARTED_CONNECTION;
+    return isRefused(error) ? REFUSED_CONNECTION : RESTARTED_CONNECTION;
   }
   if (response.status === 502) {
     await response.body?.cancel().catch(() => undefined);
     return { status: 'restarted', cause: 'http-502' };
   }
   return streamFrom(response, signal);
+}
+
+// The fetch of Node gives the connect error as its cause; with more than one address, the aggregate error has the code.
+function isRefused(error: unknown): boolean {
+  const cause: unknown = error instanceof Error ? error.cause : undefined;
+  return typeof cause === 'object' && cause !== null && 'code' in cause && cause.code === 'ECONNREFUSED';
 }
 
 // The first read waits for the first answer byte. A tenant that goes away before it is a restart.

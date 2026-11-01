@@ -1351,8 +1351,8 @@ call, and the fleet script can suspend a tenant too; each comes back this way.
 - A 2025-era `notifications/cancelled` POST and the `GET` stream of a 2025-era
   client go to the tenant like each other request; the client gets the `202`
   and the `405` of the tenant.
-- A tenant failure before the first answer byte (HTTP `502` or a reset
-  connection) gives an answer of the gateway: for each request of the body, a
+- A tenant failure before the first answer byte (HTTP `502`, a reset
+  connection, or a refused connection) gives an answer of the gateway: for each request of the body, a
   tool error for `tools/call` (`isError: true`, "Server restarted. Try again
   in a minute.") and a JSON-RPC error with the same words for each other
   method. A body without a request gets `503` with `Retry-After: 60`. After
@@ -1360,6 +1360,20 @@ call, and the fleet script can suspend a tenant too; each comes back this way.
   one `ERROR` line, `MCP gateway tenant restart: {...}`, with the organization,
   the phase, and the cause: the operator report, and the line of the restart
   alert of SO-11.
+- A refused connection less than 2 minutes after the last change of the live
+  row (its live record, or the digest record of a fleet upgrade) is the cold
+  start of a new tenant and not a restart: the private address of a new Render
+  service refuses connections until about 76 s after its first deploy is live
+  (SO-03, and the SO-12 rehearsal of 31 October 2026). Each request of the body
+  then gets the words "Your workspace is not ready yet. Try again in 15
+  seconds." in the same forms, a body without a request gets `503` with
+  `Retry-After: 15`, and the gateway writes one `INFO` line,
+  `MCP gateway tenant starting: {...}`, with the organization and the seconds
+  since that change. The restart alert does not match it. A reset connection, a
+  broken answer, or HTTP `502` in those 2 minutes is a restart, because the
+  tenant took the call. The restart line names the cause: `refused`,
+  `connection`, or `http-502`. The registry copy gives the time since the last
+  change of each row, from `updated_at` by the clock of the database.
 - 5 searches at a time pass across all tenants (answer 4): a request takes one
   place for each `tools/call` of `search` that it holds, until its answer
   stream ends. The sixth gets the tool error "Server busy. Try again later.",

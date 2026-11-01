@@ -48,6 +48,63 @@ Inventory presence is not a passing result; the pull request records the runs.
   (`test/support/doubles/tenants/tenant-fleet-store-fake.ts`) keeps the holder
   of each claimed tick.
 
+## Current tenant cold start inventory scope
+
+The SO-12 release rehearsal of 31 October 2026 found that a new tenant refuses
+connections for about 75 s after the provisioner records its row `live`, so
+each call in that window wrote an `MCP gateway tenant restart:` line, which the
+Axiom monitor Tenant restart of the
+[runbooks](../implementation/tenant-fleet-runbooks.md#73-axiom-monitors)
+matches. The registry copy now gives the time since the last change of each
+row, and the gateway answers a refused connection less than 2 minutes after the
+live record as the cold start of the tenant: the starting words and one INFO
+line `MCP gateway tenant starting:`. A reset connection, a broken answer, and
+HTTP `502` stay restarts. Inventory presence is not a passing result; the pull
+request records the runs.
+
+- `test/acceptance/mcp/hosted-gateway-cold-start.test.ts` (4 cases) runs the
+  control plane of `hosted-gateway.test.ts` with a live row whose private
+  address refuses connections (a free loopback port): 30 s after the live
+  record, the client gets the starting words, and the log has one INFO starting
+  line and no line for the monitor; 3 minutes after it, the client gets the
+  restart words and the operator one ERROR restart line with the cause
+  `refused`; a refusal at 30 s and again at 2 minutes gives the starting line
+  and then the restart line. The fourth case points the row at the fake tenant
+  upstream, which takes the call 30 s after the live record and resets the
+  connection before its first answer byte: a restart with the cause
+  `connection`. The registry fake of the site
+  (`test/support/doubles/tenants/tenant-registry-fake.ts`) records each change
+  on the clock of the site and gives the time since it at each read;
+  `tenant-table-fake.ts` does the same with its own clock, and the digest record
+  of `tenant-fleet-store-fake.ts` changes the row as the SQL adapter does.
+- `test/unit/mcp/mcp-gateway-forward.test.ts` (8 new cases) checks that a
+  refused connection is a restart with the cause `refused` 10 minutes after the
+  last change, and a cold start with the starting words and the info line 30 s
+  after it; that HTTP `502`, a reset, and a reset before the first byte are
+  restarts also 30 s after it; the bound of 2 minutes (119.999 s is a cold
+  start, 120 s a restart); the starting words for other requests and `503` with
+  `Retry-After: 15` for a body without a request; and a restart after the first
+  answer byte, also inside the 2 minutes.
+- `test/unit/tenants/tenant-lookup.test.ts` (2 new cases) checks the time
+  since the last change at the ask: counted from the start of a slow read, aged
+  inside the bound of the copy, and taken again at a refresh.
+  `pg-tenant-registry-store.test.ts` checks the statement of the read and the
+  time since the change of each row.
+- `test/integration/tenants/tenant-registry-store.runtime.ts` (1 new case)
+  checks on disposable PostgreSQL that a row changed 90 s before gives about
+  90,000 ms; it runs in `npm run test:logging:postgres`. The other cases of
+  that file, `provisioner-registry.runtime.ts`, and
+  `test/acceptance/tenants/tenant-registry.runtime.ts` compare the state and
+  the address of a lookup with `assert.partialDeepStrictEqual`.
+
+The hosted offline build selects the new acceptance file too.
+
+```sh
+npm run build && node --test dist/test/acceptance/mcp/hosted-gateway-cold-start.test.js dist/test/acceptance/mcp/hosted-gateway-forward.test.js
+npm run build && node --test dist/test/unit/mcp/mcp-gateway-forward.test.js dist/test/unit/mcp/mcp-gateway.test.js dist/test/unit/tenants/tenant-lookup.test.js dist/test/unit/tenants/pg-tenant-registry-store.test.js
+npm run test:logging:postgres
+```
+
 ## Current SO-12 claim lease inventory scope
 
 The SO-12 release rehearsal of 31 October 2026 found two provisioner loops on

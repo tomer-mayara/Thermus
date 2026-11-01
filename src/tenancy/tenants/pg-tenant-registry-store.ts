@@ -8,7 +8,9 @@ export const LOCK_REGISTRY = 'LOCK TABLE thermus_admin.tenants IN SHARE ROW EXCL
 export const COUNT_ROWS = `SELECT state, count(*)::integer AS rows, bool_or(organization_id = $1) AS current
   FROM thermus_admin.tenants GROUP BY state`;
 const INSERT_REQUESTED = "INSERT INTO thermus_admin.tenants (organization_id, state) VALUES ($1, 'requested')";
-const READ_ROUTES = 'SELECT organization_id, state, internal_url FROM thermus_admin.tenants';
+// The time since the last change comes from the clock of the database, which also writes updated_at.
+const READ_ROUTES = `SELECT organization_id, state, internal_url, extract(epoch FROM now() - updated_at)::float8 * 1000 AS since_change_ms
+  FROM thermus_admin.tenants`;
 // Each gateway write names the state that it starts from, so concurrent calls, also of another process, move a row
 // one time; the restore also names the service of the mark. The activity write keeps the state and updated_at: it is
 // not a change of the row.
@@ -72,5 +74,7 @@ export function registryCount(rows: Record<string, unknown>[]): RegistryCount {
 }
 
 function routesOf(rows: Record<string, unknown>[]): ReadonlyMap<string, TenantRoute> {
-  return new Map(rows.map((row) => [row.organization_id as string, { state: row.state as TenantState, internalUrl: row.internal_url as string | null }]));
+  return new Map(rows.map((row) => [row.organization_id as string, {
+    state: row.state as TenantState, internalUrl: row.internal_url as string | null, sinceChangeMs: Number(row.since_change_ms),
+  }]));
 }

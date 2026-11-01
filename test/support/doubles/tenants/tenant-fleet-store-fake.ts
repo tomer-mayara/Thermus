@@ -55,8 +55,13 @@ export class TenantFleetStoreFake extends TenantProvisioningStoreFake implements
     return this.fleetMove('resumed', { organizationId, from: ['suspended'], serviceId }, (row) => this.moveTo(row, 'deploying'));
   }
 
+  // As in the SQL adapter, the digest record changes updated_at, and the state stays.
   async recordDigest(organizationId: string, serviceId: string, imageDigest: string): Promise<FleetWrite> {
-    return this.fleetMove('digest', { organizationId, from: ['live'], serviceId }, (row) => { row.imageDigest = imageDigest; });
+    return this.fleetMove('digest', { organizationId, from: ['live'], serviceId }, (row) => {
+      row.imageDigest = imageDigest;
+      row.updatedAt += 1_000;
+      row.changedAtMs = this.clock?.() ?? 0;
+    });
   }
 
   // As the claim of the SQL adapter: the first claim of a tick adds it, and only its holder gets claimed.

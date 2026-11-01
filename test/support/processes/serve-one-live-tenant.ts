@@ -9,13 +9,13 @@ import type { ReadRoutesResult } from '../../../src/tenancy/tenants/tenant-regis
 // organization of THERMUS_TEST_TENANT_ORGANIZATION at the internal address THERMUS_TEST_TENANT_URL. It also writes one
 // line for each relayed audit event that the relay route captures, so a test sees that a relay reached the control
 // plane, and one line for each activity write. The provisioner loop (SO-06) finds no requested row, so it makes no
-// SQL call and no Render call.
+// SQL call and no Render call. The row went live 10 minutes before, after the cold start of a new tenant.
 const organizationId = process.env.THERMUS_TEST_TENANT_ORGANIZATION ?? '';
 const internalUrl = process.env.THERMUS_TEST_TENANT_URL ?? '';
 
 PgTenantRegistryStore.prototype.readRoutes = async (): Promise<ReadRoutesResult> => ({
   status: 'complete',
-  routes: new Map([[organizationId, { state: 'live', internalUrl }]]),
+  routes: new Map([[organizationId, { state: 'live', internalUrl, sinceChangeMs: 600_000 }]]),
 });
 
 PgTenantProvisioningStore.prototype.claimNext = async (): Promise<ClaimResult> => ({ status: 'idle' });

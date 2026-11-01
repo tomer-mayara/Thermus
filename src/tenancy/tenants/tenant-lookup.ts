@@ -4,8 +4,9 @@ import type { ReadRoutesResult, TenantRegistryStore, TenantRoute, TenantState } 
 const REFRESH_AFTER_MS = 10_000;
 const STALE_LIMIT_MS = 60_000;
 
+/** A found row has the time since its last change at the ask. */
 export type TenantLookupResult =
-  | { readonly status: 'found'; readonly state: TenantState; readonly internalUrl: string | null }
+  | { readonly status: 'found'; readonly state: TenantState; readonly internalUrl: string | null; readonly sinceChangeMs: number }
   | { readonly status: 'absent' }
   | { readonly status: 'unavailable' };
 
@@ -13,8 +14,15 @@ export type TenantCountResult =
   | { readonly status: 'counted'; readonly rowsByState: ReadonlyMap<TenantState, number> }
   | { readonly status: 'unavailable' };
 
+// A row of the copy, with the time of its last change on the clock of the lookup.
+interface CopiedRoute {
+  readonly state: TenantState;
+  readonly internalUrl: string | null;
+  readonly changedAt: number;
+}
+
 interface RegistryCopy {
-  readonly routes: ReadonlyMap<string, TenantRoute>;
+  readonly routes: ReadonlyMap<string, CopiedRoute>;
   readonly readAt: number;
 }
 
@@ -33,7 +41,8 @@ export class TenantLookup {
     const routes = await this.currentRoutes();
     if (routes === undefined) return { status: 'unavailable' };
     const route = routes.get(organizationId);
-    return route === undefined ? { status: 'absent' } : { status: 'found', ...route };
+    if (route === undefined) return { status: 'absent' };
+    return { status: 'found', state: route.state, internalUrl: route.internalUrl, sinceChangeMs: this.now() - route.changedAt };
   }
 
   /**
@@ -49,7 +58,7 @@ export class TenantLookup {
   }
 
   // The routes of a copy that is not too old, after a refresh when the copy is 10 s old or more.
-  private async currentRoutes(): Promise<ReadonlyMap<string, TenantRoute> | undefined> {
+  private async currentRoutes(): Promise<ReadonlyMap<string, CopiedRoute> | undefined> {
     if (this.age() >= REFRESH_AFTER_MS) await this.refresh();
     if (this.copy === undefined || this.age() >= STALE_LIMIT_MS) return undefined;
     return this.copy.routes;
@@ -68,6 +77,11 @@ export class TenantLookup {
   private async read(): Promise<void> {
     const readAt = this.now();
     const result: ReadRoutesResult = await this.store.readRoutes().catch(() => ({ status: 'unavailable' }));
-    if (result.status === 'complete') this.copy = { routes: result.routes, readAt };
+    if (result.status === 'complete') this.copy = { routes: copiedRoutes(result.routes, readAt), readAt };
   }
+}
+
+// The time since a change counts from the start of the read, as the age of the copy does, so it never understates.
+function copiedRoutes(routes: ReadonlyMap<string, TenantRoute>, readAt: number): ReadonlyMap<string, CopiedRoute> {
+  return new Map([...routes].map(([organizationId, { state, internalUrl, sinceChangeMs }]) => [organizationId, { state, internalUrl, changedAt: readAt - sinceChangeMs }]));
 }

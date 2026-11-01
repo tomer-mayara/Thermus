@@ -175,7 +175,9 @@ each search, and the control plane forwards the request. The answers of the
 gateway for a tenant that is not ready, is resumed, failed, or restarts are
 those of the [fetch tool](mcp-fetch-tool.md#answers-of-the-mcp-gateway); a
 restart before the first answer byte gives the search call
-`Server restarted. Try again in a minute.` with `isError: true`. After an idle
+`Server restarted. Try again in a minute.` with `isError: true`; a refused
+connection in the first 2 minutes after the tenant became live gives `Your
+workspace is not ready yet. Try again in 15 seconds.` with `isError: true`. After an idle
 period of a free tenant, `FREE_TENANT_IDLE_DAYS` without an MCP call (14 by
 default, SO-10), the first search resumes the tenant, and each call gets HTTP
 `503` with `Retry-After: 60` and "Your workspace is restarting after a pause.

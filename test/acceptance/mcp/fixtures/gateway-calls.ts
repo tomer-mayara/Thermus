@@ -4,6 +4,7 @@ export const sourceUrl = 'https://source.example/story';
 export const fetchCall = { name: 'getURLAsMarkdown', arguments: { url: sourceUrl, reason: 'Read the source' } };
 export const tenantMarkdown = `Markdown of ${sourceUrl} from the tenant of ${gatewayOrganization}`;
 export const restartedWords = 'Server restarted. Try again in a minute.';
+export const startingWords = 'Your workspace is not ready yet. Try again in 15 seconds.';
 export const busyWords = 'Server busy. Try again later.';
 
 export function searchCall(query: string) {

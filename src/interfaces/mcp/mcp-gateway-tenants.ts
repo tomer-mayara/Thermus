@@ -3,8 +3,9 @@
 
 export type GatewayTenantState = 'requested' | 'creating' | 'deploying' | 'live' | 'suspended' | 'failed' | 'deleted';
 
+/** A found row has the time since its last change: for a live row, its live record or the digest record of an upgrade. */
 export type GatewayRoute =
-  | { readonly status: 'found'; readonly state: GatewayTenantState; readonly internalUrl: string | null }
+  | { readonly status: 'found'; readonly state: GatewayTenantState; readonly internalUrl: string | null; readonly sinceChangeMs: number }
   | { readonly status: 'absent' }
   | { readonly status: 'unavailable' };
 

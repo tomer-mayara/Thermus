@@ -475,6 +475,7 @@ then runs these emitted files directly, without another build:
    `dist/test/acceptance/mcp/hosted-gateway.test.js`,
    `dist/test/acceptance/mcp/hosted-gateway-states.test.js`,
    `dist/test/acceptance/mcp/hosted-gateway-forward.test.js`,
+   `dist/test/acceptance/mcp/hosted-gateway-cold-start.test.js`,
    `dist/test/acceptance/mcp/hosted-gateway-resume.test.js`,
    `dist/test/acceptance/logging/audit/audit-relay.test.js`,
    `dist/test/acceptance/mcp/search-lifecycle.test.js`,
