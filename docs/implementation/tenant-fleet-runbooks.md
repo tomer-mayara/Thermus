@@ -141,8 +141,8 @@ Render keeps the old instance of the control plane for about 120 s after a new
 deploy is `live` (SO-12 rehearsal of 31 October 2026). When the daily tick at
 `TENANT_SWEEP_HOUR_UTC` falls inside that time, both instances reach it. Each
 one claims the tick in the table `tenant_sweep_ticks` before its steps. The
-first claim adds the row of the tick, and that instance runs the organization
-sweep (on Mondays), the idle sweep, and the summary; the other instance writes
+first claim adds the row of the tick. That instance runs the organization sweep
+(on Mondays), the idle sweep, and the summary. The other instance writes
 `The tenant sweeps leave the tick of` and runs nothing
 ([`tenant-sweeps.ts`](../../src/tenancy/tenants/tenant-sweeps.ts)). So Render
 gets each suspend and delete one time, and the summary line comes one time.
@@ -158,14 +158,15 @@ SELECT tick_at, claimed_by, claimed_at FROM thermus_admin.tenant_sweep_ticks ORD
 at` line of that instance names.
 
 When the old instance claims the tick and gets `SIGTERM` before its steps end,
-no instance runs the rest of the tick. An idle tenant then stays live until the
-next tick, a tenant of an absent organization until the next Monday, and the
-summary line of that day does not come. The log of the old instance then shows
+no instance runs the rest of the tick. Then an idle tenant stays live until the
+next tick, and a tenant of an absent organization until the next Monday. The
+summary line of that day does not come, and the log of the old instance shows
 `Stopping after SIGTERM` before the summary line. `fleet.ts summary` gives a
-summary of the last 24 hours; for a tenant that must not wait, use
-`fleet.ts suspend` or [runbook 4](#4-deletion-of-a-tenant). An old instance of a version before
-the tick claim ignores the claims, so the first deploy with the claim can still
-run a tick in both instances: deploy it away from the sweep hour.
+summary of the last 24 hours. For a tenant that must not wait, use
+`fleet.ts suspend` or [runbook 4](#4-deletion-of-a-tenant). An old instance of
+a version before the tick claim ignores the claims. So the first deploy with
+the claim can still run a tick in both instances: deploy it away from the sweep
+hour.
 
 ## 1. Failed provision
 
