@@ -121,6 +121,25 @@ columns, so the migration can come first. It adds no grant: the server role
 already has UPDATE on the table. A rollback of the code leaves the columns
 unused.
 
+The [tick migration](../../sql/migrations/20261101023017_tenant_sweep_ticks.sql)
+adds the table `tenant_sweep_ticks`: one row for each daily tick of the tenant
+sweeps, keyed by the tick time, with the claim holder of the instance that
+claimed it first and the time of the claim. Render keeps the old instance of
+the control plane for about 120 s after a new deploy is live (SO-12 rehearsal
+of 31 October 2026), so a tick can come in two instances, and only the
+instance whose insert adds the row runs it. Apply it once after the claim
+migration, with stop-on-error, and before the deploy of a control plane that
+claims the ticks. Without the table, the claim of that control plane fails, so
+it writes `Tenant sweep tick stopped:` at each tick and runs no sweep; the
+first tick after the deploy is the first sign, up to a day later, so check the
+table before the deploy. Check: `SELECT to_regclass('thermus_admin.tenant_sweep_ticks')`
+names the table; the server role has SELECT and INSERT on it, and no UPDATE,
+DELETE, TRUNCATE, DDL, or ownership; PUBLIC, `anon`, `authenticated`, and
+`service_role` have no access; row-level security is on and forced, with the
+two policies of the file. An earlier control plane ignores the table, so the
+migration can come first. The rows stay as the record of the ticks, about 365
+a year. A rollback of the code leaves the table unused.
+
 ### Initial credentials and configuration
 
 Use a secure owner session to assign a new independent password to

@@ -1,4 +1,4 @@
-import type { FleetRead, FleetRow, FleetWrite, RemovableState, ReviveResult, TenantFleetStore } from '../../../../src/tenancy/tenants/tenant-fleet-store.ts';
+import type { FleetRead, FleetRow, FleetWrite, RemovableState, ReviveResult, TenantFleetStore, TickClaim } from '../../../../src/tenancy/tenants/tenant-fleet-store.ts';
 import type { RegistryCount, TenantState } from '../../../../src/tenancy/tenants/tenant-registry-store.ts';
 import { fakeCreatedAt, TenantProvisioningStoreFake, type FakeTenantRow } from './tenant-provisioning-store-fake.ts';
 
@@ -8,10 +8,12 @@ export type FleetOperation = 'read' | 'idle' | 'deleted' | 'revive' | 'suspended
  * The registry fake of the provisioner (a fake) with the statements of the fleet commands and the sweeps. Each change
  * names the state and the service that it starts from, as the guarded updates of the SQL adapter do; changes lists each
  * state that a row takes, in order. An operation in fleetUnavailable stands in for a storage failure of that operation, and
- * beforeChange runs before each change, so a test can play another writer at that moment.
+ * beforeChange runs before each change, so a test can play another writer at that moment. ticks keeps the holder of
+ * each claimed tick of the sweeps, as the table of the ticks does.
  */
 export class TenantFleetStoreFake extends TenantProvisioningStoreFake implements TenantFleetStore {
   readonly fleetUnavailable = new Set<FleetOperation>();
+  readonly ticks = new Map<string, string>();
   beforeChange: (operation: FleetOperation, organizationId: string) => void = () => {};
 
   async readFleet(): Promise<FleetRead> {
@@ -60,6 +62,13 @@ export class TenantFleetStoreFake extends TenantProvisioningStoreFake implements
       row.updatedAt += 1_000;
       row.changedAtMs = this.clock?.() ?? 0;
     });
+  }
+
+  // As the claim of the SQL adapter: the first claim of a tick adds it, and only its holder gets claimed.
+  async claimTick(tickAt: string, holder: string): Promise<TickClaim> {
+    const claimedBy = this.ticks.get(tickAt) ?? holder;
+    this.ticks.set(tickAt, claimedBy);
+    return { status: claimedBy === holder ? 'claimed' : 'taken' };
   }
 
   /** The state of the row of the organization, or undefined without a row. */

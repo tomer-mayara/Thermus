@@ -593,14 +593,14 @@ an operator container of the
 [hosted containers view](#c4-containers-hosted-edition).
 
 ```mermaid
-%%{init: {"flowchart": {"wrappingWidth": 150, "nodeSpacing": 40, "rankSpacing": 40, "subGraphTitleMargin": {"top": 10, "bottom": 25}}}}%%
+%%{init: {"flowchart": {"wrappingWidth": 150, "nodeSpacing": 40, "rankSpacing": 40, "subGraphTitleMargin": {"top": 10, "bottom": 70}}}}%%
 flowchart TB
   subgraph tenancy_server["Container: Thermus Node server · hosted control plane"]
     tenancy_config["config · TypeScript<br/>MCP_TENANTS_ENABLED; only when on:<br/>FREE_TENANT_LIMIT, tenant settings"]
     tenancy_app["app · TypeScript<br/>Opens one SQL runtime; composes<br/>Owns the loop and sweep lifetimes"]
     tenancy_web["web · TypeScript<br/>Signup: cap, then tenant request<br/>GET /workspace/status"]
     tenancy_mcp["mcp · TypeScript<br/>MCP gateway<br/>Row of the organization"]
-    tenancy_tenants["tenants · TypeScript<br/>Request inside the cap; lookup copy<br/>Provisioner: one row at a time<br/>Resume once; activity once a minute<br/>Sweeps: weekly org sweep, daily idle sweep and summary"]
+    tenancy_tenants["tenants · TypeScript<br/>Request inside the cap; lookup copy<br/>Provisioner: one row at a time<br/>Resume once; activity once a minute<br/>Sweeps: claim of each tick;<br/>weekly org sweep, daily idle sweep and summary"]
     tenancy_render["render · TypeScript<br/>Render adapter of TenantPlatform<br/>Retry bounds; write guard"]
     tenancy_workos["workos · TypeScript<br/>WorkOS adapter of OrganizationInventory<br/>Every page, or unavailable"]
     tenancy_audit["audit-logs · TypeScript<br/>Settings and removal adapter"]
@@ -619,10 +619,10 @@ flowchart TB
     tenancy_render -.->|implements| tenancy_tenants
     tenancy_tenants -->|organization list, read by ID, default-role memberships| tenancy_workos
     tenancy_workos -.->|implements| tenancy_tenants
-    tenancy_tenants -->|cap, routes, claim, records, gateway writes; fleet and idle reads, suspended and deleted marks| tenancy_sql
+    tenancy_tenants -->|cap, routes, claim, records, gateway writes; fleet and idle reads, suspended and deleted marks; tick claims| tenancy_sql
     tenancy_audit --> tenancy_sql
   end
-  tenancy_db[("L2: PostgreSQL · thermus_admin<br/>tenants, subscriptions, billing_events<br/>Role thermus_logging")]
+  tenancy_db[("L2: PostgreSQL · thermus_admin<br/>tenants, tenant_sweep_ticks,<br/>subscriptions, billing_events<br/>Role thermus_logging")]
   tenancy_api["External: Render API<br/>Private services of the tenants"]
   tenancy_workos_api["External: WorkOS<br/>Organizations and memberships"]
   tenancy_sql -->|SQL / verified TLS| tenancy_db
@@ -657,7 +657,10 @@ holds the row rules: seven states, a service ID and address for a `live` row,
 and a plain HTTP address to a private service name. The
 [claim migration](../sql/migrations/20261031221342_tenant_claim_lease.sql)
 adds the claim of the provisioner, `claimed_by` and `claimed_until`, both set
-or both empty. The `subscriptions` and
+or both empty. The [tick migration](../sql/migrations/20261101023017_tenant_sweep_ticks.sql)
+adds the table `tenant_sweep_ticks` of the sweeps: one row for each claimed
+tick, keyed by its time, with the claim holder and the time of the claim; the
+server role can only read and add its rows. The `subscriptions` and
 `billing_events` tables have no store until Slice 3.
 
 The [provisioner](../src/tenancy/tenants/tenant-provisioner.ts) moves rows only
@@ -745,6 +748,8 @@ The writers of each transition of a row:
 - The claim of a row (`claimed_by`, `claimed_until`): the claim, the renewal,
   and the release of the provisioner; the live and failed records of the
   provisioner and the live record of the fleet `resume` command free it.
+- The row of a tick in `tenant_sweep_ticks`: the claim of the sweeps adds it;
+  nothing changes or deletes it.
 - Each state except `deleted` to `deleted`: the organization sweep and the fleet
   `delete` command, both through the removal.
 - The digest of a `live` row: the fleet `upgrade` command. The last use: the
@@ -755,6 +760,16 @@ with one tick a day at `TENANT_SWEEP_HOUR_UTC` (default 4) and an open list of
 steps; app composes the [organization sweep](../src/tenancy/tenants/organization-sweep.ts),
 the [idle sweep](../src/tenancy/tenants/idle-sweep.ts), and the
 [fleet summary](../src/tenancy/tenants/fleet-summary.ts), in this order. Each
+tick starts with the claim of the tick in the registry: the runner inserts the
+row of the tick, keyed by its time, with its claim holder, which is new at each
+start. Only the instance whose insert adds the row runs the steps, so during a
+deploy, when the old instance runs too, Render gets each suspend and delete one
+time and the summary comes one time; the other instance writes one
+`The tenant sweeps leave the tick of` line. A claim without an answer tries
+again after 10 s and after 60 s; a repeat claim of the same holder, as after an
+answer that got lost, is claimed again. After the third claim without an
+answer, the tick runs no step and writes one `Tenant sweep tick stopped:` line
+(SO-12 rehearsal of 31 October 2026). Each
 day the idle sweep reads the live free rows whose last use, or creation when
 they never served a call, is `FREE_TENANT_IDLE_DAYS` (default 14) or more
 before the tick, suspends each service on the platform, and then moves each
@@ -789,8 +804,8 @@ deploy, and its identity stays unconfirmed. The upgrade records the digest only
 when the live deploy names the requested digest; else the registry keeps its
 digest, and the upgrade stops (manager decision of 31 October 2026). In the
 server, the sweeps use the delete, `suspendService`, `memoryUse`, and
-`restartCount` of the contract, and the fleet read, the idle read, and the
-deleted and suspended marks of the fleet statements; the gateway uses
+`restartCount` of the contract, and the fleet read, the idle read, the deleted
+and suspended marks, and the tick claim of the fleet statements; the gateway uses
 `resumeService`. The deploy, the resumed mark, the digest record, and the
 revive have callers only in the fleet script. A tenant that the idle sweep or
 the fleet `suspend` command suspended comes back at the next MCP call of its
@@ -1778,15 +1793,17 @@ a failed record logs one error and waits 60 s.
 Scope: the Monday tick of the tenant sweeps of the hosted control plane with
 `MCP_TENANTS_ENABLED=true`; the tick comes each day at the hour of
 `TENANT_SWEEP_HOUR_UTC`. App starts the sweeps with the provisioner and
-stops them at close, before the SQL runtime closes. The SQL adapter participant
-is the fleet store of tenants on the shared runtime; the inventory is the WorkOS
-adapter of workos, and the platform is the Render adapter of render.
+stops them at close, before the SQL runtime closes. The sweeps participant is
+the runner of the tenant sweeps with its organization sweep step. The SQL
+adapter participant is the fleet store of tenants on the shared runtime; the
+inventory is the WorkOS adapter of workos, and the platform is the Render
+adapter of render.
 
 ```mermaid
 %%{init: {"sequence": {"wrap": true, "actorMargin": 16, "width": 110}}}%%
 sequenceDiagram
   participant App as app / control plane
-  participant Sweep as tenants / organization sweep
+  participant Sweep as tenants / sweeps
   participant Store as tenants / SQL adapter
   participant Inv as workos / inventory
   participant Render as render / adapter
@@ -1794,6 +1811,10 @@ sequenceDiagram
   participant API as Render API
   App->>Sweep: Start the sweeps
   Note over Sweep,Store: Monday tick: the organization sweep, then the idle sweep and the fleet summary
+  Sweep->>Store: Claim the tick: insert its row, unless an instance did
+  break Another instance claimed the tick first, or three claims have no answer
+    Note over Sweep,Inv: One line, and no step of the tick runs
+  end
   Sweep->>Store: Read every row
   Sweep->>Inv: List every organization
   Inv->>WorkOS: GET /organizations, page after page
@@ -1830,7 +1851,9 @@ read keeps the tenant until the next sweep. A failed platform delete changes no
 row and gives one `Tenant removal failed:` line; a row that another writer
 moved, also a replacement with a new service in the same state, is left for the
 next sweep. The idle sweep and the fleet summary of the same tick then run; on
-the other days, the tick runs those two only.
+the other days, the tick runs those two only. One claim of the tick comes
+before its first step: during a deploy, the two instances reach the tick
+together, and only the instance whose insert adds the row of the tick runs it.
 
 ### Scenario: daily idle sweep
 
@@ -1847,7 +1870,7 @@ sequenceDiagram
   participant Store as tenants / SQL adapter
   participant Render as render / adapter
   participant API as Render API
-  Note over Sweep,Store: The daily tick of the sweeps
+  Note over Sweep,Store: The daily tick that this instance claimed
   Sweep->>Store: Live free rows without a call for the idle days
   break The registry cannot be read
     Note over Sweep,Store: One stop line, and nothing is suspended
@@ -2014,15 +2037,21 @@ configuration or claims a deployed Axiom destination.
 Current replica count and activated database settings are unknown here. The
 [removal-operation migration](../sql/migrations/20261025082850_membership_removal_operations.sql)
 still needs deployment verification; this map does not claim that the live target
-has its new table. The [tenant registry migration](../sql/migrations/20261027175430_tenant_registry_and_billing.sql)
-is not applied there: SO-12 of the self on-boarding plan applies it. Nor is
-the [claim migration](../sql/migrations/20261031221342_tenant_claim_lease.sql),
-which comes after it and before the deploy of a control plane that claims with
-a lease. A deploy of the Render service starts a new instance and keeps the
+has its new table. Step 3 of the SO-12 release applied the
+[tenant registry migration](../sql/migrations/20261027175430_tenant_registry_and_billing.sql)
+there on 31 October 2026
+([release record](../docs/implementation/self-onboarding-s2-release.md)), and
+step 3a applied the [claim migration](../sql/migrations/20261031221342_tenant_claim_lease.sql)
+on 1 November 2026, before the deploy of a control plane that claims with a
+lease. The [tick migration](../sql/migrations/20261101023017_tenant_sweep_ticks.sql),
+which comes before the deploy of a control plane that claims the ticks of the
+sweeps, is not recorded as applied. A deploy of the Render service starts a new instance and keeps the
 old one for about 120 s after the new deploy is live (SO-12 rehearsal of
 31 October 2026), so two Node server processes run for about 2 minutes; the
 claim lease of the [tenant provisioning](#scenario-tenant-provisioning)
-scenario keeps their provisioner loops off one row.
+scenario keeps their provisioner loops off one row, and the claim of each tick
+runs the [weekly](#scenario-weekly-organization-sweep) and
+[daily](#scenario-daily-idle-sweep) sweeps in one of them.
 Compose publishes only loopback HTTP. A different public address requires the
 HTTPS reverse proxy described by the installation contract; this diagram does
 not invent that infrastructure.
@@ -2116,7 +2145,7 @@ surface and the narrower file-context restrictions.
 | `http` — [`src/runtime/http/`](../src/runtime/http/) | Node listener, HTTP-to-Fetch exchange, trusted client address, request cancellation, connection tracking, and listener drain. | Server for app; client-address and request-cancellation modules for other consumers. Exchange mechanics remain private. |
 | `config` — [`src/runtime/config/`](../src/runtime/config/) | Validate deployment/listen settings, `THERMUS_ROLE` and the tenant settings with the refusal of control-plane secrets, optional hosted logging storage settings, the optional system log export settings of the control plane, the hosted operation capacity, the switch `MCP_TENANTS_ENABLED`, and, with it on, the free-tenant cap, the provisioning settings, the hour of the tenant sweeps, and the gateway settings with the check that `GATEWAY_PUBLIC_KEY` holds the public key of `GATEWAY_SIGNING_KEY`, and read trusted ad rules. Provider settings stay with their provider; a tenant has no provider settings. | Deployment-config and ad-rules-file modules; app selects the logging-storage settings reader, the system-log-export settings reader, the operation-capacity reader, the switch and provisioning-settings reader, the free-tenant-limit reader, and the gateway-settings reader. |
 | `sql` — [`src/runtime/sql/`](../src/runtime/sql/) | Own the one bounded SQL runtime of the hosted stores: the `pg` pool with verified TLS, admission of active and pending work, acquisition, operation and statement deadlines, late-work accounting, and bounded close. The only owner that imports `pg`. | [Bounded SQL runtime](../src/runtime/sql/bounded-sql-runtime.ts) for the stores; app opens it and owns its lifetime. |
-| `tenants` — [`src/tenancy/tenants/`](../src/tenancy/tenants/) | Own the tenant registry of the control plane: the tenant request inside the free-tenant cap and the revive of a deleted row, the in-memory route lookup with its refresh bounds, the provisioner state machine with its bounds, the resume of a suspended tenant and the activity write of the gateway, with the resume operation on the platform, the fleet statements, the removal of a tenant, and the deploy wait of the fleet writes, the tenant sweeps (the weekly organization sweep, the daily idle sweep of the free tenants, and the daily fleet summary with its cost table), and the SQL adapters of the `tenants` table. | [Tenant platform](../src/tenancy/tenants/tenant-platform.ts), the contract that render implements, and [organization inventory](../src/tenancy/tenants/organization-inventory.ts), the contract that workos implements; app composes the request, the lookup, the provisioner, the resume with its operation on the Render adapter of the sweeps, the activity, the sweeps, and the adapters, and gives the gateway a port; the fleet script composes the fleet parts. Signup uses the row counts of the lookup copy and the request, and the workspace status the gateway port, through ports that app composes. |
+| `tenants` — [`src/tenancy/tenants/`](../src/tenancy/tenants/) | Own the tenant registry of the control plane: the tenant request inside the free-tenant cap and the revive of a deleted row, the in-memory route lookup with its refresh bounds, the provisioner state machine with its bounds, the resume of a suspended tenant and the activity write of the gateway, with the resume operation on the platform, the fleet statements, the removal of a tenant, and the deploy wait of the fleet writes, the tenant sweeps (the claim of each tick, the weekly organization sweep, the daily idle sweep of the free tenants, and the daily fleet summary with its cost table), and the SQL adapters of the `tenants` and `tenant_sweep_ticks` tables. | [Tenant platform](../src/tenancy/tenants/tenant-platform.ts), the contract that render implements, and [organization inventory](../src/tenancy/tenants/organization-inventory.ts), the contract that workos implements; app composes the request, the lookup, the provisioner, the resume with its operation on the Render adapter of the sweeps, the activity, the sweeps, and the adapters, and gives the gateway a port; the fleet script composes the fleet parts. Signup uses the row counts of the lookup copy and the request, and the workspace status the gateway port, through ports that app composes. |
 | `render` — [`src/tenancy/providers/render/`](../src/tenancy/providers/render/) | The Render API adapter of the tenant platform: the search by name, the create of an image-backed private service, the newest deploy, the internal address, the delete, the deploy of an image by digest, the suspend, the resume, and the reads of the memory metrics and the restart events, with the retry bounds, the count of the create limit, and the write guard. It holds the Render API key. | No public module; app composes it with the write guard of the registry. It imports only the contract types of tenants. Another platform would be a sibling owner under `src/tenancy/providers/` behind the same contract; the soft spots below name what moves with it. |
 
 ## Behavior and resource ownership
@@ -2214,7 +2243,8 @@ SQL runtime closes. The resume operation of the gateway shares the instance of
 the sweeps; a resume call runs to its end also when its request or the control
 plane stops, within the 30 s bound of the adapter, because the row already
 shows `deploying`. The runner holds no state between ticks except the time of
-the last tick; each step reads the registry again. The steps of a tick run one
+the last tick and its claim holder; the registry keeps the row of each claimed
+tick, and each step reads the registry again. The steps of a tick run one
 after the other, and a step that fails reports one line without stopping the
 next one. The fleet script holds one SQL runtime, one adapter, and one WorkOS
 client for one command, and closes the runtime at its end, also after an error
@@ -2384,9 +2414,14 @@ The following limits affect architectural decisions today:
   hosted deadline of 10 s while the database answers at once; a slow database
   can make the process reach the deadline, and then the lease of its row ends
   by itself.
-  The tenant sweeps have no shared claim: when the daily tick falls inside the
-  2 minutes of a deploy, both instances run them, and the guarded marks keep
-  each row right, but Render can get a suspend or a delete two times. A slow
+  The tenant sweeps claim each tick in the registry, so one instance runs it.
+  When the old instance of a deploy claims the tick and gets SIGTERM before its
+  steps end, no instance runs the rest: it waits until the next tick, a week
+  for the organization sweep, and the summary line of that day does not come.
+  An old instance of a version before the tick claim ignores the claims, so the
+  first deploy with it, and a rollback to such a version, can still run a tick
+  in both instances. A new `TENANT_SWEEP_HOUR_UTC` makes a new tick, so a later
+  hour on the day of the change runs the sweeps again that day. A slow
   deploy holds the queue for up to 15 minutes, and the creates of one hour are
   20 for each Render user. The tenants run in the region oregon, the region
   of the control plane, as a constant of the adapter.
@@ -2438,9 +2473,13 @@ The following limits affect architectural decisions today:
   SO-09 ("delete, then request") uses its own registry operation, the revive of
   a `deleted` row inside the cap, from the fleet command `request` only.
 - The tenant sweeps tick once a day in one process. A tick that falls while the
-  control plane is down, for example during a deploy, waits until the next day,
+  control plane is down, for example after a crash or while its service is
+  stopped, waits until the next day,
   so the weekly sweep can wait two weeks; the runner keeps no record of a missed
-  tick. A second control plane would run a second sweep. The organization sweep
+  tick. A second instance of the control plane, such as the old instance of a
+  deploy, leaves a tick that the other instance claimed first, and a claim
+  without an answer, for example before the tick migration, runs no step of
+  the tick. The organization sweep
   removes at most 2 tenants in one run; with more absent rows, or an empty
   list, it only reports, and no monitor watches that line yet, so the operator
   reads it in the system log. The summary counts the

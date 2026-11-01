@@ -3,26 +3,40 @@
   "classification": {
     "container": false,
     "external": false,
-    "contract": false,
-    "deployment": false,
+    "contract": true,
+    "deployment": true,
     "crossCutting": false,
     "component": false,
-    "internalInterface": false,
-    "sensitiveBehavior": false,
+    "internalInterface": true,
+    "sensitiveBehavior": true,
     "dependencyRisk": false,
     "policy": false,
     "uncertain": false
   },
   "architecture": {
-    "modelUpdated": false,
-    "summary": "Documents only. The SO-12 release record docs/implementation/self-onboarding-s2-release.md records result 6b of step 6 of the production order on 1 November 2026: the owner saved the public key and the three secrets on the production service, the first workflow deploy failed at the start on bare base64 keys and Render kept the live instance, the second deploy went live with the provisioner and sweeps start lines and the Listening on line in the Axiom dataset system-log, and the manager made the Tenant restart monitor through the Axiom connector. The owner items 1, 4, 9, and 10 of section 6 and the record row 6b take their status. No source, test, configuration, workflow, migration, or Mermaid block changes; the registry stays accurate.",
+    "modelUpdated": true,
+    "summary": "The tenant sweeps claim each daily tick in the tenant registry, so one instance of the control plane runs it: the SO-12 release rehearsal of 31 October 2026 measured that Render keeps the old instance for about 120 s after a new deploy is live, and a tick inside that time ran the organization sweep, the idle sweep, and the fleet summary in both instances, so Render could get a suspend or a delete two times and the summary line came two times. Inside the hosted Node server, the runner of tenants inserts the row of the tick (keyed by the tick time, with the claim holder of the sweeps, new at each start) into the new table thermus_admin.tenant_sweep_ticks before its steps, through a new statement of the fleet store on the sql runtime; only the instance whose insert adds the row runs the steps, and the other writes one INFO line. A claim without an answer tries again after 10 s and after 60 s, and a repeat claim of the same holder, as after an answer that got lost, is claimed again; after the third claim without an answer, the tick runs no step and writes one ERROR line. App passes the fleet store and the holder to the runner and names the holder in the start line. The data contract of thermus_admin gains the table with SELECT and INSERT for the runtime role and forced row-level security (migration 20261101023017_tenant_sweep_ticks.sql, applied before the deploy). No component, container, public module, dependency, external call, or declaration snapshot changes. The selected C4 component view of the tenant registry changes (the label of tenants, the tick claims on the edge to sql, and the new table in PostgreSQL), the weekly sweep scenario gains the claim of the tick, and the idle sweep scenario names the claimed tick; the prose of the registry, the writers, the deployment view, the behavior section, and the known limits record the claim and the residual risk: when the old instance claims a tick and gets SIGTERM before its steps end, the rest of the tick waits until the next tick.",
     "views": [
-      "All 24 Mermaid views of architecture/components.md unchanged (checked: the release record is in no view, and no container, component, or runtime change)"
+      "Selected C4 components: hosted tenant registry, provisioning, and sweeps in the Node server (edited: the claim of each tick in tenants, the tick claims on the edge to sql, and the table tenant_sweep_ticks in PostgreSQL; prose: the tick migration, the claim, the writer of a tick row, the statements of the sweeps)",
+      "Scenario: weekly organization sweep (edited: the participant is the runner of the sweeps, and the claim of the tick comes first, with a break for a tick that another instance claimed or a claim without an answer)",
+      "Scenario: daily idle sweep (edited: the note names the tick that this instance claimed)",
+      "Deployment view (diagram unchanged; prose: the tick migration not applied, and the claim of each tick for the two instances of a deploy)",
+      "All other views of architecture/components.md unchanged (checked: the hosted and local containers views, the tenant role view, the MCP gateway view, the collaboration overview, the tenant provisioning, gateway, and resume scenarios)"
     ],
     "evidence": [
-      "docs/implementation/self-onboarding-s2-release.md (step 6, section 6, and section 7)",
-      "https://github.com/tomer-mayara/Thermus/actions/runs/41268854698",
-      "https://github.com/tomer-mayara/Thermus/actions/runs/41269410689"
+      "src/tenancy/tenants/tenant-sweeps.ts",
+      "src/tenancy/tenants/tenant-fleet-store.ts",
+      "src/tenancy/tenants/pg-tenant-fleet-store.ts",
+      "src/app/tenant-sweeps.ts",
+      "sql/migrations/20261101023017_tenant_sweep_ticks.sql",
+      "test/acceptance/tenants/sweep-instances.runtime.ts",
+      "test/integration/tenants/sweep-ticks.runtime.ts",
+      "test/unit/tenants/tenant-sweeps.test.ts",
+      "test/unit/tenants/pg-tenant-fleet-store.test.ts",
+      "test/support/doubles/tenants/tenant-fleet-store-fake.ts",
+      "architecture/components.md",
+      "docs/implementation/tenant-fleet-runbooks.md",
+      "docs/implementation/admin-s2-01a-database-setup.md"
     ]
   }
 }

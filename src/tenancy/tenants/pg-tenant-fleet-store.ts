@@ -1,6 +1,6 @@
 import type { BoundedSqlRuntime } from '../../runtime/sql/bounded-sql-runtime.ts';
 import { COUNT_ROWS, LOCK_REGISTRY, registryCount } from './pg-tenant-registry-store.ts';
-import type { FleetRead, FleetRow, FleetWrite, RemovableState, ReviveResult, TenantFleetStore } from './tenant-fleet-store.ts';
+import type { FleetRead, FleetRow, FleetWrite, RemovableState, ReviveResult, TenantFleetStore, TickClaim } from './tenant-fleet-store.ts';
 import type { RegistryCount, TenantState } from './tenant-registry-store.ts';
 
 const FLEET_COLUMNS = `organization_id, state, plan, applied_plan, render_service_id, service_name, internal_url, image_digest,
@@ -25,8 +25,14 @@ const RECORD_DIGEST = `UPDATE thermus_admin.tenants SET image_digest = $3, updat
 const REVIVE_DELETED = `UPDATE thermus_admin.tenants SET state = 'requested', render_service_id = NULL, service_name = NULL, internal_url = NULL,
   plan = NULL, applied_plan = NULL, image_digest = NULL, last_active_at = NULL, failure_reason = NULL, created_at = now(), updated_at = now()
   WHERE organization_id = $1 AND state = 'deleted'`;
+// The first claim of a tick adds its row; the key makes each later claim of the tick, also a concurrent one, insert
+// nothing. No lock stays held while the steps of the tick run.
+const CLAIM_TICK = `INSERT INTO thermus_admin.tenant_sweep_ticks (tick_at, claimed_by) VALUES ($1::timestamptz, $2)
+  ON CONFLICT (tick_at) DO NOTHING RETURNING tick_at`;
+// After a conflict, the holder of the tick: a repeat of a claim whose answer got lost finds its own holder.
+const TICK_HOLDER = 'SELECT claimed_by FROM thermus_admin.tenant_sweep_ticks WHERE tick_at = $1::timestamptz';
 
-/** The fleet statements of the tenants table, on the shared SQL runtime. */
+/** The fleet statements of the tenants table and the claim of the ticks of the sweeps, on the shared SQL runtime. */
 export class PgTenantFleetStore implements TenantFleetStore {
   private readonly runtime: BoundedSqlRuntime;
 
@@ -69,6 +75,17 @@ export class PgTenantFleetStore implements TenantFleetStore {
 
   recordDigest(organizationId: string, serviceId: string, imageDigest: string): Promise<FleetWrite> {
     return this.change(RECORD_DIGEST, [organizationId, serviceId, imageDigest]);
+  }
+
+  // A claim without a confirmed answer is unavailable: its row can exist, so the caller claims again to know.
+  async claimTick(tickAt: string, holder: string): Promise<TickClaim> {
+    const result = await this.runtime.run(async (session) => {
+      if ((await session.query(CLAIM_TICK, [tickAt, holder], true)).length > 0) return true;
+      const [row] = await session.query(TICK_HOLDER, [tickAt]);
+      return row?.claimed_by === holder;
+    });
+    if (result.status !== 'complete') return { status: 'unavailable' };
+    return { status: result.value ? 'claimed' : 'taken' };
   }
 
   // A read that does not complete is unavailable, so a partial read never looks complete.
