@@ -593,7 +593,7 @@ an operator container of the
 [hosted containers view](#c4-containers-hosted-edition).
 
 ```mermaid
-%%{init: {"flowchart": {"wrappingWidth": 150, "nodeSpacing": 40, "rankSpacing": 40, "subGraphTitleMargin": {"top": 10, "bottom": 25}}}}%%
+%%{init: {"flowchart": {"wrappingWidth": 150, "nodeSpacing": 40, "rankSpacing": 40, "subGraphTitleMargin": {"top": 10, "bottom": 70}}}}%%
 flowchart TB
   subgraph tenancy_server["Container: Thermus Node server · hosted control plane"]
     tenancy_config["config · TypeScript<br/>MCP_TENANTS_ENABLED; only when on:<br/>FREE_TENANT_LIMIT, tenant settings"]
@@ -1813,7 +1813,7 @@ sequenceDiagram
   Note over Sweep,Store: Monday tick: the organization sweep, then the idle sweep and the fleet summary
   Sweep->>Store: Claim the tick: insert its row, unless an instance did
   break Another instance claimed the tick first, or three claims have no answer
-    Note over Sweep,Store: One line, and no step of the tick runs
+    Note over Sweep,Inv: One line, and no step of the tick runs
   end
   Sweep->>Store: Read every row
   Sweep->>Inv: List every organization
@@ -1870,7 +1870,7 @@ sequenceDiagram
   participant Store as tenants / SQL adapter
   participant Render as render / adapter
   participant API as Render API
-  Note over Sweep,Store: The daily tick, after the claim of the tick by this instance
+  Note over Sweep,Store: The daily tick that this instance claimed
   Sweep->>Store: Live free rows without a call for the idle days
   break The registry cannot be read
     Note over Sweep,Store: One stop line, and nothing is suspended
