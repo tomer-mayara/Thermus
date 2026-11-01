@@ -15,14 +15,13 @@
   },
   "architecture": {
     "modelUpdated": false,
-    "summary": "Documents only. The SO-12 release record docs/implementation/self-onboarding-s2-release.md records step 10, the last step of the production order, on 1 November 2026: the signup switch set through the API and the deploy of the current digest, the open signup page, the monitors Tenant memory at 80 % and Fleet summary made through the Axiom connector, and the previews of their queries. The owner item 9 and the record row 10 take their status: the free tier is released. No source, test, configuration, workflow, migration, or Mermaid block changes; the registry stays accurate.",
+    "summary": "Documents only. The SO-12 release record docs/implementation/self-onboarding-s2-release.md records that the repository secret RENDER_API_KEY was deleted on 1 November 2026 after the release, so the release key lives only in the GitHub environment production: the owner item 5 and a step 5 addendum take the fact. No source, test, configuration, workflow, migration, or Mermaid block changes; the registry stays accurate.",
     "views": [
       "All 24 Mermaid views of architecture/components.md unchanged (checked: the release record is in no view, and no container, component, or runtime change)"
     ],
     "evidence": [
-      "docs/implementation/self-onboarding-s2-release.md (step 10, section 6, and section 7)",
-      "https://github.com/tomer-mayara/Thermus/actions/runs/41279172763",
-      "the monitors yLPzVJTXSb1SEBqn3K and emZt14QAYYTgKqZRr7 and the dataset system-log, read through the Axiom connector"
+      "docs/implementation/self-onboarding-s2-release.md (step 5 and section 6)",
+      "gh secret list --repo tomer-mayara/Thermus and gh secret list --env production, before and after the deletion"
     ]
   }
 }
