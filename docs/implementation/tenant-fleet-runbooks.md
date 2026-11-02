@@ -268,11 +268,14 @@ the answer `yes` before each write; another answer writes nothing.
    services for the `service_name` of the row. For zero or one service, go to
    step 4. For two or more services, delete each of them with the steps of
    [runbook 2](#2-orphaned-render-service), "Delete".
-4. Run `fleet.ts delete --organization <organization ID>`. Check the row and
-   the service that it prints, then answer `yes`. It deletes the service of the
-   row through the adapter and sets the row `deleted`. A row without a service
-   ID only becomes `deleted`. The row keeps its organization name, so step 6
-   gives the revived row the same service name (2 November 2026).
+4. Run `fleet.ts delete --organization <organization ID>` through the WorkOS
+   launcher of the environment, as step 6. It reads the organization in WorkOS
+   first. Check the row, the service, and the cause that it prints,
+   `WorkOS has the organization <organization ID>`, then answer `yes`. It
+   deletes the service of the row through the adapter and sets the row
+   `deleted`. A row without a service ID only becomes `deleted`. With that
+   cause, the row keeps its organization name, so step 6 gives the revived row
+   the same service name (2 November 2026).
 5. Check: `fleet.ts status --organization <organization ID>` shows the row
    `deleted`, and the Render Dashboard does not list its service.
 6. Run `fleet.ts request --organization <organization ID>` through the WorkOS
@@ -468,15 +471,20 @@ runbook gives this order and the registry rows.
 1. Remove the WorkOS organization under the existing procedure of
    [account deletion](hosted-account-deletion.md). Then no member has access
    when the tenant goes.
-2. Run `fleet.ts delete --organization <organization ID>`. It prints the row,
-   the service ID, and the service name. Check them, then answer `yes`.
-   The command deletes the Render service through the adapter, then sets the
-   row `deleted` from the state and the service that it read. A row that
-   another writer changed meanwhile, also a new provision of the organization
-   with a new service, stays as it is, and the command says so. The row keeps
-   its organization name, as after the repair "delete, then request"; only a
-   delete by the sweep below leaves the row without it, and the sweep reads no
-   `deleted` row again (2 November 2026).
+2. Run `fleet.ts delete --organization <organization ID>` with the registry,
+   Render, and WorkOS settings; in development, through the WorkOS Staging
+   launcher. It reads the organization in WorkOS, then prints the row, the
+   service ID, the service name, and the cause of the removal: after step 1,
+   `WorkOS has no organization <organization ID>`. Check them, then answer
+   `yes`. The command deletes the Render service through the adapter, then
+   sets the row `deleted` from the state and the service that it read, without
+   its organization name, because the organization is gone, as the sweep below
+   does (owner decision of 2 November 2026). A row that another writer changed
+   meanwhile, also a new provision of the organization with a new service,
+   stays as it is, and the command says so. Only a delete while WorkOS still
+   has the organization, as in the repair "delete, then request" of
+   [runbook 1](#1-failed-provision), keeps the name. A failed WorkOS read stops
+   the command before the confirmation, with nothing changed.
 3. Check: `fleet.ts status --organization <organization ID>` shows the row
    `deleted`, and the Render Dashboard does not list the service. A service
    that Render no longer has counts as deleted, so a repeat of step 2 is safe.

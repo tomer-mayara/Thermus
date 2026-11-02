@@ -318,10 +318,12 @@ production prefix `thermus-tenant-`, and a production name does not match the
 staging prefix. Only an organization slug that holds the other prefix, such as
 the slug of "Thermus Spike Tenant", gives a name that matches the two
 prefixes. A resumed row keeps the service name of its
-create. A row that the fleet command `delete` deleted keeps its organization
-name, so a revive makes the same name at its next claim. The organization sweep
-clears the name when it deletes the tenant of a removed organization
-(2 November 2026). The provisioner moves rows only from `requested` to `live`
+create. A row deleted while WorkOS still had its organization keeps its
+organization name, so a revive makes the same name at its next claim. The
+organization sweep, and the fleet command `delete` when its read of the
+organization says that WorkOS no longer has it, clear the name when they delete
+the tenant of a removed organization (owner decision of 2 November 2026). The
+provisioner moves rows only from `requested` to `live`
 and, after a resume,
 from `deploying` to `live`. The create call carries every tenant variable,
 because creation starts the first deploy at once. It creates an image-backed

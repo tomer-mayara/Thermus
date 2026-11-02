@@ -29,14 +29,16 @@ Commands:
   suspend --organization <id>             Suspend a live tenant. Its next MCP call resumes it; the calls of about a
                                           minute get a 503 with Retry-After 60 until it is live.
   resume --organization <id>              Resume a suspended tenant without a call, and wait until its deploy is live.
-  delete --organization <id>              Delete the Render service of the tenant, then set its row deleted.
+  delete --organization <id>              Delete the Render service of the tenant, then set its row deleted. It reads the
+                                          organization in WorkOS first: the row of an organization that WorkOS no longer
+                                          has loses its organization name; the row of one that WorkOS has keeps it.
   summary                                 Print the daily summary line: Tenant fleet summary: <JSON>.
 
 Settings from the environment:
   DATABASE_URL, DATABASE_CA_CERT_PATH     The tenant registry (each command).
   RENDER_API_KEY, RENDER_OWNER_ID         The fleet key and the workspace (status, upgrade, suspend, resume, delete,
                                           summary).
-  WORKOS_API_KEY, WORKOS_CLIENT_ID        The WorkOS environment (request, summary).
+  WORKOS_API_KEY, WORKOS_CLIENT_ID        The WorkOS environment (request, delete, summary).
   TENANT_NAME_PREFIX                      The prefix of the tenant services; default thermus-tenant-.
   TENANT_PLAN_FREE                        The plan of a free tenant, for the cost of the summary (summary).
   FREE_TENANT_LIMIT                       The cap of a request; default 25 (request).
@@ -83,7 +85,7 @@ function commandOf(argv: readonly string[]): Command {
     request: () => { const organizationId = organizationOf(values); return command(['workos'], (parts) => requestTenant(parts, organizationId)); },
     suspend: () => { const organizationId = organizationOf(values); return command(['render'], (parts) => suspendTenant(parts, organizationId)); },
     resume: () => { const organizationId = organizationOf(values); return command(['render'], (parts) => resumeTenant(parts, organizationId)); },
-    delete: () => { const organizationId = organizationOf(values); return command(['render'], (parts) => deleteTenant(parts, organizationId)); },
+    delete: () => { const organizationId = organizationOf(values); return command(['render', 'workos'], (parts) => deleteTenant(parts, organizationId)); },
     upgrade: () => {
       if (values.image === undefined) throw new FleetUsageError('upgrade needs --image <reference@sha256:...>.');
       if ((values.all === true) === (values.organization !== undefined)) throw new FleetUsageError('upgrade needs exactly one of --organization <id> and --all.');

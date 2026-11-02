@@ -1,3 +1,4 @@
+import type { OrganizationRead } from './organization-inventory.ts';
 import type { FleetRow, FleetWrite, RemovableState, TenantFleetStore } from './tenant-fleet-store.ts';
 import type { TenantPlatform } from './tenant-platform.ts';
 
@@ -17,14 +18,29 @@ export type RemovalCause = 'organization-absent' | 'operator';
 /** The row of a tenant to remove, with the state and the service that the caller read, and the cause of the removal. */
 export type TenantRemoval = Pick<FleetRow, 'organizationId' | 'serviceId'> & { readonly state: RemovableState; readonly cause: RemovalCause };
 
+/** A read of the organization by its ID that answered: the identity provider has the organization, or it does not. */
+export type OrganizationAnswer = Exclude<OrganizationRead, { readonly status: 'unavailable' }>;
+
+/**
+ * The cause of a removal by the operator, from the read of the organization by its ID that the fleet command delete makes
+ * before its confirmation (owner decision of 2 November 2026): an organization that the identity provider no longer has
+ * gives organization-absent, so the deleted row loses its organization name, as after the sweep; an organization that it
+ * has gives operator, so the row keeps the name for the repair "delete, then request". An unavailable read gives no
+ * cause: the command stops before its confirmation, with nothing changed.
+ */
+export function removalCauseOf(read: OrganizationAnswer): RemovalCause {
+  return read.status === 'absent' ? 'organization-absent' : 'operator';
+}
+
 /**
  * Removes the tenant of a row: the platform deletes its service first, and then the row becomes deleted from the state
  * and the service that the caller read. A row without a service ID has no service to delete. A failed delete leaves the
  * row as it is, so the next sweep or command finds it again; an absent service counts as deleted, so a repeat is safe.
  * A row that another writer changed meanwhile, also a replacement with a new service in the same state, is moved.
- * The deleted row of an absent organization loses its organization name; the delete of the operator keeps it, so the
- * repair "delete, then request" gives the revived row the same service name (2 November 2026). The service name stays
- * in both cases, for the record of the deleted service.
+ * The deleted row of an absent organization loses its organization name, from the sweep and from the fleet command alike;
+ * the delete of the operator while the organization exists keeps it, so the repair "delete, then request" gives the
+ * revived row the same service name (2 November 2026). The service name stays in both cases, for the record of the
+ * deleted service.
  */
 export async function removeTenant(parts: RemovalParts, removal: TenantRemoval, signal: AbortSignal): Promise<RemovalOutcome> {
   const { serviceId } = removal;

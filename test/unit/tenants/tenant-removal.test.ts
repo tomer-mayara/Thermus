@@ -1,13 +1,14 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import type { RemovableState } from '../../../src/tenancy/tenants/tenant-fleet-store.ts';
-import { removeTenant, type RemovalCause, type TenantRemoval } from '../../../src/tenancy/tenants/tenant-removal.ts';
+import { removalCauseOf, removeTenant, type RemovalCause, type TenantRemoval } from '../../../src/tenancy/tenants/tenant-removal.ts';
 import { TenantFleetStoreFake } from '../../support/doubles/tenants/tenant-fleet-store-fake.ts';
 import { TenantPlatformFake } from './fixtures/tenant-platform-fake.ts';
 
 // The removal of a tenant, which the organization sweep and the delete command of the fleet script share: the platform
 // deletes the service first, then the row becomes deleted from the state that the caller read. The cause of the removal
-// decides what the deleted row keeps of the organization name of hosted signup (2 November 2026).
+// decides what the deleted row keeps of the organization name of hosted signup (2 November 2026). The command takes its
+// cause from a read of the organization by its ID, as the sweep does (owner decision of 2 November 2026).
 
 const signal = new AbortController().signal;
 
@@ -50,6 +51,30 @@ test('Given a row with the organization name of hosted signup, when the sweep re
   const deleted = store.row('org_A');
   assert.deepEqual([deleted.state, deleted.organizationName, deleted.serviceName, deleted.serviceId, deleted.internalUrl], ['deleted', null, 'acme-corp-thermus-tenant-org-a', 'srv-a', null], 'The service stays for the record; the name of the removed organization goes');
   assert.deepEqual(platform.calls, ['delete srv-a']);
+});
+
+test('Given a read that says that the identity provider no longer has the organization, when the operator removes the tenant with the cause of that read, as the fleet delete command does after the deletion of the organization, then the deleted row has no organization name, as after the sweep', async () => {
+  const platform = new TenantPlatformFake();
+  const cause = removalCauseOf({ status: 'absent' });
+  const { store, row } = fleetOf('live', 'srv-a', cause);
+
+  assert.equal(cause, 'organization-absent');
+  assert.deepEqual(await removeTenant({ platform, store }, row, signal), { status: 'deleted' });
+
+  const deleted = store.row('org_A');
+  assert.deepEqual([deleted.state, deleted.organizationName, deleted.serviceName, deleted.serviceId], ['deleted', null, 'acme-corp-thermus-tenant-org-a', 'srv-a'], 'The name of the removed organization goes; the service stays for the record');
+});
+
+test('Given a read that says that the identity provider has the organization, when the operator removes the tenant with the cause of that read, as the fleet delete command does in the repair "delete, then request", then the deleted row keeps its organization name', async () => {
+  const platform = new TenantPlatformFake();
+  const cause = removalCauseOf({ status: 'present' });
+  const { store, row } = fleetOf('failed', 'srv-a', cause);
+
+  assert.equal(cause, 'operator');
+  assert.deepEqual(await removeTenant({ platform, store }, row, signal), { status: 'deleted' });
+
+  const deleted = store.row('org_A');
+  assert.deepEqual([deleted.state, deleted.organizationName, deleted.serviceName], ['deleted', 'Acme Corp', 'acme-corp-thermus-tenant-org-a']);
 });
 
 test('Given a row without a service, when the tenant is removed, then no platform call goes and the row becomes deleted', async () => {
