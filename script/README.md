@@ -315,7 +315,8 @@ eligibility" in [AGENTS.md](../AGENTS.md). The
 [`fleet/fleet.ts`](fleet/fleet.ts) is the fleet script of the tenant services
 of SO-09. It uses the Render adapter of the tenant platform and the tenant
 registry of the control plane: it imports them from `src`, so it has the same
-write guard, retry bounds, and conditional registry statements. It has the six
+write guard, retry bounds, and conditional registry statements. Only the time
+bounds of its registry connection are longer (below). It has the six
 commands of the answers of 27 October 2026:
 
 | Command | What it does | Writes |
@@ -352,13 +353,32 @@ value, and the script never prints a key:
 
 | Variable | Commands | Meaning |
 | --- | --- | --- |
-| `DATABASE_URL`, `DATABASE_CA_CERT_PATH` | each | The tenant registry, with the runtime role `thermus_logging`. From the Mac of the operator, the default SQL bounds of the script are too short for the production pooler (the acquisition bound of 1 s is shorter than the TLS connection), so `list` ends with `The tenant registry cannot be read. Nothing changed.`; a follow-up makes the bounds configurable ([SO-12 step 11](../docs/implementation/self-onboarding-s2-release.md#step-11-release-of-main-7b1ce3b6-2-november-2026), the tenant upgrade). |
+| `DATABASE_URL`, `DATABASE_CA_CERT_PATH` | each | The tenant registry, with the runtime role `thermus_logging`. The connection has the bounds of an operator far from the pooler, below. With the defaults of the runtime, `list` ended with `The tenant registry cannot be read. Nothing changed.` from the Mac of the operator ([SO-12 step 11](../docs/implementation/self-onboarding-s2-release.md#step-11-release-of-main-7b1ce3b6-2-november-2026), the tenant upgrade). |
 | `RENDER_API_KEY` | `status`, `upgrade`, `suspend`, `resume`, `delete`, `summary` | The fleet key: the API key of the owner's Render user, in `.env.local` of the main checkout. It is not the key of the control plane, so the fleet uses another rate-limit bucket (plan section 4.2). |
 | `RENDER_OWNER_ID` | the same | The workspace of the tenants: `tea-db8i6ceq1p3s73dev9og`, Thermus AI. The script refuses My Workspace, `tea-d3mlbrvdiees73ca4rdg`. |
 | `WORKOS_API_KEY`, `WORKOS_CLIENT_ID` | `request`, `delete`, `summary` | The WorkOS environment of the organizations. In development, run the script through the WorkOS Staging launcher. |
 | `TENANT_NAME_PREFIX` | each | The prefix of the tenant services, with the rule of the control plane; default `thermus-tenant-`. Staging uses `thermus-spike-tenant-`. Since 2 November 2026, the slug of the organization name and a hyphen can come before the prefix in a service name. So the filter of the script finds the prefix at the start of a service name or immediately after a hyphen. |
 | `TENANT_PLAN_FREE` | `summary` | The Render plan of a free tenant, for the cost of the summary: about 7 USD a month for a running free tenant, and about 25 USD for another plan. |
 | `FREE_TENANT_LIMIT` | `request` | The cap of a request, with the rule of the control plane; default 25. |
+
+The registry runtime of the script has longer bounds than the control plane
+(2 November 2026). The bounds are 15 s for one operation, with its connection
+inside it, 10 s for one statement, and 5 s to close: the bounds of the
+rehearsal reads of the release. The defaults of the runtime are 1 s to
+connect, 2 s for an operation, and 1.5 s for a statement. They fit the control
+plane, which runs in the region of the pooler. From the owner's Mac, the TLS
+connection to the production pooler alone takes about 1 s. So with the
+defaults, `list` ended with `The tenant registry cannot be read. Nothing
+changed.` The bounds are constants of
+[`fleet/fleet-context.ts`](fleet/fleet-context.ts), not a setting: a person
+runs the script and sees the wait. The first Ctrl-C stops the waits of a
+command, but not a registry operation in flight, which can take its full
+bound. The second Ctrl-C ends the script at once, also during a write: then
+read the row with `status`. If a command still says that the registry cannot
+be read, the cause is usually not the connection time: look for a wrong
+setting, a paused project
+([runbook 3](../docs/implementation/tenant-fleet-runbooks.md#3-paused-supabase-project)),
+or a pooler that does not answer.
 
 The script works only on the rows of its prefix. It refuses each row that
 names the production service `srv-db8mnqg473hc739d529g`, before any call, and
