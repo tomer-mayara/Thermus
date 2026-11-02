@@ -8,6 +8,8 @@ import { createPgSettingsRuntime } from '../../../src/runtime/sql/bounded-sql-ru
 import { OrganizationSweep } from '../../../src/tenancy/tenants/organization-sweep.ts';
 import { PgTenantFleetStore } from '../../../src/tenancy/tenants/pg-tenant-fleet-store.ts';
 import { PgTenantProvisioningStore } from '../../../src/tenancy/tenants/pg-tenant-provisioning-store.ts';
+import { serviceNameOf } from '../../../src/tenancy/tenants/tenant-environment.ts';
+import { removeTenant } from '../../../src/tenancy/tenants/tenant-removal.ts';
 import { reviveTenant } from '../../../src/tenancy/tenants/tenant-requests.ts';
 import { OperatorLogSpy } from '../../support/doubles/application/operator-log-spy.ts';
 import { RenderFake } from '../../support/doubles/render/render-fake.ts';
@@ -27,9 +29,11 @@ const settings = loadTenantProvisioningSettings(controlPlaneEnvironment);
 const monday = Date.parse('2026-11-02T04:00:00Z');
 const signal = new AbortController().signal;
 const digest = `sha256:${'5a'.repeat(32)}`;
+const prefix = 'thermus-tenant-';
 
-function nameOf(organizationId: string): string {
-  return `thermus-tenant-${organizationId.toLowerCase().replace(/[^a-z0-9-]/g, '-')}`;
+// The name rule of the provisioner with the production prefix: the ID alone, or the slug of the organization name and the ID.
+function nameOf(organizationId: string, organizationName: string | null = null): string {
+  return serviceNameOf(prefix, organizationId, organizationName);
 }
 
 function storesOn(t: TestContext, site: Site) {
@@ -41,11 +45,13 @@ function storesOn(t: TestContext, site: Site) {
 async function registryWithRender(t: TestContext) {
   const site = await postgresSettingsSite(t);
   const render = new RenderFake({ apiKey: settings.render.apiKey, ownerId: settings.render.ownerId });
-  // A row with a service of the Render fake, as the provisioner leaves it.
-  const rowWithService = async (organizationId: string, state: string): Promise<string> => {
-    const service = render.addService(nameOf(organizationId));
-    await site.ownerQuery(`INSERT INTO thermus_admin.tenants (organization_id, state, render_service_id, service_name, internal_url, plan, applied_plan, image_digest)
-    VALUES ('${organizationId}', '${state}', '${service.id}', '${service.name}', 'http://${service.slug}:8080', '0.5c-512mb', '0.5c-512mb', '${digest}')`);
+  // A row with a service of the Render fake, as the provisioner leaves it; with an organization name, as hosted signup
+  // stores it, the service has the name with the slug.
+  const rowWithService = async (organizationId: string, state: string, organizationName: string | null = null): Promise<string> => {
+    const service = render.addService(nameOf(organizationId, organizationName));
+    const name = organizationName === null ? 'NULL' : `'${organizationName}'`;
+    await site.ownerQuery(`INSERT INTO thermus_admin.tenants (organization_id, state, render_service_id, service_name, internal_url, plan, applied_plan, image_digest, organization_name)
+    VALUES ('${organizationId}', '${state}', '${service.id}', '${service.name}', 'http://${service.slug}:8080', '0.5c-512mb', '0.5c-512mb', '${digest}', ${name})`);
     return service.id;
   };
   return { site, render, rowWithService };
@@ -53,6 +59,12 @@ async function registryWithRender(t: TestContext) {
 
 async function rowsOf(site: Site): Promise<string[]> {
   const text = await site.ownerQuery("SELECT organization_id || ' ' || state || ' ' || coalesce(internal_url, 'no-route') FROM thermus_admin.tenants ORDER BY organization_id");
+  return text === '' ? [] : text.split('\n');
+}
+
+// Each row with its state, its service name, and its organization name, quoted, or NULL.
+async function namesOf(site: Site): Promise<string[]> {
+  const text = await site.ownerQuery("SELECT concat_ws(' ', organization_id, state, coalesce(service_name, '-'), coalesce(quote_literal(organization_name), 'NULL')) FROM thermus_admin.tenants ORDER BY organization_id");
   return text === '' ? [] : text.split('\n');
 }
 
@@ -85,6 +97,46 @@ test('Given rows on the real registry and organizations that WorkOS no longer ha
   assert.equal(await site.ownerQuery("SELECT updated_at = '2026-10-01T00:00:00Z' FROM thermus_admin.tenants WHERE organization_id = 'org_01JSWEEPGONE'"), 't', 'A deleted row is not deleted again');
   assert.equal(log.lines.filter((line) => line.startsWith('INFO Tenant removal record: ')).length, 2);
   assert.equal(log.lines.at(-1), `INFO Organization sweep: ${JSON.stringify({ rows: 4, organizations: 2, deleted: 2, foundOnRead: 0, unreadable: 0, inFlight: 0, moved: 0, failed: 0 })}`);
+});
+
+// The registry keeps no organization name of a removed organization (2 November 2026): the delete of the sweep clears
+// organization_name; the delete of the operator keeps it, so the repair "delete, then request" gives the same service name.
+test('Given live tenants with the organization name of hosted signup on the real registry, when the sweep deletes the tenant of an organization that WorkOS no longer has, then its row is deleted without the name, and the row of a listed organization keeps its name', { timeout: 120_000 }, async (t) => {
+  const { site, render, rowWithService } = await registryWithRender(t);
+  await rowWithService('org_01JNAMEKEEP', 'live', 'Acme Corp');
+  const gone = await rowWithService('org_01JNAMEGONE', 'live', 'Müller GmbH');
+  const workos = await WorkOSFake.start(t, controlPlanePublicBaseUrl, ['org_01JNAMEKEEP']);
+  const { fleet, provisioning } = storesOn(t, site);
+  const log = new OperatorLogSpy();
+  const platform = tenantPlatformOf({ settings, store: provisioning, fetch: render.fetch, clock: new VirtualClock() });
+  const sweep = new OrganizationSweep({ store: fleet, inventory: new WorkOSOrganizationInventory(workosClientFor(workos.fake)), platform, log });
+
+  await sweep.run(monday, signal);
+
+  assert.deepEqual(await namesOf(site), [
+    `org_01JNAMEGONE deleted ${nameOf('org_01JNAMEGONE', 'Müller GmbH')} NULL`,
+    `org_01JNAMEKEEP live ${nameOf('org_01JNAMEKEEP', 'Acme Corp')} 'Acme Corp'`,
+  ]);
+  assert.deepEqual(render.requestsOf('delete service').map((request) => request.path), [`/services/${gone}`]);
+  assert.equal(log.lines.at(-1), `INFO Organization sweep: ${JSON.stringify({ rows: 2, organizations: 1, deleted: 1, foundOnRead: 0, unreadable: 0, inFlight: 0, moved: 0, failed: 0 })}`);
+});
+
+test('Given a live tenant with the organization name of hosted signup on the real registry, when the operator deletes it, as the fleet delete command does, and requests it again, then the revived row keeps the name, and its claim gives the same service name', { timeout: 120_000 }, async (t) => {
+  const { site, render, rowWithService } = await registryWithRender(t);
+  const organizationId = 'org_01JNAMEREPAIR';
+  const serviceId = await rowWithService(organizationId, 'live', 'Acme Corp');
+  const { fleet, provisioning } = storesOn(t, site);
+  const platform = tenantPlatformOf({ settings, store: provisioning, fetch: render.fetch, clock: new VirtualClock() });
+
+  assert.deepEqual(await removeTenant({ platform, store: fleet }, { organizationId, serviceId, state: 'live', cause: 'operator' }, signal), { status: 'deleted' });
+
+  assert.deepEqual(await namesOf(site), [`${organizationId} deleted ${nameOf(organizationId, 'Acme Corp')} 'Acme Corp'`]);
+  assert.deepEqual(render.services(), []);
+  assert.deepEqual(await reviveTenant(fleet, organizationId, 25), { status: 'revived' });
+  const claim = await provisioning.claimNext({ serviceNameOf: nameOf, plan: '0.5c-512mb', holder: 'holder-1' });
+  assert.ok(claim.status === 'claimed');
+  assert.equal(claim.row.serviceName, nameOf(organizationId, 'Acme Corp'), 'The revived row gets the service name of its first create');
+  assert.deepEqual(await namesOf(site), [`${organizationId} creating ${nameOf(organizationId, 'Acme Corp')} 'Acme Corp'`]);
 });
 
 test('Given a deleted row on the real registry, when it is revived, then a full cap keeps it deleted, and a free place makes it a new requested row without its old service', { timeout: 120_000 }, async (t) => {

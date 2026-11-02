@@ -681,7 +681,9 @@ Unicode NFKD form without combining marks and in lower case. Each sequence of
 characters outside a-z and 0-9 in it becomes one hyphen. The slug has at most
 30 characters and no hyphen at either end. A row without a name, or with an
 empty slug, gets the name above. A resumed row keeps the service name of its
-create, and a revived `deleted` row keeps its organization name.
+create. A row that the fleet `delete` command deleted keeps its organization
+name, so a revived row makes the same name at its next claim; the organization
+sweep clears the name of a removed organization (2 November 2026).
 A `deploying` row that keeps its address
 is the row of a resume, because only a live record gives an address and a
 delete takes it away; the claim takes it 15 s after its resume mark, when
@@ -732,8 +734,11 @@ services for a window), and `restartCount` (the `server_failed` and
 [fleet statements](../src/tenancy/tenants/pg-tenant-fleet-store.ts) read every
 row and change a row only from the state and the service that each statement
 names: deleted from the state and the service that the caller read (the route
-goes, the service ID stays for the record; a row without a service binds to
-none), `live` to `suspended` and `suspended` to `deploying` on the service that
+goes, the service ID and name stay for the record; a row without a service
+binds to none), in two statements: the delete of the operator keeps the
+organization name, and the delete of the organization sweep clears it, because
+the organization is gone (2 November 2026); `live` to `suspended` and
+`suspended` to `deploying` on the service that
 the caller read, the digest of a `live` row on its service, and the revive of a
 `deleted` row to `requested` under the registry lock and inside the cap, as a
 new request ([`reviveTenant`](../src/tenancy/tenants/tenant-requests.ts)). A
@@ -763,7 +768,8 @@ The writers of each transition of a row:
 - The row of a tick in `tenant_sweep_ticks`: the claim of the sweeps adds it;
   nothing changes or deletes it.
 - Each state except `deleted` to `deleted`: the organization sweep and the fleet
-  `delete` command, both through the removal.
+  `delete` command, both through the removal, with the cause of the removal: the
+  sweep clears the organization name, and the command keeps it.
 - The digest of a `live` row: the fleet `upgrade` command. The last use: the
   gateway, without a change of state.
 
@@ -798,8 +804,9 @@ another environment or a defect of the list read would make every organization
 absent, so the sweep writes one `Organization sweep stopped:` line with the
 counts, and the operator deletes by hand with the fleet script (manager decision
 of 28 October 2026). Inside that bound, it reads each left-out organization
-by ID and removes the tenant only when that read says absent (a WorkOS `404`),
-and it leaves a `creating` or `deploying` row for the next sweep. Each day the
+by ID and removes the tenant only when that read says absent (a WorkOS `404`);
+the deleted row keeps no organization name (2 November 2026). It leaves a
+`creating` or `deploying` row for the next sweep. Each day the
 summary writes one line, `Tenant fleet summary: <JSON>`, with the count and the
 cost of each state and plan, the default-role memberships, the restarts that
 Render reports, and the memory of the live tenants; the

@@ -47,6 +47,23 @@ test('Given rows and a complete organization list, when the sweep runs, then onl
   ]);
 });
 
+// The registry keeps no organization name of a removed organization (2 November 2026): the delete of the sweep clears
+// organization_name, while the delete of the operator keeps it for the revive of the repair "delete, then request".
+test('Given live tenants with the organization name of hosted signup, when the sweep deletes the tenant of an absent organization, then its row is deleted without the name, and the row of a listed organization keeps its name', async () => {
+  const { store, platform, log, sweep } = sweepOf({}, ['org_A', ...listed]);
+  for (const organizationId of ['org_A', 'org_B']) {
+    const slug = organizationId.toLowerCase().replace(/[^a-z0-9]/g, '');
+    store.put({ organizationId, state: 'live', organizationName: 'Acme Corp', serviceId: `srv-${slug}`, serviceName: `thermus-tenant-acme-corp-${slug}`, internalUrl: `http://thermus-tenant-acme-corp-${slug}:8080` });
+  }
+
+  await sweep.run(monday, signal);
+
+  assert.deepEqual(platform.calls, ['delete srv-orgb']);
+  assert.deepEqual([store.stateOf('org_A'), store.row('org_A').organizationName], ['live', 'Acme Corp'], 'The tenant of the listed organization keeps its name');
+  assert.deepEqual([store.stateOf('org_B'), store.row('org_B').organizationName, store.row('org_B').serviceName, store.row('org_B').serviceId], ['deleted', null, 'thermus-tenant-acme-corp-orgb', 'srv-orgb'], 'The deleted row keeps its service for the record and loses the organization name');
+  assert.equal(log.lines.at(-1), tally({ rows: 2, organizations: 2, deleted: 1 }));
+});
+
 test('Given an organization list that is not complete, when the sweep runs, then it reads no organization, deletes nothing, and reports one stop', async () => {
   const { store, inventory, platform, log, sweep } = sweepOf({ org_A: 'live', org_B: 'live' }, ['org_A']);
   inventory.listFailure = 'WorkOS answered 500: Internal Server Error';

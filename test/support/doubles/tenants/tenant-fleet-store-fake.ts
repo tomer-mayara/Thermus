@@ -30,10 +30,16 @@ export class TenantFleetStoreFake extends TenantProvisioningStoreFake implements
     return { status: 'complete', rows: idle.toSorted((first, second) => first.organizationId.localeCompare(second.organizationId)).map(fleetRowOf) };
   }
 
+  // As the SQL adapter, the delete of the operator keeps the organization name for the revive of the repair.
   async markDeleted(organizationId: string, from: RemovableState, serviceId: string | null): Promise<FleetWrite> {
+    return this.fleetMove('deleted', { organizationId, from: [from], serviceId }, (row) => this.deleted(row));
+  }
+
+  // As the SQL adapter, the delete of the organization sweep also clears the name of the removed organization.
+  async markDeletedWithoutOrganizationName(organizationId: string, from: RemovableState, serviceId: string | null): Promise<FleetWrite> {
     return this.fleetMove('deleted', { organizationId, from: [from], serviceId }, (row) => {
-      this.moveTo(row, 'deleted');
-      row.internalUrl = null;
+      this.deleted(row);
+      row.organizationName = null;
     });
   }
 
@@ -85,6 +91,11 @@ export class TenantFleetStoreFake extends TenantProvisioningStoreFake implements
     if (row === undefined || !start.from.includes(row.state) || row.serviceId !== start.serviceId) return { status: 'moved' };
     apply(row);
     return { status: 'recorded' };
+  }
+
+  private deleted(row: FakeTenantRow): void {
+    this.moveTo(row, 'deleted');
+    row.internalUrl = null;
   }
 
   protected moveTo(row: FakeTenantRow, state: TenantState): void {

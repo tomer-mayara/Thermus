@@ -3,8 +3,8 @@
   "classification": {
     "container": false,
     "external": false,
-    "contract": true,
-    "deployment": true,
+    "contract": false,
+    "deployment": false,
     "crossCutting": false,
     "component": false,
     "internalInterface": true,
@@ -15,34 +15,25 @@
   },
   "architecture": {
     "modelUpdated": true,
-    "summary": "The Render service of a tenant from hosted signup gets the organization name in its name (owner request of 2 November 2026, order decided the same day): the signup route of web gives the organization name of its form to the tenant request through the signup port that app composes, TenantRequests of tenants stores it in the new nullable column organization_name of thermus_admin.tenants (migration 20261102161257_tenant_organization_name.sql, applied before the deploy), and the claim of the provisioner names the service <organization slug>-<prefix><organization ID slug>, for example acme-corp-thermus-tenant-org-01m6asdn5ykzsy19rqen97ndh3; a row without a name or with an empty slug keeps the name of today, <prefix><organization ID slug>. The fleet script and the orphan runbook recognize the tenants of a prefix by the shared predicate isServiceNameOfPrefix of tenants (the prefix at the start, or after the organization slug and a hyphen), so the staging and production fleets stay apart. The requests of the gateway, of the workspace status read, and of the fleet script store no name. The data contract of the tenants table changes (contract, deployment: the migration order), the signup port of web and the store contracts of tenants gain the organization name and the fleet script gains the predicate (internalInterface), and the registry and Render now hold a copy of the organization name of WorkOS, which a deleted row keeps. No component, container, public module, dependency, or Mermaid view changes; the prose of the tenant registry view and of the design choices (the Render hostname note) records the rule.",
+    "summary": "The weekly organization sweep now clears organization_name when it deletes the tenant of an organization that WorkOS no longer has (2 November 2026): the registry keeps no name of a removed organization. The fleet command delete keeps the name, so the repair \"delete, then request\" gives the revived row the same service name. The shared removal of tenants takes the cause of the removal, organization-absent for the sweep and operator for the fleet command; the fleet store contract of tenants gains markDeletedWithoutOrganizationName, one more guarded UPDATE of the SQL adapter with the same start state and service as the delete of the operator (internalInterface). No column, migration, setting, grant, component, container, public module, dependency, or Mermaid view changes; the prose of the tenant registry view records the two delete statements and the cause.",
     "views": [
-      "Selected C4 components: hosted tenant registry, provisioning, and sweeps in the Node server (diagram unchanged; prose: the service name rule with the organization slug, the column, and the migration)",
-      "Design choices and current soft spots (no diagram; prose: the Render hostname note gives the length of a name with the slug and the hostname shortening)",
-      "Scenario: free signup and the workspace setup state (unchanged: the tenant request call survives; its payload gains the organization name, which the prose of the tenant registry view gives)",
-      "Scenario: tenant provisioning (unchanged: the claim gives the creating row with its service name; the rule of the name is prose)",
+      "Selected C4 components: hosted tenant registry, provisioning, and sweeps in the Node server (diagram unchanged; prose: the two delete statements of the fleet statements, the cause of the removal in the transition list, and the deleted row of the sweep without its organization name)",
+      "Scenario: weekly organization sweep (unchanged: the delete of the row survives as one guarded UPDATE; the statement of the sweep now also clears the name, which the prose of the tenant registry view gives)",
       "All 24 Mermaid views of architecture/components.md unchanged (checked with the registry views script of the checker)"
     ],
     "evidence": [
-      "src/tenancy/tenants/tenant-environment.ts",
-      "script/fleet/fleet-rows.ts",
-      "src/tenancy/tenants/pg-tenant-claim.ts",
-      "src/tenancy/tenants/tenant-provisioning-store.ts",
-      "src/tenancy/tenants/tenant-provisioner.ts",
-      "src/tenancy/tenants/tenant-registry-store.ts",
-      "src/tenancy/tenants/pg-tenant-registry-store.ts",
-      "src/tenancy/tenants/tenant-requests.ts",
-      "src/interfaces/web/auth/workos/workos-signup-tenants.ts",
-      "src/interfaces/web/auth/workos/workos-signup-routes.ts",
-      "src/app/workspace-composition.ts",
-      "sql/migrations/20261102161257_tenant_organization_name.sql",
-      "test/acceptance/tenants/provisioner.test.ts",
-      "test/acceptance/tenants/tenant-registry.runtime.ts",
-      "test/integration/tenants/provisioner-registry.runtime.ts",
-      "test/integration/auth/workos-signup-tenants.test.ts",
-      "test/acceptance/auth/hosted-signup-workspace.test.ts",
-      "architecture/components.md (prose of the tenant registry view and of the Render hostname note under design choices)",
-      "docs/implementation/admin-s2-01a-database-setup.md (the organization name migration)"
+      "src/tenancy/tenants/tenant-removal.ts",
+      "src/tenancy/tenants/tenant-fleet-store.ts",
+      "src/tenancy/tenants/pg-tenant-fleet-store.ts",
+      "src/tenancy/tenants/organization-sweep.ts",
+      "script/fleet/fleet-delete.ts",
+      "test/integration/tenants/organization-sweep.runtime.ts",
+      "test/unit/tenants/organization-sweep.test.ts",
+      "test/unit/tenants/tenant-removal.test.ts",
+      "test/unit/tenants/pg-tenant-fleet-store.test.ts",
+      "architecture/components.md (prose of the tenant registry view)",
+      "docs/implementation/hosted-account-deletion.md (the registry rows after the deletion)",
+      "docs/implementation/self-onboarding-plan.md (section 4.2 and the data model)"
     ]
   }
 }

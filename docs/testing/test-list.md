@@ -1,5 +1,45 @@
 # Test inventory
 
+## Current organization sweep name inventory scope
+
+Since 2 November 2026, the weekly organization sweep clears `organization_name`
+when it deletes the tenant of an organization that WorkOS no longer has, because
+the registry keeps no name of a removed organization. The fleet command
+`delete` keeps the name, so the repair "delete, then request" gives the revived
+row the same service name. The removal that both share takes the cause of the
+removal, and the SQL adapter of the fleet statements has one delete statement
+for each cause. Inventory presence is not a passing result; the pull request
+records the runs.
+
+- `test/integration/tenants/organization-sweep.runtime.ts` (2 new cases) runs
+  on the real registry on disposable PostgreSQL 17: given live tenants with the
+  organization name of hosted signup, the sweep deletes the tenant of the
+  organization that the WorkOS fake no longer has, and its row is `deleted`
+  with its service name and without its organization name, while the row of
+  the listed organization keeps its name; and the removal with the cause of the
+  operator, as the fleet command `delete` does it, leaves the deleted row with
+  its name, so the revive and the next claim give the same service name with
+  the slug. The rows with a service of the file can hold an organization name,
+  and their service name follows the name rule of the provisioner. It runs in
+  `npm run test:logging:postgres`.
+- `test/unit/tenants/organization-sweep.test.ts` (1 new case) checks the same
+  sweep outcome on the registry fake, with the counts of the sweep line.
+  `tenant-removal.test.ts` (2 new cases) checks the two causes of the removal:
+  the cause of the operator keeps the organization name, and the cause of the
+  absent organization clears it; its other cases remove with the cause of the
+  operator. `pg-tenant-fleet-store.test.ts` (1 new case) checks the delete
+  statement without the organization name: its start state and service, its
+  values, a row without a service, and the moved and unavailable results; the
+  delete statement of the operator stays as it was.
+- The registry fake `test/support/doubles/tenants/tenant-fleet-store-fake.ts`
+  has the delete without the organization name, as the SQL adapter does, and
+  the row of `tenant-provisioning-store-fake.ts` can lose its name.
+
+```sh
+npm run build && node --test dist/test/unit/tenants/organization-sweep.test.js dist/test/unit/tenants/tenant-removal.test.js dist/test/unit/tenants/pg-tenant-fleet-store.test.js
+npm run build && node --test dist/test/integration/tenants/organization-sweep.runtime.js
+```
+
 ## Current tenant service name inventory scope
 
 The owner wants the organization name in the name of the Render service of a
