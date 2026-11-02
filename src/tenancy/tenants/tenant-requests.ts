@@ -10,7 +10,10 @@ export type TenantRequestResult =
   | { readonly status: 'full' }
   | { readonly status: 'unavailable' };
 
-/** Requests the tenant of an organization: one idempotent insert of a `requested` row, inside the free-tenant cap. */
+/**
+ * Requests the tenant of an organization: one idempotent insert of a `requested` row, inside the free-tenant cap. Hosted
+ * signup gives the organization name for the service name; the other requests give none.
+ */
 export class TenantRequests {
   private readonly store: TenantRegistryStore;
   private readonly freeTenantLimit: number;
@@ -20,8 +23,9 @@ export class TenantRequests {
     this.freeTenantLimit = freeTenantLimit;
   }
 
-  async request(organizationId: string): Promise<TenantRequestResult> {
-    const result = await this.store.insertRequested(organizationId, (count) => count.current === undefined && placesTaken(count) < this.freeTenantLimit);
+  async request(organizationId: string, organizationName?: string): Promise<TenantRequestResult> {
+    const admit = (count: RegistryCount): boolean => count.current === undefined && placesTaken(count) < this.freeTenantLimit;
+    const result = await this.store.insertRequested(organizationId, admit, organizationName);
     if (result.status === 'inserted') return { status: 'requested' };
     // A repeated request is safe: it finds the row of an unconfirmed insert that committed.
     if (result.status !== 'refused') return { status: 'unavailable' };

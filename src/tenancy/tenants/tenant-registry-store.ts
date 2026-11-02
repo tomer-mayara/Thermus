@@ -27,7 +27,10 @@ export type ReadRoutesResult =
   | { readonly status: 'unavailable' };
 
 export interface TenantRegistryStore {
-  /** Counts the rows and inserts a `requested` row when `admit` allows it, under one lock and in one transaction. */
-  insertRequested(organizationId: string, admit: (count: RegistryCount) => boolean): Promise<InsertRequestedResult>;
+  /**
+   * Counts the rows and inserts a `requested` row when `admit` allows it, under one lock and in one transaction. The row
+   * keeps the organization name, if any, for the service name of its claims.
+   */
+  insertRequested(organizationId: string, admit: (count: RegistryCount) => boolean, organizationName?: string): Promise<InsertRequestedResult>;
   readRoutes(): Promise<ReadRoutesResult>;
 }

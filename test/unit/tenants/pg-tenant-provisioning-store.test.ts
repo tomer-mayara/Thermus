@@ -6,7 +6,7 @@ import { PgTenantProvisioningStore } from '../../../src/tenancy/tenants/pg-tenan
 
 type Rows = Record<string, unknown>[];
 
-const nextRow = /^SELECT organization_id, state, service_name, render_service_id FROM thermus_admin\.tenants\s+WHERE state IN \('requested', 'creating', 'deploying'\)\s+AND \(claimed_by IS NULL OR claimed_by = \$1 OR claimed_until <= now\(\)\)\s+AND \(state <> 'deploying' OR internal_url IS NULL OR updated_at <= now\(\) - interval '15 seconds'\)\s+ORDER BY state = 'requested', updated_at, organization_id\s+LIMIT 1 FOR UPDATE SKIP LOCKED$/;
+const nextRow = /^SELECT organization_id, state, service_name, render_service_id, organization_name FROM thermus_admin\.tenants\s+WHERE state IN \('requested', 'creating', 'deploying'\)\s+AND \(claimed_by IS NULL OR claimed_by = \$1 OR claimed_until <= now\(\)\)\s+AND \(state <> 'deploying' OR internal_url IS NULL OR updated_at <= now\(\) - interval '15 seconds'\)\s+ORDER BY state = 'requested', updated_at, organization_id\s+LIMIT 1 FOR UPDATE SKIP LOCKED$/;
 const claimRequested = /^UPDATE thermus_admin\.tenants SET state = 'creating', service_name = \$2, plan = \$3, claimed_by = \$4,\s+claimed_until = now\(\) \+ interval '60 seconds', updated_at = now\(\) WHERE organization_id = \$1 AND state = 'requested'$/;
 const claimResumed = /^UPDATE thermus_admin\.tenants SET service_name = COALESCE\(service_name, \$2\), claimed_by = \$3,\s+claimed_until = now\(\) \+ interval '60 seconds' WHERE organization_id = \$1$/;
 const renewClaim = /^UPDATE thermus_admin\.tenants SET claimed_until = now\(\) \+ interval '60 seconds'\s+WHERE organization_id = \$1 AND claimed_by = \$2 AND state IN \('creating', 'deploying'\) RETURNING organization_id$/;
@@ -77,6 +77,20 @@ test('Given a creating or deploying row of an earlier run, when the next row is 
   });
   assert.match(unnamed.texts()[2] ?? '', claimResumed);
   assert.deepEqual(unnamed.queries[2]?.values, ['org_01C', 'thermus-tenant-org-01c', holder]);
+});
+
+test('Given a requested row with an organization name, or a resumed row without a service name or an organization name, when it is claimed, then the name rule gets the organization ID and the organization name of the row, else null', async (t) => {
+  const seen: (string | null)[][] = [];
+  const naming = { ...claim, serviceNameOf: (organizationId: string, organizationName: string | null) => { seen.push([organizationId, organizationName]); return `name-of-${organizationId}`; } };
+  const requested = provisioningStore(t, nextRowIs({ organization_id: 'org_01A', state: 'requested', service_name: null, render_service_id: null, organization_name: 'Acme Corp' }));
+  assert.deepEqual(await requested.store.claimNext(naming), {
+    status: 'claimed', resumed: false, row: { organizationId: 'org_01A', state: 'creating', serviceName: 'name-of-org_01A', serviceId: null, holder },
+  });
+  assert.deepEqual(requested.queries[2]?.values, ['org_01A', 'name-of-org_01A', '0.5c-512mb', holder]);
+  const resumed = provisioningStore(t, nextRowIs({ organization_id: 'org_01C', state: 'creating', service_name: null, render_service_id: null, organization_name: null }));
+  assert.equal((await resumed.store.claimNext(naming)).status, 'claimed');
+  assert.deepEqual(resumed.queries[2]?.values, ['org_01C', 'name-of-org_01C', holder]);
+  assert.deepEqual(seen, [['org_01A', 'Acme Corp'], ['org_01C', null]]);
 });
 
 test('Given a failure in the claim, when the next row is claimed, then the result is unavailable and the client is destroyed', async (t) => {

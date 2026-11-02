@@ -1,3 +1,4 @@
+import { isServiceNameOfPrefix } from '../../../src/tenancy/tenants/tenant-environment.ts';
 import { API_BASE, callLine, PRODUCTION_SERVICE_ID, SERVICE_PREFIX, type Call } from './calls.ts';
 import { sleep } from './polls.ts';
 
@@ -74,9 +75,11 @@ export class RenderClient {
     if (!this.#writesAllowed) throw new Error(`${callLine(call)} refused: this run makes reads only`);
   }
 
+  // A tenant of the rehearsal can start with the organization slug of its signup, so the prefix can come after a
+  // hyphen (2 November 2026). A production tenant holds thermus-tenant-, never -thermus-spike-.
   public confirmOwnService(id: string, name: string | undefined): void {
-    if (id === PRODUCTION_SERVICE_ID || name?.startsWith(SERVICE_PREFIX) !== true) {
-      throw new Error(`The service ${id} (${name ?? 'no name'}) is not a ${SERVICE_PREFIX}* service. The probe touches no other service. Check it in the Render Dashboard.`);
+    if (id === PRODUCTION_SERVICE_ID || name === undefined || !isServiceNameOfPrefix(SERVICE_PREFIX, name)) {
+      throw new Error(`The service ${id} (${name ?? 'no name'}) is not a ${SERVICE_PREFIX}* or *-${SERVICE_PREFIX}* service. The probe touches no other service. Check it in the Render Dashboard.`);
     }
     this.#ownServices.add(id);
   }
