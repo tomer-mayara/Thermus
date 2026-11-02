@@ -50,7 +50,8 @@ export function describeSignupWorkspaceCases(previous: LiveRun): void {
       assert.deepEqual(JSON.parse((await serverGet(page, 'workspace/status')).body), { state: 'live', ready: true });
       const creates = control.render.requestsOf('create service');
       assert.equal(creates.length, 1, 'The provisioner created one tenant service through the Render fake.');
-      assert.equal((creates[0]?.body as { name?: string } | undefined)?.name, `thermus-tenant-${organization.id.toLowerCase().replace(/[^a-z0-9-]/g, '-')}`);
+      // The service name has the slug of the organization name of the signup form before the organization ID.
+      assert.equal((creates[0]?.body as { name?: string } | undefined)?.name, `thermus-tenant-acme-workspace-${organization.id.toLowerCase().replace(/[^a-z0-9-]/g, '-')}`);
     });
   });
 }

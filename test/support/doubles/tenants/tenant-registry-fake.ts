@@ -5,6 +5,8 @@ interface FakeRow {
   readonly state: TenantState;
   readonly internalUrl: string | null;
   readonly serviceId: string | null;
+  /** The organization name that the tenant request stored; null without one. No later change of the row removes it. */
+  readonly organizationName: string | null;
   /** The time of the last change on the clock of the fake, as updated_at gives it in the database. */
   readonly changedAt: number;
 }
@@ -26,23 +28,30 @@ export class TenantRegistryFake implements TenantRegistryStore, TenantGatewaySto
 
   /** The live record of the provisioner, now. */
   live(organizationId: string, internalUrl: string): void {
-    this.rows.set(organizationId, { state: 'live', internalUrl, serviceId: `srv-${organizationId.toLowerCase().replace(/[^a-z0-9]/g, '')}`, changedAt: this.#now() });
+    const serviceId = `srv-${organizationId.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
+    this.rows.set(organizationId, { state: 'live', internalUrl, serviceId, organizationName: this.organizationNameOf(organizationId), changedAt: this.#now() });
   }
 
   set(organizationId: string, row: { readonly state: TenantState; readonly internalUrl?: string; readonly serviceId?: string }): void {
-    this.rows.set(organizationId, { state: row.state, internalUrl: row.internalUrl ?? null, serviceId: row.serviceId ?? null, changedAt: this.#now() });
+    const organizationName = this.organizationNameOf(organizationId);
+    this.rows.set(organizationId, { state: row.state, internalUrl: row.internalUrl ?? null, serviceId: row.serviceId ?? null, organizationName, changedAt: this.#now() });
   }
 
   stateOf(organizationId: string): TenantState | undefined {
     return this.rows.get(organizationId)?.state;
   }
 
-  async insertRequested(organizationId: string, admit: (count: RegistryCount) => boolean): Promise<InsertRequestedResult> {
+  /** The organization name of the row; null without a row or without a name. */
+  organizationNameOf(organizationId: string): string | null {
+    return this.rows.get(organizationId)?.organizationName ?? null;
+  }
+
+  async insertRequested(organizationId: string, admit: (count: RegistryCount) => boolean, organizationName?: string): Promise<InsertRequestedResult> {
     this.requests.push(organizationId);
     if (this.insertFailure !== undefined) return { status: this.insertFailure };
     const count = this.countFor(organizationId);
     if (!admit(count)) return { status: 'refused', count };
-    this.rows.set(organizationId, { state: 'requested', internalUrl: null, serviceId: null, changedAt: this.#now() });
+    this.rows.set(organizationId, { state: 'requested', internalUrl: null, serviceId: null, organizationName: organizationName ?? null, changedAt: this.#now() });
     this.inserts.push(organizationId);
     return { status: 'inserted' };
   }

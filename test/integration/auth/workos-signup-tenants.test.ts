@@ -19,7 +19,7 @@ function post(body = acceptedForm, origin = 'https://thermus.example'): Request 
 }
 
 // A spy of the tenant registry port of signup: the place under the free-tenant cap that a case gives, and each check
-// and tenant request in order.
+// and tenant request, with the organization name, in order.
 class SignupTenantsSpy implements SignupTenants {
   readonly events: string[] = [];
   placeAnswer: SignupPlace | Error = 'open';
@@ -31,8 +31,8 @@ class SignupTenantsSpy implements SignupTenants {
     return this.placeAnswer;
   }
 
-  async request(organizationId: string): Promise<SignupTenantRequest> {
-    this.events.push(`request ${organizationId}`);
+  async request(organizationId: string, organizationName: string): Promise<SignupTenantRequest> {
+    this.events.push(`request ${organizationId} ${organizationName}`);
     if (this.requestAnswer instanceof Error) throw this.requestAnswer;
     return this.requestAnswer;
   }
@@ -113,14 +113,14 @@ for (const failure of ['unavailable', 'exception'] as const) {
   });
 }
 
-test('Given a place under the cap and confirmed creation, when the form is posted, then the tenant of the new organization is requested once, after the confirmed first Admin membership and before Quick start opens', async () => {
+test('Given a place under the cap and confirmed creation, when the form is posted, then the tenant of the new organization is requested once with the organization name of the form, after the confirmed first Admin membership and before Quick start opens', async () => {
   const world = setup();
 
   const answer = await world.routes.handle(post());
 
   assert.equal(answer.status, 303);
   assert.equal(answer.headers.get('Location'), 'https://thermus.example/quick-start');
-  assert.deepEqual(world.tenants.events, ['place', 'activate Acme Labs', 'request org_new', 'select org_new']);
+  assert.deepEqual(world.tenants.events, ['place', 'activate Acme Labs', 'request org_new Acme Labs', 'select org_new']);
   assert.deepEqual(world.failures, []);
 });
 

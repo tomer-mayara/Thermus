@@ -238,10 +238,13 @@ authorized deletion duties and track their legal deadline.
 ### Delete the tenant of a removed organization
 
 With `MCP_TENANTS_ENABLED` on, each organization can have a tenant: one Render
-private service named `TENANT_NAME_PREFIX` and its organization ID, and one row
-in the tenant registry `thermus_admin.tenants`. The tenant has no person data
-of its own, but it serves the organization and costs about 7 USD a month while
-it runs. Delete it only after the organization itself is deleted, in this order:
+private service named `TENANT_NAME_PREFIX`, the slug of the organization name
+when hosted signup requested the tenant (since 2 November 2026), and its
+organization ID, and one row in the tenant registry `thermus_admin.tenants`,
+which keeps that organization name also after the deletion. The tenant holds
+no person data of its own beyond that name, but it serves the organization and
+costs about 7 USD a month while it runs. Delete it only after the organization
+itself is deleted, in this order:
 
 1. Remove the WorkOS organization under the procedure above, with its approval,
    its read before the action, and its read after the action. Then no member

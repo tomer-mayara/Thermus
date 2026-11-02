@@ -5,6 +5,8 @@ import type {
 
 export interface FakeTenantRow {
   readonly organizationId: string;
+  /** The organization name of a request of hosted signup; null for a request without a name. */
+  readonly organizationName: string | null;
   state: TenantState;
   serviceName: string | null;
   serviceId: string | null;
@@ -44,7 +46,8 @@ const RESUME_CLAIM_DELAY_MS = 15_000;
 
 /**
  * A working tenant registry in memory (a fake), with the claim order of the SQL adapter: a row in creating or
- * deploying first, then the oldest requested row. changes lists each state that a row takes, in order. An operation in
+ * deploying first, then the oldest requested row. A claim gives the organization name of the row to the name rule of
+ * the request, as the SQL adapter does. changes lists each state that a row takes, in order. An operation in
  * unavailable stands in for a storage failure of that operation. With a clock, the claim leaves the row of a resume
  * until 15 s after its change, as the SQL adapter does; without one, it takes the row at once. As the SQL adapter, a
  * claim holds the row for its holder: the claim of another holder leaves it until the lease of 60 s ends on the clock
@@ -61,13 +64,13 @@ export class TenantProvisioningStoreFake implements TenantProvisioningStore {
     this.clock = clock;
   }
 
-  request(organizationId: string): void {
-    this.put({ organizationId, state: 'requested' });
+  request(organizationId: string, organizationName?: string): void {
+    this.put({ organizationId, state: 'requested', organizationName: organizationName ?? null });
   }
 
   put(row: Partial<FakeTenantRow> & Pick<FakeTenantRow, 'organizationId' | 'state'>): void {
     this.rows.set(row.organizationId, {
-      serviceName: null, serviceId: null, internalUrl: null, imageDigest: null, plan: null, appliedPlan: null, failureReason: null,
+      organizationName: null, serviceName: null, serviceId: null, internalUrl: null, imageDigest: null, plan: null, appliedPlan: null, failureReason: null,
       lastActiveAt: null, createdAt: fakeCreatedAt, claimedBy: null, claimedUntilMs: null, ...row, updatedAt: this.tick(), changedAtMs: this.clock?.() ?? 0,
     });
   }
@@ -83,13 +86,13 @@ export class TenantProvisioningStoreFake implements TenantProvisioningStore {
     const byAge = [...this.rows.values()].filter((row) => this.claimableBy(row, request.holder)).sort((first, second) => first.updatedAt - second.updatedAt);
     const resumed = byAge.find((row) => PROVISIONING_STATES.has(row.state) && !this.resumedLately(row));
     if (resumed !== undefined) {
-      resumed.serviceName ??= request.serviceNameOf(resumed.organizationId);
+      resumed.serviceName ??= request.serviceNameOf(resumed.organizationId, resumed.organizationName);
       return { status: 'claimed', resumed: true, row: this.held(resumed, request.holder) };
     }
     const requested = byAge.find((row) => row.state === 'requested');
     if (requested === undefined) return { status: 'idle' };
     this.change(requested, 'creating');
-    requested.serviceName = request.serviceNameOf(requested.organizationId);
+    requested.serviceName = request.serviceNameOf(requested.organizationId, requested.organizationName);
     requested.plan = request.plan;
     return { status: 'claimed', resumed: false, row: this.held(requested, request.holder) };
   }

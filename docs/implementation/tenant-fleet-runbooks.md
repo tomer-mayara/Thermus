@@ -303,6 +303,12 @@ row in the registry:
 
 The prefix is `thermus-tenant-` in production. The staging control plane of
 the SO-12 rehearsal and the Render interface gate use `thermus-spike-tenant-`.
+Since 2 November 2026, a tenant name can have the slug of the organization name
+between the prefix and the organization ID
+([plan section 4.2](self-onboarding-plan.md#42-flows)). An example is
+`thermus-tenant-acme-corp-org-01m6asdn5ykzsy19rqen97ndh3`. The prefix stays
+first, so this definition and the prefix filter of `fleet.ts list` stay the
+same.
 An orphan costs about 7 USD a month while it runs on `0.5c-512mb`
 ([plan section 8](self-onboarding-plan.md#8-cost-model)). An orphan with the
 name of a tenant is also a risk. The next provision of that tenant takes it as

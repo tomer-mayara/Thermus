@@ -11,6 +11,8 @@ import { startTenantProvisioning, withTenantProvisioning } from '../../../src/ap
 import { loadTenantProvisioningSettings } from '../../../src/runtime/config/mcp-tenants-config.ts';
 import { createPgSettingsRuntime } from '../../../src/runtime/sql/bounded-sql-runtime.ts';
 import { PgTenantProvisioningStore } from '../../../src/tenancy/tenants/pg-tenant-provisioning-store.ts';
+import { PgTenantRegistryStore } from '../../../src/tenancy/tenants/pg-tenant-registry-store.ts';
+import { TenantRequests } from '../../../src/tenancy/tenants/tenant-requests.ts';
 import { OperatorLogSpy } from '../../support/doubles/application/operator-log-spy.ts';
 import { RenderFake } from '../../support/doubles/render/render-fake.ts';
 import { VirtualClock } from '../../support/doubles/tenants/virtual-clock.ts';
@@ -91,6 +93,23 @@ test('Given two requested rows, when the provisioner runs on the real registry, 
     [row.render_service_id, row.service_name, row.internal_url, row.image_digest, row.plan, row.applied_plan, row.failure_reason],
     [service.id, 'thermus-tenant-org-01jruntimeaaaaaaaaaaaaaaa', `http://${service.slug}:8080`, tenantImageDigest, '0.5c-512mb', '0.5c-512mb', null],
   );
+});
+
+test('Given a tenant request with the organization name of hosted signup on the real registry, when the provisioner claims the row, then the create call and the row name the service with the slug of the organization name before the organization ID', { timeout: 120_000 }, async (t) => {
+  const site = await postgresSettingsSite(t);
+  const runtime = createPgSettingsRuntime(site.connection);
+  t.after(() => runtime.close());
+  assert.deepEqual(await new TenantRequests(new PgTenantRegistryStore(runtime), 25).request(organizationA, 'Acme Corp'), { status: 'requested' });
+  const render = renderFake();
+  const control = provisionerOn(t, site, { render });
+
+  await until(site, [`${organizationA} live`]);
+  await control.provisioning.close();
+
+  const named = 'thermus-tenant-acme-corp-org-01jruntimeaaaaaaaaaaaaaaa';
+  assert.deepEqual(render.requestsOf('create service').map((request) => (request.body as { name?: string }).name), [named]);
+  const row = await rowOf(site, organizationA);
+  assert.deepEqual([row.service_name, row.organization_name, row.internal_url], [named, 'Acme Corp', `http://${render.service(named)?.slug}:8080`]);
 });
 
 test('Given a stop while a deploy runs, when a new control plane starts, then its loop continues the deploying row without a second create', { timeout: 120_000 }, async (t) => {

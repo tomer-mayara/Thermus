@@ -668,7 +668,18 @@ next row in one short [transaction](../src/tenancy/tenants/pg-tenant-claim.ts):
 a `creating` or `deploying` row first, else the oldest `requested` row, which
 becomes `creating` with its service name, the prefix of `TENANT_NAME_PREFIX` and
 the organization ID in lower case with each character outside a-z, 0-9, and
-hyphen as a hyphen, and the free plan. A `deploying` row that keeps its address
+hyphen as a hyphen, and the free plan. Since 2 November 2026, the tenant
+request of hosted signup also stores the organization name of its form in
+`organization_name`. The
+[organization name migration](../sql/migrations/20261102161257_tenant_organization_name.sql)
+adds this column. The claim of a row with a name puts the slug of that name and
+a hyphen between the prefix and the organization ID. The slug is the name in
+Unicode NFKD form without combining marks and in lower case. Each sequence of
+characters outside a-z and 0-9 in it becomes one hyphen. The slug has at most
+30 characters and no hyphen at either end. A row without a name, or with an
+empty slug, gets the name above. A resumed row keeps the service name of its
+create, and a revived `deleted` row keeps its organization name.
+A `deploying` row that keeps its address
 is the row of a resume, because only a live record gives an address and a
 delete takes it away; the claim takes it 15 s after its resume mark, when
 Render has made the deploy of the resume (SO-10). The claim is a lease (SO-12
@@ -2434,6 +2445,11 @@ The following limits affect architectural decisions today:
   organization IDs of the WorkOS form, `org_` and capital letters and digits: two
   IDs that differ only in case or in such a character would share a name, and
   the search by name would take the service of the other organization.
+  Since 2 November 2026, a name with the slug of an organization name has up
+  to 76 characters with the production prefix. Render still shortens such a
+  name into its hostname. The organization ID stays at the end of the name. An
+  ID of the WorkOS form has 30 characters there, so the name stays one to one
+  for those IDs.
 - The platform of the tenant containers is replaceable behind the
   [`TenantPlatform`](../src/tenancy/tenants/tenant-platform.ts) contract of
   `tenants`: only app composes the Render adapter

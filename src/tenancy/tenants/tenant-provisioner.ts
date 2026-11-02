@@ -36,7 +36,7 @@ export class TenantProvisioner {
 
   private async next(signal: AbortSignal): Promise<number> {
     const { store, namePrefix, freePlan, log, holder } = this.options;
-    const claim = await store.claimNext({ serviceNameOf: (organizationId) => serviceNameOf(namePrefix, organizationId), plan: freePlan, holder });
+    const claim = await store.claimNext({ serviceNameOf: (organizationId, organizationName) => serviceNameOf(namePrefix, organizationId, organizationName), plan: freePlan, holder });
     if (claim.status === 'idle') return IDLE_PAUSE_MS;
     if (claim.status === 'unavailable') {
       log.error('Tenant provisioning cannot read the tenant registry. It tries again in 60 s.');

@@ -140,6 +140,30 @@ two policies of the file. An earlier control plane ignores the table, so the
 migration can come first. The rows stay as the record of the ticks, about 365
 a year. A rollback of the code leaves the table unused.
 
+The [organization name migration](../../sql/migrations/20261102161257_tenant_organization_name.sql)
+adds one empty column, `organization_name`, to `tenants`. A name in this column
+cannot be empty. Since 2 November 2026, the tenant request of hosted signup
+stores the organization name of the signup form in this column. Then the claim
+of the provisioner makes the Render service name from the prefix, the slug of
+that name, and the organization ID.
+[Plan section 4.2](self-onboarding-plan.md#42-flows) gives the rule of the
+name. The claim comes after the request, in the loop, so the registry keeps the
+name for it. A revived `deleted` row keeps the name too, so its next claim
+makes the same service name. A request on a different path stores no name, and
+its tenant gets the service name of the prefix and the organization ID, as
+before. Apply the migration once after the tick migration, with stop-on-error,
+and before the deploy of a control plane that stores the name. Without the
+column, each tenant request and each claim of that control plane fails. Then
+signup writes a
+`Hosted signup could not request the tenant of the new organization.` line. The
+loop writes a `Tenant provisioning cannot read the tenant registry.` line every
+60 s and makes no tenant. An earlier control plane ignores the column, so the
+migration can come first. Check:
+`SELECT column_name FROM information_schema.columns WHERE table_schema = 'thermus_admin' AND table_name = 'tenants' AND column_name = 'organization_name'`
+gives one row. The migration adds no grant. The server role already has
+SELECT, INSERT, and UPDATE on the table, and these table grants also cover a new
+column. A rollback of the code leaves the column unused.
+
 ### Initial credentials and configuration
 
 Use a secure owner session to assign a new independent password to

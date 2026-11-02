@@ -78,6 +78,44 @@ test('Given organization IDs with characters outside a-z, 0-9, and hyphen, when 
   );
 });
 
+test('Given an organization name, when the service name is made, then it is the prefix, the slug of the name, a hyphen, and the organization ID as before; the slug is the name in lower case without marks, with one hyphen for each run of other characters and no hyphen at its ends', () => {
+  const nameOf = (organizationName: string) => serviceNameOf('thermus-tenant-', 'org_01M6ASDN5YKZSY19RQEN97NDH3', organizationName);
+  assert.deepEqual(
+    ['Acme Corp', 'Müller GmbH', '  --Acme (US)--  ', 'ＡＣＭＥ'].map(nameOf),
+    [
+      'thermus-tenant-acme-corp-org-01m6asdn5ykzsy19rqen97ndh3',
+      'thermus-tenant-muller-gmbh-org-01m6asdn5ykzsy19rqen97ndh3',
+      'thermus-tenant-acme-us-org-01m6asdn5ykzsy19rqen97ndh3',
+      'thermus-tenant-acme-org-01m6asdn5ykzsy19rqen97ndh3',
+    ],
+  );
+  assert.equal(serviceNameOf('thermus-spike-tenant-', 'org_ÄB', 'Acme'), 'thermus-spike-tenant-acme-org--b', 'The ID keeps its rule: each character outside a-z, 0-9, and hyphen is one hyphen');
+});
+
+test('Given no organization name, or a name without a letter or digit of a-z and 0-9, when the service name is made, then it is the name of the organization ID alone, as before', () => {
+  const unnamed = 'thermus-tenant-org-01m6asdn5ykzsy19rqen97ndh3';
+  for (const organizationName of [null, undefined, '', 'שלום עולם', '!!! --- ???', '   ']) {
+    assert.equal(serviceNameOf('thermus-tenant-', 'org_01M6ASDN5YKZSY19RQEN97NDH3', organizationName), unnamed, JSON.stringify(organizationName));
+  }
+});
+
+test('Given an organization name of 100 characters, when the service name is made, then its slug is cut to 30 characters, and a hyphen at the cut is removed', () => {
+  const nameOf = (organizationName: string) => serviceNameOf('thermus-tenant-', 'org_01M6ASDN5YKZSY19RQEN97NDH3', organizationName);
+  assert.equal(nameOf('A'.repeat(100)), `thermus-tenant-${'a'.repeat(30)}-org-01m6asdn5ykzsy19rqen97ndh3`);
+  assert.equal(nameOf('Acme '.repeat(20)), 'thermus-tenant-acme-acme-acme-acme-acme-acme-org-01m6asdn5ykzsy19rqen97ndh3');
+});
+
+test('Given a requested row with the organization name of hosted signup, when the loop names the service, then it searches, creates, and records the service with the slug of the name before the organization ID', async () => {
+  const { platform, store, runUntil, stateOf } = provisionerWith();
+  store.request(organization, 'Acme Corp');
+
+  await runUntil(() => stateOf(organization)() === 'live');
+
+  const named = 'thermus-tenant-acme-corp-org-01junitaaaaaaaaaaaaaaaaaaa';
+  assert.deepEqual(platform.calls, [`find ${named}`, `create ${named}`, 'deploy srv-new1', 'address srv-new1']);
+  assert.equal(store.row(organization).serviceName, named);
+});
+
 test('Given a new free tenant, when the loop creates it, then its variables are exactly the tenant settings of section 4.1 with OPERATION_CAPACITY 5', async () => {
   const { platform, store, runUntil, stateOf } = provisionerWith();
   store.request(organization);

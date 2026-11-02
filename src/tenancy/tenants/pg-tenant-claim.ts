@@ -11,7 +11,7 @@ import type { ClaimRequest, ClaimResult } from './tenant-provisioning-store.ts';
 // away. Right after a resume, the newest deploy of the service is still the live deploy from before the suspend
 // (record SO-09), and Render made the deploy of the resume 1.8 to 2.0 s after the resume call (SO-01c, SO-09). So the
 // claim takes such a row 15 s after its resume mark, when the newest deploy is the deploy of the resume.
-const NEXT_ROW = `SELECT organization_id, state, service_name, render_service_id FROM thermus_admin.tenants
+const NEXT_ROW = `SELECT organization_id, state, service_name, render_service_id, organization_name FROM thermus_admin.tenants
   WHERE state IN ('requested', 'creating', 'deploying')
   AND (claimed_by IS NULL OR claimed_by = $1 OR claimed_until <= now())
   AND (state <> 'deploying' OR internal_url IS NULL OR updated_at <= now() - interval '15 seconds')
@@ -47,9 +47,11 @@ async function claim(session: SettingsSqlSession, row: Record<string, unknown>, 
   const organizationId = row.organization_id as string;
   const state = row.state as ClaimedState;
   const storedName = row.service_name as string | null;
+  const organizationName = row.organization_name as string | null;
   const { holder } = request;
-  // A new claim takes the name of the current prefix; a resumed row keeps the name that its create used.
-  const serviceName = state === 'requested' || storedName === null ? request.serviceNameOf(organizationId) : storedName;
+  // A new claim names the service with the current prefix and the organization name of the row; a resumed row keeps the
+  // name that its create used.
+  const serviceName = state === 'requested' || storedName === null ? request.serviceNameOf(organizationId, organizationName) : storedName;
   if (state === 'requested') await session.query(CLAIM_REQUESTED, [organizationId, serviceName, request.plan, holder], true);
   else await session.query(CLAIM_RESUMED, [organizationId, serviceName, holder], true);
   const provisioning = { organizationId, state: state === 'requested' ? 'creating' as const : state, serviceName, serviceId: row.render_service_id as string | null, holder };

@@ -6,6 +6,8 @@ import { controlPlaneSecrets, tenantImage, tenantImageDigest, tenantProvisioning
 import { organizationA, organizationB, productionServiceId, ProvisioningHarness, serviceNameOf } from './fixtures/provisioning-harness.ts';
 
 const freePlan = '0.5c-512mb';
+// The organization of a hosted signup, with the ID format of WorkOS.
+const organizationOfSignup = 'org_01M6ASDN5YKZSY19RQEN97NDH3';
 const refusedTenantSettings = /^(?:WORKOS_API_KEY|WORKOS_CLIENT_SECRET|WORKOS_COOKIE_PASSWORD|GATEWAY_SIGNING_KEY|DATABASE_|LOGGING_DESTINATION_ENCRYPTION_KEY|RENDER_|STRIPE_)/;
 
 function variablesOf(body: Record<string, unknown> | undefined): Map<string, string> {
@@ -54,6 +56,22 @@ test('Given two organizations whose service names share a long start, when both 
   assert.deepEqual(rows.map((row) => row.serviceName), names);
   assert.deepEqual(rows.map((row) => row.internalUrl), names.map((name) => `http://${harness.render.service(name)?.slug}:8080`));
   assert.notEqual(rows[0]?.internalUrl, rows[1]?.internalUrl);
+});
+
+test('Given hosted signup requested the tenant of the organization "Acme Corp" and a tenant was requested without a name, when the loop provisions both, then the create call names the first service with the slug of the organization name before the ID, its row holds that name and the address that Render returns, and the second service keeps the name of the ID alone', async () => {
+  const harness = new ProvisioningHarness();
+  harness.store.request(organizationOfSignup, 'Acme Corp');
+  harness.store.request(organizationA);
+
+  await harness.runUntil(() => isLive(harness, organizationOfSignup)() && isLive(harness, organizationA)(), 'two live rows');
+
+  const named = 'thermus-tenant-acme-corp-org-01m6asdn5ykzsy19rqen97ndh3';
+  const unnamed = 'thermus-tenant-org-01jtenantaaaaaaaaaaaaaaaa';
+  assert.deepEqual(harness.createBodies().map((body) => body.name), [named, unnamed]);
+  const row = harness.store.row(organizationOfSignup);
+  assert.deepEqual({ serviceName: row.serviceName, internalUrl: row.internalUrl }, { serviceName: named, internalUrl: `http://${harness.render.service(named)?.slug}:8080` });
+  assert.equal(harness.store.row(organizationA).serviceName, unnamed);
+  assert.deepEqual(harness.errorLines(), []);
 });
 
 test('Given the create call, when the fake API records it, then it holds each tenant variable of section 4.1 and the image digest, and no WorkOS API key, cookie password, database setting, Render setting, or Stripe setting', async () => {

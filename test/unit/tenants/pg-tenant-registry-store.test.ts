@@ -9,7 +9,7 @@ type Rows = Record<string, unknown>[];
 
 const lock = 'LOCK TABLE thermus_admin.tenants IN SHARE ROW EXCLUSIVE MODE';
 const count = /^SELECT state, count\(\*\)::integer AS rows, bool_or\(organization_id = \$1\) AS current\s+FROM thermus_admin\.tenants GROUP BY state$/;
-const insert = "INSERT INTO thermus_admin.tenants (organization_id, state) VALUES ($1, 'requested')";
+const insert = "INSERT INTO thermus_admin.tenants (organization_id, state, organization_name) VALUES ($1, 'requested', $2)";
 const routes = `SELECT organization_id, state, internal_url, extract(epoch FROM now() - updated_at)::float8 * 1000 AS since_change_ms
   FROM thermus_admin.tenants`;
 
@@ -36,15 +36,21 @@ function counted(rows: Rows): (text: string) => Rows {
   return (text) => count.test(text) ? rows : [];
 }
 
-test('Given a free place, when a request is admitted, then one transaction locks the registry, counts the rows, inserts the requested row, and commits', async (t) => {
+test('Given a free place, when a request is admitted, then one transaction locks the registry, counts the rows, inserts the requested row without an organization name, and commits', async (t) => {
   const { store, queries, releases } = registryStore(t, counted([{ state: 'live', rows: 2, current: false }, { state: 'failed', rows: 1, current: false }]));
   const seen: RegistryCount[] = [];
   assert.deepEqual(await store.insertRequested('org_A', (registry) => { seen.push(registry); return true; }), { status: 'inserted' });
   assert.deepEqual(seen, [{ rowsByState: new Map([['live', 2], ['failed', 1]]) }]);
   assert.deepEqual(queries.map(({ text }) => text).filter((text) => !count.test(text)), ['BEGIN', lock, insert, 'COMMIT']);
   assert.match(queries[2]?.text ?? '', count);
-  assert.deepEqual(queries.map(({ values }) => values), [undefined, undefined, ['org_A'], ['org_A'], []]);
+  assert.deepEqual(queries.map(({ values }) => values), [undefined, undefined, ['org_A'], ['org_A', null], []]);
   assert.deepEqual(releases, [false]);
+});
+
+test('Given the organization name of hosted signup, when a request is admitted, then the insert of the requested row holds that name', async (t) => {
+  const { store, queries } = registryStore(t, counted([]));
+  assert.deepEqual(await store.insertRequested('org_A', () => true, 'Acme Corp'), { status: 'inserted' });
+  assert.deepEqual(queries.filter(({ text }) => text === insert).map(({ values }) => values), [['org_A', 'Acme Corp']]);
 });
 
 test('Given the row of the organization, when the decision refuses, then the transaction commits without an insert and returns the count it saw', async (t) => {
