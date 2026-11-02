@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { FinishingPlatform } from '../../../src/tenancy/tenants/finishing-platform.ts';
-import { serviceNameOf } from '../../../src/tenancy/tenants/tenant-environment.ts';
+import { isServiceNameOfPrefix, serviceNameOf } from '../../../src/tenancy/tenants/tenant-environment.ts';
 import { TenantProvisioner } from '../../../src/tenancy/tenants/tenant-provisioner.ts';
 import { OperatorLogSpy } from '../../support/doubles/application/operator-log-spy.ts';
 import { TenantProvisioningStoreFake } from '../../support/doubles/tenants/tenant-provisioning-store-fake.ts';
@@ -78,18 +78,18 @@ test('Given organization IDs with characters outside a-z, 0-9, and hyphen, when 
   );
 });
 
-test('Given an organization name, when the service name is made, then it is the prefix, the slug of the name, a hyphen, and the organization ID as before; the slug is the name in lower case without marks, with one hyphen for each run of other characters and no hyphen at its ends', () => {
+test('Given an organization name, when the service name is made, then it is the slug of the name, a hyphen, the prefix, and the organization ID as before; the slug is the name in lower case without marks, with one hyphen for each run of other characters and no hyphen at its ends', () => {
   const nameOf = (organizationName: string) => serviceNameOf('thermus-tenant-', 'org_01M6ASDN5YKZSY19RQEN97NDH3', organizationName);
   assert.deepEqual(
     ['Acme Corp', 'Müller GmbH', '  --Acme (US)--  ', 'ＡＣＭＥ'].map(nameOf),
     [
-      'thermus-tenant-acme-corp-org-01m6asdn5ykzsy19rqen97ndh3',
-      'thermus-tenant-muller-gmbh-org-01m6asdn5ykzsy19rqen97ndh3',
-      'thermus-tenant-acme-us-org-01m6asdn5ykzsy19rqen97ndh3',
-      'thermus-tenant-acme-org-01m6asdn5ykzsy19rqen97ndh3',
+      'acme-corp-thermus-tenant-org-01m6asdn5ykzsy19rqen97ndh3',
+      'muller-gmbh-thermus-tenant-org-01m6asdn5ykzsy19rqen97ndh3',
+      'acme-us-thermus-tenant-org-01m6asdn5ykzsy19rqen97ndh3',
+      'acme-thermus-tenant-org-01m6asdn5ykzsy19rqen97ndh3',
     ],
   );
-  assert.equal(serviceNameOf('thermus-spike-tenant-', 'org_ÄB', 'Acme'), 'thermus-spike-tenant-acme-org--b', 'The ID keeps its rule: each character outside a-z, 0-9, and hyphen is one hyphen');
+  assert.equal(serviceNameOf('thermus-spike-tenant-', 'org_ÄB', 'Acme'), 'acme-thermus-spike-tenant-org--b', 'The ID keeps its rule: each character outside a-z, 0-9, and hyphen is one hyphen');
 });
 
 test('Given no organization name, or a name without a letter or digit of a-z and 0-9, when the service name is made, then it is the name of the organization ID alone, as before', () => {
@@ -101,17 +101,32 @@ test('Given no organization name, or a name without a letter or digit of a-z and
 
 test('Given an organization name of 100 characters, when the service name is made, then its slug is cut to 30 characters, and a hyphen at the cut is removed', () => {
   const nameOf = (organizationName: string) => serviceNameOf('thermus-tenant-', 'org_01M6ASDN5YKZSY19RQEN97NDH3', organizationName);
-  assert.equal(nameOf('A'.repeat(100)), `thermus-tenant-${'a'.repeat(30)}-org-01m6asdn5ykzsy19rqen97ndh3`);
-  assert.equal(nameOf('Acme '.repeat(20)), 'thermus-tenant-acme-acme-acme-acme-acme-acme-org-01m6asdn5ykzsy19rqen97ndh3');
+  assert.equal(nameOf('A'.repeat(100)), `${'a'.repeat(30)}-thermus-tenant-org-01m6asdn5ykzsy19rqen97ndh3`);
+  assert.equal(nameOf('Acme '.repeat(20)), 'acme-acme-acme-acme-acme-acme-thermus-tenant-org-01m6asdn5ykzsy19rqen97ndh3');
 });
 
-test('Given a requested row with the organization name of hosted signup, when the loop names the service, then it searches, creates, and records the service with the slug of the name before the organization ID', async () => {
+test('Given service names of the production prefix and of the staging prefix, with and without an organization slug, when each name is checked against each prefix, then it holds the prefix that made it, at the start or after the slug and its hyphen, and not the prefix of the other fleet', () => {
+  const production = ['thermus-tenant-org-01a', 'acme-thermus-tenant-org-01a'];
+  const staging = ['thermus-spike-tenant-org-01a', 'acme-thermus-spike-tenant-org-01a'];
+  const holds = (prefix: string, serviceNames: readonly string[]) => serviceNames.map((serviceName) => isServiceNameOfPrefix(prefix, serviceName));
+  assert.deepEqual(holds('thermus-tenant-', production), [true, true]);
+  assert.deepEqual(holds('thermus-tenant-', staging), [false, false]);
+  assert.deepEqual(holds('thermus-spike-tenant-', staging), [true, true]);
+  assert.deepEqual(holds('thermus-spike-tenant-', production), [false, false]);
+});
+
+test('Given a service name that holds the prefix neither at its start nor after a hyphen, when it is checked against the prefix, then it does not hold the prefix', () => {
+  assert.equal(isServiceNameOfPrefix('thermus-tenant-', 'xthermus-tenant-org-01a'), false);
+  assert.equal(isServiceNameOfPrefix('thermus-tenant-', 'acme-xthermus-tenant-org-01a'), false);
+});
+
+test('Given a requested row with the organization name of hosted signup, when the loop names the service, then it searches, creates, and records the service with the slug of the name first and the prefix and the organization ID after it', async () => {
   const { platform, store, runUntil, stateOf } = provisionerWith();
   store.request(organization, 'Acme Corp');
 
   await runUntil(() => stateOf(organization)() === 'live');
 
-  const named = 'thermus-tenant-acme-corp-org-01junitaaaaaaaaaaaaaaaaaaa';
+  const named = 'acme-corp-thermus-tenant-org-01junitaaaaaaaaaaaaaaaaaaa';
   assert.deepEqual(platform.calls, [`find ${named}`, `create ${named}`, 'deploy srv-new1', 'address srv-new1']);
   assert.equal(store.row(organization).serviceName, named);
 });

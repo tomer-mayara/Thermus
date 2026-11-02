@@ -95,7 +95,7 @@ test('Given two requested rows, when the provisioner runs on the real registry, 
   );
 });
 
-test('Given a tenant request with the organization name of hosted signup on the real registry, when the provisioner claims the row, then the create call and the row name the service with the slug of the organization name before the organization ID', { timeout: 120_000 }, async (t) => {
+test('Given a tenant request with the organization name of hosted signup on the real registry, when the provisioner claims the row, then the create call and the row name the service with the slug of the organization name first and the prefix and the organization ID after it', { timeout: 120_000 }, async (t) => {
   const site = await postgresSettingsSite(t);
   const runtime = createPgSettingsRuntime(site.connection);
   t.after(() => runtime.close());
@@ -106,7 +106,7 @@ test('Given a tenant request with the organization name of hosted signup on the 
   await until(site, [`${organizationA} live`]);
   await control.provisioning.close();
 
-  const named = 'thermus-tenant-acme-corp-org-01jruntimeaaaaaaaaaaaaaaa';
+  const named = 'acme-corp-thermus-tenant-org-01jruntimeaaaaaaaaaaaaaaa';
   assert.deepEqual(render.requestsOf('create service').map((request) => (request.body as { name?: string }).name), [named]);
   const row = await rowOf(site, organizationA);
   assert.deepEqual([row.service_name, row.organization_name, row.internal_url], [named, 'Acme Corp', `http://${render.service(named)?.slug}:8080`]);

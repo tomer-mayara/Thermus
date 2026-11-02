@@ -58,14 +58,14 @@ test('Given two organizations whose service names share a long start, when both 
   assert.notEqual(rows[0]?.internalUrl, rows[1]?.internalUrl);
 });
 
-test('Given hosted signup requested the tenant of the organization "Acme Corp" and a tenant was requested without a name, when the loop provisions both, then the create call names the first service with the slug of the organization name before the ID, its row holds that name and the address that Render returns, and the second service keeps the name of the ID alone', async () => {
+test('Given hosted signup requested the tenant of the organization "Acme Corp" and a tenant was requested without a name, when the loop provisions both, then the create call names the first service with the slug of the organization name first and the prefix and the ID after it, its row holds that name and the address that Render returns, and the second service keeps the name of the prefix and the ID alone', async () => {
   const harness = new ProvisioningHarness();
   harness.store.request(organizationOfSignup, 'Acme Corp');
   harness.store.request(organizationA);
 
   await harness.runUntil(() => isLive(harness, organizationOfSignup)() && isLive(harness, organizationA)(), 'two live rows');
 
-  const named = 'thermus-tenant-acme-corp-org-01m6asdn5ykzsy19rqen97ndh3';
+  const named = 'acme-corp-thermus-tenant-org-01m6asdn5ykzsy19rqen97ndh3';
   const unnamed = 'thermus-tenant-org-01jtenantaaaaaaaaaaaaaaaa';
   assert.deepEqual(harness.createBodies().map((body) => body.name), [named, unnamed]);
   const row = harness.store.row(organizationOfSignup);

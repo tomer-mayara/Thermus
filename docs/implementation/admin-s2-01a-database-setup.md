@@ -144,8 +144,8 @@ The [organization name migration](../../sql/migrations/20261102161257_tenant_org
 adds one empty column, `organization_name`, to `tenants`. A name in this column
 cannot be empty. Since 2 November 2026, the tenant request of hosted signup
 stores the organization name of the signup form in this column. Then the claim
-of the provisioner makes the Render service name from the prefix, the slug of
-that name, and the organization ID.
+of the provisioner makes the Render service name from the slug of that name,
+the prefix, and the organization ID.
 [Plan section 4.2](self-onboarding-plan.md#42-flows) gives the rule of the
 name. The claim comes after the request, in the loop, so the registry keeps the
 name for it. A revived `deleted` row keeps the name too, so its next claim

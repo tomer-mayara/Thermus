@@ -238,8 +238,8 @@ authorized deletion duties and track their legal deadline.
 ### Delete the tenant of a removed organization
 
 With `MCP_TENANTS_ENABLED` on, each organization can have a tenant: one Render
-private service named `TENANT_NAME_PREFIX`, the slug of the organization name
-when hosted signup requested the tenant (since 2 November 2026), and its
+private service named with the slug of the organization name when hosted signup
+requested the tenant (since 2 November 2026), `TENANT_NAME_PREFIX`, and its
 organization ID, and one row in the tenant registry `thermus_admin.tenants`,
 which keeps that organization name also after the deletion. The tenant holds
 no person data of its own beyond that name, but it serves the organization and

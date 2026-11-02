@@ -1,6 +1,8 @@
 // The rows of the tenant registry that the fleet script works on: the rows of its TENANT_NAME_PREFIX, never a row that
-// names the production service, and the text of a row for the operator.
+// names the production service, and the text of a row for the operator. The prefix is at the start of a service name,
+// or after the organization slug and its hyphen (2 November 2026).
 import { PRODUCTION_SERVICE_ID } from '../../src/tenancy/providers/render/render-tenant-platform.ts';
+import { isServiceNameOfPrefix } from '../../src/tenancy/tenants/tenant-environment.ts';
 import type { FleetRow, TenantFleetStore } from '../../src/tenancy/tenants/tenant-fleet-store.ts';
 import { FleetUsageError } from './fleet-settings.ts';
 
@@ -25,7 +27,7 @@ export async function rowsOfPrefix(fleet: Pick<TenantFleetStore, 'readFleet'>, p
   const read = await fleet.readFleet();
   if (read.status !== 'complete') throw new FleetStepError('The tenant registry cannot be read. Nothing changed.');
   const usable = read.rows.filter((row) => row.serviceId !== PRODUCTION_SERVICE_ID);
-  const rows = usable.filter((row) => row.serviceName === null || row.serviceName.startsWith(prefix));
+  const rows = usable.filter((row) => row.serviceName === null || isServiceNameOfPrefix(prefix, row.serviceName));
   return { rows, otherPrefix: usable.length - rows.length, production: read.rows.length - usable.length };
 }
 
@@ -36,8 +38,8 @@ export async function rowOfOrganization(fleet: Pick<TenantFleetStore, 'readFleet
   const row = read.rows.find((candidate) => candidate.organizationId === organizationId);
   if (row === undefined) return undefined;
   if (row.serviceId === PRODUCTION_SERVICE_ID) throw new FleetUsageError(`The row of ${organizationId} names the production service ${PRODUCTION_SERVICE_ID}. The fleet script never changes it.`);
-  if (row.serviceName !== null && !row.serviceName.startsWith(prefix)) {
-    throw new FleetUsageError(`The service ${row.serviceName} of ${organizationId} does not start with TENANT_NAME_PREFIX ${prefix}. Run the script with the prefix of that fleet.`);
+  if (row.serviceName !== null && !isServiceNameOfPrefix(prefix, row.serviceName)) {
+    throw new FleetUsageError(`The service ${row.serviceName} of ${organizationId} does not hold TENANT_NAME_PREFIX ${prefix}. Run the script with the prefix of that fleet.`);
   }
   return row;
 }

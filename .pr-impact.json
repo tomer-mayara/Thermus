@@ -15,16 +15,17 @@
   },
   "architecture": {
     "modelUpdated": true,
-    "summary": "The Render service of a tenant from hosted signup gets the organization name in its name (owner request of 2 November 2026): the signup route of web gives the organization name of its form to the tenant request through the signup port that app composes, TenantRequests of tenants stores it in the new nullable column organization_name of thermus_admin.tenants (migration 20261102161257_tenant_organization_name.sql, applied before the deploy), and the claim of the provisioner names the service <prefix><organization slug>-<organization ID slug>, for example thermus-tenant-acme-corp-org-01m6asdn5ykzsy19rqen97ndh3; a row without a name or with an empty slug keeps the name of today, so existing rows, services, the prefix filter of the fleet script, and the orphan runbook stay valid. The requests of the gateway, of the workspace status read, and of the fleet script store no name. The data contract of the tenants table changes (contract, deployment: the migration order), the signup port of web and the store contracts of tenants gain the organization name (internalInterface), and the registry and Render now hold a copy of the organization name of WorkOS, which a deleted row keeps. No component, container, public module, dependency, or Mermaid view changes; the prose of the tenant registry view and of the recorded hosted Render target records the rule.",
+    "summary": "The Render service of a tenant from hosted signup gets the organization name in its name (owner request of 2 November 2026, order decided the same day): the signup route of web gives the organization name of its form to the tenant request through the signup port that app composes, TenantRequests of tenants stores it in the new nullable column organization_name of thermus_admin.tenants (migration 20261102161257_tenant_organization_name.sql, applied before the deploy), and the claim of the provisioner names the service <organization slug>-<prefix><organization ID slug>, for example acme-corp-thermus-tenant-org-01m6asdn5ykzsy19rqen97ndh3; a row without a name or with an empty slug keeps the name of today, <prefix><organization ID slug>. The fleet script and the orphan runbook recognize the tenants of a prefix by the shared predicate isServiceNameOfPrefix of tenants (the prefix at the start, or after the organization slug and a hyphen), so the staging and production fleets stay apart. The requests of the gateway, of the workspace status read, and of the fleet script store no name. The data contract of the tenants table changes (contract, deployment: the migration order), the signup port of web and the store contracts of tenants gain the organization name and the fleet script gains the predicate (internalInterface), and the registry and Render now hold a copy of the organization name of WorkOS, which a deleted row keeps. No component, container, public module, dependency, or Mermaid view changes; the prose of the tenant registry view and of the design choices (the Render hostname note) records the rule.",
     "views": [
       "Selected C4 components: hosted tenant registry, provisioning, and sweeps in the Node server (diagram unchanged; prose: the service name rule with the organization slug, the column, and the migration)",
-      "Recorded hosted Render target (diagram unchanged; prose: the length of a name with the slug and the hostname shortening)",
+      "Design choices and current soft spots (no diagram; prose: the Render hostname note gives the length of a name with the slug and the hostname shortening)",
       "Scenario: free signup and the workspace setup state (unchanged: the tenant request call survives; its payload gains the organization name, which the prose of the tenant registry view gives)",
       "Scenario: tenant provisioning (unchanged: the claim gives the creating row with its service name; the rule of the name is prose)",
       "All 24 Mermaid views of architecture/components.md unchanged (checked with the registry views script of the checker)"
     ],
     "evidence": [
       "src/tenancy/tenants/tenant-environment.ts",
+      "script/fleet/fleet-rows.ts",
       "src/tenancy/tenants/pg-tenant-claim.ts",
       "src/tenancy/tenants/tenant-provisioning-store.ts",
       "src/tenancy/tenants/tenant-provisioner.ts",
@@ -40,7 +41,7 @@
       "test/integration/tenants/provisioner-registry.runtime.ts",
       "test/integration/auth/workos-signup-tenants.test.ts",
       "test/acceptance/auth/hosted-signup-workspace.test.ts",
-      "architecture/components.md (prose of the tenant registry view and of the recorded hosted Render target)",
+      "architecture/components.md (prose of the tenant registry view and of the Render hostname note under design choices)",
       "docs/implementation/admin-s2-01a-database-setup.md (the organization name migration)"
     ]
   }

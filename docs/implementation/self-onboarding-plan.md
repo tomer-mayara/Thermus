@@ -234,7 +234,7 @@ One new setting, `THERMUS_ROLE`, selects the role of the hosted image.
 | `SELF_SERVE_SIGNUP_ENABLED`, `FREE_TENANT_LIMIT`, `FREE_TENANT_IDLE_DAYS` | the switch and the caps. `FREE_TENANT_LIMIT` is a whole number from 0 to 1000, default 25; 0 closes free signup through the cap; an invalid value stops the start with a message that names the rule, as for `OPERATION_CAPACITY` (27 October 2026). | not read |
 | `DATABASE_URL`, `LOGGING_DESTINATION_ENCRYPTION_KEY`, `DATABASE_CA_CERT_PATH` | required | not set |
 | `RENDER_API_KEY`, `RENDER_OWNER_ID`, `RENDER_REGISTRY_CREDENTIAL_ID`, `TENANT_IMAGE`, `TENANT_PLAN_FREE`, `TENANT_PLAN_TEAM` | new, required when the switch is on | not set |
-| `TENANT_NAME_PREFIX` | new, default `thermus-tenant-`: the name of a tenant service is the prefix and the organization ID in lower case; the staging control plane uses `thermus-spike-tenant-` (27 October 2026). Since 27 October 2026 (SO-06), the organization id in the service name is lower case with each character outside a-z, 0-9, and hyphen replaced by a hyphen; Render shortens a long name into its hostname at a separator and keeps hostnames unique, so the gateway uses the address that the provisioner reads from Render, never one computed from the name. Since 2 November 2026, hosted signup stores the organization name of its form in the registry row of the tenant (section 4.2). Then the service name is the prefix, the slug of that name, a hyphen, and the organization ID in the form above. For example, "Acme Corp" gives `thermus-tenant-acme-corp-org-01m6asdn5ykzsy19rqen97ndh3`. Without a name, or with an empty slug, the name stays as before. The prefix stays first. | not read |
+| `TENANT_NAME_PREFIX` | new, default `thermus-tenant-`: the name of a tenant service is the prefix and the organization ID in lower case; the staging control plane uses `thermus-spike-tenant-` (27 October 2026). Since 27 October 2026 (SO-06), the organization id in the service name is lower case with each character outside a-z, 0-9, and hyphen replaced by a hyphen; Render shortens a long name into its hostname at a separator and keeps hostnames unique, so the gateway uses the address that the provisioner reads from Render, never one computed from the name. Since 2 November 2026, hosted signup stores the organization name of its form in the registry row of the tenant (section 4.2). Then the service name is the slug of that name, a hyphen, the prefix, and the organization ID in the form above. For example, "Acme Corp" gives `acme-corp-thermus-tenant-org-01m6asdn5ykzsy19rqen97ndh3`. Without a name, or with an empty slug, the name stays as before. The prefix is at the start of a name without a slug. In a name with a slug, the prefix comes after the slug and a hyphen. | not read |
 | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_TEAM` | new, required | not set |
 | `SYSTEM_LOG_OTLP_ENDPOINT`, `SYSTEM_LOG_OTLP_TOKEN` (secret), `SYSTEM_LOG_AXIOM_DATASET` | new in SO-11a (28 October 2026), read at each start, also with the switch off: all three empty keep the system log on standard error only; the endpoint, an `https` URL, and the token come together, and one without the other stops the start with a message that names the setting and the rule. Production: `https://us-east-1.aws.edge.axiom.co/v1/logs`, the dataset `system-log` (owner decision of 28 October 2026), and an Axiom API token with ingest permission for that dataset only. | not read; the tenant refuses `SYSTEM_LOG_OTLP_TOKEN` |
 | `LIGHTPANDA_BIN`, `AD_RULES_FILE` | set by the image; read until SO-16 removes the tools | read, as today |
@@ -298,17 +298,26 @@ of its form with the tenant request. The `requested` insert stores it in
 are the gateway at an MCP call, the workspace status read, and the fleet
 command `request`. When the request of signup fails, the later request of the
 status read also stores no name. At the claim, a row with a name gets a service
-name in four parts. These parts are `TENANT_NAME_PREFIX`, the slug of the
-organization name, a hyphen, and the organization ID in lower case, as before.
+name in four parts. These parts are the slug of the organization name, a
+hyphen, `TENANT_NAME_PREFIX`, and the organization ID in lower case, as before.
 For example, "Acme Corp" gives
-`thermus-tenant-acme-corp-org-01m6asdn5ykzsy19rqen97ndh3`. To make the slug of
+`acme-corp-thermus-tenant-org-01m6asdn5ykzsy19rqen97ndh3`. To make the slug of
 a name, the provisioner uses the Unicode NFKD form of the name and removes the
 combining marks. It puts the result in lower case. Each sequence of characters
 outside a-z and 0-9 becomes one hyphen. The provisioner removes a hyphen at the
 start or the end. Then it cuts the slug to 30 characters and removes a hyphen
 at its end again. "Müller GmbH" gives `muller-gmbh`. A row without a name, or
 with an empty slug, as for a name of Hebrew letters only, gets the name as
-before. The prefix stays first. A resumed row keeps the service name of its
+before. The prefix is at the start of a name without a slug. In a name with a
+slug, the prefix comes after the slug and a hyphen. The fleet script and the
+[orphan runbook](tenant-fleet-runbooks.md#2-orphaned-render-service) find the
+tenants of a prefix by the service name. A name of the prefix starts with the
+prefix, or it holds the prefix immediately after a hyphen. With this rule, a
+name of the staging prefix `thermus-spike-tenant-` does not match the
+production prefix `thermus-tenant-`, and a production name does not match the
+staging prefix. Only an organization slug that holds the other prefix, such as
+the slug of "Thermus Spike Tenant", gives a name that matches the two
+prefixes. A resumed row keeps the service name of its
 create. A revived `deleted` row keeps its organization name, and its next claim
 makes the same name. The provisioner moves rows only from `requested` to `live`
 and, after a resume,
@@ -985,8 +994,8 @@ ID in lower case; with the switch off, the loop does not run and reads no
 Render setting; the retry bounds and the write guard of section 4.2 apply; the
 provisioner moves rows only from `requested` to `live` and, after a resume,
 from `deploying` to `live`; the deletion is the work of SO-09. Since 2 November
-2026, the service name of a row with an organization name from signup also
-holds the slug of that name (section 4.2). Given a
+2026, the service name of a row with an organization name from signup starts
+with the slug of that name and a hyphen (section 4.2). Given a
 `requested` row, when the loop runs with a fake Render API, then the row
 reaches `live` with the service ID and the internal address, and the create
 call has `OPERATION_CAPACITY=5`; given a Render `429`, then the loop waits for

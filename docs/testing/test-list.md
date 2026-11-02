@@ -6,16 +6,20 @@ The owner wants the organization name in the name of the Render service of a
 tenant from hosted signup (2 November 2026). The tenant request of signup
 stores the organization name in the new column `organization_name`, and at the
 claim the provisioner names the service
-`<prefix><organization slug>-<organization ID slug>`. A request without a name
-keeps the name of the ID alone, as before: the request of the workspace status
+`<organization slug>-<prefix><organization ID slug>`. The slug comes first, so
+the operator sees the organization first in the Render service list, and the
+ID at the end keeps each name unique. A request without a name keeps the name
+of the prefix and the ID alone, as before: the request of the workspace status
 read after a failed signup request, of the first MCP call, and of the fleet
-script. This change adds the migration of the column. Inventory presence is not
+script. The fleet script finds the tenants of its prefix with
+`isServiceNameOfPrefix`: the prefix is at the start of the name or after a
+hyphen. This change adds the migration of the column. Inventory presence is not
 a passing result; the pull request records the runs.
 
 - `test/acceptance/tenants/provisioner.test.ts` (1 new case) runs the loop as
   app composes it against the fake of the Render API: the tenant that hosted
   signup requested for "Acme Corp" gets the name
-  `thermus-tenant-acme-corp-org-01m6asdn5ykzsy19rqen97ndh3` in the create call
+  `acme-corp-thermus-tenant-org-01m6asdn5ykzsy19rqen97ndh3` in the create call
   and in its row, with the address that Render returns, and a tenant requested
   without a name keeps `thermus-tenant-org-01jtenantaaaaaaaaaaaaaaaa`. The
   registry fake `test/support/doubles/tenants/tenant-provisioning-store-fake.ts`
@@ -32,23 +36,28 @@ a passing result; the pull request records the runs.
   requests a tenant with the name through the real registry store, and the
   provisioner gives the create call and the row the name with the slug. Both
   files run in `npm run test:logging:postgres`.
-- `test/unit/tenants/provisioner.test.ts` (4 new cases) checks the name rule:
+- `test/unit/tenants/provisioner.test.ts` (6 new cases) checks the name rule:
   `Acme Corp`, `Müller GmbH`, `--Acme (US)--` with spaces at both ends, and
-  full-width letters give their slugs; no name, an empty name, and a name
-  without a letter or digit of a-z and 0-9, such as a name in Hebrew letters
-  only, give the name of the ID alone; a slug is cut to 30 characters without a
-  final hyphen; the ID part keeps its rule; and the loop searches, creates, and
-  records the service with the slug. `pg-tenant-provisioning-store.test.ts`
-  (1 new case) checks that the claim selects `organization_name` and gives it,
-  or null, to the name rule, `pg-tenant-registry-store.test.ts` (1 new case)
-  the insert with and without the name, and `tenant-requests.test.ts` (1 new
-  case) the name in the row.
+  full-width letters give their slugs, before the prefix and the ID; no name,
+  an empty name, and a name without a letter or digit of a-z and 0-9, such as
+  a name in Hebrew letters only, give the name of the prefix and the ID alone;
+  a slug is cut to 30 characters without a final hyphen; the ID part keeps its
+  rule; and the loop searches, creates, and records the service with the slug.
+  It checks `isServiceNameOfPrefix` too: `thermus-tenant-org-01a` and
+  `acme-thermus-tenant-org-01a` hold `thermus-tenant-`, the staging names
+  `thermus-spike-tenant-org-01a` and `acme-thermus-spike-tenant-org-01a` do
+  not, the production names do not hold `thermus-spike-tenant-`, and
+  `xthermus-tenant-org-01a` does not hold `thermus-tenant-`.
+  `pg-tenant-provisioning-store.test.ts` (1 new case) checks that the claim
+  selects `organization_name` and gives it, or null, to the name rule,
+  `pg-tenant-registry-store.test.ts` (1 new case) the insert with and without
+  the name, and `tenant-requests.test.ts` (1 new case) the name in the row.
 - `test/integration/auth/workos-signup-tenants.test.ts` and
   `test/unit/app/workspace-composition.test.ts` check that signup requests the
   tenant with the organization name of the form, and that the signup port of
   app gives the name to the tenant request.
 - `test/acceptance/auth/hosted-live/signup-workspace-server.ts` expects the
-  name `thermus-tenant-acme-workspace-<organization ID slug>` in the create call
+  name `acme-workspace-thermus-tenant-<organization ID slug>` in the create call
   of the live gate.
 
 ```sh
@@ -638,7 +647,7 @@ pull request records the runs.
   `OPERATION_CAPACITY=5`; the service name is the prefix and the organization ID
   in lower case with each character outside a-z, 0-9, and hyphen as a hyphen,
   and two tenants with the same shortened start get two addresses; a tenant of
-  hosted signup has the slug of its organization name before the ID; the hosted
+  hosted signup has its organization slug before the prefix; the hosted
   image reads the create variables in the tenant role; the create call holds the
   tenant variables and no secret; a `429` waits for `Retry-After`; a restart and
   a lost create answer find the service by name; two services of the name and a
@@ -1607,7 +1616,8 @@ Only the hosted edition reads `MCP_TENANTS_ENABLED`, and only with `true` the te
 A fake of the tenant platform, the registry fake, a virtual clock, and a spy of the operator log run the state machine; the SQL adapter runs on the real bounded runtime over a client double.
 
 [V] A requested row is named with the prefix and the organization ID in lower case, each character outside a-z, 0-9, and hyphen as a hyphen (also for capital letters, dots, plus signs, and letters outside a-z), created once on the free plan with the closed list of tenant variables and `OPERATION_CAPACITY` 5, and recorded as `creating`, `deploying`, and `live`, with one record line for each state
-[V] With the organization name of hosted signup, the slug of the name and a hyphen come before the organization ID: the letters and digits of a-z and 0-9 in lower case after the marks are removed, one hyphen for each run of other characters, no hyphen at the ends, and at most 30 characters without a final hyphen (`Acme Corp`, `Müller GmbH`, `--Acme (US)--` with spaces at both ends, full-width letters, 100 characters); no name, an empty name, or a name without such a letter or digit keeps the name of the ID alone; the loop searches, creates, and records the service with the slug
+[V] With the organization name of hosted signup, the slug of the name and a hyphen come first, before the prefix and the organization ID: the letters and digits of a-z and 0-9 in lower case after the marks are removed, one hyphen for each run of other characters, no hyphen at the ends, and at most 30 characters without a final hyphen (`Acme Corp`, `Müller GmbH`, `--Acme (US)--` with spaces at both ends, full-width letters, 100 characters); no name, an empty name, or a name without such a letter or digit keeps the name of the prefix and the ID alone; the loop searches, creates, and records the service with the slug
+[V] `isServiceNameOfPrefix`, for the fleet script, finds the prefix at the start of a service name without an organization slug, or after the hyphen that follows the slug (`thermus-tenant-org-01a`, `acme-thermus-tenant-org-01a`); the names of the staging prefix `thermus-spike-tenant-` do not hold the production prefix `thermus-tenant-`, and the other way round; a name with the prefix neither at its start nor after a hyphen, such as `xthermus-tenant-org-01a`, does not hold it
 [V] One service of the name is taken without a create; two services, a refused create, and a failed deploy give `failed` with the reason and one operator report
 [V] A create without a clear answer waits 30 s and searches by name before another create; a rate-limited create waits the given time, at most one hour; three attempts without a service, or three unavailable service lists, give `failed`
 [V] The newest deploy is read every 5 s for at most 15 minutes, 180 reads; a live deploy waits for the internal address; a gone service fails the row

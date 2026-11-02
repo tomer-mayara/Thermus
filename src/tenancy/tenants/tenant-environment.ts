@@ -16,15 +16,27 @@ export interface TenantPublicSettings {
 /**
  * The name of the service of an organization: the prefix and the organization ID in lower case, with each character
  * outside a-z, 0-9, and hyphen as a hyphen, so the name is DNS-safe (27 October 2026). For the organization name of
- * hosted signup, the slug of that name and a hyphen come before the ID (2 November 2026). Without a name, or with a
- * name whose slug is empty, the name is the same as before, so existing rows and services keep their names. The ID
- * part makes each name unique. The platform can shorten a long name into the hostname and keep hostnames unique
- * (SO-06), so the private address comes from the platform, never from this name.
+ * hosted signup, the slug of that name and a hyphen come first, before the prefix (2 November 2026). The operator then
+ * sees the organization first in the Render service list. Without a name, or with a name whose slug is empty, the
+ * name is the same as before, so existing rows and services keep their names. The ID part at the end makes each name
+ * unique. The platform can shorten a long name into the hostname and keep hostnames unique (SO-06), so the private
+ * address comes from the platform, never from this name.
  */
 export function serviceNameOf(prefix: string, organizationId: string, organizationName?: string | null): string {
   const idPart = organizationId.toLowerCase().replace(/[^a-z0-9-]/g, '-');
   const namePart = organizationSlugOf(organizationName ?? '');
-  return namePart === '' ? `${prefix}${idPart}` : `${prefix}${namePart}-${idPart}`;
+  return namePart === '' ? `${prefix}${idPart}` : `${namePart}-${prefix}${idPart}`;
+}
+
+/**
+ * True when the service name holds the prefix where the name rule puts it. The prefix is at the start when the tenant
+ * has no organization slug, and after a hyphen when the slug comes first. The fleet script and the orphan runbook find
+ * the tenants of one prefix with this function. The staging prefix thermus-spike-tenant- does not start with
+ * thermus-tenant- and does not hold -thermus-tenant-, and the other way round. The prefix alone never puts a tenant in
+ * the other fleet. Only an organization slug that holds the other prefix can, such as the slug of "Thermus Tenant".
+ */
+export function isServiceNameOfPrefix(prefix: string, serviceName: string): boolean {
+  return serviceName.startsWith(prefix) || serviceName.includes(`-${prefix}`);
 }
 
 // The organization name in its compatibility decomposition (NFKD), without marks, and in lower case, with one hyphen

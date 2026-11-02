@@ -673,7 +673,7 @@ request of hosted signup also stores the organization name of its form in
 `organization_name`. The
 [organization name migration](../sql/migrations/20261102161257_tenant_organization_name.sql)
 adds this column. The claim of a row with a name puts the slug of that name and
-a hyphen between the prefix and the organization ID. The slug is the name in
+a hyphen before the prefix. The slug is the name in
 Unicode NFKD form without combining marks and in lower case. Each sequence of
 characters outside a-z and 0-9 in it becomes one hyphen. The slug has at most
 30 characters and no hyphen at either end. A row without a name, or with an
