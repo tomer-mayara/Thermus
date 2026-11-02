@@ -3,7 +3,7 @@ import type { Billing, BillingState } from '../billing/billing.ts';
 import { type InvitationOverview, type MemberOverview } from './administration-overviews.ts';
 import { type ChangeRecorder, type ChangeResult } from './change-records.ts';
 import type { OrganizationDirectory } from './organization-directory.ts';
-import type { MemberRemovalRequest, RemovalOperationStore, RemovalResult } from './removal-operation-store.ts';
+import type { MemberRemovalRequest, RemovalResult, RemovalStore } from './removal-operation-store.ts';
 export type { MemberRemovalRequest, RemovalResult } from './removal-operation-store.ts';
 export interface Actor {
     readonly user: AuthenticatedUser;
@@ -28,7 +28,7 @@ export interface OrganizationAdministrationOptions {
     readonly records: ChangeRecorder;
     readonly billing: Billing;
     readonly clock?: () => Date;
-    readonly removalStore?: RemovalOperationStore;
+    readonly removalStore?: RemovalStore;
 }
 export declare class OrganizationAdministration {
     private readonly directory;

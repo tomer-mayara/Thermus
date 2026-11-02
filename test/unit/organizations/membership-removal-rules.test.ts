@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { OrganizationAdministration } from '../../../src/accounts/organizations/organization-administration.ts';
+import { OrganizationAdministration, type MemberRemovalRequest, type RemovalResult } from '../../../src/accounts/organizations/organization-administration.ts';
 import type { OrganizationMember } from '../../../src/accounts/organizations/organization-directory.ts';
 import { adminGrant, userGrant } from '../../support/fixtures/hosted-roles.ts';
 import { actor, request, removalFixture } from './fixtures/membership-removal-fixtures.ts';
@@ -21,6 +21,23 @@ test('Given a current Admin without MFA proof, when an ordinary membership is re
   assert.equal(records[0].action, 'remove-member');
   assert.equal(records[0].outcome, 'applied');
   assert.deepEqual(records[0].target, { membershipId: request.membershipId });
+});
+
+test('Given an admitted removal that passes its checks, when the membership is deleted, then one record of the removed member exists first with the target subject, the actor authority, and the admitted operation', async () => {
+  const { directory, store, administration, deletes } = removalFixture();
+  const remove = directory.deleteMembership.bind(directory);
+  const recordsAtDelete: number[] = [];
+  directory.deleteMembership = async (id) => {
+    recordsAtDelete.push(store.removedMembers.length);
+    return remove(id);
+  };
+  assert.equal(await administration.removeMember(actor, request), 'applied');
+  assert.deepEqual(recordsAtDelete, [1]);
+  assert.deepEqual(deletes, [request.membershipId]);
+  assert.deepEqual(store.removedMembers, [{
+    authority: 'provider', subject: 'admin-b', organizationId: 'org-a', membershipId: 'member-b',
+    operationId: store.admissions[0].operationId, recordedAt: '2026-10-25T00:00:00.000Z',
+  }]);
 });
 
 test('Given a User or foreign authority, when removal is requested, then it is denied before admission', async () => {
@@ -216,6 +233,39 @@ test('Given request and actor objects that the caller later mutates, when remova
   assert.equal(store.admissions[0].actor.subject, actor.user.subject);
   assert.equal(store.admissions[0].revision, 'r1');
 });
+
+const refusedRemovals: readonly [RemovalResult, (fixture: ReturnType<typeof removalFixture>) => Promise<MemberRemovalRequest>][] = [
+  ['denied', async ({ store, directory }) => {
+    const admit = store.admitRemoval.bind(store);
+    store.admitRemoval = async (intent) => { const result = await admit(intent); directory.configure(actor.user.subject, []); return result; };
+    return request;
+  }],
+  ['stale', async () => ({ ...request, revision: 'r0' })],
+  ['unsupported', async ({ directory }) => {
+    const target = await directory.member(request.membershipId);
+    assert.ok(target);
+    directory.member = async () => ({ ...target, management: 'external' });
+    return request;
+  }],
+  ['last-admin', async ({ directory }) => {
+    directory.replaceMembers([{ subject: actor.user.subject, organizationId: 'org-a', membershipId: 'member-a', grants: [adminGrant] }]);
+    return { ...request, membershipId: 'member-a' };
+  }],
+  ['busy', async ({ store }) => {
+    store.admitRemoval = async () => ({ status: 'busy' });
+    return request;
+  }],
+];
+
+for (const [expected, arrange] of refusedRemovals) {
+  test(`Given a removal that ends ${expected}, when no deletion is allowed, then no record of a removed member is written`, async () => {
+    const fixture = removalFixture();
+    const refused = await arrange(fixture);
+    assert.equal(await fixture.administration.removeMember(actor, refused), expected);
+    assert.deepEqual(fixture.store.removedMembers, []);
+    assert.deepEqual(fixture.deletes, []);
+  });
+}
 
 test('Given current safety facts and unavailable display pages, when removal runs, then the facts scan alone permits the exact deletion', async () => {
   const { administration, directory, deletes } = removalFixture();

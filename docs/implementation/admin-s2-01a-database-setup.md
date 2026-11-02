@@ -171,6 +171,34 @@ gives one row. The migration adds no grant. The server role already has
 SELECT, INSERT, and UPDATE on the table, and these table grants also cover a new
 column. A rollback of the code leaves the column unused.
 
+### Add the removed-member record before the deploy
+
+The [removed-member migration](../../sql/migrations/20261102184225_removed_members.sql)
+adds the table `removed_members`. It has one row for each membership that an
+Admin removed through Members. A row holds the authority and subject of the
+removed member, the organization, the removal operation, and the time. Free
+access refuses an account if an Admin removed the only membership of the
+account (rule of 2 November 2026). WorkOS deletes a removed membership and keeps
+no record of the deleted membership. So the removal writes the row before the
+deletion, and signup reads the row. Apply the migration one time, after the
+organization name migration, with stop-on-error. Apply it before you deploy the control
+plane that writes and reads the row. Without the table, member removal answers
+unavailable. Members shows the unavailable result, and the removal deletes
+nothing. The signup of a new account answers `503` "Activation is temporarily
+unavailable. Try again later." Existing accounts, product access, and MCP
+access keep working. An earlier control plane ignores the table, so the
+migration can come first.
+
+Check these facts. `SELECT to_regclass('thermus_admin.removed_members')` names
+the table. The server role has SELECT and INSERT on the table. The server role
+has no UPDATE, DELETE, TRUNCATE, DDL, or ownership. PUBLIC, `anon`,
+`authenticated`, and `service_role` have no access. Row-level security is on and
+forced, with the two policies of the file. The rows stay, and a row has no
+expiry. The owner reviews the retention with the privacy documents: see the note
+"Removed-member record" in the
+[authentication design](../design/authentication-design.md). A rollback of the
+code leaves the table unused.
+
 ### Initial credentials and configuration
 
 Use a secure owner session to assign a new independent password to

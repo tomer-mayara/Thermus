@@ -73,6 +73,29 @@ for (const stop of ['deadline', 'close'] as const) {
   });
 }
 
+test('Given a record of the removed member that is unresolved, when the total deadline passes, then the caller gets unknown and a late recorded answer never deletes or clears the hold', async (t) => {
+  const time = removalTime(t);
+  const { administration, store, deletes } = removalFixture();
+  const release = Promise.withResolvers<void>();
+  const reached = Promise.withResolvers<void>();
+  t.after(() => release.resolve());
+  const record = store.recordRemovedMember.bind(store);
+  store.recordRemovedMember = async (member) => { reached.resolve(); await release.promise; return record(member); };
+  let observed: string | undefined;
+  const removing = administration.removeMember(actor, request).then(result => { observed = result; });
+  await reached.promise;
+  time.advance(30_000);
+  await nextTurn();
+  assert.equal(observed, 'unknown');
+  release.resolve();
+  await removing;
+  await nextTurn();
+  assert.equal(store.removedMembers.length, 1);
+  assert.deepEqual(deletes, []);
+  assert.equal(store.operations.get('org-a')?.outcome, null);
+  assert.equal(store.completions.length, 0);
+});
+
 test('Given a final member page that consumes the deadline, when its answer is returned, then the synchronous pre-send guard prevents deletion', async (t) => {
   const time = removalTime(t);
   const { administration, directory, deletes, store } = removalFixture();

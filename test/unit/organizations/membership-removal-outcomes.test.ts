@@ -50,6 +50,26 @@ test('Given removal storage that explicitly refuses availability, when removal i
   assert.equal((await administration.listOrganizations(actor.user)).length, 1);
 });
 
+for (const answer of ['unavailable', 'unconfirmed', 'throw'] as const) {
+  test(`Given a record of the removed member that gives ${answer}, when an admitted removal passes its checks, then it is unavailable, deletes nothing, and completes its own operation with no effect`, async () => {
+    const { administration, store, deletes } = removalFixture();
+    if (answer !== 'throw') store.recordAnswer = answer;
+    const record = store.recordRemovedMember.bind(store);
+    let writes = 0;
+    store.recordRemovedMember = async (member) => {
+      writes++;
+      const result = await record(member);
+      if (answer === 'throw') throw new Error('Record answer lost');
+      return result;
+    };
+    assert.equal(await administration.removeMember(actor, request), 'unavailable');
+    assert.equal(writes, 1);
+    assert.deepEqual(deletes, []);
+    assert.deepEqual(store.completions, [{ organizationId: 'org-a', operationId: store.admissions[0].operationId, outcome: 'no-effect' }]);
+    assert.equal(store.operations.get('org-a')?.outcome, 'no-effect');
+  });
+}
+
 for (const providerEffect of ['absent', 'applied'] as const) {
   test(`Given a thrown provider error with an ${providerEffect} effect, when removal was sent once, then uncertainty holds the organization and prevents a second delete`, async () => {
     const { administration, directory, store, deletes } = removalFixture();

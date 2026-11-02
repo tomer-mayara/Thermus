@@ -7,7 +7,7 @@ import { DestinationSettingsService } from '../logs/audit/destination-settings-s
 import { loadLoggingStorageConfig } from '../runtime/config/logging-storage-config.ts';
 import type { SystemLog } from '../logs/system/system-logger.ts';
 import type { DestinationSettingsStore } from '../logs/audit/destination-settings-store.ts';
-import type { RemovalOperationStore } from '../accounts/organizations/removal-operation-store.ts';
+import type { RemovalStore } from '../accounts/organizations/removal-operation-store.ts';
 import type { BoundedSqlRuntime } from '../runtime/sql/bounded-sql-runtime.ts';
 import { PgTenantFleetStore } from '../tenancy/tenants/pg-tenant-fleet-store.ts';
 import { PgTenantProvisioningStore } from '../tenancy/tenants/pg-tenant-provisioning-store.ts';
@@ -22,7 +22,7 @@ import { TenantRequests } from '../tenancy/tenants/tenant-requests.ts';
 // provisioning statements, the writes of the MCP gateway, and the fleet statements.
 export interface HostedLoggingStorage {
   readonly store: DestinationSettingsStore;
-  readonly removalStore?: RemovalOperationStore;
+  readonly removalStore?: RemovalStore;
   readonly tenants?: {
     readonly requests: TenantRequests; readonly lookup: TenantLookup; readonly provisioning: TenantProvisioningStore; readonly gateway: TenantGatewayStore;
     readonly fleet: TenantFleetStore;
