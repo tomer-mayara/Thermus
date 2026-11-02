@@ -4,6 +4,8 @@ import type { OrganizationDirectory, OrganizationMemberFacts, OrganizationMember
 import type { MemberRemovalRequest } from './removal-operation-store.ts';
 
 type RemovalRefusal = 'denied' | 'stale' | 'unsupported' | 'last-admin';
+// A target is the direct read of the membership that the complete member pages confirmed.
+type RemovalCheck = { readonly refusal: RemovalRefusal } | { readonly target: OrganizationMemberFacts };
 type DirectoryRead = <T>(read: (directory: OrganizationDirectory, signal: AbortSignal) => Promise<T>) => Promise<T>;
 const REMOVAL_PAGE_LIMIT = 10;
 
@@ -14,20 +16,22 @@ export function currentAdmin(memberships: readonly OrganizationMembership[], org
     && member.organizationName.trim() !== '' && adminGrants(member.grants));
 }
 
-export async function checkRemoval(user: AuthenticatedUser, request: MemberRemovalRequest, read: DirectoryRead): Promise<RemovalRefusal | undefined> {
-  if (!currentAdmin(await read((directory, signal) => directory.membershipsOf(user, signal)), request.organizationId)) return 'denied';
+export async function checkRemoval(user: AuthenticatedUser, request: MemberRemovalRequest, read: DirectoryRead): Promise<RemovalCheck> {
+  if (!currentAdmin(await read((directory, signal) => directory.membershipsOf(user, signal)), request.organizationId)) return { refusal: 'denied' };
   const target = await read((directory, signal) => directory.member(request.membershipId, signal));
-  if (target === undefined) return 'stale';
+  if (target === undefined) return { refusal: 'stale' };
   const refusal = targetRefusal(target, request);
-  if (refusal !== undefined) return refusal;
-  const originalFacts = targetFacts(target);
+  if (refusal !== undefined) return { refusal };
+  // Keep the direct read before the next reads. The provider can change its record object.
+  const checked = Object.freeze({ ...target });
+  const originalFacts = targetFacts(checked);
   const pages = await readDirectoryPages(cursor => read((directory, signal) => directory.memberFactsPage({ organizationId: request.organizationId, statuses: ['active'], cursor, signal })), REMOVAL_PAGE_LIMIT);
   const members = latestOfEach(pages, member => member.membershipId).filter(member => member.organizationId === request.organizationId && member.status === 'active');
   const currentTarget = members.find(member => member.membershipId === request.membershipId);
-  if (currentTarget === undefined || targetFacts(currentTarget) !== originalFacts) return 'stale';
-  if (!members.some(member => member.subject === user.subject && adminGrants(member.grants))) return 'denied';
-  if (adminGrants(currentTarget.grants) && members.filter(member => adminGrants(member.grants)).length < 2) return 'last-admin';
-  return undefined;
+  if (currentTarget === undefined || targetFacts(currentTarget) !== originalFacts) return { refusal: 'stale' };
+  if (!members.some(member => member.subject === user.subject && adminGrants(member.grants))) return { refusal: 'denied' };
+  if (adminGrants(currentTarget.grants) && members.filter(member => adminGrants(member.grants)).length < 2) return { refusal: 'last-admin' };
+  return { target: checked };
 }
 
 function targetRefusal(target: OrganizationMemberFacts, request: MemberRemovalRequest): RemovalRefusal | undefined {
