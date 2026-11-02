@@ -2068,7 +2068,9 @@ gratuitous source change to create a red step.
 4. Drive eligibility: current product access has no extra Create action/route;
    Admin alone now has product access and continues instead of creating a new
    User workspace. Preserve the S1-02 eligibility update and extend its coverage.
-   Former invited members without access can create; retained creator records
+   Former invited members without access can create (until 2 November 2026:
+   since then a membership record of any status refuses creation, see the
+   [authentication design](authentication-design.md)); retained creator records
    follow saved-start/support recovery after access loss. Test old markers,
    malformed metadata, failed reads, and revoked first Admin without treating any
    as new consent. Keep multiple invited memberships and selection available.

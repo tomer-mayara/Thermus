@@ -62,10 +62,12 @@ export class SignupClientFake {
 
   readonly userManagement = {
     getUser: async (_id: string) => this.currentUser,
+    // A read for one user gives only the records of that user, as WorkOS does.
     listOrganizationMemberships: async (options: ListOrganizationMembershipsOptions) => {
       this.membershipReads.push(options);
       this.afterMembershipRead?.();
-      return { data: [...this.memberships], listMetadata: { after: this.readAfter } };
+      const data = options.userId === undefined ? [...this.memberships] : this.memberships.filter((record) => record.userId === options.userId);
+      return { data, listMetadata: { after: this.readAfter } };
     },
     createOrganizationMembership: async (options: CreateOrganizationMembershipOptions) => {
       this.membershipWrites.push(options);

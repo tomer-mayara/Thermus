@@ -19,15 +19,15 @@ The **Start free** link in the pricing section of [thermus.ai](https://thermus.a
 
 Keep activation on for this test.
 
-1. Use an email address that has no Thermus access. Hosted sign-in uses email and password through WorkOS, and signup needs a verified email address.
-2. Open [the signup page](https://app.thermus.ai/signup?tier=free) and select **Sign in to continue**. Sign in, or create the account and verify its email address. WorkOS sends you back to the signup page.
+1. Use an email address that has no Thermus account. Hosted sign-in uses email and password through WorkOS, and signup needs a verified email address.
+2. Open [the signup page](https://app.thermus.ai/signup?tier=free) and select **Create account**. AuthKit opens its sign-up screen. Enter the email address and a password, then verify the email address. WorkOS sends you back to the signup page.
 3. Enter the organization name. Read the Terms of Service and the Privacy Notice on the page. Select the agreement checkbox, then select **Create organization**. You become the first Admin of the organization.
 4. **Quick start** opens for the new organization. Select **Connect**.
 5. With `MCP_TENANTS_ENABLED` on, Connect first shows "Setting up your workspace. This takes about two minutes." under **Connect your MCP client**. The page reloads every 5 seconds. When the workspace is ready, the connection guide replaces these words. With the switch off, the control plane serves the tools itself, and Connect shows the connection guide at once.
 
 If Connect shows "Workspace setup failed. We have been notified and will fix it.", stop: the operator follows the [failed provision runbook](implementation/tenant-fleet-runbooks.md#1-failed-provision). If it shows "All free workspaces are in use. Try again later.", the free-tenant cap is full; the [workspace setup state](user-portal.md#workspace-setup-state) gives each message.
 
-An existing user sees **Your access is ready** and **Continue**. That does not test new organization activation. Use another fresh account to repeat the test.
+An existing user with product access sees **Your access is ready** and **Continue**. A signed-in account with a membership but no product access sees **You already have a Thermus account**. These pages do not test new organization activation. Use another fresh account to repeat the test.
 
 ## 3. Connect Claude Code
 

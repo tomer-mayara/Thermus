@@ -2,26 +2,31 @@
   "version": 1,
   "classification": {
     "container": false,
-    "external": false,
-    "contract": false,
+    "external": true,
+    "contract": true,
     "deployment": false,
     "crossCutting": false,
     "component": false,
-    "internalInterface": false,
-    "sensitiveBehavior": false,
+    "internalInterface": true,
+    "sensitiveBehavior": true,
     "dependencyRisk": false,
     "policy": false,
     "uncertain": false
   },
   "architecture": {
-    "modelUpdated": false,
-    "summary": "Documents only. The SO-12 release record docs/implementation/self-onboarding-s2-release.md records the deferred hosted live gate: the four invitation cases that the WorkOS Staging email quota deferred passed on main e75ab0dc on 1 November 2026 (30 of 30 in 685 s), so section 1.4 and the record row 1.4 take the result. No source, test, configuration, workflow, migration, or Mermaid block changes; the registry stays accurate.",
+    "modelUpdated": true,
+    "summary": "Free access creates the Thermus account first and refuses an existing account. Step 1 of GET /signup is Create account: the new GET /signup/start starts the AuthKit sign-in at its sign-up screen (screen_hint=sign-up) through the session controls and returns to /signup. The WorkOS signup adapter reads one membership record of the user in any status: a record without product access is the new outcome existing-account, which GET /signup shows as the notice You already have a Thermus account and POST /signup refuses with 403; current product access keeps Continue. Public contracts change (contract, internalInterface): BrowserSessionControls.startSignIn takes BrowserSignInRequest with the screen hint, SignupActivation gains existing-account, and the web signup route uses startSignIn of identity. The AuthKit integration changes (external): the authorize URL carries the sign-up screen hint, and the adapter makes a new user-scoped membership read. Team flag sensitiveBehavior: the admission rule of organization creation and the security file workos-signup.ts change; every existing guard stays. No container, component, dependency, or deployment change.",
     "views": [
-      "All 24 Mermaid views of architecture/components.md unchanged (checked: the release record is in no view, and no container, component, or runtime change)"
+      "Scenario: free signup and the workspace setup state (sequence, edited: the step after the cap is account creation at AuthKit, then the form)",
+      "Selected C4 components: hosted authentication in the Node server (prose edited, Mermaid unchanged: the signup route starts the account creation through the session controls; the WorkOS adapter refuses an account with a membership record)",
+      "The other 23 Mermaid views of architecture/components.md unchanged (checked: no container, component, dependency, or deployment change)"
     ],
     "evidence": [
-      "docs/implementation/self-onboarding-s2-release.md (sections 1.4 and 7)",
-      "the run of npm run test:hosted-live in the main checkout at e75ab0dc, 06:36:26 to 06:47:55 UTC on 1 November 2026"
+      "src/interfaces/web/auth/workos/workos-signup-routes.ts and workos-signup-pages.ts (GET /signup/start, the create-account page, the existing-account page)",
+      "src/accounts/identity/browser-session-controls.ts, src/accounts/organizations/signup-activation.ts, src/accounts/providers/workos/workos-signup.ts, workos-sign-in.ts (the contracts and the WorkOS reads)",
+      "docs/api-surface/src/accounts/identity/browser-session-controls.d.ts, organizations/signup-activation.d.ts, providers/workos/workos-browser-session.d.ts, providers/workos/workos-signup.d.ts",
+      "test/acceptance/auth/hosted-workos-signup.test.ts, hosted-signup-eligibility.test.ts, hosted-signup-presentation.test.ts, hosted-signup-workspace.test.ts; test/integration/auth/workos-signup-routes.test.ts, workos-signup-tenants.test.ts, workos-signup-inspection.test.ts, workos-signup.test.ts",
+      "docs/user-portal.md, docs/free-subscription-guide.md, docs/design/authentication-design.md, docs/implementation/self-onboarding-plan.md"
     ]
   }
 }

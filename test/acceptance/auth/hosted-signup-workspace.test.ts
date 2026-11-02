@@ -104,6 +104,21 @@ describe('Free signup requests the tenant of the new organization (SO-07)', () =
     assert.deepEqual(site.registry.requests, []);
   });
 
+  test('Given a full free-tenant cap, when a visitor follows Create account at /signup/start, then the closed notice shows and no provider sign-in starts', async (t) => {
+    const site = await openSignupWorkspaceSite(t, { freeTenantLimit: 1 });
+    site.provision('org_01OTHERTENANT', 'live', 'http://thermus-tenant-org-01othertenant:8080');
+    site.world.fake.takeRequests();
+
+    const answer = await new HostedBrowser(site.transport, site.publicBaseUrl).open('signup/start');
+
+    assert.equal(answer.status, 200, answer.body);
+    assert.match(answer.body, /Activation is closed/);
+    assert.equal(answer.location, undefined);
+    assert.deepEqual(answer.cookies, []);
+    assert.deepEqual(site.world.fake.takeRequests(), []);
+    assert.deepEqual(site.registry.requests, []);
+  });
+
   test('Given a failed tenant request after the confirmed first Admin membership, when the portal reads GET /workspace/status, then the control plane requests the tenant again', async (t) => {
     const site = await openSignupWorkspaceSite(t);
     site.registry.insertFailure = 'unavailable';

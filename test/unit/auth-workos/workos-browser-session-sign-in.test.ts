@@ -55,6 +55,27 @@ describe('WorkOSBrowserSession: the start of a sign-in', () => {
     assert.match(start.cookies[0] ?? '', /^__Host-thermus-sign-in=v1\.[\w-]+; HttpOnly; Secure; SameSite=Lax; Path=\/; Max-Age=600$/);
     assert.deepEqual(signInEnvelopeIn(start.cookies[0]), { state: 'state-1', codeVerifier: 'verifier-1', returnTo: '/team/members', expiresAt: startedAt + 600_000 });
   });
+
+  test('Given the sign-up screen hint and a return path, when a sign-in starts, then WorkOS makes the AuthKit URL of the sign-up screen, and the sign-in cookie keeps the return path', async () => {
+    const client = new WorkOSSessionClientDouble();
+
+    const start = await browserSession(client).startSignIn({ returnTo: '/signup', screenHint: 'sign-up' });
+
+    assert.equal(start.url, client.authorization.url);
+    assert.deepEqual(client.calls, [{
+      method: 'getAuthorizationUrlWithPKCE',
+      input: { provider: 'authkit', redirectUri: settings.redirectUri, clientId: settings.clientId, screenHint: 'sign-up' },
+    }]);
+    assert.deepEqual(signInEnvelopeIn(start.cookies[0]), { state: 'state-1', codeVerifier: 'verifier-1', returnTo: '/signup', expiresAt: startedAt + 600_000 });
+  });
+
+  test('Given no screen hint, when a sign-in starts, then the WorkOS call has no screen hint field', async () => {
+    const client = new WorkOSSessionClientDouble();
+
+    await browserSession(client).startSignIn({ returnTo: '/team/members' });
+
+    assert.equal(Object.hasOwn(client.calls[0]?.input ?? {}, 'screenHint'), false);
+  });
 });
 
 describe('WorkOSBrowserSession: the sign-in callback', () => {

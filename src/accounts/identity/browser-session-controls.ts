@@ -16,6 +16,13 @@ export type ProfiledBrowserSessionState =
   | ProfiledSignedInBrowserSession
   | { readonly status: 'signed-out'; readonly cookies: CookieEffects };
 
+export interface BrowserSignInRequest {
+  readonly returnTo?: string;
+  // sign-up opens the account creation screen of the provider. The provider still lets an existing account sign in
+  // there, so the signup route decides eligibility after the return.
+  readonly screenHint?: 'sign-up';
+}
+
 export interface BrowserSignInStart {
   readonly url: string;
   readonly cookies: CookieEffects;
@@ -34,7 +41,7 @@ export interface SessionEnd {
 // Browser routes pass callback input through. The adapter verifies provider state and protects session cookies.
 export interface BrowserSessionControls extends BrowserSession {
   authenticate(cookieHeader: string | null): Promise<ProfiledBrowserSessionState>;
-  startSignIn(request: { readonly returnTo?: string }): Promise<BrowserSignInStart>;
+  startSignIn(request: BrowserSignInRequest): Promise<BrowserSignInStart>;
   completeSignIn(callback: { readonly query: URLSearchParams; readonly cookieHeader: string | null }): Promise<BrowserSignInCompletion>;
   endSession(cookieHeader: string | null): Promise<SessionEnd>;
   csrfTokenOf(cookieHeader: string | null): string | undefined;

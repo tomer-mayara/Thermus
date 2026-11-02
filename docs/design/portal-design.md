@@ -54,9 +54,11 @@ includes the exact `admin` role. Other users keep Connect and Switch Workspace.
 The protected routes check current Admin authority independently. Keep the
 no-access message and Start free access recovery action visible.
 
-Signup creates a named organization after identity sign-in. Show an editable
-organization name and one unchecked organization/authority agreement. Trim the
-name and accept 1 to 100 UTF-16 units of well-formed text without controls.
+Signup creates a named organization after the account creation at the AuthKit
+sign-up screen. An account with an organization membership cannot create a new
+organization. Show an editable organization name and one unchecked
+organization/authority agreement. Trim the name and accept 1 to 100 UTF-16
+units of well-formed text without controls.
 Do not add account or payment fields. Keep all approved document text, versions,
 hashes, and the exact agreement. The approved personal-User bundle cannot
 authorize organization creation. The marked test bundle is not legal approval. Keep the existing origin, CSRF, eligibility,

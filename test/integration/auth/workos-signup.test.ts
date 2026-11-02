@@ -162,6 +162,28 @@ test('Given existing product access and no creation record, when activation is r
   assert.equal(fake.membershipWrites.length, 0);
 });
 
+for (const status of ['active', 'pending', 'inactive'] as const) {
+  test(`Given a membership record with status ${status} and no product access, when activation is requested, then it is an existing account without an organization or membership write`, async () => {
+    const fake = new SignupClientFake();
+    fake.memberships = [{ userId: user.subject, organizationId: 'org_former', status, directoryManaged: false, roles: [{ slug: 'member' }] }];
+
+    assert.deepEqual(await activate(fake), { status: 'existing-account' });
+    assert.deepEqual(fake.organizationWrites, []);
+    assert.deepEqual(fake.membershipWrites, []);
+  });
+}
+
+test('Given a request is cancelled after the account record read, when activation continues, then no organization or membership is written', async () => {
+  const fake = new SignupClientFake();
+  const controller = new AbortController();
+  fake.afterMembershipRead = () => controller.abort();
+
+  assert.deepEqual(await activate(fake, controller.signal), { status: 'unavailable' });
+  assert.deepEqual(fake.membershipReads.map((read) => read.userId), [user.subject]);
+  assert.deepEqual(fake.organizationWrites, []);
+  assert.deepEqual(fake.membershipWrites, []);
+});
+
 test('Given only Admin product access, when activation is requested, then existing access continues without a new workspace or membership', async () => {
   const fake = new SignupClientFake();
   fake.existingAccess = [{ organizationId: 'org_existing', organizationName: 'Existing', active: true, grants: [adminGrant] }];
@@ -251,7 +273,8 @@ for (const boundary of ['afterOrganizationCreate', 'afterOrganizationRead', 'aft
   test(`Given a request is cancelled ${boundary}, when activation continues, then it performs no membership write`, async () => {
     const fake = new SignupClientFake();
     const controller = new AbortController();
-    fake[boundary] = () => controller.abort();
+    // Each boundary comes after the organization create. The account record read before the create is not one of them.
+    fake[boundary] = () => { if (fake.organization !== undefined) controller.abort(); };
     assert.deepEqual(await activate(fake, controller.signal), { status: 'unavailable' });
     assert.equal(fake.membershipWrites.length, 0);
     assert.equal((await activate(fake)).status, 'support-required');
@@ -264,15 +287,16 @@ test('Given another membership appears before the initial grant, when all member
   fake.afterOrganizationCreate = () => { fake.memberships = [{ userId: 'user_other', organizationId: 'org_personal', status: 'pending', directoryManaged: true, roles: [{ slug: 'member' }] }]; };
   assert.deepEqual(await activate(fake), { status: 'support-required' });
   assert.equal(fake.membershipWrites.length, 0);
-  assert.deepEqual(fake.membershipReads[0]?.statuses, ['active', 'pending', 'inactive']);
-  assert.equal(fake.membershipReads[0]?.userId, undefined);
+  const organizationRead = fake.membershipReads.find((read) => read.organizationId === 'org_personal');
+  assert.deepEqual(organizationRead?.statuses, ['active', 'pending', 'inactive']);
+  assert.equal(organizationRead?.userId, undefined);
 });
 
 test('Given an unbounded membership result, when the provider repeats a cursor, then activation stops without a grant', async () => {
   const fake = new SignupClientFake();
   fake.readAfter = 'repeated';
   assert.deepEqual(await activate(fake), { status: 'unavailable' });
-  assert.equal(fake.membershipReads.length, 2);
+  assert.equal(fake.membershipReads.filter((read) => read.organizationId !== undefined).length, 2);
   assert.equal(fake.membershipWrites.length, 0);
 });
 

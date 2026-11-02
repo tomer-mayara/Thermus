@@ -7,6 +7,7 @@ import { SignupClientFake, documents, organizationName, user } from './fixtures/
 const inspect = (fake: SignupClientFake, signal = new AbortController().signal) => new WorkOSSignup(fake.options()).inspect({ user, signal });
 const activate = (fake: SignupClientFake) => new WorkOSSignup(fake.options()).activate({ user, organizationName, documents, signal: new AbortController().signal });
 const otherAccess = { organizationId: 'org_other', organizationName: 'Other workspace', active: true, grants: [{ role: 'user', permissions: ['product:access' as const] }] };
+const recordOf = (status: 'active' | 'pending' | 'inactive', role = 'user') => ({ userId: user.subject, organizationId: 'org_other', status, directoryManaged: false, roles: [{ slug: role }] });
 
 test('Given no creation record or product access, when signup state is inspected, then it is eligible after a current-user read without a provider write', async () => {
   const fake = new SignupClientFake();
@@ -14,6 +15,46 @@ test('Given no creation record or product access, when signup state is inspected
   assert.deepEqual(await inspect(fake), { status: 'eligible' });
   assert.deepEqual(fake.organizationWrites, []);
   assert.deepEqual(fake.membershipWrites, []);
+});
+
+test('Given no membership record, when signup state is inspected, then one read asks WorkOS for one record of any status of this user, and signup stays eligible', async () => {
+  const fake = new SignupClientFake();
+
+  assert.deepEqual(await inspect(fake), { status: 'eligible' });
+  assert.deepEqual(fake.membershipReads, [{ userId: user.subject, statuses: ['active', 'pending', 'inactive'], limit: 1 }]);
+});
+
+for (const status of ['active', 'pending', 'inactive'] as const) {
+  test(`Given a membership record with status ${status} and no product access, when signup state is inspected, then it is an existing account without a provider write`, async () => {
+    const fake = new SignupClientFake();
+    fake.memberships = [recordOf(status, 'member')];
+
+    assert.deepEqual(await inspect(fake), { status: 'existing-account' });
+    assert.deepEqual(fake.organizationWrites, []);
+    assert.deepEqual(fake.membershipWrites, []);
+  });
+}
+
+for (const operation of ['inspect', 'activate'] as const) {
+  test(`Given the account record read answers a record of another user, when signup ${operation} runs, then it is unavailable without a write`, async () => {
+    const fake = new SignupClientFake();
+    const options = fake.options();
+    options.workos.userManagement.listOrganizationMemberships = async () => ({ data: [{ ...recordOf('inactive'), userId: 'user_other' }], listMetadata: {} });
+    const request = { user, organizationName, documents, signal: new AbortController().signal };
+
+    assert.deepEqual(await new WorkOSSignup(options)[operation](request), { status: 'unavailable' });
+    assert.deepEqual(fake.organizationWrites, []);
+    assert.deepEqual(fake.membershipWrites, []);
+  });
+}
+
+test('Given a request is cancelled during the account record read, when the read returns, then signup state is unavailable', async () => {
+  const fake = new SignupClientFake();
+  const controller = new AbortController();
+  fake.afterMembershipRead = () => controller.abort();
+
+  assert.deepEqual(await inspect(fake, controller.signal), { status: 'unavailable' });
+  assert.equal(fake.membershipReads.length, 1);
 });
 
 test('Given current product access and an unverified email, when signup state is inspected, then existing access can continue without another agreement', async () => {
@@ -69,10 +110,11 @@ test('Given only active Admin access, when inspected, then existing access can c
 });
 
 for (const grants of [[memberRole], [superAdminGrant]]) {
-  test(`Given inactive product access and only ${grants[0].role} active access, when inspected, then signup remains eligible without a write`, async () => {
+  test(`Given inactive product access and only ${grants[0].role} active access, when inspected, then these membership records make an existing account without a write`, async () => {
     const fake = new SignupClientFake();
     fake.existingAccess = [{ ...otherAccess, active: false }, { ...otherAccess, grants }];
-    assert.deepEqual(await inspect(fake), { status: 'eligible' });
+    fake.memberships = [recordOf('inactive'), recordOf('active', grants[0].role)];
+    assert.deepEqual(await inspect(fake), { status: 'existing-account' });
     assert.deepEqual(fake.organizationWrites, []);
     assert.deepEqual(fake.membershipWrites, []);
   });
