@@ -3,33 +3,26 @@
   "classification": {
     "container": false,
     "external": false,
-    "contract": true,
-    "deployment": true,
+    "contract": false,
+    "deployment": false,
     "crossCutting": false,
     "component": false,
-    "internalInterface": true,
-    "sensitiveBehavior": true,
+    "internalInterface": false,
+    "sensitiveBehavior": false,
     "dependencyRisk": false,
     "policy": false,
     "uncertain": false
   },
   "architecture": {
-    "modelUpdated": true,
-    "summary": "Free access refuses an account whose only organization membership an Admin removed. WorkOS keeps no record of a deleted membership, so the removal coordinator of organizations writes the removed member (authority, subject, organization, membership, operation, time) to the new table thermus_admin.removed_members through the RemovedMemberStore role that joins the organizations-owned removal store contract, after its checks and before the one WorkOS deletion; a write that is not confirmed completes the operation with no-effect and the result unavailable, so that a deleted membership always has its row. App gives the same SQL adapter to the WorkOS signup adapter, which reads the row of the signed-in user last, after the product access and the membership record reads: a row gives existing-account (the notice; 403 on POST), an unavailable read gives unavailable (503), never eligibility; without hosted storage it makes no read. Public contracts change (contract, internalInterface): RemovedMember, RemovedMemberStore, and RemovalStore in removal-operation-store.ts, the removalStore option of OrganizationAdministration, and the removedMembers option of WorkOSSignup; the registry view of the hosted membership removal gains the edge of the signup read. Stored data and the deploy order change (deployment): the migration 20261102184225_removed_members.sql runs before the deploy of this control plane; without the table, member removal answers unavailable and the signup of a new account answers 503. No container, component, dependency edge, or external integration changes: the WorkOS calls are the same. Team flag sensitiveBehavior: the admission rule of organization creation and the removal flow change, and the security file workos-signup.ts changes; every existing guard stays.",
+    "modelUpdated": false,
+    "summary": "Documents only: the SO-12 release record docs/implementation/self-onboarding-s2-release.md records the production release of main 7b1ce3b6 on 2 November 2026. Step 11 is new: the owner's go-ahead \"Start release\" at about 20:12 UTC after the two tenant migrations, the state before the deploy, the workflow dispatch at 20:14:40 UTC (run 41517432942), deploy dep-dbkeuk142hec738md9t0 live at 20:15:50 UTC with sha256:515a70f6..., the checks, the rollback image sha256:72f51715..., and the open point that TENANT_IMAGE still names it. Section 1.2 names the new candidate (main 7b1ce3b6, image sha256:515a70f6... of run 41513586348) and gets the paragraph Candidate change of 2 November 2026; the candidate of 1 November 2026 becomes the rollback image of section 5 step 4, and the first candidate the second fallback. Item 14 of section 6 keeps the new digest at the GHCR pruning, the step 6 table no longer calls the tenant image the current candidate, the date line covers 2 November, and section 7 gets the row of step 11. No source, test, configuration, workflow, migration, or Mermaid block changes; the production architecture is unchanged.",
     "views": [
-      "Selected C4 components: hosted membership removal in the Node server (edited: the audit-logs node names the removed members, the workos node names the signup refusal, and the new edge workos to audit-logs, supplied RemovedMemberStore read at signup)",
-      "Selected C4 components: hosted authentication in the Node server (prose edited, Mermaid unchanged: the WorkOS adapter also refuses an account with a removed-member record)",
-      "C4 containers: hosted edition (prose edited, Mermaid unchanged: the datastore holds the removed-member record)",
-      "Selected C4 components: hosted audit settings and storage (prose edited, Mermaid unchanged: the same adapter implements the removed-member record)",
-      "The other 23 Mermaid views of architecture/components.md unchanged (checked: no container, component, dependency, or deployment-unit change)"
+      "All 24 Mermaid views of architecture/components.md unchanged (the candidate does not touch the file)"
     ],
     "evidence": [
-      "src/accounts/organizations/removal-operation-store.ts, membership-removal.ts, membership-removal-checks.ts, organization-administration.ts (the contract and the record step)",
-      "src/accounts/providers/workos/workos-signup.ts, src/app/hosted-workos-application.ts, src/app/logging-storage.ts, src/app/application.ts (the read and the composition)",
-      "src/logs/audit/pg-destination-settings-store.ts and sql/migrations/20261102184225_removed_members.sql (the statements and the table)",
-      "docs/api-surface/src/accounts/organizations/removal-operation-store.d.ts, organization-administration.d.ts, providers/workos/workos-signup.d.ts",
-      "test/acceptance/auth/hosted-signup-eligibility.test.ts, hosted-member-removal.test.ts; test/unit/organizations/membership-removal-*.test.ts; test/integration/auth/workos-signup*.test.ts; test/unit/logging/audit/pg-removal-operation-store.test.ts; test/integration/logging/audit/removal-operations.runtime.ts",
-      "docs/design/authentication-design.md (the removed-member record decision), docs/implementation/admin-s2-01a-database-setup.md, docs/user-portal.md, docs/free-subscription-guide.md, docs/implementation/self-onboarding-plan.md"
+      "docs/implementation/self-onboarding-s2-release.md (sections 1.2, 5 step 4, 6 item 14, and 7; steps 6 and 11)",
+      "https://github.com/tomer-mayara/Thermus/actions/runs/41513586348 (the image build of main 7b1ce3b6)",
+      "https://github.com/tomer-mayara/Thermus/actions/runs/41517432942 (the production deploy of sha256:515a70f6...)"
     ]
   }
 }
