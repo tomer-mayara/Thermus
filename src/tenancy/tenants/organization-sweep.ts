@@ -2,7 +2,7 @@ import type { SystemLog } from '../../logs/system/system-logger.ts';
 import type { OrganizationInventory } from './organization-inventory.ts';
 import type { FleetRow, RemovableState, TenantFleetStore } from './tenant-fleet-store.ts';
 import type { TenantState } from './tenant-registry-store.ts';
-import { removeTenant, type RemovalCause, type RemovalOutcome, type RemovalParts } from './tenant-removal.ts';
+import { removeTenant, type RemovalOutcome, type RemovalParts } from './tenant-removal.ts';
 import type { SweepStep } from './tenant-sweeps.ts';
 
 // The weekly sweep runs at the daily tick of Monday, in UTC.
@@ -15,7 +15,7 @@ const IN_FLIGHT: ReadonlySet<TenantState> = new Set(['creating', 'deploying']);
 // deletes by hand with the fleet script.
 const ABSENT_LIMIT = 2;
 // The cause of each removal of the sweep: the deleted row loses its organization name, and the record line names it.
-const SWEEP_CAUSE: RemovalCause = 'organization-absent';
+const SWEEP_CAUSE = 'organization-absent' as const;
 
 type RowResult = 'deleted' | 'foundOnRead' | 'unreadable' | 'inFlight' | 'moved' | 'failed';
 type SweptRow = FleetRow & { readonly state: RemovableState };
