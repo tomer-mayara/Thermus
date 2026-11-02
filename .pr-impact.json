@@ -7,21 +7,33 @@
     "deployment": false,
     "crossCutting": false,
     "component": false,
-    "internalInterface": false,
-    "sensitiveBehavior": false,
+    "internalInterface": true,
+    "sensitiveBehavior": true,
     "dependencyRisk": false,
     "policy": false,
     "uncertain": false
   },
   "architecture": {
-    "modelUpdated": false,
-    "summary": "Documents only: the SO-12 release record docs/implementation/self-onboarding-s2-release.md gets the entry Sweep ticks (2 November 2026) under step 3, after the organization name entry. It records the production application of the migration 20261101023017_tenant_sweep_ticks.sql of #311 (SHA-256 5b31913d...) on the owner's decision of about 19:57 UTC, as the Supabase migration 20261102195758 tenant_sweep_ticks at 19:57:58 UTC, with the pre-check of 19:57:44 UTC and the checks of 19:58:16 and 19:58:29 UTC; production now holds the three tenant migrations of #306, #311, and #319. The organization name entry no longer says that the tick migration is pending and points to the new entry. Every fact comes from the production migration record comment of #311. No source, test, configuration, workflow, migration, or Mermaid block changes; the production architecture is unchanged.",
+    "modelUpdated": true,
+    "summary": "The fleet command delete now reads the organization in WorkOS before its confirmation and takes the cause of the removal from that read, as the weekly organization sweep does (owner decision of 2 November 2026): an organization that WorkOS no longer has gives organization-absent, so the deleted row loses organization_name, and the documented account-deletion path (remove the WorkOS organization, then fleet.ts delete) leaves no organization name in the registry; an organization that WorkOS has gives operator, so the row keeps the name and the repair \"delete, then request\" gives the revived row the same service name. A read that fails stops the command before the confirmation, with nothing changed; a row that is deleted already gets no read. The decision is removalCauseOf of the tenants removal, a pure function with two unit cases; the delete command of the fleet script gains the WorkOS organization inventory read that the request and summary commands already make, and needs the existing WorkOS settings (internalInterface: the removal contract of tenants and the collaboration of the fleet script with the workos adapter change). The data retention of the account deletion procedure changes again (sensitiveBehavior). The row write of an absent organization needs the column organization_name of #319, so the command now has that migration as a prerequisite too; without the column it deletes the Render service and fails the row write. No new column, migration, setting, or grant; no component, container, public module, dependency, or Mermaid view changes; the prose of the tenant registry view records the cause of the command.",
     "views": [
-      "All 24 Mermaid views of architecture/components.md unchanged (the candidate does not touch the file)"
+      "Selected C4 components: hosted tenant registry, provisioning, and sweeps in the Node server (diagram unchanged; prose: the claim paragraph, the two delete statements by cause, and the transition list, which now names the read of the organization behind the cause of the fleet delete command)",
+      "Container view of the hosted control plane (unchanged: the operator fleet script already reads WorkOS through the organization inventory for request and summary; delete joins them)",
+      "All 24 Mermaid views of architecture/components.md unchanged (checked with the registry views script of the checker)"
     ],
     "evidence": [
-      "docs/implementation/self-onboarding-s2-release.md (step 3, the Sweep ticks bullet and the organization name bullet)",
-      "https://github.com/tomer-mayara/Thermus/pull/311#issuecomment-6587078488 (the production migration record of #311)"
+      "src/tenancy/tenants/tenant-removal.ts (removalCauseOf and the comments of the cause)",
+      "src/tenancy/tenants/tenant-fleet-store.ts and pg-tenant-fleet-store.ts (comments of the clearing statement: by the sweep or by the fleet command)",
+      "test/unit/tenants/tenant-removal.test.ts (2 new cases)",
+      "script/fleet/fleet-delete.ts (the read, the cause line of the plan, the cause of the removal)",
+      "script/fleet/fleet.ts (the WorkOS need and the usage text)",
+      "script/README.md (the delete and request rows, the settings table)",
+      "docs/implementation/hosted-account-deletion.md (the intro, step 2 with the stop rule and the column, the row table, section 4)",
+      "docs/implementation/tenant-fleet-runbooks.md (runbook 1 step 4, runbook 4 step 2)",
+      "docs/implementation/admin-s2-01a-database-setup.md (the column paragraph)",
+      "architecture/components.md (prose of the tenant registry view)",
+      "docs/implementation/self-onboarding-plan.md (section 4.2 and the data model)",
+      "docs/testing/test-list.md (the fleet delete cause inventory)"
     ]
   }
 }

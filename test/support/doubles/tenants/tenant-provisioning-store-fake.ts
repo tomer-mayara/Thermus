@@ -5,7 +5,7 @@ import type {
 
 export interface FakeTenantRow {
   readonly organizationId: string;
-  /** The organization name of a request of hosted signup; null for a request without a name, and after the delete of the sweep. */
+  /** The organization name of a request of hosted signup; null for a request without a name, and after the delete of an absent organization. */
   organizationName: string | null;
   state: TenantState;
   serviceName: string | null;
