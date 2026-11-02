@@ -7,35 +7,21 @@
     "deployment": false,
     "crossCutting": false,
     "component": false,
-    "internalInterface": true,
-    "sensitiveBehavior": true,
+    "internalInterface": false,
+    "sensitiveBehavior": false,
     "dependencyRisk": false,
     "policy": false,
     "uncertain": false
   },
   "architecture": {
-    "modelUpdated": true,
-    "summary": "The weekly organization sweep now clears organization_name when it deletes the tenant of an organization that WorkOS no longer has (2 November 2026): the row of an absent organization loses its organization name, while its service name, which can hold the slug of that name, stays for the record of the deleted service. The fleet command delete keeps the organization name, so the repair \"delete, then request\" gives the revived row the same service name; a row that the sweep deleted has no name, so its revive gets the name of the ID alone. The shared removal of tenants takes the cause of the removal, organization-absent for the sweep and operator for the fleet command; the fleet store contract of tenants gains markDeletedWithoutOrganizationName, one more guarded UPDATE of the SQL adapter with the same start state and service as the delete of the operator (internalInterface). The data retention of the account deletion procedure and the recovery outcome of a revive change (sensitiveBehavior). No column, migration, setting, grant, component, container, public module, dependency, or Mermaid view changes; the prose of the tenant registry view records the two delete statements and the cause.",
+    "modelUpdated": false,
+    "summary": "Documents only: the SO-12 release record docs/implementation/self-onboarding-s2-release.md gets the entry Sweep ticks (2 November 2026) under step 3, after the organization name entry. It records the production application of the migration 20261101023017_tenant_sweep_ticks.sql of #311 (SHA-256 5b31913d...) on the owner's decision of about 19:57 UTC, as the Supabase migration 20261102195758 tenant_sweep_ticks at 19:57:58 UTC, with the pre-check of 19:57:44 UTC and the checks of 19:58:16 and 19:58:29 UTC; production now holds the three tenant migrations of #306, #311, and #319. The organization name entry no longer says that the tick migration is pending and points to the new entry. Every fact comes from the production migration record comment of #311. No source, test, configuration, workflow, migration, or Mermaid block changes; the production architecture is unchanged.",
     "views": [
-      "Selected C4 components: hosted tenant registry, provisioning, and sweeps in the Node server (diagram unchanged; prose: the two delete statements of the fleet statements, the cause of the removal in the transition list, and the deleted row of the sweep without its organization name)",
-      "Scenario: weekly organization sweep (unchanged: the delete of the row survives as one guarded UPDATE; the statement of the sweep now also clears the name, which the prose of the tenant registry view gives)",
-      "All 24 Mermaid views of architecture/components.md unchanged (checked with the registry views script of the checker)"
+      "All 24 Mermaid views of architecture/components.md unchanged (the candidate does not touch the file)"
     ],
     "evidence": [
-      "src/tenancy/tenants/tenant-removal.ts",
-      "src/tenancy/tenants/tenant-fleet-store.ts",
-      "src/tenancy/tenants/pg-tenant-fleet-store.ts",
-      "src/tenancy/tenants/organization-sweep.ts",
-      "script/fleet/fleet-delete.ts",
-      "test/acceptance/tenants/fixtures/sweep-harness.ts",
-      "test/acceptance/tenants/organization-sweep.test.ts",
-      "test/integration/tenants/organization-sweep.runtime.ts",
-      "test/unit/tenants/organization-sweep.test.ts",
-      "test/unit/tenants/tenant-removal.test.ts",
-      "test/unit/tenants/pg-tenant-fleet-store.test.ts",
-      "architecture/components.md (prose of the tenant registry view)",
-      "docs/implementation/hosted-account-deletion.md (the registry rows after the deletion)",
-      "docs/implementation/self-onboarding-plan.md (section 4.2 and the data model)"
+      "docs/implementation/self-onboarding-s2-release.md (step 3, the Sweep ticks bullet and the organization name bullet)",
+      "https://github.com/tomer-mayara/Thermus/pull/311#issuecomment-6587078488 (the production migration record of #311)"
     ]
   }
 }
