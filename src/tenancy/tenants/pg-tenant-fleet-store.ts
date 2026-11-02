@@ -13,8 +13,13 @@ const READ_IDLE = `SELECT ${FLEET_COLUMNS} FROM thermus_admin.tenants
 // Each change names the state and the service that it starts from, so a row that another writer changed stays as it is.
 // A replacement row of the same organization has a new service, so a stale change moves instead of changing it. A row
 // without a service binds to NULL.
+const DELETED_FROM = `WHERE organization_id = $1 AND state = $2 AND state <> 'deleted' AND render_service_id IS NOT DISTINCT FROM $3 RETURNING organization_id`;
+// The delete of the operator keeps the organization name for the revive of the repair "delete, then request".
 const MARK_DELETED = `UPDATE thermus_admin.tenants SET state = 'deleted', internal_url = NULL, updated_at = now()
-  WHERE organization_id = $1 AND state = $2 AND state <> 'deleted' AND render_service_id IS NOT DISTINCT FROM $3 RETURNING organization_id`;
+  ${DELETED_FROM}`;
+// The delete of the organization sweep: the row of an absent organization loses its organization name (2 November 2026).
+const MARK_DELETED_WITHOUT_ORGANIZATION_NAME = `UPDATE thermus_admin.tenants SET state = 'deleted', internal_url = NULL, organization_name = NULL, updated_at = now()
+  ${DELETED_FROM}`;
 const MARK_SUSPENDED = `UPDATE thermus_admin.tenants SET state = 'suspended', updated_at = now()
   WHERE organization_id = $1 AND state = 'live' AND render_service_id = $2 RETURNING organization_id`;
 const MARK_RESUMED = `UPDATE thermus_admin.tenants SET state = 'deploying', updated_at = now()
@@ -49,6 +54,10 @@ export class PgTenantFleetStore implements TenantFleetStore {
 
   markDeleted(organizationId: string, from: RemovableState, serviceId: string | null): Promise<FleetWrite> {
     return this.change(MARK_DELETED, [organizationId, from, serviceId]);
+  }
+
+  markDeletedWithoutOrganizationName(organizationId: string, from: RemovableState, serviceId: string | null): Promise<FleetWrite> {
+    return this.change(MARK_DELETED_WITHOUT_ORGANIZATION_NAME, [organizationId, from, serviceId]);
   }
 
   // A failure before COMMIT destroys the client, so PostgreSQL rolls the transaction back and frees the lock.

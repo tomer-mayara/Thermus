@@ -1,6 +1,8 @@
 // The delete command: the Render service of the tenant first, through the adapter and its write guard, then the row
 // deleted from the state and the service that the command read (answer 7 of 27 October 2026, manager decision of 31
-// October 2026). It is the removal that the weekly organization sweep of the control plane uses too.
+// October 2026). It is the removal that the weekly organization sweep of the control plane uses too, with the cause of
+// the operator: the deleted row keeps its organization name, so the repair "delete, then request" gives the revived row
+// the same service name (2 November 2026).
 import { removeTenant } from '../../src/tenancy/tenants/tenant-removal.ts';
 import { confirmed } from './fleet-confirm.ts';
 import type { CommandParts } from './fleet-reads.ts';
@@ -20,7 +22,7 @@ export async function deleteTenant(parts: CommandParts, organizationId: string):
     ...(state === 'creating' || state === 'deploying' ? [`The row is ${state}: the provisioner of the control plane can still work on it, and a service that it creates after this delete stays without a row (runbook 2).`] : []),
   ];
   if (!await confirmed(parts.io, plan)) return;
-  const removal = await removeTenant({ platform: await parts.context.platform(), store: stores.fleet }, { organizationId, serviceId: row.serviceId, state }, parts.signal);
+  const removal = await removeTenant({ platform: await parts.context.platform(), store: stores.fleet }, { organizationId, serviceId: row.serviceId, state, cause: 'operator' }, parts.signal);
   if (removal.status === 'failed') throw new FleetStepError(removal.reason);
   if (removal.status === 'moved') throw new FleetStepError(`The row of ${organizationId} changed during the delete. Read the status, then run the command again.`);
   parts.io.line(`Done: ${row.serviceId === null ? 'no service to delete' : `${row.serviceId} is deleted`}, and the row of ${organizationId} is deleted.`);

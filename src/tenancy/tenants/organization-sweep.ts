@@ -14,6 +14,8 @@ const IN_FLIGHT: ReadonlySet<TenantState> = new Set(['creating', 'deploying']);
 // whole fleet in one tick. So an empty list, or more absent rows than this, stops the sweep: the operator checks and
 // deletes by hand with the fleet script.
 const ABSENT_LIMIT = 2;
+// The cause of each removal of the sweep: the deleted row loses its organization name, and the record line names it.
+const SWEEP_CAUSE = 'organization-absent' as const;
 
 type RowResult = 'deleted' | 'foundOnRead' | 'unreadable' | 'inFlight' | 'moved' | 'failed';
 type SweptRow = FleetRow & { readonly state: RemovableState };
@@ -21,7 +23,7 @@ type SweptRow = FleetRow & { readonly state: RemovableState };
 type Scope = { readonly rows: number; readonly organizations: number; readonly absent: number };
 
 export interface OrganizationSweepParts extends RemovalParts {
-  readonly store: Pick<TenantFleetStore, 'readFleet' | 'markDeleted'>;
+  readonly store: Pick<TenantFleetStore, 'readFleet' | 'markDeleted' | 'markDeletedWithoutOrganizationName'>;
   readonly inventory: Pick<OrganizationInventory, 'listOrganizations' | 'readOrganization'>;
   readonly log: SystemLog;
 }
@@ -32,7 +34,8 @@ export interface OrganizationSweepParts extends RemovalParts {
  * organization list, then reads each left-out organization by its ID and removes the tenant only when that read says
  * that the organization does not exist, because the lists lag behind a delete for seconds (SO-01e, SO-01f). A list that
  * is not complete removes nothing, and neither does an empty list or one that leaves out more than ABSENT_LIMIT rows.
- * Each removed tenant gets one record line, and each sweep one line with its counts.
+ * The deleted row loses its organization name, because the organization is gone; its service name stays for the record
+ * (2 November 2026). Each removed tenant gets one record line, and each sweep one line with its counts.
  */
 export class OrganizationSweep implements SweepStep {
   readonly name = 'organization sweep';
@@ -71,7 +74,8 @@ export class OrganizationSweep implements SweepStep {
       this.parts.log.info(`The organization sweep keeps the tenant of organization ${row.organizationId}: its read by ID is unavailable (${read.reason}). The next sweep reads it again.`);
       return 'unreadable';
     }
-    return this.removed(row, await removeTenant(this.parts, row, signal));
+    const { organizationId, serviceId, state } = row;
+    return this.removed(row, await removeTenant(this.parts, { organizationId, serviceId, state, cause: SWEEP_CAUSE }, signal));
   }
 
   private removed(row: SweptRow, outcome: RemovalOutcome): RowResult {
@@ -84,7 +88,7 @@ export class OrganizationSweep implements SweepStep {
       this.parts.log.info(`The organization sweep leaves organization ${organizationId}: its row changed during the removal. The next sweep removes it.`);
       return 'moved';
     }
-    this.parts.log.info(`Tenant removal record: ${JSON.stringify({ organizationId, state: 'deleted', from: row.state, serviceId, serviceName, cause: 'organization-absent' })}`);
+    this.parts.log.info(`Tenant removal record: ${JSON.stringify({ organizationId, state: 'deleted', from: row.state, serviceId, serviceName, cause: SWEEP_CAUSE })}`);
     return 'deleted';
   }
 
