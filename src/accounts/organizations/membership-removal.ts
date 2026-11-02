@@ -2,16 +2,16 @@ import type { AuthenticatedUser } from '../identity/access-context.ts';
 import type { OrganizationDirectory } from './organization-directory.ts';
 import { checkRemoval, currentAdmin } from './membership-removal-checks.ts';
 import { RemovalLifetime } from './membership-removal-lifetime.ts';
-import type { MemberRemovalRequest, RemovalIntent, RemovalOperationStore, RemovalResult, RemovalTerminal } from './removal-operation-store.ts';
+import type { MemberRemovalRequest, RemovalIntent, RemovalResult, RemovalStore, RemovalTerminal, RemovedMember } from './removal-operation-store.ts';
 
 export class MembershipRemoval {
   private readonly directory: OrganizationDirectory;
-  private readonly store?: RemovalOperationStore;
+  private readonly store?: RemovalStore;
   private readonly clock: () => Date;
   private readonly active = new Set<RemovalLifetime>();
   private closed = false;
 
-  constructor(directory: OrganizationDirectory, store: RemovalOperationStore | undefined, clock: () => Date) {
+  constructor(directory: OrganizationDirectory, store: RemovalStore | undefined, clock: () => Date) {
     this.directory = directory;
     this.store = store;
     this.clock = clock;
@@ -48,8 +48,11 @@ export class MembershipRemoval {
 
   private async admitted(user: AuthenticatedUser, removal: AdmittedRemoval): Promise<RemovalResult> {
     try {
-      const refusal = await checkRemoval(user, removal.intent, read => removal.wait(signal => read(this.directory, signal)));
-      if (refusal !== undefined) return removal.complete('no-effect', refusal);
+      const check = await checkRemoval(user, removal.intent, read => removal.wait(signal => read(this.directory, signal)));
+      if ('refusal' in check) return removal.complete('no-effect', check.refusal);
+      // The subject of the target is in the one authority of the directory, which is also the authority of its Admin.
+      const member = { authority: user.authority, subject: check.target.subject };
+      if (!await removal.recordRemovedMember(member, this.clock())) return removal.complete('no-effect', 'unavailable');
     } catch {
       return removal.complete('no-effect', 'unavailable');
     }
@@ -66,10 +69,10 @@ export class MembershipRemoval {
 
 class AdmittedRemoval {
   readonly intent: RemovalIntent;
-  private readonly store: RemovalOperationStore;
+  private readonly store: RemovalStore;
   private readonly lifetime: RemovalLifetime;
 
-  constructor(store: RemovalOperationStore, intent: RemovalIntent, lifetime: RemovalLifetime) {
+  constructor(store: RemovalStore, intent: RemovalIntent, lifetime: RemovalLifetime) {
     this.store = store;
     this.intent = intent;
     this.lifetime = lifetime;
@@ -77,6 +80,15 @@ class AdmittedRemoval {
 
   wait<T>(work: (signal: AbortSignal) => Promise<T>): Promise<T> {
     return this.lifetime.wait(work);
+  }
+
+  // The provider keeps no record of a deleted membership, so a deletion starts only after a confirmed record. A record
+  // without a deletion, after an unconfirmed write, changes nothing: signup refuses a person with a membership.
+  async recordRemovedMember(member: Pick<RemovedMember, 'authority' | 'subject'>, recordedAt: Date): Promise<boolean> {
+    const { store, intent } = this;
+    const record: RemovedMember = { ...member, organizationId: intent.organizationId, membershipId: intent.membershipId, operationId: intent.operationId, recordedAt: recordedAt.toISOString() };
+    const recorded = await this.wait(() => store.recordRemovedMember(record));
+    return recorded.status === 'recorded';
   }
 
   async complete(terminal: RemovalTerminal, result: RemovalResult): Promise<RemovalResult> {

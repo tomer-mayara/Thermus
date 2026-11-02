@@ -11,7 +11,7 @@ import { MCPServer, type FailureReporter } from '../interfaces/mcp/mcp-server.ts
 import type { ChangeRecorder } from '../accounts/organizations/change-records.ts';
 import { OrganizationAdministration } from '../accounts/organizations/organization-administration.ts';
 import type { OrganizationDirectory } from '../accounts/organizations/organization-directory.ts';
-import type { RemovalOperationStore } from '../accounts/organizations/removal-operation-store.ts';
+import type { RemovalStore } from '../accounts/organizations/removal-operation-store.ts';
 
 type Environment = Readonly<Record<string, string | undefined>>;
 
@@ -56,7 +56,7 @@ export interface HostedAccountParts {
   readonly billing: Billing;
   readonly operation?: AccountOperation;
   readonly signupUrl?: string;
-  readonly storage?: { close(): Promise<void>; readonly service?: HostedAccountRoutesOptions['logging']; readonly removalStore?: RemovalOperationStore };
+  readonly storage?: { close(): Promise<void>; readonly service?: HostedAccountRoutesOptions['logging']; readonly removalStore?: RemovalStore };
   readonly workspaces?: HostedAccountRoutesOptions['workspaces'];
 }
 

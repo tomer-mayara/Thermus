@@ -66,8 +66,8 @@ Scope: Thermus hosted system. The browser portal is a separate browser
 application. The Node server serves its assets and routes. Lightpanda is a
 short-lived process container even when it shares the server's Docker image.
 The optional PostgreSQL datastore uses a private schema for destination settings,
-removal intent, and the tenant registry; its subscription and billing-event
-tables wait for Slice 3. The Collector is the configured customer destination,
+removal intent, the removed-member record, and the tenant registry; its
+subscription and billing-event tables wait for Slice 3. The Collector is the configured customer destination,
 including compatible OTLP services such as Axiom; WorkOS includes AuthKit.
 The portal's HTTP arrow covers account requests and server-provided assets.
 The tenant server is the same image with `THERMUS_ROLE=tenant` (SO-03): it
@@ -174,7 +174,7 @@ roots, responsibilities, and public contracts.
 | Container or artifact | Registry owners that contribute |
 | --- | --- |
 | Both Node server editions | `app`, `config`, `http`, `system-logs`, `mcp`, `web`, `identity`, `execution`, `page-fetch`, `search`, `html-processing`, `website-fetcher`, `search-engine` |
-| Hosted server additions | `organizations`, `billing`, `workos` (also the organization inventory of the sweeps), `audit-logs` (capture, dispatch, settings, removal intent, Test, and the check of relayed events), `sql` (the bounded SQL runtime), `tenants` (the tenant registry, the provisioner, the writes of the gateway, and the sweeps), `render` (the Render adapter of the provisioner and the sweeps); with `MCP_TENANTS_ENABLED` on, `mcp` (the MCP gateway) and `web` (the relay route `/internal/audit`) |
+| Hosted server additions | `organizations`, `billing`, `workos` (also the organization inventory of the sweeps), `audit-logs` (capture, dispatch, settings, removal intent, removed members, Test, and the check of relayed events), `sql` (the bounded SQL runtime), `tenants` (the tenant registry, the provisioner, the writes of the gateway, and the sweeps), `render` (the Render adapter of the provisioner and the sweeps); with `MCP_TENANTS_ENABLED` on, `mcp` (the MCP gateway) and `web` (the relay route `/internal/audit`) |
 | Operator fleet script (`script/fleet/`, outside `src`) | No owner of its own. It composes `tenants` (the fleet statements, the request and revive, the removal, the summary), `render`, `workos` (the inventory), `sql`, `config` (the prefix and cap rules), and the system clock of `app` |
 | SO-12 rehearsal helper (`script/release/rehearsal/`, outside `src`) | No owner of its own. It composes `sql` (reads of the staging registry) and the hosted live test support, and calls the Render and WorkOS APIs itself; it is a tool of the rehearsal, not part of a running server |
 | Hosted tenant server (same image, `THERMUS_ROLE=tenant`) | `app` (tenant composition and routes), `config` (role and tenant settings), `http`, `system-logs`, `mcp`, `identity` (signed access context and its access), `workos` (Connect token check only), `audit-logs` (relay sink only), `web` (the `product:access` name only), and the tool owners `execution`, `page-fetch`, `search`, `html-processing`, `website-fetcher`, `search-engine` |
@@ -307,7 +307,10 @@ signup form calls the public organizations name validator, so this dependency
 includes runtime behavior. The dependency rules declare that existing owner pair.
 The signup route starts the account creation through the supplied session
 controls, with the sign-up screen hint, and returns to itself. The WorkOS
-adapter refuses an account with any membership record.
+adapter refuses an account with any membership record, and an account with a
+removed-member record, which it reads last through the supplied
+organizations-owned `RemovedMemberStore` role of the same SQL adapter that the
+removal writes (the removal view below).
 The WorkOS adapter saves the canonical creator/authority record on the named
 organization and confirms active Admin/product access after a new create. The
 signup route uses supplied session controls to select that organization after
@@ -379,8 +382,10 @@ gives the header contract and the relay contract.
 
 Scope: one hosted Node server container. Organizations owns the checked removal
 operation and its lifetime. App supplies the existing SQL adapter through the
-organizations-owned RemovalOperationStore role; the adapter runs on the one
-bounded runtime of the `sql` owner, which app opens. Thick arrows show composition;
+organizations-owned RemovalOperationStore and RemovedMemberStore roles; the
+adapter runs on the one bounded runtime of the `sql` owner, which app opens.
+The WorkOS signup adapter reads the removed-member record through the same
+supplied role, so that free access refuses a removed member. Thick arrows show composition;
 solid arrows show runtime calls. The adapter's source type dependency points
 from audit-logs to organizations and is omitted from this runtime view.
 PostgreSQL is an existing supporting Level 2 container. Web invokes the operation
@@ -394,9 +399,9 @@ flowchart TB
     removal_web["web · TypeScript<br/>Trusted access and removal form gates<br/>Fixed result; safe navigation"]
     removal_app["app · TypeScript<br/>Supply directory and removal store<br/>Stop removal before SQL close"]
     removal_org["organizations · TypeScript<br/>Current Admin and target checks<br/>Last-Admin rule; bounded removal"]
-    removal_audit["audit-logs · TypeScript<br/>SQL adapter: intent / receipts<br/>Best-effort customer capture"]
+    removal_audit["audit-logs · TypeScript<br/>SQL adapter: intent / receipts / removed members<br/>Best-effort customer capture"]
     removal_sql["sql · TypeScript / pg<br/>Bounded runtime and pool"]
-    removal_workos["workos · TypeScript / SDK<br/>Current reads; stop signal checks<br/>One exact membership deletion"]
+    removal_workos["workos · TypeScript / SDK<br/>Current reads; stop signal checks<br/>One exact membership deletion; signup refusal"]
     removal_app ==>|supplies account routes| removal_web
     removal_web -->|checked removeMember call| removal_org
     removal_app ==>|composition / lifetime| removal_org
@@ -406,6 +411,7 @@ flowchart TB
     removal_org -->|supplied RemovalOperationStore| removal_audit
     removal_audit -->|bounded statements| removal_sql
     removal_org -->|supplied OrganizationDirectory| removal_workos
+    removal_workos -->|supplied RemovedMemberStore read at signup| removal_audit
   end
   removal_db[("L2: PostgreSQL<br/>Private settings and removal intent")]
   removal_provider["External system: WorkOS<br/>Identity and memberships"]
@@ -433,7 +439,16 @@ required product and administration permissions count; pending records and
 invitations do not count. MFA proof is not required. Unsafe, stale, unsupported,
 incomplete, or last-Admin removal stops before the existing exact-ID WorkOS
 boundary can delete once. These are current reads, not a remote transaction;
-independent provider/operator writes remain a runbook constraint.
+independent provider/operator writes remain a runbook constraint. After the
+checks and before the deletion, the coordinator writes the removed member
+(authority, subject, organization, membership, operation, time) to
+`thermus_admin.removed_members` through the `RemovedMemberStore` role of the
+same store; a write that is not confirmed completes the operation with
+`no-effect` and the result `unavailable`, so that a deleted membership always
+has its row. The WorkOS signup adapter reads the row of the signed-in user last,
+after the product access and membership record reads, and refuses free access
+with `existing-account` when one exists; an unavailable read gives `unavailable`,
+never eligibility (decision of 2 November 2026 in the authentication design).
 
 The scan uses the directory's
 [membership-facts page](../src/accounts/organizations/organization-directory.ts)
@@ -516,7 +531,8 @@ flowchart TB
 [Audit settings composition](../src/app/logging-storage.ts) supplies the settings store
 and server key only when hosted storage configuration is available. It constructs
 one service, collector, and sender; saved Test and export use that same sender.
-The same adapter and pool implement the organizations-owned removal store.
+The same adapter and pool implement the organizations-owned removal store,
+including the removed-member record that the WorkOS signup adapter reads.
 App opens the one [bounded SQL runtime](../src/runtime/sql/bounded-sql-runtime.ts)
 of the `sql` owner and gives it to this adapter and to the tenant registry.
 Destination settings and export keep their existing contracts.
@@ -661,8 +677,14 @@ adds the claim of the provisioner, `claimed_by` and `claimed_until`, both set
 or both empty. The [tick migration](../sql/migrations/20261101023017_tenant_sweep_ticks.sql)
 adds the table `tenant_sweep_ticks` of the sweeps: one row for each claimed
 tick, keyed by its time, with the claim holder and the time of the claim; the
-server role can only read and add its rows. The `subscriptions` and
-`billing_events` tables have no store until Slice 3.
+server role can only read and add its rows. The
+[removed-member migration](../sql/migrations/20261102184225_removed_members.sql)
+adds the table `removed_members` of the membership removal: one row for each
+membership that an Admin removed through Members, keyed by the membership,
+with the authority and subject of the removed member, the organization, the
+removal operation, and the time; the server role can only read and add its
+rows, and free signup reads them. The `subscriptions` and `billing_events`
+tables have no store until Slice 3.
 
 The [provisioner](../src/tenancy/tenants/tenant-provisioner.ts) moves rows only
 from `requested` to `live` and, after a resume, from `deploying` to `live`. Its
@@ -2051,7 +2073,7 @@ includes the built portal and trusted rules and selects hosted operation.
 The [recorded Render topology](../docs/implementation/render-hosted-docker-plan.md)
 describes the earlier single-service target without a separate frontend, database,
 Redis, disk, or worker. Source now supports an optional external PostgreSQL
-datastore for destination settings, removal intent, and the tenant registry. The selected Supabase target and ordered setup are recorded in
+datastore for destination settings, removal intent, the removed-member record, and the tenant registry. The selected Supabase target and ordered setup are recorded in
 the [organization-admin plan](../docs/design/organization-admin-plan.md#owner-setup-for-supabase--slice-2);
 the [rollout ledger](../docs/implementation/admin-s2-04.md#evidence-and-release-holds)
 records applied SQL and the remaining live connection, configuration, destination,
@@ -2069,7 +2091,12 @@ step 3a applied the [claim migration](../sql/migrations/20261031221342_tenant_cl
 on 1 November 2026, before the deploy of a control plane that claims with a
 lease. The [tick migration](../sql/migrations/20261101023017_tenant_sweep_ticks.sql),
 which comes before the deploy of a control plane that claims the ticks of the
-sweeps, is not recorded as applied. A deploy of the Render service starts a new instance and keeps the
+sweeps, is not recorded as applied. The
+[removed-member migration](../sql/migrations/20261102184225_removed_members.sql)
+comes before the deploy of a control plane that keeps the record of each
+removed member; without its table, that control plane answers unavailable to a
+member removal and `503` to the signup of a new account. It is not recorded as
+applied. A deploy of the Render service starts a new instance and keeps the
 old one for about 120 s after the new deploy is live (SO-12 rehearsal of
 31 October 2026), so two Node server processes run for about 2 minutes; the
 claim lease of the [tenant provisioning](#scenario-tenant-provisioning)
@@ -2165,7 +2192,7 @@ surface and the narrower file-context restrictions.
 | `website-fetcher` — [`src/pipelines/providers/website-fetcher/`](../src/pipelines/providers/website-fetcher/) | Render pages with Lightpanda; destination/process policy; safe renderer failures and reports. | Fetcher/result/failure roles, renderer-failure-reports, and documented [network policy](../src/pipelines/providers/website-fetcher/network-policy.ts). App selects Lightpanda. |
 | `search-engine` — [`src/pipelines/providers/search-engine/`](../src/pipelines/providers/search-engine/) | Build Brave search requests, validate the returned origin/document, and fetch through a supplied website fetcher. | [Search engine/document roles](../src/pipelines/providers/search-engine/search-engine.ts). App selects the Brave HTTP adapter. |
 | `system-logs` — [`src/logs/system/`](../src/logs/system/) | Format internal engineering diagnostics with caller file and line. Customers cannot access this stream. | SystemLog for callers; concrete SystemLogger/LogLevel with a supplied SystemLogSink. ConsoleSystemLogSink and OtelSystemLogSink own output only. |
-| `audit-logs` — [`src/logs/audit/`](../src/logs/audit/) | Own customer audit event projection, activity snapshots, bounded queue and current-revision dispatch, tenant destination validation and credential protection, atomic settings revisions, saved-destination Tests, and one-shot OTLP requests to the configured Collector or compatible service, including direct Axiom. Its SQL adapter also stores removal intent and terminal receipts on the shared `sql` runtime. The relay sink of a tenant sends its events to the control plane with the bounds of the collector, and the control plane checks each relayed tool completion again before its capture. | AuditLog event methods and AuditEventSink; AuditSnapshots and RevisionBoundAuditSink; AuditCollector; destination-settings service with fresh export authorization and Test outcomes; neutral settings store, private codec, and SQL adapter; implementation of the organizations-owned removal store; OtlpAuditSender with tracked physical settlement. MCP and web share hosted snapshots and bounded dispatch; web reads, saves, and tests settings. |
+| `audit-logs` — [`src/logs/audit/`](../src/logs/audit/) | Own customer audit event projection, activity snapshots, bounded queue and current-revision dispatch, tenant destination validation and credential protection, atomic settings revisions, saved-destination Tests, and one-shot OTLP requests to the configured Collector or compatible service, including direct Axiom. Its SQL adapter also stores removal intent, terminal receipts, and the removed-member record on the shared `sql` runtime. The relay sink of a tenant sends its events to the control plane with the bounds of the collector, and the control plane checks each relayed tool completion again before its capture. | AuditLog event methods and AuditEventSink; AuditSnapshots and RevisionBoundAuditSink; AuditCollector; destination-settings service with fresh export authorization and Test outcomes; neutral settings store, private codec, and SQL adapter; implementation of the organizations-owned removal store, with the removed-member record; OtlpAuditSender with tracked physical settlement. MCP and web share hosted snapshots and bounded dispatch; web reads, saves, and tests settings. |
 | `http` — [`src/runtime/http/`](../src/runtime/http/) | Node listener, HTTP-to-Fetch exchange, trusted client address, request cancellation, connection tracking, and listener drain. | Server for app; client-address and request-cancellation modules for other consumers. Exchange mechanics remain private. |
 | `config` — [`src/runtime/config/`](../src/runtime/config/) | Validate deployment/listen settings, `THERMUS_ROLE` and the tenant settings with the refusal of control-plane secrets, optional hosted logging storage settings, the optional system log export settings of the control plane, the hosted operation capacity, the switch `MCP_TENANTS_ENABLED`, and, with it on, the free-tenant cap, the provisioning settings, the hour of the tenant sweeps, and the gateway settings with the check that `GATEWAY_PUBLIC_KEY` holds the public key of `GATEWAY_SIGNING_KEY`, and read trusted ad rules. Provider settings stay with their provider; a tenant has no provider settings. | Deployment-config and ad-rules-file modules; app selects the logging-storage settings reader, the system-log-export settings reader, the operation-capacity reader, the switch and provisioning-settings reader, the free-tenant-limit reader, and the gateway-settings reader. |
 | `sql` — [`src/runtime/sql/`](../src/runtime/sql/) | Own the one bounded SQL runtime of the hosted stores: the `pg` pool with verified TLS, admission of active and pending work, acquisition, operation and statement deadlines, late-work accounting, and bounded close. The only owner that imports `pg`. | [Bounded SQL runtime](../src/runtime/sql/bounded-sql-runtime.ts) for the stores; app opens it and owns its lifetime. |

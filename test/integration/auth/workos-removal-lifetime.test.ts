@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { OrganizationAdministration } from '../../../src/accounts/organizations/organization-administration.ts';
-import type { RemovalIntent, RemovalOperationStore } from '../../../src/accounts/organizations/removal-operation-store.ts';
+import type { RemovalIntent, RemovalStore } from '../../../src/accounts/organizations/removal-operation-store.ts';
 import { WorkOSOrganizations, type WorkOSOrganizationsOptions } from '../../../src/accounts/providers/workos/workos-organizations.ts';
 import { hostedRolePermissions } from '../../support/fixtures/hosted-roles.ts';
 
@@ -58,10 +58,12 @@ for (const stage of ['actor-pages', 'target-roles', 'target-user', 'facts-roles'
       userReads = 0;
       let intent: RemovalIntent | undefined;
       let completions = 0;
-      const store: RemovalOperationStore = {
+      const store: RemovalStore = {
         admitRemoval: async admitted => { intent = admitted; return { status: 'admitted' }; },
         completeRemoval: async () => { completions++; return { status: 'completed' }; },
         readRemoval: async () => ({ status: 'absent' }),
+        recordRemovedMember: async () => ({ status: 'recorded' }),
+        readRemovedMember: async () => ({ status: 'absent' }),
       };
       const administration = new OrganizationAdministration({ directory, removalStore: store, records: { record: () => {} }, billing: { stateOf: unused, updateSeats: unused } });
       t.after(() => administration.close());

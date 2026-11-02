@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import type { RemovalIntent, RemovalOperation, RemovalOperationStore, RemovalTerminal } from '../../accounts/organizations/removal-operation-store.ts';
+import type { RemovalIntent, RemovalOperation, RemovalOperationStore, RemovalStore, RemovalTerminal, RemovedMember, RemovedMemberStore } from '../../accounts/organizations/removal-operation-store.ts';
 import type { BoundedSqlRuntime } from '../../runtime/sql/bounded-sql-runtime.ts';
 import type { DestinationSettings, DestinationSettingsStore, ReadSettingsResult, SaveSettingsResult, StoredDestinationSettings } from './destination-settings-store.ts';
 
@@ -23,8 +23,12 @@ const admitRemoval = `INSERT INTO thermus_admin.membership_removal_operations ($
 const completeRemoval = `UPDATE thermus_admin.membership_removal_operations SET outcome = $3
   WHERE organization_id = $1 AND operation_id = $2 AND (outcome IS NULL OR outcome = $3)
   RETURNING outcome`;
+// The row of a membership stays; a second record of the same membership changes nothing and is recorded.
+const recordRemovedMember = `INSERT INTO thermus_admin.removed_members (membership_id, organization_id, authority, subject, operation_id, recorded_at)
+  VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT (membership_id) DO NOTHING`;
+const readRemovedMember = 'SELECT membership_id FROM thermus_admin.removed_members WHERE authority = $1 AND subject = $2 LIMIT 1';
 
-export class PgDestinationSettingsStore implements DestinationSettingsStore, RemovalOperationStore {
+export class PgDestinationSettingsStore implements DestinationSettingsStore, RemovalStore {
   private readonly runtime: BoundedSqlRuntime;
 
   constructor(runtime: BoundedSqlRuntime) { this.runtime = runtime; }
@@ -51,6 +55,22 @@ export class PgDestinationSettingsStore implements DestinationSettingsStore, Rem
       return { status: rows[0] ? 'completed' as const : 'mismatch' as const };
     });
     return result.status === 'complete' ? result.value : result;
+  }
+
+  async recordRemovedMember(record: RemovedMember): ReturnType<RemovedMemberStore['recordRemovedMember']> {
+    const result = await this.runtime.run(async (session) => {
+      await session.query(recordRemovedMember, [record.membershipId, record.organizationId, record.authority, record.subject, record.operationId, record.recordedAt], true);
+      return { status: 'recorded' as const };
+    });
+    return result.status === 'complete' ? result.value : result;
+  }
+
+  async readRemovedMember(identity: { readonly authority: string; readonly subject: string }): ReturnType<RemovedMemberStore['readRemovedMember']> {
+    const result = await this.runtime.run(async (session) => {
+      const rows = await session.query(readRemovedMember, [identity.authority, identity.subject]);
+      return { status: rows[0] ? 'found' as const : 'absent' as const };
+    });
+    return result.status === 'complete' ? result.value : { status: 'unavailable' };
   }
 
   async read(tenantId: string): Promise<ReadSettingsResult> {

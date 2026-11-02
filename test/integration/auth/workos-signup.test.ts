@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto';
 import { test } from 'node:test';
 import { adminGrant, userGrant } from '../../support/fixtures/hosted-roles.ts';
 import { WorkOSSignup } from '../../../src/accounts/providers/workos/workos-signup.ts';
-import { SignupClientFake, documents, organizationName, user } from './fixtures/signup-client-fake.ts';
+import { RemovedMemberStoreSpy, SignupClientFake, documents, organizationName, user } from './fixtures/signup-client-fake.ts';
 
 test('Given a verified identity without access, when it names and accepts an organization, then the saved name and first Admin match the request', async () => {
   const fake = new SignupClientFake();
@@ -182,6 +182,16 @@ test('Given a request is cancelled after the account record read, when activatio
   assert.deepEqual(fake.membershipReads.map((read) => read.userId), [user.subject]);
   assert.deepEqual(fake.organizationWrites, []);
   assert.deepEqual(fake.membershipWrites, []);
+});
+
+test('Given no removed-member record, when a verified identity names and accepts an organization, then after one read of the identity the organization and first Admin are created as before', async () => {
+  const fake = new SignupClientFake();
+  fake.removedMembers = new RemovedMemberStoreSpy('absent');
+
+  assert.deepEqual(await activate(fake), { status: 'active', organizationId: 'org_personal' });
+  assert.deepEqual(fake.removedMembers.reads, [{ authority: user.authority, subject: user.subject }]);
+  assert.equal(fake.organizationWrites.length, 1);
+  assert.deepEqual(fake.membershipWrites, [{ organizationId: 'org_personal', userId: user.subject, roleSlug: 'admin' }]);
 });
 
 test('Given only Admin product access, when activation is requested, then existing access continues without a new workspace or membership', async () => {

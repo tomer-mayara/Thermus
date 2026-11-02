@@ -8,11 +8,26 @@ import { Pool } from 'pg';
 import { openLoggingStorage } from '../../../../src/app/logging-storage.ts';
 import { PgDestinationSettingsStore } from '../../../../src/logs/audit/pg-destination-settings-store.ts';
 import { BoundedSqlRuntime, createPgSettingsRuntime } from '../../../../src/runtime/sql/bounded-sql-runtime.ts';
-import type { RemovalIntent } from '../../../../src/accounts/organizations/removal-operation-store.ts';
+import type { RemovalIntent, RemovedMember } from '../../../../src/accounts/organizations/removal-operation-store.ts';
 import { postgresSettingsSite } from '../../../support/in-process/postgres-settings-site.ts';
+
+type Site = Awaited<ReturnType<typeof postgresSettingsSite>>;
 
 function intent(organizationId = 'org-a'): RemovalIntent {
   return { organizationId, operationId: randomUUID(), membershipId: 'membership-a', revision: 'opaque-revision-a', actor: { authority: 'workos', subject: 'user-a' }, startedAt: '2026-10-25T10:00:00.000Z' };
+}
+
+function removedMember(): RemovedMember {
+  return { authority: 'workos', subject: 'user-removed', organizationId: 'org-a', membershipId: 'membership-removed', operationId: randomUUID(), recordedAt: '2026-11-02T10:00:00.000Z' };
+}
+
+/** Each row of the table of removed members as the owner reads it, in the shape of the record. */
+async function removedRows(site: Site): Promise<RemovedMember[]> {
+  const text = await site.ownerQuery(`SELECT coalesce(json_agg(json_build_object('membershipId', membership_id, 'organizationId', organization_id,
+    'authority', authority, 'subject', subject, 'operationId', operation_id,
+    'recordedAt', to_char(recorded_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')) ORDER BY membership_id), '[]')
+    FROM thermus_admin.removed_members`);
+  return JSON.parse(text) as RemovedMember[];
 }
 
 test('Given independent SQL pools, when removals contend, then one pending intent wins and another organization proceeds', async t => {
@@ -109,4 +124,74 @@ test('Given production logging storage configuration, when settings and removal 
   assert.deepEqual(await storage.store.read('org-loader'), { status: 'unavailable' });
   assert.deepEqual(await storage.removalStore.readRemoval('org-loader'), { status: 'unavailable' });
   assert.deepEqual(errors, []);
+});
+
+test('Given a recorded removed member, when a new pool reads by its identity, then it is found, and another subject of the same authority and the same subject of another authority are absent', async t => {
+  const site = await postgresSettingsSite(t);
+  const recordingRuntime = createPgSettingsRuntime(site.connection);
+  t.after(() => recordingRuntime.close());
+  const record = removedMember();
+  assert.deepEqual(await new PgDestinationSettingsStore(recordingRuntime).recordRemovedMember(record), { status: 'recorded' });
+  await recordingRuntime.close();
+  const readingRuntime = createPgSettingsRuntime(site.connection);
+  t.after(() => readingRuntime.close());
+  const store = new PgDestinationSettingsStore(readingRuntime);
+  assert.deepEqual(await store.readRemovedMember({ authority: record.authority, subject: record.subject }), { status: 'found' });
+  assert.deepEqual(await store.readRemovedMember({ authority: record.authority, subject: 'user-other' }), { status: 'absent' });
+  assert.deepEqual(await store.readRemovedMember({ authority: 'other-authority', subject: record.subject }), { status: 'absent' });
+});
+
+test('Given a recorded membership, when the same membership is recorded again, also by another operation at another time, then each answer is recorded and the table still holds the one row with the first values', async t => {
+  const site = await postgresSettingsSite(t);
+  const runtime = createPgSettingsRuntime(site.connection);
+  t.after(() => runtime.close());
+  const store = new PgDestinationSettingsStore(runtime);
+  const first = removedMember();
+  assert.deepEqual(await store.recordRemovedMember(first), { status: 'recorded' });
+  assert.deepEqual(await store.recordRemovedMember(first), { status: 'recorded' }, 'The same record again');
+  const later = { ...first, operationId: randomUUID(), recordedAt: '2026-11-02T11:30:00.000Z' };
+  assert.deepEqual(await store.recordRemovedMember(later), { status: 'recorded' }, 'The same membership from another operation');
+  assert.deepEqual(await removedRows(site), [first]);
+});
+
+test('Given the migration, when the server role changes or deletes a row, then PostgreSQL denies it, because the role holds only SELECT and INSERT, no other role holds a grant, and row-level security is on and forced', async t => {
+  const site = await postgresSettingsSite(t);
+  const runtime = createPgSettingsRuntime(site.connection);
+  t.after(() => runtime.close());
+  const record = removedMember();
+  assert.deepEqual(await new PgDestinationSettingsStore(runtime).recordRemovedMember(record), { status: 'recorded' });
+
+  const grantedTo = (grantees: string) => site.ownerQuery(`SELECT privilege_type FROM information_schema.role_table_grants
+    WHERE table_schema = 'thermus_admin' AND table_name = 'removed_members' AND grantee IN (${grantees}) ORDER BY 1`);
+  assert.equal(await grantedTo("'thermus_logging'"), 'INSERT\nSELECT');
+  assert.equal(await grantedTo("'PUBLIC', 'anon', 'authenticated', 'service_role'"), '', 'PUBLIC and the API roles of Supabase hold no grant');
+  assert.equal(await site.ownerQuery("SELECT relrowsecurity, relforcerowsecurity FROM pg_class WHERE oid = 'thermus_admin.removed_members'::regclass"), 't|t');
+  // The runtime hides the error of a failed statement, so the session reports the message of PostgreSQL itself.
+  const outcome = (statement: string) => runtime.run(async (session) => {
+    try { await session.query(statement, [], true); return 'executed'; } catch (error) { return (error as Error).message; }
+  });
+  const denied = { status: 'complete', value: 'permission denied for table removed_members' };
+  assert.deepEqual(await outcome("UPDATE thermus_admin.removed_members SET organization_id = 'org-moved'"), denied, 'The role has no UPDATE grant');
+  assert.deepEqual(await outcome('DELETE FROM thermus_admin.removed_members'), denied, 'The role has no DELETE grant');
+  assert.deepEqual(await removedRows(site), [record], 'The denied statements changed no row');
+});
+
+test('Given a committed record of a removed member whose reply is lost, when the member is recorded, then the answer is unconfirmed, the client is released, and a new pool finds the record', async t => {
+  const site = await postgresSettingsSite(t);
+  const pool = new Pool({ connectionString: site.connection.connectionString, ssl: { rejectUnauthorized: true, ca: site.connection.ca }, max: 1 });
+  const runtime = new BoundedSqlRuntime({ connect: async () => {
+    const client = await pool.connect();
+    return { query: async (text, values) => {
+      const result = await client.query(text, values);
+      if (text.startsWith('INSERT')) throw new Error('Connection lost after commit');
+      return result;
+    }, release: destroy => client.release(destroy) };
+  }, end: () => pool.end(), on: (_event, listener) => pool.on('error', listener) });
+  t.after(() => runtime.close());
+  const record = removedMember();
+  assert.deepEqual(await new PgDestinationSettingsStore(runtime).recordRemovedMember(record), { status: 'unconfirmed' });
+  assert.equal(pool.totalCount, 0, 'The failed write releases its client before returning');
+  const verifyingRuntime = createPgSettingsRuntime(site.connection);
+  t.after(() => verifyingRuntime.close());
+  assert.deepEqual(await new PgDestinationSettingsStore(verifyingRuntime).readRemovedMember({ authority: record.authority, subject: record.subject }), { status: 'found' });
 });

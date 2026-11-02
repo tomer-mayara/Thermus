@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import type { CreateOrganizationOptions, CreateOrganizationMembershipOptions, ListOrganizationMembershipsOptions, OrganizationMembershipStatus } from '@workos-inc/node';
 import type { AuthenticatedUser } from '../../identity/access-context.ts';
 import type { OrganizationDirectory } from '../../organizations/organization-directory.ts';
+import type { RemovedMemberStore } from '../../organizations/removal-operation-store.ts';
 import { organizationNameIn, type SignupActivation, type SignupDocuments, type SignupResult, type SignupState } from '../../organizations/signup-activation.ts';
 import { grantsOfRoles, type RoleRecord } from './hosted-role-mapping.ts';
 import { unlessNotFound } from './workos-answers.ts';
@@ -49,6 +50,8 @@ export interface WorkOSSignupOptions {
     };
   };
   readonly directory: Pick<OrganizationDirectory, 'membershipsOf'>;
+  // Without hosted storage, no member removal runs, so no removed-member record can exist.
+  readonly removedMembers?: Pick<RemovedMemberStore, 'readRemovedMember'>;
   readonly clock?: () => Date;
 }
 
@@ -116,11 +119,13 @@ export class WorkOSSignup implements SignupActivation {
   }
 
   // Free access creates new accounts only. Product access comes first, so that existing access can continue. Then one
-  // membership record of any status makes an existing account; a user without a record can still finish an
-  // interrupted signup.
+  // membership record of any status, or a removed-member record, makes an existing account. A user without a record
+  // can still finish an interrupted signup. The removed-member read is last, so that a WorkOS record causes no
+  // database read.
   private async accountState(request: InspectionRequest): Promise<'existing-access' | 'existing-account' | 'eligible'> {
     if (await this.hasProductAccess(request)) return 'existing-access';
-    return await this.hasMembershipRecord(request) ? 'existing-account' : 'eligible';
+    if (await this.hasMembershipRecord(request)) return 'existing-account';
+    return await this.hasRemovedMemberRecord(request) ? 'existing-account' : 'eligible';
   }
 
   private async hasProductAccess({ user, signal }: InspectionRequest, excludedOrganizationId?: string): Promise<boolean> {
@@ -137,6 +142,18 @@ export class WorkOSSignup implements SignupActivation {
     signal.throwIfAborted();
     if (page.data.some((record) => record.userId !== user.subject)) throw new Error('Invalid signup membership response');
     return page.data.length > 0;
+  }
+
+  // WorkOS keeps no record of a membership that an Admin removed, so the removal keeps its own record. Each answer
+  // other than found or absent throws, so that a storage failure cannot make the user eligible.
+  private async hasRemovedMemberRecord({ user, signal }: InspectionRequest): Promise<boolean> {
+    if (this.options.removedMembers === undefined) return false;
+    signal.throwIfAborted();
+    const record = await this.options.removedMembers.readRemovedMember({ authority: user.authority, subject: user.subject });
+    signal.throwIfAborted();
+    if (record.status === 'absent') return false;
+    if (record.status === 'found') return true;
+    throw new Error('Removed-member record is unavailable');
   }
 
   private async createOrganization(request: ActivationRequest): Promise<SignupResult> {

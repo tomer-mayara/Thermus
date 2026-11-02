@@ -33,3 +33,23 @@ export interface RemovalOperationStore {
         status: 'completed' | 'mismatch' | 'unavailable' | 'unconfirmed';
     }>;
 }
+export interface RemovedMember {
+    readonly authority: string;
+    readonly subject: string;
+    readonly organizationId: string;
+    readonly membershipId: string;
+    readonly operationId: string;
+    readonly recordedAt: string;
+}
+export interface RemovedMemberStore {
+    recordRemovedMember(record: RemovedMember): Promise<{
+        status: 'recorded' | 'unavailable' | 'unconfirmed';
+    }>;
+    readRemovedMember(identity: {
+        readonly authority: string;
+        readonly subject: string;
+    }): Promise<{
+        status: 'found' | 'absent' | 'unavailable';
+    }>;
+}
+export type RemovalStore = RemovalOperationStore & RemovedMemberStore;

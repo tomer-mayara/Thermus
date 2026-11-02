@@ -1483,8 +1483,15 @@ holds the cap check and the tenant request.
    gives "You already have a Thermus account", and `403` for a `POST`. Only a
    user without a membership record and without a retained signup
    organization gets the agreement and the organization creation, as before.
-   A membership that an Admin removed is deleted at WorkOS and leaves no
-   record, so that account counts as new: an accepted limit of 2 November 2026.
+   A membership that an Admin removed through Members is deleted at WorkOS,
+   which keeps no record of it, so the removal keeps its own: before the
+   deletion, the [removal coordinator](../../src/accounts/organizations/membership-removal.ts)
+   writes the removed member to `thermus_admin.removed_members` through the
+   `RemovedMemberStore` role of the organizations-owned
+   [removal store contract](../../src/accounts/organizations/removal-operation-store.ts),
+   and signup reads it last, after the product access and the membership
+   record reads. A found record gives the same existing-account notice. The
+   removed-member record below gives the decision.
 4. An `active` result of the activation confirms the first Admin membership.
    Then signup requests the tenant of the new organization (SO-04), before it
    selects the organization and opens Quick start. The request is the one
@@ -1497,6 +1504,31 @@ holds the cap check and the tenant request.
 The cap can fill between the notice and the creation. Then the request answers
 full, and the new organization has no tenant. This race is accepted, with no
 reservation (answer 4 of 27 October 2026).
+
+**Removed-member record** (decision of 2 November 2026). The rule is that a
+person who already has a Thermus account cannot create a new organization
+through free access, for now. WorkOS deletes a removed membership, so the
+lasting marker is a row that the removal writes before the deletion: the
+authority and subject of the removed member, the organization, the membership,
+the removal operation, and the time. A write that is not confirmed stops the
+removal with `unavailable` and deletes nothing, so a deleted membership always
+has its row; a repeated write of the same membership is recorded. Signup gives
+`503` when the read is unavailable, never eligibility. The existing
+`membership_removal_operations` table cannot serve: it keeps one row per
+organization, which the next removal replaces, and it names the membership, not
+the member. A WorkOS user metadata field cannot serve: a field written at the
+first membership misses invitation acceptance, which happens in AuthKit outside
+the application, and a field written at removal would add a second provider
+write to the removal and change the account record of the member, which the
+removal promise keeps unchanged. App supplies the same SQL adapter and pool to
+the removal and to the WorkOS signup adapter; no owner joins. The row covers
+removals through Thermus: a membership that the operator deletes in the WorkOS
+dashboard leaves no row. The row has no expiry. The data-flow review of
+26 October 2026 named one current removal record per organization and no
+history, so the owner reviews this retention with the privacy documents.
+Without the table, member removal and the signup of a new account answer
+unavailable: the [database setup](../implementation/admin-s2-01a-database-setup.md#add-the-removed-member-record-before-the-deploy)
+applies the migration before the deploy.
 
 **Workspace status.** `GET <base>workspace/status` is an account route of the
 [account routes](../../src/interfaces/web/account/account-routes.ts). It needs

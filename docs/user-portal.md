@@ -27,8 +27,9 @@ Step 1 of signup creates the Thermus account. **Create account** opens
 no product access, cannot create a new organization: signup shows **You
 already have a Thermus account** and a link to the workspace selector. Current
 product access shows **Your access is ready** and Continue. A membership that
-an Admin removed is deleted at WorkOS and leaves no record, so that account
-counts as new.
+an Admin removed through Members is deleted at WorkOS, but the removal keeps a
+row of the removed member in the hosted datastore before the deletion, so that
+account gets the same notice.
 The **Start free** link of the marketing site opens
 `https://app.thermus.ai/signup?tier=free`. Only the free tier exists, so the
 route ignores the `tier` value (SO-07). The

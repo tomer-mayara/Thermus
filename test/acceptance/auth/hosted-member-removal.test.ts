@@ -6,21 +6,57 @@ import { signInThroughServer } from '../../support/dsl/workos-sign-in.ts';
 import { removalForm } from '../../support/dsl/hosted-member-removal.ts';
 import { otherOrganization, remainingAdmin, removalAdmin, removalOrganization, removalUser, serveMemberRemovalSite } from '../../support/in-process/hosted-member-removal-site.ts';
 
-test('Given a password-authenticated Admin, two active Admins, and an ordinary User, when the Admin confirms Remove through Members, then only that membership is removed and the current count is two', async (t) => {
+test('Given a password-authenticated Admin, two active Admins, and an ordinary User, when the Admin confirms Remove through Members, then the removed member is recorded before only that membership is removed and the current count is two', async (t) => {
   const site = await serveMemberRemovalSite(t, { setUp: world => world.setRoles(remainingAdmin, removalOrganization, ['user', 'admin']) });
   const { browser } = await signInThroughServer(site, removalAdmin, removalOrganization);
   const targetId = site.world.membershipId(removalUser, removalOrganization);
   const form = await removalForm(browser, targetId);
+  const deletedWhenRecorded: string[][] = [];
+  const record = site.removalStore.recordRemovedMember.bind(site.removalStore);
+  t.mock.method(site.removalStore, 'recordRemovedMember', (member: Parameters<typeof record>[0]) => {
+    deletedWhenRecorded.push([...site.world.deletedMembershipIds]);
+    return record(member);
+  });
 
   const answer = await browser.submit(form);
 
   assert.ok(answer.status < 400, answer.body);
   assert.deepEqual([...site.world.deletedMembershipIds], [targetId]);
-  assert.equal(site.removalStore.operations.get(removalOrganization)?.outcome, 'applied');
+  const operation = site.removalStore.operations.get(removalOrganization);
+  assert.ok(operation);
+  assert.equal(operation.outcome, 'applied');
+  assert.deepEqual(site.removalStore.removedMembers.map(({ authority, subject, organizationId, membershipId, operationId }) => ({ authority, subject, organizationId, membershipId, operationId })), [
+    { authority: operation.actor.authority, subject: removalUser.id, organizationId: removalOrganization, membershipId: targetId, operationId: operation.operationId },
+  ]);
+  assert.deepEqual(deletedWhenRecorded, [[]], 'The record exists before WorkOS deletes the membership');
   const refreshed = await browser.open('members');
   assert.equal(refreshed.status, 200, refreshed.body);
   assert.match(refreshed.body, /Active product members: 2/);
   assert.doesNotMatch(refreshed.body, /user@example\.com/);
+});
+
+test('Given removal storage that cannot keep the removed-member record, when the Admin confirms Remove through Members, then nothing is deleted, the removal is unavailable with no effect, and Members still lists the member', async (t) => {
+  const site = await serveMemberRemovalSite(t);
+  const { browser } = await signInThroughServer(site, removalAdmin, removalOrganization);
+  const targetId = site.world.membershipId(removalUser, removalOrganization);
+  const form = await removalForm(browser, targetId);
+  site.removalStore.recordAnswer = 'unavailable';
+  site.world.fake.takeRequests();
+
+  const answer = await browser.submit(form);
+
+  assert.equal(answer.status, 503, answer.body);
+  assert.match(answer.body, /Removal unavailable/);
+  assert.match(answer.body, /Nothing changed\./);
+  assert.deepEqual(formsIn(answer.body), []);
+  assert.deepEqual([...site.world.deletedMembershipIds], []);
+  assert.deepEqual(site.world.fake.takeRequests().filter(request => request.method === 'DELETE'), []);
+  assert.equal(site.removalStore.operations.get(removalOrganization)?.outcome, 'no-effect');
+  assert.deepEqual(site.removalStore.removedMembers, []);
+  const current = await browser.open('members');
+  assert.equal(current.status, 200, current.body);
+  assert.match(current.body, /Active product members: 3/);
+  assert.ok(formsIn(current.body).some(each => each.fields.membership_id === targetId), 'Members still offers the removal of the member');
 });
 
 interface Removal {
