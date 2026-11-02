@@ -1,5 +1,6 @@
 import type { CreateOrganizationOptions, CreateOrganizationMembershipOptions, ListOrganizationMembershipsOptions } from '@workos-inc/node';
 import type { OrganizationDirectory } from '../../organizations/organization-directory.ts';
+import type { RemovedMemberStore } from '../../organizations/removal-operation-store.ts';
 import { type SignupActivation, type SignupResult, type SignupState } from '../../organizations/signup-activation.ts';
 import { type RoleRecord } from './hosted-role-mapping.ts';
 type InspectionRequest = Parameters<SignupActivation['inspect']>[0];
@@ -48,6 +49,7 @@ export interface WorkOSSignupOptions {
         };
     };
     readonly directory: Pick<OrganizationDirectory, 'membershipsOf'>;
+    readonly removedMembers?: Pick<RemovedMemberStore, 'readRemovedMember'>;
     readonly clock?: () => Date;
 }
 export declare class WorkOSSignup implements SignupActivation {
@@ -60,6 +62,7 @@ export declare class WorkOSSignup implements SignupActivation {
     private accountState;
     private hasProductAccess;
     private hasMembershipRecord;
+    private hasRemovedMemberRecord;
     private createOrganization;
     private grantNewWorkspace;
     private recoverAccess;

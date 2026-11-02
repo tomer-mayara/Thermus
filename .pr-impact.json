@@ -2,9 +2,9 @@
   "version": 1,
   "classification": {
     "container": false,
-    "external": true,
+    "external": false,
     "contract": true,
-    "deployment": false,
+    "deployment": true,
     "crossCutting": false,
     "component": false,
     "internalInterface": true,
@@ -15,18 +15,21 @@
   },
   "architecture": {
     "modelUpdated": true,
-    "summary": "Free access creates the Thermus account first and refuses an existing account. Step 1 of GET /signup is Create account: the new GET /signup/start starts the AuthKit sign-in at its sign-up screen (screen_hint=sign-up) through the session controls and returns to /signup. The WorkOS signup adapter reads one membership record of the user in any status: a record without product access is the new outcome existing-account, which GET /signup shows as the notice You already have a Thermus account and POST /signup refuses with 403; current product access keeps Continue. Public contracts change (contract, internalInterface): BrowserSessionControls.startSignIn takes BrowserSignInRequest with the screen hint, SignupActivation gains existing-account, and the web signup route uses startSignIn of identity. The AuthKit integration changes (external): the authorize URL carries the sign-up screen hint, and the adapter makes a new user-scoped membership read. Team flag sensitiveBehavior: the admission rule of organization creation and the security file workos-signup.ts change; every existing guard stays. No container, component, dependency, or deployment change.",
+    "summary": "Free access refuses an account whose only organization membership an Admin removed. WorkOS keeps no record of a deleted membership, so the removal coordinator of organizations writes the removed member (authority, subject, organization, membership, operation, time) to the new table thermus_admin.removed_members through the RemovedMemberStore role that joins the organizations-owned removal store contract, after its checks and before the one WorkOS deletion; a write that is not confirmed completes the operation with no-effect and the result unavailable, so that a deleted membership always has its row. App gives the same SQL adapter to the WorkOS signup adapter, which reads the row of the signed-in user last, after the product access and the membership record reads: a row gives existing-account (the notice; 403 on POST), an unavailable read gives unavailable (503), never eligibility; without hosted storage it makes no read. Public contracts change (contract, internalInterface): RemovedMember, RemovedMemberStore, and RemovalStore in removal-operation-store.ts, the removalStore option of OrganizationAdministration, and the removedMembers option of WorkOSSignup; the registry view of the hosted membership removal gains the edge of the signup read. Stored data and the deploy order change (deployment): the migration 20261102184225_removed_members.sql runs before the deploy of this control plane; without the table, member removal answers unavailable and the signup of a new account answers 503. No container, component, dependency edge, or external integration changes: the WorkOS calls are the same. Team flag sensitiveBehavior: the admission rule of organization creation and the removal flow change, and the security file workos-signup.ts changes; every existing guard stays.",
     "views": [
-      "Scenario: free signup and the workspace setup state (sequence, edited: the step after the cap is account creation at AuthKit, then the form)",
-      "Selected C4 components: hosted authentication in the Node server (prose edited, Mermaid unchanged: the signup route starts the account creation through the session controls; the WorkOS adapter refuses an account with a membership record)",
-      "The other 23 Mermaid views of architecture/components.md unchanged (checked: no container, component, dependency, or deployment change)"
+      "Selected C4 components: hosted membership removal in the Node server (edited: the audit-logs node names the removed members, the workos node names the signup refusal, and the new edge workos to audit-logs, supplied RemovedMemberStore read at signup)",
+      "Selected C4 components: hosted authentication in the Node server (prose edited, Mermaid unchanged: the WorkOS adapter also refuses an account with a removed-member record)",
+      "C4 containers: hosted edition (prose edited, Mermaid unchanged: the datastore holds the removed-member record)",
+      "Selected C4 components: hosted audit settings and storage (prose edited, Mermaid unchanged: the same adapter implements the removed-member record)",
+      "The other 23 Mermaid views of architecture/components.md unchanged (checked: no container, component, dependency, or deployment-unit change)"
     ],
     "evidence": [
-      "src/interfaces/web/auth/workos/workos-signup-routes.ts and workos-signup-pages.ts (GET /signup/start, the create-account page, the existing-account page)",
-      "src/accounts/identity/browser-session-controls.ts, src/accounts/organizations/signup-activation.ts, src/accounts/providers/workos/workos-signup.ts, workos-sign-in.ts (the contracts and the WorkOS reads)",
-      "docs/api-surface/src/accounts/identity/browser-session-controls.d.ts, organizations/signup-activation.d.ts, providers/workos/workos-browser-session.d.ts, providers/workos/workos-signup.d.ts",
-      "test/acceptance/auth/hosted-workos-signup.test.ts, hosted-signup-eligibility.test.ts, hosted-signup-presentation.test.ts, hosted-signup-workspace.test.ts; test/integration/auth/workos-signup-routes.test.ts, workos-signup-tenants.test.ts, workos-signup-inspection.test.ts, workos-signup.test.ts",
-      "docs/user-portal.md, docs/free-subscription-guide.md, docs/design/authentication-design.md, docs/implementation/self-onboarding-plan.md"
+      "src/accounts/organizations/removal-operation-store.ts, membership-removal.ts, membership-removal-checks.ts, organization-administration.ts (the contract and the record step)",
+      "src/accounts/providers/workos/workos-signup.ts, src/app/hosted-workos-application.ts, src/app/logging-storage.ts, src/app/application.ts (the read and the composition)",
+      "src/logs/audit/pg-destination-settings-store.ts and sql/migrations/20261102184225_removed_members.sql (the statements and the table)",
+      "docs/api-surface/src/accounts/organizations/removal-operation-store.d.ts, organization-administration.d.ts, providers/workos/workos-signup.d.ts",
+      "test/acceptance/auth/hosted-signup-eligibility.test.ts, hosted-member-removal.test.ts; test/unit/organizations/membership-removal-*.test.ts; test/integration/auth/workos-signup*.test.ts; test/unit/logging/audit/pg-removal-operation-store.test.ts; test/integration/logging/audit/removal-operations.runtime.ts",
+      "docs/design/authentication-design.md (the removed-member record decision), docs/implementation/admin-s2-01a-database-setup.md, docs/user-portal.md, docs/free-subscription-guide.md, docs/implementation/self-onboarding-plan.md"
     ]
   }
 }
