@@ -57,7 +57,9 @@ export declare class WorkOSSignup implements SignupActivation {
     activate(request: ActivationRequest): Promise<SignupResult>;
     private currentUser;
     private chooseWorkspace;
+    private accountState;
     private hasProductAccess;
+    private hasMembershipRecord;
     private createOrganization;
     private grantNewWorkspace;
     private recoverAccess;

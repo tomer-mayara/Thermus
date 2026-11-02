@@ -1460,7 +1460,8 @@ ignores the `tier` value: another value and no value give the same page. Its
 holds the cap check and the tenant request.
 
 1. `SELF_SERVE_SIGNUP_ENABLED` comes first: with the switch off, each `GET`,
-   `HEAD`, and `POST` gets the closed notice, as before.
+   `HEAD`, and `POST` gets the closed notice, as before. `GET` and `HEAD` of
+   `signup/start` get it too and start no sign-in.
 2. The free-tenant cap comes next, before the session and the notice. With
    `MCP_TENANTS_ENABLED` on, signup counts the rows of the registry copy of the
    gateway lookup, which reads the registry again only when it is 10 s old, so
@@ -1468,12 +1469,20 @@ holds the cap check and the tenant request.
    while the rows that hold a place (every state except `failed` and `deleted`)
    stay under `FREE_TENANT_LIMIT`. At a full cap, signup gives the closed
    notice: `200` for `GET` and `HEAD`, and `403` for a `POST`, which then
-   creates no organization. A `POST` reads the cap inside its admission slot,
+   creates no organization. `signup/start` at a full cap also gives the closed
+   notice and starts no sign-in. A `POST` reads the cap inside its admission slot,
    after the origin check. A copy that cannot be read gives `503` "Activation
    is temporarily unavailable. Try again later." and the error line `Hosted
    signup could not read the free-tenant cap.`. With the switch off,
    `FREE_TENANT_LIMIT` is not read and signup checks no cap.
-3. Sign-in, the agreement, and the organization creation stay as before.
+3. Step 1 creates the account. **Create account** opens `signup/start`, which
+   starts the AuthKit sign-in at its sign-up screen (`screen_hint=sign-up`)
+   and returns to `signup`. That screen also lets an existing account sign in,
+   so signup decides after the return. Current product access gives
+   **Continue**. A membership record of any status without product access
+   gives "You already have a Thermus account", and `403` for a `POST`. Only a
+   user without a membership record and without a retained signup
+   organization gets the agreement and the organization creation, as before.
 4. An `active` result of the activation confirms the first Admin membership.
    Then signup requests the tenant of the new organization (SO-04), before it
    selects the organization and opens Quick start. The request is the one

@@ -12,6 +12,10 @@ export type ProfiledBrowserSessionState = ProfiledSignedInBrowserSession | {
     readonly status: 'signed-out';
     readonly cookies: CookieEffects;
 };
+export interface BrowserSignInRequest {
+    readonly returnTo?: string;
+    readonly screenHint?: 'sign-up';
+}
 export interface BrowserSignInStart {
     readonly url: string;
     readonly cookies: CookieEffects;
@@ -31,9 +35,7 @@ export interface SessionEnd {
 }
 export interface BrowserSessionControls extends BrowserSession {
     authenticate(cookieHeader: string | null): Promise<ProfiledBrowserSessionState>;
-    startSignIn(request: {
-        readonly returnTo?: string;
-    }): Promise<BrowserSignInStart>;
+    startSignIn(request: BrowserSignInRequest): Promise<BrowserSignInStart>;
     completeSignIn(callback: {
         readonly query: URLSearchParams;
         readonly cookieHeader: string | null;

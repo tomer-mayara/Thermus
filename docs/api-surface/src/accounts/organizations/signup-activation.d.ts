@@ -21,10 +21,10 @@ export type SignupResult = {
     readonly status: 'active';
     readonly organizationId: string;
 } | {
-    readonly status: 'existing-access' | 'unverified' | 'support-required' | 'unavailable' | 'sign-in-required';
+    readonly status: 'existing-access' | 'existing-account' | 'unverified' | 'support-required' | 'unavailable' | 'sign-in-required';
 };
 export type SignupState = {
-    readonly status: 'eligible' | 'existing-access' | 'unavailable' | 'sign-in-required';
+    readonly status: 'eligible' | 'existing-access' | 'existing-account' | 'unavailable' | 'sign-in-required';
 } | {
     readonly status: 'support-required';
     readonly canContinue: boolean;

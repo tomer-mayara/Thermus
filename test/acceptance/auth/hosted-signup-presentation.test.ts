@@ -7,7 +7,7 @@ import { HostedBrowser, formsIn } from '../../support/drivers/browser/hosted-bro
 import { hostedRootConfig } from '../../support/fixtures/hosted-config.ts';
 import { serveWorkOSSite } from '../../support/in-process/workos-site.ts';
 
-test('Given a new visitor, when free signup opens, then the branded two-step page offers the complete readable notice before sign-in and a compact mobile disclosure', async (t) => {
+test('Given a new visitor, when free signup opens, then the branded two-step page offers the complete readable notice before account creation, a sign-in line for an existing account, and a compact mobile disclosure', async (t) => {
   const site = await serveWorkOSSite(t, { config: hostedRootConfig, organizations: [], signupFake: true,
     signup: { enabled: true, documents: signupDocuments } });
   const answer = await new HostedBrowser(site.transport, site.publicBaseUrl).open('signup');
@@ -15,9 +15,9 @@ test('Given a new visitor, when free signup opens, then the branded two-step pag
 
   assert.equal(answer.status, 200);
   assert.equal(document.querySelector('h1')?.textContent, 'Start free access.');
-  assert.equal(document.querySelector('.task-card h2')?.textContent, 'Sign in to continue');
+  assert.equal(document.querySelector('.task-card h2')?.textContent, 'Create your account');
   assert.equal(document.querySelector('header img')?.getAttribute('src'), '/assets/thermus-logo.svg');
-  assert.equal(document.querySelector('[aria-current="step"]')?.textContent?.includes('Sign in'), true);
+  assert.equal(document.querySelector('[aria-current="step"] .step-name')?.textContent, 'Create account');
   const reader = document.querySelector('#privacy-notice .document-reader');
   assert.ok(reader);
   assert.equal(reader.getAttribute('tabindex'), '0');
@@ -29,8 +29,14 @@ test('Given a new visitor, when free signup opens, then the branded two-step pag
   assert.match(disclosure.querySelector('summary')?.textContent ?? '', /Read full privacy notice/);
   const action = document.querySelector('.task-card .primary-action');
   assert.ok(action);
-  assert.equal(action.textContent, 'Sign in to continue');
-  assert.equal(action.getAttribute('href'), '/login?return_to=%2Fsignup');
+  assert.equal(action.textContent, 'Create account');
+  assert.equal(action.getAttribute('href'), '/signup/start');
+  assert.ok(answer.body.indexOf(signupDocuments.notice.text) < answer.body.indexOf('>Create account</a>'));
+  const signIn = document.querySelector('.task-card a[href="/login"]');
+  assert.ok(signIn);
+  assert.equal(signIn.textContent, 'Sign in');
+  assert.match(signIn.parentElement?.textContent ?? '', /^Already have a Thermus account\? Sign in to open your workspace\.$/);
+  assert.doesNotMatch(answer.body, /return_to/);
   assert.deepEqual(formsIn(answer.body), []);
   assert.deepEqual(site.signupFake.organizations, []);
 });

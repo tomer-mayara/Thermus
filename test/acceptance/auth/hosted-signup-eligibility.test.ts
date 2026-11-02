@@ -1,43 +1,47 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { parseHTML } from 'linkedom';
 import { HostedBrowser, formsIn } from '../../support/drivers/browser/hosted-browser.ts';
 import { signInThroughServer } from '../../support/dsl/workos-sign-in.ts';
+import { signupWrites } from '../../support/dsl/workos-signup.ts';
 import { hostedRootConfig } from '../../support/fixtures/hosted-config.ts';
 import { signupDocuments } from '../../support/fixtures/signup-documents.ts';
 import { serveWorkOSSite } from '../../support/in-process/workos-site.ts';
 
-test('Given a former invited User without a creation record or current access, when the person accepts named creation, then a new organization gets its first Admin without restoring the old membership', async (t) => {
-  const site = await serveWorkOSSite(t, {
-    config: hostedRootConfig, organizations: ['org_FORMER'], signupFake: true,
-    signup: { enabled: true, documents: signupDocuments },
+for (const status of ['inactive', 'pending'] as const) {
+  test(`Given a signed-in person whose only membership is ${status}, when signup opens and an old agreement form is posted, then signup says the account exists, offers the workspace selector, and creates no organization or membership`, async (t) => {
+    const site = await serveWorkOSSite(t, {
+      config: hostedRootConfig, organizations: ['org_FORMER'], signupFake: true,
+      signup: { enabled: true, documents: signupDocuments },
+    });
+    const user = { id: 'user_FORMER', email: 'former@company.example', firstName: 'Former', emailVerified: true };
+    site.world.users = [user];
+    site.world.memberships = [{ userId: user.id, organizationId: 'org_FORMER', roles: ['user'], status }];
+    const memberships = structuredClone(site.world.memberships);
+    const { browser } = await signInThroughServer(site, user);
+    const session = JSON.parse((await browser.open('session')).body) as { csrfToken: string };
+    signupWrites(site);
+
+    const page = await browser.open('signup');
+    const posted = await browser.post('signup', { csrf_token: session.csrfToken, document_version: signupDocuments.version, organization_name: 'Independent Labs', agreement: 'accepted' });
+
+    assert.equal(page.status, 200, page.body);
+    assert.equal(posted.status, 403, posted.body);
+    for (const answer of [page, posted]) {
+      const document = parseHTML(answer.body).document;
+      assert.equal(document.querySelector('h1')?.textContent, 'You already have a Thermus account');
+      assert.match(document.querySelector('.notice-message')?.textContent ?? '', /cannot create another one/);
+      const selector = document.querySelector('.primary-action');
+      assert.equal(selector?.textContent, 'Open your workspace');
+      assert.equal(selector?.getAttribute('href'), '/organizations?return_to=%2F');
+      assert.deepEqual(formsIn(answer.body), []);
+      assert.ok(!answer.body.includes(signupDocuments.terms.text));
+    }
+    assert.deepEqual(site.signupFake.organizations, []);
+    assert.deepEqual(site.world.memberships, memberships);
+    assert.deepEqual(signupWrites(site), []);
   });
-  const user = { id: 'user_FORMER', email: 'former@company.example', firstName: 'Former', emailVerified: true };
-  site.world.users = [user];
-  site.world.memberships = [{ userId: user.id, organizationId: 'org_FORMER', roles: ['user'], status: 'inactive' }];
-  site.world.invitations = [{ id: 'invitation_OLD', email: user.email, organizationId: 'org_FORMER', roleSlug: 'user', state: 'accepted', expiresAt: '2026-10-01T00:00:00.000Z' }];
-  const invitation = structuredClone(site.world.invitations);
-  const { browser } = await signInThroughServer(site, user);
-  site.world.fake.takeRequests();
-
-  const page = await browser.open('signup');
-  assert.equal(page.status, 200, page.body);
-  const form = formsIn(page.body).find(({ action }) => action === '/signup');
-  assert.ok(form);
-  const answer = await browser.post('signup', { ...form.fields, organization_name: 'Independent Labs', agreement: 'accepted' });
-
-  assert.equal(answer.status, 303, answer.body);
-  assert.equal(site.signupFake.organizations.length, 1);
-  const organization = site.signupFake.organizations[0];
-  assert.equal(organization.name, 'Independent Labs');
-  assert.deepEqual(site.world.rolesOf(user, String(organization.id)), ['admin']);
-  assert.equal(site.world.statusOf(user, 'org_FORMER'), 'inactive');
-  assert.deepEqual(site.world.invitations, invitation);
-  const writes = site.world.fake.takeRequests().filter(({ method }) => method === 'POST');
-  assert.equal(writes.filter(({ path }) => path === '/organizations').length, 1);
-  assert.deepEqual(writes.filter(({ path }) => path === '/user_management/organization_memberships').map(({ body }) => body), [
-    { organization_id: organization.id, user_id: user.id, role_slug: 'admin' },
-  ]);
-});
+}
 
 for (const status of ['active', 'inactive'] as const) {
   test(`Given a legacy personal record and ${status} User membership, when signup is retried after restart with a different name, then saved facts and User status stay unchanged without an Admin grant`, async (t) => {
