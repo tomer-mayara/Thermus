@@ -174,7 +174,7 @@ roots, responsibilities, and public contracts.
 | Container or artifact | Registry owners that contribute |
 | --- | --- |
 | Both Node server editions | `app`, `config`, `http`, `system-logs`, `mcp`, `web`, `identity`, `execution`, `page-fetch`, `search`, `html-processing`, `website-fetcher`, `search-engine` |
-| Hosted server additions | `organizations`, `billing`, `workos` (also the organization inventory of the sweeps), `audit-logs` (capture, dispatch, settings, removal intent, Test, and the check of relayed events), `sql` (the bounded SQL runtime), `tenants` (the tenant registry, the provisioner, the writes of the gateway, and the sweeps), `render` (the Render adapter of the provisioner and the sweeps); with `MCP_TENANTS_ENABLED` on, `mcp` (the MCP gateway) and `web` (the relay route `/internal/audit`) |
+| Hosted server additions | `organizations`, `billing`, `workos` (also the organization inventory of the sweeps), `audit-logs` (capture, dispatch, settings, removal intent, removed members, Test, and the check of relayed events), `sql` (the bounded SQL runtime), `tenants` (the tenant registry, the provisioner, the writes of the gateway, and the sweeps), `render` (the Render adapter of the provisioner and the sweeps); with `MCP_TENANTS_ENABLED` on, `mcp` (the MCP gateway) and `web` (the relay route `/internal/audit`) |
 | Operator fleet script (`script/fleet/`, outside `src`) | No owner of its own. It composes `tenants` (the fleet statements, the request and revive, the removal, the summary), `render`, `workos` (the inventory), `sql`, `config` (the prefix and cap rules), and the system clock of `app` |
 | SO-12 rehearsal helper (`script/release/rehearsal/`, outside `src`) | No owner of its own. It composes `sql` (reads of the staging registry) and the hosted live test support, and calls the Render and WorkOS APIs itself; it is a tool of the rehearsal, not part of a running server |
 | Hosted tenant server (same image, `THERMUS_ROLE=tenant`) | `app` (tenant composition and routes), `config` (role and tenant settings), `http`, `system-logs`, `mcp`, `identity` (signed access context and its access), `workos` (Connect token check only), `audit-logs` (relay sink only), `web` (the `product:access` name only), and the tool owners `execution`, `page-fetch`, `search`, `html-processing`, `website-fetcher`, `search-engine` |
@@ -677,8 +677,14 @@ adds the claim of the provisioner, `claimed_by` and `claimed_until`, both set
 or both empty. The [tick migration](../sql/migrations/20261101023017_tenant_sweep_ticks.sql)
 adds the table `tenant_sweep_ticks` of the sweeps: one row for each claimed
 tick, keyed by its time, with the claim holder and the time of the claim; the
-server role can only read and add its rows. The `subscriptions` and
-`billing_events` tables have no store until Slice 3.
+server role can only read and add its rows. The
+[removed-member migration](../sql/migrations/20261102184225_removed_members.sql)
+adds the table `removed_members` of the membership removal: one row for each
+membership that an Admin removed through Members, keyed by the membership,
+with the authority and subject of the removed member, the organization, the
+removal operation, and the time; the server role can only read and add its
+rows, and free signup reads them. The `subscriptions` and `billing_events`
+tables have no store until Slice 3.
 
 The [provisioner](../src/tenancy/tenants/tenant-provisioner.ts) moves rows only
 from `requested` to `live` and, after a resume, from `deploying` to `live`. Its
@@ -2044,7 +2050,7 @@ includes the built portal and trusted rules and selects hosted operation.
 The [recorded Render topology](../docs/implementation/render-hosted-docker-plan.md)
 describes the earlier single-service target without a separate frontend, database,
 Redis, disk, or worker. Source now supports an optional external PostgreSQL
-datastore for destination settings, removal intent, and the tenant registry. The selected Supabase target and ordered setup are recorded in
+datastore for destination settings, removal intent, the removed-member record, and the tenant registry. The selected Supabase target and ordered setup are recorded in
 the [organization-admin plan](../docs/design/organization-admin-plan.md#owner-setup-for-supabase--slice-2);
 the [rollout ledger](../docs/implementation/admin-s2-04.md#evidence-and-release-holds)
 records applied SQL and the remaining live connection, configuration, destination,
@@ -2062,7 +2068,12 @@ step 3a applied the [claim migration](../sql/migrations/20261031221342_tenant_cl
 on 1 November 2026, before the deploy of a control plane that claims with a
 lease. The [tick migration](../sql/migrations/20261101023017_tenant_sweep_ticks.sql),
 which comes before the deploy of a control plane that claims the ticks of the
-sweeps, is not recorded as applied. A deploy of the Render service starts a new instance and keeps the
+sweeps, is not recorded as applied. The
+[removed-member migration](../sql/migrations/20261102184225_removed_members.sql)
+comes before the deploy of a control plane that keeps the record of each
+removed member; without its table, that control plane answers unavailable to a
+member removal and `503` to the signup of a new account. It is not recorded as
+applied. A deploy of the Render service starts a new instance and keeps the
 old one for about 120 s after the new deploy is live (SO-12 rehearsal of
 31 October 2026), so two Node server processes run for about 2 minutes; the
 claim lease of the [tenant provisioning](#scenario-tenant-provisioning)
@@ -2158,7 +2169,7 @@ surface and the narrower file-context restrictions.
 | `website-fetcher` — [`src/pipelines/providers/website-fetcher/`](../src/pipelines/providers/website-fetcher/) | Render pages with Lightpanda; destination/process policy; safe renderer failures and reports. | Fetcher/result/failure roles, renderer-failure-reports, and documented [network policy](../src/pipelines/providers/website-fetcher/network-policy.ts). App selects Lightpanda. |
 | `search-engine` — [`src/pipelines/providers/search-engine/`](../src/pipelines/providers/search-engine/) | Build Brave search requests, validate the returned origin/document, and fetch through a supplied website fetcher. | [Search engine/document roles](../src/pipelines/providers/search-engine/search-engine.ts). App selects the Brave HTTP adapter. |
 | `system-logs` — [`src/logs/system/`](../src/logs/system/) | Format internal engineering diagnostics with caller file and line. Customers cannot access this stream. | SystemLog for callers; concrete SystemLogger/LogLevel with a supplied SystemLogSink. ConsoleSystemLogSink and OtelSystemLogSink own output only. |
-| `audit-logs` — [`src/logs/audit/`](../src/logs/audit/) | Own customer audit event projection, activity snapshots, bounded queue and current-revision dispatch, tenant destination validation and credential protection, atomic settings revisions, saved-destination Tests, and one-shot OTLP requests to the configured Collector or compatible service, including direct Axiom. Its SQL adapter also stores removal intent and terminal receipts on the shared `sql` runtime. The relay sink of a tenant sends its events to the control plane with the bounds of the collector, and the control plane checks each relayed tool completion again before its capture. | AuditLog event methods and AuditEventSink; AuditSnapshots and RevisionBoundAuditSink; AuditCollector; destination-settings service with fresh export authorization and Test outcomes; neutral settings store, private codec, and SQL adapter; implementation of the organizations-owned removal store; OtlpAuditSender with tracked physical settlement. MCP and web share hosted snapshots and bounded dispatch; web reads, saves, and tests settings. |
+| `audit-logs` — [`src/logs/audit/`](../src/logs/audit/) | Own customer audit event projection, activity snapshots, bounded queue and current-revision dispatch, tenant destination validation and credential protection, atomic settings revisions, saved-destination Tests, and one-shot OTLP requests to the configured Collector or compatible service, including direct Axiom. Its SQL adapter also stores removal intent, terminal receipts, and the removed-member record on the shared `sql` runtime. The relay sink of a tenant sends its events to the control plane with the bounds of the collector, and the control plane checks each relayed tool completion again before its capture. | AuditLog event methods and AuditEventSink; AuditSnapshots and RevisionBoundAuditSink; AuditCollector; destination-settings service with fresh export authorization and Test outcomes; neutral settings store, private codec, and SQL adapter; implementation of the organizations-owned removal store, with the removed-member record; OtlpAuditSender with tracked physical settlement. MCP and web share hosted snapshots and bounded dispatch; web reads, saves, and tests settings. |
 | `http` — [`src/runtime/http/`](../src/runtime/http/) | Node listener, HTTP-to-Fetch exchange, trusted client address, request cancellation, connection tracking, and listener drain. | Server for app; client-address and request-cancellation modules for other consumers. Exchange mechanics remain private. |
 | `config` — [`src/runtime/config/`](../src/runtime/config/) | Validate deployment/listen settings, `THERMUS_ROLE` and the tenant settings with the refusal of control-plane secrets, optional hosted logging storage settings, the optional system log export settings of the control plane, the hosted operation capacity, the switch `MCP_TENANTS_ENABLED`, and, with it on, the free-tenant cap, the provisioning settings, the hour of the tenant sweeps, and the gateway settings with the check that `GATEWAY_PUBLIC_KEY` holds the public key of `GATEWAY_SIGNING_KEY`, and read trusted ad rules. Provider settings stay with their provider; a tenant has no provider settings. | Deployment-config and ad-rules-file modules; app selects the logging-storage settings reader, the system-log-export settings reader, the operation-capacity reader, the switch and provisioning-settings reader, the free-tenant-limit reader, and the gateway-settings reader. |
 | `sql` — [`src/runtime/sql/`](../src/runtime/sql/) | Own the one bounded SQL runtime of the hosted stores: the `pg` pool with verified TLS, admission of active and pending work, acquisition, operation and statement deadlines, late-work accounting, and bounded close. The only owner that imports `pg`. | [Bounded SQL runtime](../src/runtime/sql/bounded-sql-runtime.ts) for the stores; app opens it and owns its lifetime. |

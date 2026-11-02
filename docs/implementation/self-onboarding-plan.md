@@ -496,6 +496,7 @@ operations, and a committed intent before a provider effect.
 | `subscriptions` | `organization_id` (key), `stripe_customer_id`, `stripe_subscription_id`, `status`, `current_period_end`, `cancel_at_period_end`, `terms_accepted_at`, `updated_at` | The last Stripe-confirmed state. No row means `free`. |
 | `billing_events` | `stripe_event_id` (key), `type`, `received_at`, `applied_at` | Duplicate protection; `applied_at` is set after a successful apply. |
 | `tenant_sweep_ticks` | `tick_at` (key), `claimed_by`, `claimed_at` | One row for each daily tick of the tenant sweeps: the claim of the instance that runs it, so two instances of a deploy run each tick one time (SO-12 rehearsal of 31 October 2026). The rows stay as the record of the ticks. |
+| `removed_members` | `membership_id` (key), `organization_id`, `authority`, `subject`, `operation_id`, `recorded_at` | One row for each membership that an Admin removed through Members, written before the deletion at WorkOS (rule of 2 November 2026). Signup reads it by `authority` and `subject`: a row refuses free access with the existing-account notice. The rows stay; the owner reviews the retention with the privacy documents. |
 
 Since 27 October 2026, `FREE_TENANT_LIMIT` counts every row except
 `deleted` and `failed`: `requested`, `creating`, `deploying`, `live`,
