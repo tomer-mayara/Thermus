@@ -30,7 +30,7 @@ for (const status of ['inactive', 'pending'] as const) {
     for (const answer of [page, posted]) {
       const document = parseHTML(answer.body).document;
       assert.equal(document.querySelector('h1')?.textContent, 'You already have a Thermus account');
-      assert.match(document.querySelector('.notice-message')?.textContent ?? '', /cannot create another one/);
+      assert.match(document.querySelector('.notice-message')?.textContent ?? '', /cannot create an organization for it/);
       const selector = document.querySelector('.primary-action');
       assert.equal(selector?.textContent, 'Open your workspace');
       assert.equal(selector?.getAttribute('href'), '/organizations?return_to=%2F');

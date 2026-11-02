@@ -1483,6 +1483,8 @@ holds the cap check and the tenant request.
    gives "You already have a Thermus account", and `403` for a `POST`. Only a
    user without a membership record and without a retained signup
    organization gets the agreement and the organization creation, as before.
+   A membership that an Admin removed is deleted at WorkOS and leaves no
+   record, so that account counts as new: an accepted limit of 2 November 2026.
 4. An `active` result of the activation confirms the first Admin membership.
    Then signup requests the tenant of the new organization (SO-04), before it
    selects the organization and opens Quick start. The request is the one

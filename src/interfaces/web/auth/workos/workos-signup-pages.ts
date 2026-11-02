@@ -61,7 +61,7 @@ export function signupContinuePage(destination: string): Response {
 }
 
 export function signupExistingAccountPage(destination: string, status = 200): Response {
-  return notice('You already have a Thermus account', 'Free access creates a new account and its organization. Your account already exists, so it cannot create another one. Open your workspace, or ask an Admin of your organization to invite you.', {
+  return notice('You already have a Thermus account', 'Free access creates a new account and its organization. Your account already exists, so free access cannot create an organization for it. Open your workspace, or ask an Admin of your organization to invite you. If you have an invitation, accept it from its email.', {
     actions: [link(destination, 'Open your workspace', 'primary-action'), link('mailto:legal@thermus.ai', 'Contact', 'secondary-action')], status,
   });
 }
