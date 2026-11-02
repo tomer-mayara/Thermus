@@ -7,7 +7,7 @@ import { invitationsOf } from './directory-reads.ts';
 import { limitReached, MemberLimit } from './member-limit.ts';
 import type { AssignableRole, InvitationRequest, OrganizationDirectory, OrganizationInvitation, OrganizationMembership } from './organization-directory.ts';
 import { MembershipRemoval } from './membership-removal.ts';
-import type { MemberRemovalRequest, RemovalOperationStore, RemovalResult } from './removal-operation-store.ts';
+import type { MemberRemovalRequest, RemovalResult, RemovalStore } from './removal-operation-store.ts';
 
 export type { MemberRemovalRequest, RemovalResult } from './removal-operation-store.ts';
 
@@ -39,7 +39,7 @@ export interface OrganizationAdministrationOptions {
   readonly records: ChangeRecorder;
   readonly billing: Billing;
   readonly clock?: () => Date;
-  readonly removalStore?: RemovalOperationStore;
+  readonly removalStore?: RemovalStore;
 }
 
 interface ManagedOrganization {

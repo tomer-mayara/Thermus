@@ -1,6 +1,6 @@
 import { OrganizationAdministration } from '../../../src/accounts/organizations/organization-administration.ts';
 import { BillingFree } from '../../../src/accounts/billing/billing-free.ts';
-import type { RemovalOperationStore } from '../../../src/accounts/organizations/removal-operation-store.ts';
+import type { RemovalStore } from '../../../src/accounts/organizations/removal-operation-store.ts';
 import { PgDestinationSettingsStore } from '../../../src/logs/audit/pg-destination-settings-store.ts';
 import { createPgSettingsRuntime } from '../../../src/runtime/sql/bounded-sql-runtime.ts';
 import { OrganizationDirectoryDouble } from '../doubles/organizations/organization-directory-double.ts';
@@ -21,7 +21,7 @@ async function run(start: Start): Promise<void> {
     process.send?.({ kind: 'paused', stage: start.stage, deleteCalls, operationId, completionOutcome });
     return new Promise<never>(() => {});
   };
-  const store: RemovalOperationStore = {
+  const store: RemovalStore = {
     admitRemoval: async intent => {
       const result = await durable.admitRemoval(intent);
       if (result.status === 'admitted') {
@@ -31,6 +31,8 @@ async function run(start: Start): Promise<void> {
       return result;
     },
     readRemoval: organizationId => durable.readRemoval(organizationId),
+    recordRemovedMember: record => durable.recordRemovedMember(record),
+    readRemovedMember: identity => durable.readRemovedMember(identity),
     completeRemoval: async (...args) => {
       if (start.stage === 'before-completion') await pause(args[2]);
       return durable.completeRemoval(...args);

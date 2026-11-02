@@ -3,9 +3,11 @@ import { test } from 'node:test';
 import { parseHTML } from 'linkedom';
 import { HostedBrowser, formsIn } from '../../support/drivers/browser/hosted-browser.ts';
 import { signInThroughServer } from '../../support/dsl/workos-sign-in.ts';
+import { removalForm } from '../../support/dsl/hosted-member-removal.ts';
 import { signupWrites } from '../../support/dsl/workos-signup.ts';
 import { hostedRootConfig } from '../../support/fixtures/hosted-config.ts';
 import { signupDocuments } from '../../support/fixtures/signup-documents.ts';
+import { otherOrganization, removalAdmin, removalOrganization, removalUser, serveMemberRemovalSite } from '../../support/in-process/hosted-member-removal-site.ts';
 import { serveWorkOSSite } from '../../support/in-process/workos-site.ts';
 
 for (const status of ['inactive', 'pending'] as const) {
@@ -42,6 +44,37 @@ for (const status of ['inactive', 'pending'] as const) {
     assert.deepEqual(signupWrites(site), []);
   });
 }
+
+test('Given a person whose only membership an Admin removed through Members, when signup opens and an old agreement form is posted, then signup says the account exists and creates no organization or membership', async (t) => {
+  const site = await serveMemberRemovalSite(t, { config: hostedRootConfig, setUp: (world) => {
+    world.memberships = world.memberships.filter((membership) => !(membership.userId === removalUser.id && membership.organizationId === otherOrganization));
+  } });
+  const admin = await signInThroughServer(site, removalAdmin, removalOrganization);
+  const targetId = site.world.membershipId(removalUser, removalOrganization);
+  const removed = await admin.browser.submit(await removalForm(admin.browser, targetId));
+  assert.ok(removed.status < 400, removed.body);
+  assert.deepEqual([...site.world.deletedMembershipIds], [targetId]);
+  assert.deepEqual(site.world.memberships.filter((membership) => membership.userId === removalUser.id).map((membership) => membership.organizationId), [removalOrganization]);
+  const { browser } = await signInThroughServer(site, removalUser);
+  const session = JSON.parse((await browser.open('session')).body) as { csrfToken: string };
+  signupWrites(site);
+
+  const page = await browser.open('signup');
+  const posted = await browser.post('signup', { csrf_token: session.csrfToken, document_version: signupDocuments.version, organization_name: 'Independent Labs', agreement: 'accepted' });
+
+  assert.equal(page.status, 200, page.body);
+  assert.equal(posted.status, 403, posted.body);
+  for (const answer of [page, posted]) {
+    const document = parseHTML(answer.body).document;
+    assert.equal(document.querySelector('h1')?.textContent, 'You already have a Thermus account');
+    assert.equal(document.querySelector('.primary-action')?.getAttribute('href'), '/organizations?return_to=%2F');
+    assert.deepEqual(formsIn(answer.body), []);
+    assert.ok(!answer.body.includes(signupDocuments.terms.text));
+  }
+  assert.deepEqual(site.signupFake.organizations, []);
+  assert.deepEqual(signupWrites(site), []);
+  assert.deepEqual([...site.world.deletedMembershipIds], [targetId]);
+});
 
 for (const status of ['active', 'inactive'] as const) {
   test(`Given a legacy personal record and ${status} User membership, when signup is retried after restart with a different name, then saved facts and User status stay unchanged without an Admin grant`, async (t) => {

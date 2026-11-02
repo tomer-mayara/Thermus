@@ -2,16 +2,16 @@ import type { AuthenticatedUser } from '../identity/access-context.ts';
 import type { OrganizationDirectory } from './organization-directory.ts';
 import { checkRemoval, currentAdmin } from './membership-removal-checks.ts';
 import { RemovalLifetime } from './membership-removal-lifetime.ts';
-import type { MemberRemovalRequest, RemovalIntent, RemovalOperationStore, RemovalResult, RemovalTerminal } from './removal-operation-store.ts';
+import type { MemberRemovalRequest, RemovalIntent, RemovalOperationStore, RemovalResult, RemovalStore, RemovalTerminal } from './removal-operation-store.ts';
 
 export class MembershipRemoval {
   private readonly directory: OrganizationDirectory;
-  private readonly store?: RemovalOperationStore;
+  private readonly store?: RemovalStore;
   private readonly clock: () => Date;
   private readonly active = new Set<RemovalLifetime>();
   private closed = false;
 
-  constructor(directory: OrganizationDirectory, store: RemovalOperationStore | undefined, clock: () => Date) {
+  constructor(directory: OrganizationDirectory, store: RemovalStore | undefined, clock: () => Date) {
     this.directory = directory;
     this.store = store;
     this.clock = clock;

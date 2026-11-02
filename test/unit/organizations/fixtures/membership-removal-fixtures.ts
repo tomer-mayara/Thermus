@@ -1,6 +1,6 @@
 import type { ChangeRecord } from '../../../../src/accounts/organizations/change-records.ts';
 import { OrganizationAdministration, type Actor } from '../../../../src/accounts/organizations/organization-administration.ts';
-import type { RemovalIntent, RemovalOperation, RemovalOperationStore, RemovalTerminal } from '../../../../src/accounts/organizations/removal-operation-store.ts';
+import type { RemovalIntent, RemovalOperation, RemovalOperationStore, RemovalStore, RemovalTerminal, RemovedMember, RemovedMemberStore } from '../../../../src/accounts/organizations/removal-operation-store.ts';
 import { OrganizationDirectoryDouble } from '../../../support/doubles/organizations/organization-directory-double.ts';
 import { adminGrant, userGrant } from '../../../support/fixtures/hosted-roles.ts';
 import { BillingDouble } from './billing-double.ts';
@@ -9,10 +9,14 @@ import type { TestContext } from 'node:test';
 export const actor: Actor = { user: { authority: 'provider', subject: 'admin-a', selectedOrganizationId: 'other-org' } };
 export const request = { organizationId: 'org-a', membershipId: 'member-b', revision: 'r1' };
 
-export class RemovalStoreFake implements RemovalOperationStore {
+export class RemovalStoreFake implements RemovalStore {
   readonly operations = new Map<string, RemovalOperation>();
   readonly admissions: RemovalIntent[] = [];
   readonly completions: { organizationId: string; operationId: string; outcome: RemovalTerminal }[] = [];
+  // Each confirmed record, in order. A scripted answer replaces the confirmation or the read.
+  readonly removedMembers: RemovedMember[] = [];
+  recordAnswer?: 'unavailable' | 'unconfirmed';
+  readAnswer?: 'unavailable';
 
   async admitRemoval(intent: RemovalIntent): ReturnType<RemovalOperationStore['admitRemoval']> {
     this.admissions.push(intent);
@@ -32,6 +36,17 @@ export class RemovalStoreFake implements RemovalOperationStore {
     if (operation?.operationId !== operationId || (operation.outcome !== null && operation.outcome !== outcome)) return { status: 'mismatch' };
     this.operations.set(organizationId, { ...operation, outcome });
     return { status: 'completed' };
+  }
+
+  async recordRemovedMember(record: RemovedMember): ReturnType<RemovedMemberStore['recordRemovedMember']> {
+    if (this.recordAnswer !== undefined) return { status: this.recordAnswer };
+    this.removedMembers.push(record);
+    return { status: 'recorded' };
+  }
+
+  async readRemovedMember(identity: { readonly authority: string; readonly subject: string }): ReturnType<RemovedMemberStore['readRemovedMember']> {
+    if (this.readAnswer !== undefined) return { status: this.readAnswer };
+    return { status: this.removedMembers.some((member) => member.authority === identity.authority && member.subject === identity.subject) ? 'found' : 'absent' };
   }
 }
 
