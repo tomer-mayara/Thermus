@@ -106,8 +106,9 @@ test('Given a row in the state and on the service that the caller read, when it 
   assert.deepEqual(queries[1]?.values, ['org_01A', 'requested', null]);
 });
 
-// The delete of the organization sweep (2 November 2026): the row of an organization that the identity provider no
-// longer has keeps no organization name. The delete of the operator above keeps it for the revive of the repair.
+// The delete of an absent organization (2 November 2026), by the sweep or by the fleet command: the row of an
+// organization that the identity provider no longer has keeps no organization name. The delete of the operator above
+// keeps it for the revive of the repair.
 test('Given the tenant of an organization that the identity provider no longer has, when it is marked deleted without its organization name, then one UPDATE from that state and that service ends its route and clears the name', async (t) => {
   const { store, queries } = fleetStore(t, changed(markDeletedWithoutOrganizationName));
   assert.deepEqual(await store.markDeletedWithoutOrganizationName('org_01A', 'live', 'srv-a'), { status: 'recorded' });

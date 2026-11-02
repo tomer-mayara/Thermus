@@ -17,7 +17,8 @@ const DELETED_FROM = `WHERE organization_id = $1 AND state = $2 AND state <> 'de
 // The delete of the operator keeps the organization name for the revive of the repair "delete, then request".
 const MARK_DELETED = `UPDATE thermus_admin.tenants SET state = 'deleted', internal_url = NULL, updated_at = now()
   ${DELETED_FROM}`;
-// The delete of the organization sweep: the row of an absent organization loses its organization name (2 November 2026).
+// The delete of an absent organization, by the sweep or by the fleet command: the row loses its organization name
+// (2 November 2026).
 const MARK_DELETED_WITHOUT_ORGANIZATION_NAME = `UPDATE thermus_admin.tenants SET state = 'deleted', internal_url = NULL, organization_name = NULL, updated_at = now()
   ${DELETED_FROM}`;
 const MARK_SUSPENDED = `UPDATE thermus_admin.tenants SET state = 'suspended', updated_at = now()

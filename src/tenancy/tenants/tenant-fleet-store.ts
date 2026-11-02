@@ -66,7 +66,7 @@ export interface TenantFleetStore {
    * deleted to requested inside the cap, under the registry lock: the request of "delete, then request". The row starts
    * again as a new request: its service, address, plans, digest, last use, and failure reason go, and its creation time
    * is now. It keeps its organization name, if it still has one, so its next claim gives the same service name; after a
-   * delete of the sweep it has none, and the claim gives the name of the ID alone.
+   * delete of an absent organization it has none, and the claim gives the name of the ID alone.
    */
   reviveDeleted(organizationId: string, admit: (count: RegistryCount) => boolean): Promise<ReviveResult>;
   /** live to suspended on the service that the caller read, after the platform took the suspend of that service. */

@@ -681,9 +681,10 @@ Unicode NFKD form without combining marks and in lower case. Each sequence of
 characters outside a-z and 0-9 in it becomes one hyphen. The slug has at most
 30 characters and no hyphen at either end. A row without a name, or with an
 empty slug, gets the name above. A resumed row keeps the service name of its
-create. A row that the fleet `delete` command deleted keeps its organization
-name, so a revived row makes the same name at its next claim; the organization
-sweep clears the name of a removed organization (2 November 2026).
+create. A row deleted while WorkOS still had its organization keeps its
+organization name, so a revived row makes the same name at its next claim; the
+removal of a tenant whose organization WorkOS no longer has, by the organization
+sweep or by the fleet `delete` command, clears the name (2 November 2026).
 A `deploying` row that keeps its address
 is the row of a resume, because only a live record gives an address and a
 delete takes it away; the claim takes it 15 s after its resume mark, when
@@ -735,9 +736,10 @@ services for a window), and `restartCount` (the `server_failed` and
 row and change a row only from the state and the service that each statement
 names: deleted from the state and the service that the caller read (the route
 goes, the service ID and name stay for the record; a row without a service
-binds to none), in two statements: the delete of the operator keeps the
-organization name, and the delete of the organization sweep clears it, because
-the organization is gone (2 November 2026); `live` to `suspended` and
+binds to none), in two statements by the cause of the removal: `operator`, a
+delete while the organization exists, keeps the organization name, and
+`organization-absent` clears it, because the organization is gone
+(2 November 2026); `live` to `suspended` and
 `suspended` to `deploying` on the service that
 the caller read, the digest of a `live` row on its service, and the revive of a
 `deleted` row to `requested` under the registry lock and inside the cap, as a
@@ -768,8 +770,11 @@ The writers of each transition of a row:
 - The row of a tick in `tenant_sweep_ticks`: the claim of the sweeps adds it;
   nothing changes or deletes it.
 - Each state except `deleted` to `deleted`: the organization sweep and the fleet
-  `delete` command, both through the removal, with the cause of the removal: the
-  sweep clears the organization name, and the command keeps it.
+  `delete` command, both through the removal, with the cause of the removal from
+  a read of the organization by its ID: `organization-absent`, from the sweep
+  and from the command when WorkOS no longer has the organization, clears the
+  organization name; `operator`, from the command when WorkOS has it, keeps it
+  (owner decision of 2 November 2026).
 - The digest of a `live` row: the fleet `upgrade` command. The last use: the
   gateway, without a change of state.
 
