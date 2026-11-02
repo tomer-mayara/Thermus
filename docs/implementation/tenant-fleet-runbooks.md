@@ -30,7 +30,12 @@ nothing. In the commands of these runbooks, `fleet.ts` is short for
 run from the repository root with the registry settings (`DATABASE_URL`,
 `DATABASE_CA_CERT_PATH`), `RENDER_OWNER_ID`, and `TENANT_NAME_PREFIX` of the
 fleet. A command that reads WorkOS, `request` or `summary`, runs through the
-WorkOS launcher of the environment.
+WorkOS launcher of the environment. From the Mac of the operator, the default
+SQL bounds of the fleet script are too short for the production pooler (the
+acquisition bound of 1 s is shorter than the TLS connection), so `fleet.ts list`
+ends with `The tenant registry cannot be read. Nothing changed.`; a follow-up
+makes the bounds configurable ([SO-12 step 11](self-onboarding-s2-release.md#step-11-release-of-main-7b1ce3b6-2-november-2026),
+the tenant upgrade).
 
 The production control plane runs with `MCP_TENANTS_ENABLED` off until step 6
 of the SO-12 order, so production has no tenant yet.
