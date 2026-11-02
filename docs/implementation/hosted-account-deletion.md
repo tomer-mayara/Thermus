@@ -323,8 +323,11 @@ and have the owner seek a provider procedure.
 
 The tenant registry keeps the `deleted` row of a deleted tenant: the
 organization ID, the service ID and name, the plan, the digest, and the times.
-It holds no person data, and the runtime role cannot delete it. Record it as
-retained operational data with the request.
+After a delete by the fleet command, the row also keeps the organization name
+of hosted signup; after a delete by the organization sweep, it does not. The
+service name can hold the slug of that organization name in both cases
+(2 November 2026). The row holds no other person data, and the runtime role
+cannot delete it. Record it as retained operational data with the request.
 
 WorkOS and Render residual records, security records, and backup purge schedules
 remain unknown for this account. The WorkOS Audit Logs product's retention

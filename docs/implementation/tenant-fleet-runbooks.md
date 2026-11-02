@@ -474,8 +474,9 @@ runbook gives this order and the registry rows.
    row `deleted` from the state and the service that it read. A row that
    another writer changed meanwhile, also a new provision of the organization
    with a new service, stays as it is, and the command says so. The row keeps
-   its organization name, as after the repair "delete, then request"; the
-   sweep below clears it (2 November 2026).
+   its organization name, as after the repair "delete, then request"; only a
+   delete by the sweep below leaves the row without it, and the sweep reads no
+   `deleted` row again (2 November 2026).
 3. Check: `fleet.ts status --organization <organization ID>` shows the row
    `deleted`, and the Render Dashboard does not list the service. A service
    that Render no longer has counts as deleted, so a repeat of step 2 is safe.

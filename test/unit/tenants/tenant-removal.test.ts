@@ -13,7 +13,7 @@ const signal = new AbortController().signal;
 
 function fleetOf(state: RemovableState, serviceId: string | null = 'srv-a', cause: RemovalCause = 'operator'): { readonly store: TenantFleetStoreFake; readonly row: TenantRemoval } {
   const store = new TenantFleetStoreFake();
-  store.put({ organizationId: 'org_A', state, serviceId, organizationName: 'Acme Corp', serviceName: 'thermus-tenant-acme-corp-org-a', internalUrl: serviceId === null ? null : 'http://thermus-tenant-acme-corp-org-a:8080' });
+  store.put({ organizationId: 'org_A', state, serviceId, organizationName: 'Acme Corp', serviceName: 'acme-corp-thermus-tenant-org-a', internalUrl: serviceId === null ? null : 'http://acme-corp-thermus-tenant-org-a:8080' });
   return { store, row: { organizationId: 'org_A', state, serviceId, cause } };
 }
 
@@ -38,7 +38,7 @@ test('Given a row with the organization name of hosted signup, when the operator
   assert.deepEqual(await removeTenant({ platform, store }, row, signal), { status: 'deleted' });
 
   const deleted = store.row('org_A');
-  assert.deepEqual([deleted.state, deleted.organizationName, deleted.serviceName, deleted.serviceId, deleted.internalUrl], ['deleted', 'Acme Corp', 'thermus-tenant-acme-corp-org-a', 'srv-a', null]);
+  assert.deepEqual([deleted.state, deleted.organizationName, deleted.serviceName, deleted.serviceId, deleted.internalUrl], ['deleted', 'Acme Corp', 'acme-corp-thermus-tenant-org-a', 'srv-a', null]);
 });
 
 test('Given a row with the organization name of hosted signup, when the sweep removes the tenant because the identity provider no longer has its organization, then the deleted row has no organization name', async () => {
@@ -48,7 +48,7 @@ test('Given a row with the organization name of hosted signup, when the sweep re
   assert.deepEqual(await removeTenant({ platform, store }, row, signal), { status: 'deleted' });
 
   const deleted = store.row('org_A');
-  assert.deepEqual([deleted.state, deleted.organizationName, deleted.serviceName, deleted.serviceId, deleted.internalUrl], ['deleted', null, 'thermus-tenant-acme-corp-org-a', 'srv-a', null], 'The service stays for the record; the name of the removed organization goes');
+  assert.deepEqual([deleted.state, deleted.organizationName, deleted.serviceName, deleted.serviceId, deleted.internalUrl], ['deleted', null, 'acme-corp-thermus-tenant-org-a', 'srv-a', null], 'The service stays for the record; the name of the removed organization goes');
   assert.deepEqual(platform.calls, ['delete srv-a']);
 });
 

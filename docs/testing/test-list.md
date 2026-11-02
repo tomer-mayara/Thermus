@@ -3,13 +3,23 @@
 ## Current organization sweep name inventory scope
 
 Since 2 November 2026, the weekly organization sweep clears `organization_name`
-when it deletes the tenant of an organization that WorkOS no longer has, because
-the registry keeps no name of a removed organization. The fleet command
-`delete` keeps the name, so the repair "delete, then request" gives the revived
-row the same service name. The removal that both share takes the cause of the
-removal, and the SQL adapter of the fleet statements has one delete statement
-for each cause. Inventory presence is not a passing result; the pull request
-records the runs.
+when it deletes the tenant of an organization that WorkOS no longer has,
+because the organization is gone; the service name of the row stays for the
+record. The fleet command `delete` keeps the organization name, so the repair
+"delete, then request" gives the revived row the same service name. The removal
+that both share takes the cause of the removal, and the SQL adapter of the
+fleet statements has one delete statement for each cause. Inventory presence
+is not a passing result; the pull request records the runs.
+
+- `test/acceptance/tenants/organization-sweep.test.ts` (1 new case) runs the
+  sweeps as app composes them: given a live tenant with the organization name
+  of hosted signup whose organization the WorkOS fake no longer has, its Render
+  service is deleted, and its row is `deleted` with its service for the record
+  and without the organization name, while the row of the listed organization
+  keeps its name. The harness
+  `test/acceptance/tenants/fixtures/sweep-harness.ts` can give a live tenant
+  an organization name, and it names the service by the name rule of the
+  provisioner.
 
 - `test/integration/tenants/organization-sweep.runtime.ts` (2 new cases) runs
   on the real registry on disposable PostgreSQL 17: given live tenants with the

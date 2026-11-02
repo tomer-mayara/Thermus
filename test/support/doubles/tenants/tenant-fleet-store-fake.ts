@@ -43,7 +43,8 @@ export class TenantFleetStoreFake extends TenantProvisioningStoreFake implements
     });
   }
 
-  // As the SQL adapter, the revived row keeps its organization name, so its next claim gives the same service name.
+  // As the SQL adapter, the revived row keeps its organization name, if it still has one, so its next claim gives the same
+  // service name; after a delete of the sweep it has none.
   async reviveDeleted(organizationId: string, admit: (count: RegistryCount) => boolean): Promise<ReviveResult> {
     if (this.fleetUnavailable.has('revive')) return { status: 'unavailable' };
     const count = this.countFor(organizationId);

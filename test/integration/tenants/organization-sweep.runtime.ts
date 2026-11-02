@@ -62,9 +62,9 @@ async function rowsOf(site: Site): Promise<string[]> {
   return text === '' ? [] : text.split('\n');
 }
 
-// Each row with its state, its service name, and its organization name, quoted, or NULL.
+// Each row with its state, its service name, its route, and its organization name, quoted, or NULL.
 async function namesOf(site: Site): Promise<string[]> {
-  const text = await site.ownerQuery("SELECT concat_ws(' ', organization_id, state, coalesce(service_name, '-'), coalesce(quote_literal(organization_name), 'NULL')) FROM thermus_admin.tenants ORDER BY organization_id");
+  const text = await site.ownerQuery("SELECT concat_ws(' ', organization_id, state, coalesce(service_name, '-'), coalesce(internal_url, 'no-route'), coalesce(quote_literal(organization_name), 'NULL')) FROM thermus_admin.tenants ORDER BY organization_id");
   return text === '' ? [] : text.split('\n');
 }
 
@@ -99,11 +99,11 @@ test('Given rows on the real registry and organizations that WorkOS no longer ha
   assert.equal(log.lines.at(-1), `INFO Organization sweep: ${JSON.stringify({ rows: 4, organizations: 2, deleted: 2, foundOnRead: 0, unreadable: 0, inFlight: 0, moved: 0, failed: 0 })}`);
 });
 
-// The registry keeps no organization name of a removed organization (2 November 2026): the delete of the sweep clears
-// organization_name; the delete of the operator keeps it, so the repair "delete, then request" gives the same service name.
+// The delete of the sweep clears organization_name, because the organization is gone; the delete of the operator keeps
+// it, so the repair "delete, then request" gives the same service name (2 November 2026). The service name stays in both.
 test('Given live tenants with the organization name of hosted signup on the real registry, when the sweep deletes the tenant of an organization that WorkOS no longer has, then its row is deleted without the name, and the row of a listed organization keeps its name', { timeout: 120_000 }, async (t) => {
   const { site, render, rowWithService } = await registryWithRender(t);
-  await rowWithService('org_01JNAMEKEEP', 'live', 'Acme Corp');
+  const kept = await rowWithService('org_01JNAMEKEEP', 'live', 'Acme Corp');
   const gone = await rowWithService('org_01JNAMEGONE', 'live', 'Müller GmbH');
   const workos = await WorkOSFake.start(t, controlPlanePublicBaseUrl, ['org_01JNAMEKEEP']);
   const { fleet, provisioning } = storesOn(t, site);
@@ -113,9 +113,10 @@ test('Given live tenants with the organization name of hosted signup on the real
 
   await sweep.run(monday, signal);
 
+  const routeOf = (serviceId: string): string => `http://${render.services().find((service) => service.id === serviceId)?.slug}:8080`;
   assert.deepEqual(await namesOf(site), [
-    `org_01JNAMEGONE deleted ${nameOf('org_01JNAMEGONE', 'Müller GmbH')} NULL`,
-    `org_01JNAMEKEEP live ${nameOf('org_01JNAMEKEEP', 'Acme Corp')} 'Acme Corp'`,
+    `org_01JNAMEGONE deleted ${nameOf('org_01JNAMEGONE', 'Müller GmbH')} no-route NULL`,
+    `org_01JNAMEKEEP live ${nameOf('org_01JNAMEKEEP', 'Acme Corp')} ${routeOf(kept)} 'Acme Corp'`,
   ]);
   assert.deepEqual(render.requestsOf('delete service').map((request) => request.path), [`/services/${gone}`]);
   assert.equal(log.lines.at(-1), `INFO Organization sweep: ${JSON.stringify({ rows: 2, organizations: 1, deleted: 1, foundOnRead: 0, unreadable: 0, inFlight: 0, moved: 0, failed: 0 })}`);
@@ -130,13 +131,13 @@ test('Given a live tenant with the organization name of hosted signup on the rea
 
   assert.deepEqual(await removeTenant({ platform, store: fleet }, { organizationId, serviceId, state: 'live', cause: 'operator' }, signal), { status: 'deleted' });
 
-  assert.deepEqual(await namesOf(site), [`${organizationId} deleted ${nameOf(organizationId, 'Acme Corp')} 'Acme Corp'`]);
+  assert.deepEqual(await namesOf(site), [`${organizationId} deleted ${nameOf(organizationId, 'Acme Corp')} no-route 'Acme Corp'`]);
   assert.deepEqual(render.services(), []);
   assert.deepEqual(await reviveTenant(fleet, organizationId, 25), { status: 'revived' });
   const claim = await provisioning.claimNext({ serviceNameOf: nameOf, plan: '0.5c-512mb', holder: 'holder-1' });
   assert.ok(claim.status === 'claimed');
   assert.equal(claim.row.serviceName, nameOf(organizationId, 'Acme Corp'), 'The revived row gets the service name of its first create');
-  assert.deepEqual(await namesOf(site), [`${organizationId} creating ${nameOf(organizationId, 'Acme Corp')} 'Acme Corp'`]);
+  assert.deepEqual(await namesOf(site), [`${organizationId} creating ${nameOf(organizationId, 'Acme Corp')} no-route 'Acme Corp'`]);
 });
 
 test('Given a deleted row on the real registry, when it is revived, then a full cap keeps it deleted, and a free place makes it a new requested row without its old service', { timeout: 120_000 }, async (t) => {
