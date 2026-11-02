@@ -866,7 +866,9 @@ separately within their stated scope.
 
 - `hosted-member-removal.test.ts` checks valid confirmation, invalid forms,
   last-Admin guidance, repeated unknown POSTs, current counts with multiple grants,
-  and a confirmed result followed by a failed read.
+  a confirmed result followed by a failed read, the removed-member record written
+  before the deletion, and a store that cannot keep that record (nothing deleted,
+  the unavailable result).
 - `hosted-member-self-removal.test.ts` checks another workspace, eligible signup,
   saved-start recovery, actual sign-in-link traversal, and unknown self-removal.
 - `hosted-member-removal-scope.test.ts` checks account/factor/other-membership
@@ -891,11 +893,16 @@ S2.5-01c increment above.
 - `test/acceptance/auth/membership-removal-restart.runtime.ts` checks three actual
   process crashes and a fresh process on the same database, with no replay.
 - The organization removal unit files check current authority, exact target facts,
-  all roles, complete pages, the total deadline, close, and matching receipts.
+  all roles, complete pages, the total deadline, close, matching receipts, and the
+  removed-member record: its fields, its place before the deletion, and the
+  refused removal after an unavailable, unconfirmed, or thrown record write.
 - `test/integration/auth/workos-removal-lifetime.test.ts` and the provider read
   lifetime unit file check that stopped work cannot start another remote read.
 - The removal-store unit and PostgreSQL runtime files check atomic admission,
-  conditional completion, uncertain writes, and production same-store composition.
+  conditional completion, uncertain writes, production same-store composition,
+  and the `removed_members` table: the read by identity, a repeated record of one
+  membership, the SELECT-and-INSERT-only grants with forced row-level security,
+  and a committed record whose reply is lost.
   The hosted storage-failure case checks no deletion during a SQL outage while
   MCP and health stay usable. Runtime files run in `test:logging:postgres`.
 
@@ -1016,11 +1023,13 @@ limits; this inventory does not claim a successful test run.
   `test/support/dsl/workos-signup.ts`.
 - `test/acceptance/auth/hosted-signup-restart.test.ts` retains the closed-signup,
   revoked-first-Admin, old-form, and separate-workspace recovery coverage.
-- `test/acceptance/auth/hosted-signup-eligibility.test.ts` covers creation after
-  invited access is lost, retained v1 User access without promotion or acceptance
-  overwrite after restart, revoked legacy access, malformed retained records with
-  and without other current access, and selection among current User/Admin
-  memberships without an extra Create action.
+- `test/acceptance/auth/hosted-signup-eligibility.test.ts` covers the refusal of
+  an inactive or pending membership record, of a person whose only membership an
+  Admin removed through Members, and of a removed-member record without a
+  membership record, the `503` of an unavailable record read, retained v1 User
+  access without promotion or acceptance overwrite after restart, revoked legacy
+  access, malformed retained records with and without other current access, and
+  selection among current User/Admin memberships without an extra Create action.
 - The signup integration cases check saved names and acceptance records across
   retries. Current provider-read failures remain unavailable rather than eligible.
   A broken or unusable retained record requires support and cannot repair access;
