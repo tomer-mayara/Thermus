@@ -241,24 +241,38 @@ With `MCP_TENANTS_ENABLED` on, each organization can have a tenant: one Render
 private service named with the slug of the organization name when hosted signup
 requested the tenant (since 2 November 2026), `TENANT_NAME_PREFIX`, and its
 organization ID, and one row in the tenant registry `thermus_admin.tenants`.
-The fleet command `delete` keeps that organization name in the row, for the
-repair "delete, then request"; the weekly organization sweep clears it, because
-the organization no longer exists (2 November 2026). The tenant holds no person
-data of its own beyond that name, but it serves the organization and costs
-about 7 USD a month while it runs. Delete it only after the organization itself
-is deleted, in this order:
+A delete of the tenant after the organization is gone leaves no organization
+name in the row: the fleet command `delete` reads the organization in WorkOS
+first and clears the name when WorkOS no longer has the organization, as the
+weekly organization sweep does (owner decision of 2 November 2026). Only a
+delete while WorkOS still has the organization keeps the name, for the repair
+"delete, then request". The tenant holds no person data of its own beyond that
+name, but it serves the organization and costs about 7 USD a month while it
+runs. Delete it only after the organization itself is deleted, in this order:
 
 1. Remove the WorkOS organization under the procedure above, with its approval,
    its read before the action, and its read after the action. Then no member
    has access when the tenant goes.
 2. Delete the tenant with the fleet script, one exact organization ID:
    `node --env-file=<main checkout>/.env.local script/fleet/fleet.ts delete --organization <organization ID>`,
-   with the registry and Render settings of
-   [Operate the tenant fleet](../../script/README.md#operate-the-tenant-fleet).
-   The command prints the row, the service ID, and the service name. Compare
-   them with the record, then answer `yes`. It deletes the Render service
-   through the adapter, which writes only to a service of a registry row and
-   never to the production service, and then sets the row `deleted`.
+   with the registry, Render, and WorkOS settings of
+   [Operate the tenant fleet](../../script/README.md#operate-the-tenant-fleet);
+   in development, run it through the WorkOS Staging launcher. The command
+   reads the organization in WorkOS, then prints the row, the service ID, the
+   service name, and the cause of the removal: after step 1,
+   `WorkOS has no organization <organization ID>`, so the deleted row loses
+   its organization name. Compare them with the record. If the plan says
+   `WorkOS has the organization`, answer `no` and finish step 1 first: no
+   command reads a `deleted` row again, so a wrong `yes` keeps the name. Else
+   answer `yes`. The command deletes the Render service through the adapter,
+   which writes only to a service of a registry row and never to the
+   production service, and then sets the row `deleted` without the
+   organization name. A failed WorkOS read stops the command before the
+   confirmation, with nothing changed. The registry needs the column
+   `organization_name` of the
+   [database setup](admin-s2-01a-database-setup.md#add-the-tenant-registry-tables-before-slice-2-self-on-boarding)
+   before this step: without it, the command deletes the Render service and
+   the row write fails.
 3. Check: `status` for the organization shows the row `deleted`, and the
    Render Dashboard of the workspace Thermus AI does not list the service. A
    service that Render no longer has counts as deleted, so a repeat of step 2
@@ -272,13 +286,13 @@ it compares the registry with the WorkOS organization list, reads each
 organization that the list leaves out by its ID, and deletes the tenant only
 after a `404`, because the lists lag for some seconds. The system log then has
 one `Tenant removal record:` line for the tenant, and its row keeps no
-organization name (2 November 2026). A tenant that the provisioner
-works on (`creating` or `deploying`) waits for the next sweep. The sweep
-removes at most 2 tenants in one run: with an empty list, or with more than 2
-tenants whose organization the list leaves out, it deletes nothing and writes
-one `Organization sweep stopped:` line with the counts, because a wrong WorkOS
-key would make every organization look gone. Then delete each tenant by hand
-with step 2.
+organization name, as after step 2 (2 November 2026). A tenant that the
+provisioner works on (`creating` or `deploying`) waits for the next sweep. The
+sweep removes at most 2 tenants in one run: with an empty list, or with more
+than 2 tenants whose organization the list leaves out, it deletes nothing and
+writes one `Organization sweep stopped:` line with the counts, because a wrong
+WorkOS key would make every organization look gone. Then delete each tenant by
+hand with step 2.
 
 The registry rows after the deletion:
 
@@ -287,7 +301,7 @@ The registry rows after the deletion:
 | `state` | `deleted` |
 | `render_service_id`, `service_name` | kept, so the record shows which service was deleted |
 | `internal_url` | empty: no route leads to the deleted service |
-| `organization_name` | kept by the fleet command `delete`, so a later `request` gives the revived row the same service name; empty after the organization sweep, because the organization no longer exists (2 November 2026) |
+| `organization_name` | empty after step 2 and after the organization sweep, because the organization no longer exists; the fleet command `delete` keeps it only while WorkOS still has the organization, so a later `request` gives the revived row the same service name (2 November 2026) |
 | `organization_id`, `plan`, `image_digest`, `last_active_at`, `failure_reason`, `created_at` | kept |
 | `updated_at` | the time of the delete |
 
@@ -323,11 +337,13 @@ and have the owner seek a provider procedure.
 
 The tenant registry keeps the `deleted` row of a deleted tenant: the
 organization ID, the service ID and name, the plan, the digest, and the times.
-After a delete by the fleet command, the row also keeps the organization name
-of hosted signup; after a delete by the organization sweep, it does not. The
-service name can hold the slug of that organization name in both cases
-(2 November 2026). The row holds no other person data, and the runtime role
-cannot delete it. Record it as retained operational data with the request.
+After a deletion under this runbook, by the fleet command after the organization
+is gone or by the organization sweep, the row holds no organization name of
+hosted signup; only a delete by the fleet command while WorkOS still has the
+organization keeps it. The service name can hold the slug of that organization
+name in every case (2 November 2026). The row holds no other person data, and
+the runtime role cannot delete it. Record it as retained operational data with
+the request.
 
 The removed-member table `thermus_admin.removed_members` keeps one row for each
 membership that an Admin removed through Members: the WorkOS user ID and the

@@ -1,5 +1,40 @@
 # Test inventory
 
+## Current fleet delete cause inventory scope
+
+Since 2 November 2026 (owner decision), the fleet command `delete` reads the
+organization in WorkOS before its confirmation and takes the cause of the
+removal from that read, as the weekly organization sweep does: an organization
+that WorkOS no longer has gives `organization-absent`, so the deleted row loses
+`organization_name`; an organization that WorkOS has gives `operator`, so the
+row keeps it for the repair "delete, then request". A failed read stops the
+command before the confirmation, with nothing changed. The decision lives in
+`removalCauseOf` of `src/tenancy/tenants/tenant-removal.ts`; the command is a
+script, so it has no test under `test/`, and the pull request records its
+manual check. This supersedes the rule of the command in the section below.
+Inventory presence is not a passing result; the pull request records the runs.
+
+- `test/unit/tenants/tenant-removal.test.ts` (2 new cases) checks the cause
+  from each answer of the read on the registry fake: the read that says absent
+  gives `organization-absent`, and the removal with it leaves the deleted row
+  without its organization name and with its service for the record; the read
+  that says present gives `operator`, and the removal with it keeps the name.
+- Manual check of `script/fleet/fleet.ts delete` on a disposable PostgreSQL 17
+  registry with every migration, as the runtime tests use it, and WorkOS
+  Staging through the launcher: a row of an organization that WorkOS Staging
+  has keeps its name, a row of an organization that it does not have loses it,
+  the plan names the cause before the answer `yes`, an answer other than `yes`
+  writes nothing, the command refuses to start without the WorkOS settings, a
+  read that fails (an invalid WorkOS key, `401`) stops the command before the
+  confirmation with exit 1 and no change, and a repeat on a `deleted` row
+  reads nothing and changes nothing. The staging registry lacks the column
+  `organization_name` until its migration is applied, so it cannot show the
+  absent path.
+
+```sh
+npm run build && node --test dist/test/unit/tenants/tenant-removal.test.js
+```
+
 ## Current organization sweep name inventory scope
 
 Since 2 November 2026, the weekly organization sweep clears `organization_name`
