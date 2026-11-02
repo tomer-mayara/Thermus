@@ -66,8 +66,8 @@ Scope: Thermus hosted system. The browser portal is a separate browser
 application. The Node server serves its assets and routes. Lightpanda is a
 short-lived process container even when it shares the server's Docker image.
 The optional PostgreSQL datastore uses a private schema for destination settings,
-removal intent, and the tenant registry; its subscription and billing-event
-tables wait for Slice 3. The Collector is the configured customer destination,
+removal intent, the removed-member record, and the tenant registry; its
+subscription and billing-event tables wait for Slice 3. The Collector is the configured customer destination,
 including compatible OTLP services such as Axiom; WorkOS includes AuthKit.
 The portal's HTTP arrow covers account requests and server-provided assets.
 The tenant server is the same image with `THERMUS_ROLE=tenant` (SO-03): it
@@ -307,7 +307,10 @@ signup form calls the public organizations name validator, so this dependency
 includes runtime behavior. The dependency rules declare that existing owner pair.
 The signup route starts the account creation through the supplied session
 controls, with the sign-up screen hint, and returns to itself. The WorkOS
-adapter refuses an account with any membership record.
+adapter refuses an account with any membership record, and an account with a
+removed-member record, which it reads last through the supplied
+organizations-owned `RemovedMemberStore` role of the same SQL adapter that the
+removal writes (the removal view below).
 The WorkOS adapter saves the canonical creator/authority record on the named
 organization and confirms active Admin/product access after a new create. The
 signup route uses supplied session controls to select that organization after
@@ -379,8 +382,10 @@ gives the header contract and the relay contract.
 
 Scope: one hosted Node server container. Organizations owns the checked removal
 operation and its lifetime. App supplies the existing SQL adapter through the
-organizations-owned RemovalOperationStore role; the adapter runs on the one
-bounded runtime of the `sql` owner, which app opens. Thick arrows show composition;
+organizations-owned RemovalOperationStore and RemovedMemberStore roles; the
+adapter runs on the one bounded runtime of the `sql` owner, which app opens.
+The WorkOS signup adapter reads the removed-member record through the same
+supplied role, so that free access refuses a removed member. Thick arrows show composition;
 solid arrows show runtime calls. The adapter's source type dependency points
 from audit-logs to organizations and is omitted from this runtime view.
 PostgreSQL is an existing supporting Level 2 container. Web invokes the operation
@@ -394,9 +399,9 @@ flowchart TB
     removal_web["web · TypeScript<br/>Trusted access and removal form gates<br/>Fixed result; safe navigation"]
     removal_app["app · TypeScript<br/>Supply directory and removal store<br/>Stop removal before SQL close"]
     removal_org["organizations · TypeScript<br/>Current Admin and target checks<br/>Last-Admin rule; bounded removal"]
-    removal_audit["audit-logs · TypeScript<br/>SQL adapter: intent / receipts<br/>Best-effort customer capture"]
+    removal_audit["audit-logs · TypeScript<br/>SQL adapter: intent / receipts / removed members<br/>Best-effort customer capture"]
     removal_sql["sql · TypeScript / pg<br/>Bounded runtime and pool"]
-    removal_workos["workos · TypeScript / SDK<br/>Current reads; stop signal checks<br/>One exact membership deletion"]
+    removal_workos["workos · TypeScript / SDK<br/>Current reads; stop signal checks<br/>One exact membership deletion; signup refusal"]
     removal_app ==>|supplies account routes| removal_web
     removal_web -->|checked removeMember call| removal_org
     removal_app ==>|composition / lifetime| removal_org
@@ -406,6 +411,7 @@ flowchart TB
     removal_org -->|supplied RemovalOperationStore| removal_audit
     removal_audit -->|bounded statements| removal_sql
     removal_org -->|supplied OrganizationDirectory| removal_workos
+    removal_workos -->|supplied RemovedMemberStore read at signup| removal_audit
   end
   removal_db[("L2: PostgreSQL<br/>Private settings and removal intent")]
   removal_provider["External system: WorkOS<br/>Identity and memberships"]
@@ -433,7 +439,16 @@ required product and administration permissions count; pending records and
 invitations do not count. MFA proof is not required. Unsafe, stale, unsupported,
 incomplete, or last-Admin removal stops before the existing exact-ID WorkOS
 boundary can delete once. These are current reads, not a remote transaction;
-independent provider/operator writes remain a runbook constraint.
+independent provider/operator writes remain a runbook constraint. After the
+checks and before the deletion, the coordinator writes the removed member
+(authority, subject, organization, membership, operation, time) to
+`thermus_admin.removed_members` through the `RemovedMemberStore` role of the
+same store; a write that is not confirmed completes the operation with
+`no-effect` and the result `unavailable`, so that a deleted membership always
+has its row. The WorkOS signup adapter reads the row of the signed-in user last,
+after the product access and membership record reads, and refuses free access
+with `existing-account` when one exists; an unavailable read gives `unavailable`,
+never eligibility (decision of 2 November 2026 in the authentication design).
 
 The scan uses the directory's
 [membership-facts page](../src/accounts/organizations/organization-directory.ts)
@@ -516,7 +531,8 @@ flowchart TB
 [Audit settings composition](../src/app/logging-storage.ts) supplies the settings store
 and server key only when hosted storage configuration is available. It constructs
 one service, collector, and sender; saved Test and export use that same sender.
-The same adapter and pool implement the organizations-owned removal store.
+The same adapter and pool implement the organizations-owned removal store,
+including the removed-member record that the WorkOS signup adapter reads.
 App opens the one [bounded SQL runtime](../src/runtime/sql/bounded-sql-runtime.ts)
 of the `sql` owner and gives it to this adapter and to the tenant registry.
 Destination settings and export keep their existing contracts.

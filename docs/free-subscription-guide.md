@@ -27,7 +27,7 @@ Keep activation on for this test.
 
 If Connect shows "Workspace setup failed. We have been notified and will fix it.", stop: the operator follows the [failed provision runbook](implementation/tenant-fleet-runbooks.md#1-failed-provision). If it shows "All free workspaces are in use. Try again later.", the free-tenant cap is full; the [workspace setup state](user-portal.md#workspace-setup-state) gives each message.
 
-An existing user with product access sees **Your access is ready** and **Continue**. A signed-in account with a membership but no product access sees **You already have a Thermus account**. These pages do not test new organization activation. Use another fresh account to repeat the test.
+An existing user with product access sees **Your access is ready** and **Continue**. A signed-in account with a membership but no product access, or an account that an Admin removed from its organization, sees **You already have a Thermus account**. These pages do not test new organization activation. Use another fresh account to repeat the test.
 
 ## 3. Connect Claude Code
 
