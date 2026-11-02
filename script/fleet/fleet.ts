@@ -30,8 +30,9 @@ Commands:
                                           minute get a 503 with Retry-After 60 until it is live.
   resume --organization <id>              Resume a suspended tenant without a call, and wait until its deploy is live.
   delete --organization <id>              Delete the Render service of the tenant, then set its row deleted. It reads the
-                                          organization in WorkOS first: the row of an organization that WorkOS no longer
-                                          has loses its organization name; the row of one that WorkOS has keeps it.
+                                          organization in WorkOS before the confirmation: the row of an organization that
+                                          WorkOS no longer has loses its organization name; the row of one that WorkOS
+                                          has keeps it.
   summary                                 Print the daily summary line: Tenant fleet summary: <JSON>.
 
 Settings from the environment:

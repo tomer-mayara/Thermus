@@ -261,11 +261,18 @@ runs. Delete it only after the organization itself is deleted, in this order:
    reads the organization in WorkOS, then prints the row, the service ID, the
    service name, and the cause of the removal: after step 1,
    `WorkOS has no organization <organization ID>`, so the deleted row loses
-   its organization name. Compare them with the record, then answer `yes`. It
-   deletes the Render service through the adapter, which writes only to a
-   service of a registry row and never to the production service, and then
-   sets the row `deleted` without the organization name. A failed WorkOS read
-   stops the command before the confirmation, with nothing changed.
+   its organization name. Compare them with the record. If the plan says
+   `WorkOS has the organization`, answer `no` and finish step 1 first: no
+   command reads a `deleted` row again, so a wrong `yes` keeps the name. Else
+   answer `yes`. The command deletes the Render service through the adapter,
+   which writes only to a service of a registry row and never to the
+   production service, and then sets the row `deleted` without the
+   organization name. A failed WorkOS read stops the command before the
+   confirmation, with nothing changed. The registry needs the column
+   `organization_name` of the
+   [database setup](admin-s2-01a-database-setup.md#add-the-tenant-registry-tables-before-slice-2-self-on-boarding)
+   before this step: without it, the command deletes the Render service and
+   the row write fails.
 3. Check: `status` for the organization shows the row `deleted`, and the
    Render Dashboard of the workspace Thermus AI does not list the service. A
    service that Render no longer has counts as deleted, so a repeat of step 2
@@ -330,7 +337,7 @@ and have the owner seek a provider procedure.
 
 The tenant registry keeps the `deleted` row of a deleted tenant: the
 organization ID, the service ID and name, the plan, the digest, and the times.
-After the deletion of this runbook, by the fleet command after the organization
+After a deletion under this runbook, by the fleet command after the organization
 is gone or by the organization sweep, the row holds no organization name of
 hosted signup; only a delete by the fleet command while WorkOS still has the
 organization keeps it. The service name can hold the slug of that organization

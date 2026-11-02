@@ -24,9 +24,12 @@ Inventory presence is not a passing result; the pull request records the runs.
   Staging through the launcher: a row of an organization that WorkOS Staging
   has keeps its name, a row of an organization that it does not have loses it,
   the plan names the cause before the answer `yes`, an answer other than `yes`
-  writes nothing, and the command refuses to start without the WorkOS settings.
-  The staging registry lacks the column `organization_name` until its
-  migration is applied, so it cannot show the absent path.
+  writes nothing, the command refuses to start without the WorkOS settings, a
+  read that fails (an invalid WorkOS key, `401`) stops the command before the
+  confirmation with exit 1 and no change, and a repeat on a `deleted` row
+  reads nothing and changes nothing. The staging registry lacks the column
+  `organization_name` until its migration is applied, so it cannot show the
+  absent path.
 
 ```sh
 npm run build && node --test dist/test/unit/tenants/tenant-removal.test.js

@@ -12,7 +12,10 @@ export interface RemovalParts {
   readonly store: Pick<TenantFleetStore, 'markDeleted' | 'markDeletedWithoutOrganizationName'>;
 }
 
-/** Why the tenant goes: the identity provider no longer has its organization (the sweep), or the operator deletes it (the fleet command). */
+/**
+ * Why the tenant goes: the identity provider no longer has its organization (the sweep, and the fleet command after a
+ * read that says absent), or the operator deletes the tenant of an organization that exists (the fleet command).
+ */
 export type RemovalCause = 'organization-absent' | 'operator';
 
 /** The row of a tenant to remove, with the state and the service that the caller read, and the cause of the removal. */
@@ -22,11 +25,9 @@ export type TenantRemoval = Pick<FleetRow, 'organizationId' | 'serviceId'> & { r
 export type OrganizationAnswer = Exclude<OrganizationRead, { readonly status: 'unavailable' }>;
 
 /**
- * The cause of a removal by the operator, from the read of the organization by its ID that the fleet command delete makes
- * before its confirmation (owner decision of 2 November 2026): an organization that the identity provider no longer has
- * gives organization-absent, so the deleted row loses its organization name, as after the sweep; an organization that it
- * has gives operator, so the row keeps the name for the repair "delete, then request". An unavailable read gives no
- * cause: the command stops before its confirmation, with nothing changed.
+ * The cause of a removal from the read of the organization by its ID (owner decision of 2 November 2026): absent gives
+ * organization-absent, so the deleted row loses its organization name; present gives operator, so the row keeps it for
+ * the repair "delete, then request". An unavailable read has no cause: the caller removes nothing.
  */
 export function removalCauseOf(read: OrganizationAnswer): RemovalCause {
   return read.status === 'absent' ? 'organization-absent' : 'operator';
@@ -54,7 +55,7 @@ export async function removeTenant(parts: RemovalParts, removal: TenantRemoval, 
   return { status: 'failed', reason: `${lead} tenant registry did not take the deleted state. A repeat finishes the removal.` };
 }
 
-// The statement of the cause: the one of the sweep also clears the organization name.
+// The statement of the cause: the one of an absent organization also clears the organization name.
 function deleteRow(store: RemovalParts['store'], { organizationId, state, serviceId, cause }: TenantRemoval): Promise<FleetWrite> {
   if (cause === 'organization-absent') return store.markDeletedWithoutOrganizationName(organizationId, state, serviceId);
   return store.markDeleted(organizationId, state, serviceId);

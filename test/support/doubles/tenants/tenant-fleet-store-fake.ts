@@ -35,7 +35,7 @@ export class TenantFleetStoreFake extends TenantProvisioningStoreFake implements
     return this.fleetMove('deleted', { organizationId, from: [from], serviceId }, (row) => this.deleted(row));
   }
 
-  // As the SQL adapter, the delete of the organization sweep also clears the name of the removed organization.
+  // As the SQL adapter, the delete of an absent organization also clears the name of the removed organization.
   async markDeletedWithoutOrganizationName(organizationId: string, from: RemovableState, serviceId: string | null): Promise<FleetWrite> {
     return this.fleetMove('deleted', { organizationId, from: [from], serviceId }, (row) => {
       this.deleted(row);
@@ -44,7 +44,7 @@ export class TenantFleetStoreFake extends TenantProvisioningStoreFake implements
   }
 
   // As the SQL adapter, the revived row keeps its organization name, if it still has one, so its next claim gives the same
-  // service name; after a delete of the sweep it has none.
+  // service name; after a delete of an absent organization it has none.
   async reviveDeleted(organizationId: string, admit: (count: RegistryCount) => boolean): Promise<ReviveResult> {
     if (this.fleetUnavailable.has('revive')) return { status: 'unavailable' };
     const count = this.countFor(organizationId);

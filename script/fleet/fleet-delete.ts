@@ -1,10 +1,10 @@
 // The delete command: the Render service of the tenant first, through the adapter and its write guard, then the row
 // deleted from the state and the service that the command read (answer 7 of 27 October 2026, manager decision of 31
 // October 2026). It is the removal that the weekly organization sweep of the control plane uses too. The command reads
-// the organization in WorkOS before its confirmation, and that read gives the cause of the removal (owner decision of
-// 2 November 2026): an organization that WorkOS no longer has gives organization-absent, so the deleted row loses its
-// organization name, as after the sweep; an organization that WorkOS has gives operator, so the row keeps the name, and
-// the repair "delete, then request" gives the revived row the same service name. A failed read stops the command.
+// the organization in WorkOS before its confirmation. That read gives the cause of the removal (owner decision of
+// 2 November 2026). An organization that WorkOS no longer has gives organization-absent: the deleted row loses its
+// organization name, as after the sweep. An organization that WorkOS has gives operator: the row keeps the name, so the
+// repair "delete, then request" gives the revived row the same service name. A failed read stops the command.
 import type { FleetRow } from '../../src/tenancy/tenants/tenant-fleet-store.ts';
 import { removalCauseOf, removeTenant, type RemovalCause } from '../../src/tenancy/tenants/tenant-removal.ts';
 import { confirmed } from './fleet-confirm.ts';
@@ -53,6 +53,6 @@ async function removalCause({ context, signal }: CommandParts, organizationId: s
 
 // The line of the plan that names the cause, so the operator sees what the deleted row keeps before the answer yes.
 function causeLine(cause: RemovalCause, organizationId: string): string {
-  if (cause === 'organization-absent') return `WorkOS has no organization ${organizationId}: the deleted row loses its organization name, as after the organization sweep.`;
-  return `WorkOS has the organization ${organizationId}: the deleted row keeps its organization name, so a later request gives the revived row the same service name.`;
+  if (cause === 'organization-absent') return `WorkOS has no organization ${organizationId}: the deleted row loses its organization name, if it has one, as after the organization sweep.`;
+  return `WorkOS has the organization ${organizationId}: the deleted row keeps its organization name, if it has one, so a later request gives the revived row the same service name.`;
 }

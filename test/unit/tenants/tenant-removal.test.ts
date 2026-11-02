@@ -32,7 +32,7 @@ test('Given a live row with its service, when the tenant is removed, then the pl
   assert.equal(store.row('org_A').internalUrl, null);
 });
 
-test('Given a row with the organization name of hosted signup, when the operator removes the tenant, as the fleet delete command does, then the deleted row keeps the name, so the revive of the repair "delete, then request" gives the same service name', async () => {
+test('Given a row with the organization name of hosted signup, when the operator removes the tenant with the cause operator, as the fleet delete command does while the identity provider has the organization, then the deleted row keeps the name, so the revive of the repair "delete, then request" gives the same service name', async () => {
   const platform = new TenantPlatformFake();
   const { store, row } = fleetOf('live', 'srv-a', 'operator');
 
@@ -53,7 +53,7 @@ test('Given a row with the organization name of hosted signup, when the sweep re
   assert.deepEqual(platform.calls, ['delete srv-a']);
 });
 
-test('Given a read that says that the identity provider no longer has the organization, when the operator removes the tenant with the cause of that read, as the fleet delete command does after the deletion of the organization, then the deleted row has no organization name, as after the sweep', async () => {
+test('Given a read that says absent, when the cause of the removal comes from that read, as the fleet delete command does, then it is organization-absent, and the deleted row has no organization name', async () => {
   const platform = new TenantPlatformFake();
   const cause = removalCauseOf({ status: 'absent' });
   const { store, row } = fleetOf('live', 'srv-a', cause);
@@ -65,7 +65,7 @@ test('Given a read that says that the identity provider no longer has the organi
   assert.deepEqual([deleted.state, deleted.organizationName, deleted.serviceName, deleted.serviceId], ['deleted', null, 'acme-corp-thermus-tenant-org-a', 'srv-a'], 'The name of the removed organization goes; the service stays for the record');
 });
 
-test('Given a read that says that the identity provider has the organization, when the operator removes the tenant with the cause of that read, as the fleet delete command does in the repair "delete, then request", then the deleted row keeps its organization name', async () => {
+test('Given a read that says present, when the cause of the removal comes from that read, then it is operator, and the deleted row keeps its organization name', async () => {
   const platform = new TenantPlatformFake();
   const cause = removalCauseOf({ status: 'present' });
   const { store, row } = fleetOf('failed', 'srv-a', cause);
