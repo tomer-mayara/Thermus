@@ -3,7 +3,7 @@
 import { WorkOS } from '@workos-inc/node';
 import { WorkOSOrganizationInventory } from '../../src/accounts/providers/workos/workos-organization-inventory.ts';
 import { systemClock } from '../../src/app/system-clock.ts';
-import { createPgSettingsRuntime, type BoundedSqlRuntime } from '../../src/runtime/sql/bounded-sql-runtime.ts';
+import { createPgSettingsRuntime, type BoundedSqlRuntime, type SqlBounds } from '../../src/runtime/sql/bounded-sql-runtime.ts';
 import { RenderTenantPlatform } from '../../src/tenancy/providers/render/render-tenant-platform.ts';
 import { PgTenantFleetStore } from '../../src/tenancy/tenants/pg-tenant-fleet-store.ts';
 import { PgTenantProvisioningStore } from '../../src/tenancy/tenants/pg-tenant-provisioning-store.ts';
@@ -20,6 +20,12 @@ const NEED_CHECKS: Readonly<Record<SettingNeed, (environment: Environment) => un
 
 // Each WorkOS call of a command waits at most 10 s, with no retry of the SDK: the operator runs the command again.
 const WORKOS_TIMEOUT_MS = 10_000;
+// The registry bounds of an operator far from the pooler, the bounds of the rehearsal reads. The defaults of the runtime
+// (acquisition 1 s, operation 2 s, statement 1.5 s) fit the control plane, which runs in the region of the pooler. From
+// the owner's Mac, the TLS connection to the production pooler alone takes about 1 s (2 November 2026), so a read with
+// the defaults ends with "The tenant registry cannot be read". A person runs the script and sees the wait. The first
+// SIGINT does not stop a registry operation in flight; the second SIGINT ends the process at once, also during a write.
+const REGISTRY_BOUNDS: Partial<SqlBounds> = { acquisitionMs: 15_000, operationMs: 15_000, statementMs: 10_000, closeMs: 5_000 };
 
 export interface FleetStores {
   readonly fleet: PgTenantFleetStore;
@@ -46,7 +52,7 @@ export class FleetContext {
 
   async stores(): Promise<FleetStores> {
     if (this.#stores === undefined) {
-      const runtime = createPgSettingsRuntime(await registrySettingsOf(this.environment));
+      const runtime = createPgSettingsRuntime({ ...await registrySettingsOf(this.environment), bounds: REGISTRY_BOUNDS });
       this.#runtime = runtime;
       this.#stores = { fleet: new PgTenantFleetStore(runtime), registry: new PgTenantRegistryStore(runtime), provisioning: new PgTenantProvisioningStore(runtime) };
     }
