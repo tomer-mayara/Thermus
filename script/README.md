@@ -352,7 +352,7 @@ value, and the script never prints a key:
 
 | Variable | Commands | Meaning |
 | --- | --- | --- |
-| `DATABASE_URL`, `DATABASE_CA_CERT_PATH` | each | The tenant registry, with the runtime role `thermus_logging`. |
+| `DATABASE_URL`, `DATABASE_CA_CERT_PATH` | each | The tenant registry, with the runtime role `thermus_logging`. From the Mac of the operator, the default SQL bounds of the script are too short for the production pooler (the acquisition bound of 1 s is shorter than the TLS connection), so `list` ends with `The tenant registry cannot be read. Nothing changed.`; a follow-up makes the bounds configurable ([SO-12 step 11](../docs/implementation/self-onboarding-s2-release.md#step-11-release-of-main-7b1ce3b6-2-november-2026), the tenant upgrade). |
 | `RENDER_API_KEY` | `status`, `upgrade`, `suspend`, `resume`, `delete`, `summary` | The fleet key: the API key of the owner's Render user, in `.env.local` of the main checkout. It is not the key of the control plane, so the fleet uses another rate-limit bucket (plan section 4.2). |
 | `RENDER_OWNER_ID` | the same | The workspace of the tenants: `tea-db8i6ceq1p3s73dev9og`, Thermus AI. The script refuses My Workspace, `tea-d3mlbrvdiees73ca4rdg`. |
 | `WORKOS_API_KEY`, `WORKOS_CLIENT_ID` | `request`, `delete`, `summary` | The WorkOS environment of the organizations. In development, run the script through the WorkOS Staging launcher. |
