@@ -15,14 +15,13 @@
   },
   "architecture": {
     "modelUpdated": false,
-    "summary": "Documents only: the SO-12 release record docs/implementation/self-onboarding-s2-release.md records the production release of main 7b1ce3b6 on 2 November 2026. Step 11 is new: the owner's go-ahead \"Start release\" at about 20:12 UTC after the two tenant migrations, the state before the deploy, the workflow dispatch at 20:14:40 UTC (run 41517432942), deploy dep-dbkeuk142hec738md9t0 live at 20:15:50 UTC with sha256:515a70f6..., the checks, the rollback image sha256:72f51715..., and the open point that TENANT_IMAGE still names it. Section 1.2 names the new candidate (main 7b1ce3b6, image sha256:515a70f6... of run 41513586348) and gets the paragraph Candidate change of 2 November 2026; the candidate of 1 November 2026 becomes the rollback image of section 5 step 4, and the first candidate the second fallback. Item 14 of section 6 keeps the new digest at the GHCR pruning, the step 6 table no longer calls the tenant image the current candidate, the date line covers 2 November, and section 7 gets the row of step 11. No source, test, configuration, workflow, migration, or Mermaid block changes; the production architecture is unchanged.",
+    "summary": "Documents only: the SO-12 release record docs/implementation/self-onboarding-s2-release.md gets the entry Removed members (2 November 2026) under step 3, after the sweep ticks entry. It records the production application of the migration 20261102184225_removed_members.sql of #322 (SHA-256 df312db3..., the file of main 943c0091) on the owner's decision of about 20:39 UTC (\"Apply it\"), as the Supabase migration 20261102204022 removed_members at 20:40:22 UTC, with the pre-check of 20:40:09 UTC and the checks of 20:40:35 and 20:40:37 UTC (one INFO advisor note: the new index is not used yet). Production runs main 7b1ce3b6, which does not contain #322, so the table waits for the next deploy; production now holds every migration of main up to c2d33f67. The open part of step 11 says that the migration is applied, so the next deploy of main needs no migration step. Every fact comes from the production migration record comment of #322. No source, test, configuration, workflow, migration, or Mermaid block changes; the production architecture is unchanged.",
     "views": [
       "All 24 Mermaid views of architecture/components.md unchanged (the candidate does not touch the file)"
     ],
     "evidence": [
-      "docs/implementation/self-onboarding-s2-release.md (sections 1.2, 5 step 4, 6 item 14, and 7; steps 6 and 11)",
-      "https://github.com/tomer-mayara/Thermus/actions/runs/41513586348 (the image build of main 7b1ce3b6)",
-      "https://github.com/tomer-mayara/Thermus/actions/runs/41517432942 (the production deploy of sha256:515a70f6...)"
+      "docs/implementation/self-onboarding-s2-release.md (step 3, the Removed members bullet; step 11, the open part)",
+      "https://github.com/tomer-mayara/Thermus/pull/322#issuecomment-6587944323 (the production migration record of #322)"
     ]
   }
 }
