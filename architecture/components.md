@@ -305,6 +305,9 @@ uses the organizations-owned `SignupActivation` contract,
 including the requested organization name and purpose-marked legal bundle. The
 signup form calls the public organizations name validator, so this dependency
 includes runtime behavior. The dependency rules declare that existing owner pair.
+The signup route starts the account creation through the supplied session
+controls, with the sign-up screen hint, and returns to itself. The WorkOS
+adapter refuses an account with any membership record.
 The WorkOS adapter saves the canonical creator/authority record on the named
 organization and confirms active Admin/product access after a new create. The
 signup route uses supplied session controls to select that organization after
@@ -1471,7 +1474,7 @@ sequenceDiagram
     alt Full cap
       Signup-->>Browser: Closed notice, before the notice of the documents
     else Place free
-      Signup-->>Browser: Notice, sign-in, then the form with the agreement
+      Signup-->>Browser: Notice, account creation at AuthKit, then the form with the agreement
       Browser->>Signup: POST /signup, cap read again
       Signup->>Activation: Create the organization and the first Admin
       Activation-->>Signup: Active: first Admin membership confirmed

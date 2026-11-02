@@ -2,14 +2,15 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { test } from 'node:test';
 import { parseHTML } from 'linkedom';
-import { signupClosedPage, signupContinuePage, signupFailurePage, signupFormPage, signupSignInPage } from '../../../src/interfaces/web/auth/workos/workos-signup-pages.ts';
+import { signupClosedPage, signupContinuePage, signupCreateAccountPage, signupExistingAccountPage, signupFailurePage, signupFormPage } from '../../../src/interfaces/web/auth/workos/workos-signup-pages.ts';
 
 const documentOf = (text: string) => ({ version: 'legal-v1', text, sha256: createHash('sha256').update(text).digest('hex') });
 const documents = { version: 'bundle-v1', terms: documentOf('# Terms\n\nOriginal terms.'), notice: documentOf('# Notice\n\nOriginal notice.'), agreement: { version: 'agreement-v1', text: 'I agree to these exact terms.\n' } };
+const accountPaths = { creation: '/signup/start', signIn: '/login' };
 
 test('Given Markdown legal text, when signup renders it, then headings, emphasis, lists, tables and safe links are readable without executable markup or dangerous URLs', async () => {
   const markdown = '# Policy\n\nAn **original** paragraph with `code`.\n\n- First condition\n- Last condition\n\n| Item | Purpose |\n| --- | --- |\n| Account | Access |\n\n[Contact](mailto:legal@thermus.ai) and [Guide](https://thermus.ai/guide).\n\n<script>alert("no")</script>\n\n[Unsafe](javascript:alert%281%29)\n\n[Encoded](jav&#x61;script:alert%281%29)';
-  const response = signupSignInPage({ ...documents, notice: documentOf(markdown) }, '/login?return_to=%2Fsignup');
+  const response = signupCreateAccountPage({ ...documents, notice: documentOf(markdown) }, accountPaths);
   const page = parseHTML(await response.text()).document;
   const reader = page.querySelector('.document-reader');
   assert.ok(reader);
@@ -26,7 +27,7 @@ test('Given Markdown legal text, when signup renders it, then headings, emphasis
 });
 
 test('Given a signup document, when desktop and mobile readers are built, then keyboard regions and closed native disclosures expose the full original document without a reading gate', async () => {
-  const response = signupSignInPage(documents, '/login?return_to=%2Fsignup');
+  const response = signupCreateAccountPage(documents, accountPaths);
   const page = parseHTML(await response.text()).document;
   const desktop = page.querySelector('.document-reader');
   assert.ok(desktop);
@@ -83,10 +84,12 @@ test('Given the creation page, when it is rendered, then an editable name and on
   assert.equal(page.querySelector('button[type="submit"]')?.hasAttribute('disabled'), false);
 });
 
-test('Given closed, existing-access and failed signup states, when shown, then each branded notice keeps its status and offers a safe recovery action', async () => {
+test('Given closed, existing-access, existing-account and failed signup states, when shown, then each branded notice keeps its status and offers a safe recovery action', async () => {
   const cases = [
     { response: signupClosedPage(403), status: 403, link: '/login', label: 'Sign in' },
     { response: signupContinuePage('/organizations?return_to=%2F'), status: 200, link: '/organizations?return_to=%2F', label: 'Continue' },
+    { response: signupExistingAccountPage('/organizations?return_to=%2F'), status: 200, link: '/organizations?return_to=%2F', label: 'Open your workspace' },
+    { response: signupExistingAccountPage('/organizations?return_to=%2F', 403), status: 403, link: 'mailto:legal@thermus.ai', label: 'Contact' },
     { response: signupFailurePage(409, 'Contact support.', '/organizations?return_to=%2F'), status: 409, link: 'mailto:legal@thermus.ai', label: 'Contact' },
     { response: signupFailurePage(503, 'Try again later.'), status: 503, link: '/signup', label: 'Open signup again' },
     { response: signupFailurePage(401, 'Sign in before activation.'), status: 401, link: '/login?return_to=%2Fsignup', label: 'Sign in again' },

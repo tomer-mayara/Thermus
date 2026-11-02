@@ -2,12 +2,15 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { test } from 'node:test';
 import { parseHTML } from 'linkedom';
-import type { BrowserSession, BrowserSessionState, SignedInBrowserSession } from '../../../src/accounts/identity/browser-session.ts';
-import { WorkOSSignupRoutes } from '../../../src/interfaces/web/auth/workos/workos-signup-routes.ts';
+import type { BrowserSessionState, SignedInBrowserSession } from '../../../src/accounts/identity/browser-session.ts';
+import type { BrowserSignInRequest, BrowserSignInStart } from '../../../src/accounts/identity/browser-session-controls.ts';
+import { WorkOSSignupRoutes, type WorkOSSignupRoutesOptions } from '../../../src/interfaces/web/auth/workos/workos-signup-routes.ts';
 import type { SignupActivation, SignupDocuments } from '../../../src/accounts/organizations/signup-activation.ts';
 
 const document = (text: string) => ({ version: 'v1', text, sha256: createHash('sha256').update(text).digest('hex') });
 const documents: SignupDocuments = { purpose: 'organization-creation', version: 'v1', terms: document('Test <terms>'), notice: document('Test <notice>'), agreement: { version: 'v1', text: 'TEST ONLY. I accept the test terms and have authority to act for this organization.' } };
+
+const authKitStart: BrowserSignInStart = { url: 'https://authkit.example/sign-up?state=state-1', cookies: ['sign-in=started; Secure'] };
 
 function setup(enabled = true, signedIn = true, publicBaseUrl = 'https://thermus.example/') {
   let calls = 0;
@@ -16,13 +19,16 @@ function setup(enabled = true, signedIn = true, publicBaseUrl = 'https://thermus
   const failures: string[] = [];
   const names: string[] = [];
   const selections: string[] = [];
+  const starts: BrowserSignInRequest[] = [];
   const state: BrowserSessionState = signedIn ? { status: 'signed-in', user: { authority: 'workos:test', subject: 'user_test' }, csrfToken: 'secret', mfaCompleted: false,
     cookies: ['renewed=session; Secure'], selectOrganization: async (id) => { selections.push(id); return { status: 'switched', cookies: ['renewed=selected; Secure'] }; } } : { status: 'signed-out', cookies: [] };
-  const session: BrowserSession = { authenticate: async () => { sessions++; return state; } };
+  const session: WorkOSSignupRoutesOptions['session'] = { authenticate: async () => { sessions++; return state; }, startSignIn: async (request) => { starts.push(request); return authKitStart; } };
   const activation: SignupActivation = { inspect: async () => { inspections++; return { status: 'eligible' }; }, activate: async (request) => { calls++; names.push(request.organizationName); return { status: 'active', organizationId: 'org_new' }; } };
   const routes = new WorkOSSignupRoutes({ publicBaseUrl, enabled, documents, session, activation, reportFailure: (message) => failures.push(message) });
-  return { routes, activation, session, state, failures, names, selections, calls: () => calls, sessions: () => sessions, inspections: () => inspections };
+  return { routes, activation, session, state, failures, names, selections, starts, calls: () => calls, sessions: () => sessions, inspections: () => inspections };
 }
+
+const start = (method = 'GET', url = 'https://thermus.example/signup/start') => new Request(url, { method });
 
 const acceptedForm = 'csrf_token=secret&document_version=v1&organization_name=Acme+Labs&agreement=accepted';
 
@@ -39,6 +45,89 @@ test('Given closed signup, when GET or POST arrives, then it does no session or 
   assert.equal(world.inspections(), 0);
 });
 
+test('Given open signup, when Create account is opened, then the provider sign-in starts at its sign-up screen with the return to signup, without a session read', async () => {
+  const world = setup();
+
+  const answer = await world.routes.handle(start());
+
+  assert.equal(answer.status, 303);
+  assert.equal(answer.headers.get('Location'), authKitStart.url);
+  assert.deepEqual(answer.headers.getSetCookie(), authKitStart.cookies);
+  assert.equal(answer.headers.get('Cache-Control'), 'no-store');
+  assert.deepEqual(world.starts, [{ returnTo: '/signup', screenHint: 'sign-up' }]);
+  assert.equal(world.sessions(), 0);
+  assert.equal(world.inspections(), 0);
+  assert.equal(world.routes.handles('/signup/start'), true);
+});
+
+test('Given open signup, when Create account gets HEAD, then the answer has the status and headers of GET and no body', async () => {
+  const world = setup();
+
+  const answer = await world.routes.handle(start('HEAD'));
+
+  assert.equal(answer.status, 303);
+  assert.equal(answer.headers.get('Location'), authKitStart.url);
+  assert.deepEqual(answer.headers.getSetCookie(), authKitStart.cookies);
+  assert.equal(answer.headers.get('Cache-Control'), 'no-store');
+  assert.equal(await answer.text(), '');
+});
+
+test('Given Create account, when another method arrives, then the branded refusal allows GET and HEAD and no provider sign-in starts', async () => {
+  const world = setup();
+
+  const answer = await world.routes.handle(start('POST'));
+
+  assert.equal(answer.status, 405);
+  assert.equal(answer.headers.get('Allow'), 'GET, HEAD');
+  assert.equal(parseHTML(await answer.text()).document.querySelector('h1')?.textContent, 'Method not allowed');
+  assert.deepEqual(world.starts, []);
+});
+
+test('Given closed signup, when Create account gets GET or HEAD, then the closed notice answers and no provider sign-in starts', async () => {
+  const world = setup(false);
+
+  const page = await world.routes.handle(start());
+  const head = await world.routes.handle(start('HEAD'));
+
+  assert.equal(page.status, 200);
+  assert.match(await page.text(), /Activation is closed/);
+  assert.equal(page.headers.get('Location'), null);
+  assert.equal(head.status, 200);
+  assert.equal(await head.text(), '');
+  assert.deepEqual(world.starts, []);
+  assert.equal(world.sessions(), 0);
+});
+
+test('Given a provider start that fails, when Create account is opened, then the failure page answers and the log has only fixed text', async () => {
+  const world = setup();
+  world.session.startSignIn = async () => { throw new Error('secret provider detail'); };
+
+  const answer = await world.routes.handle(start());
+
+  assert.equal(answer.status, 503);
+  const html = await answer.text();
+  assert.match(html, /Activation is temporarily unavailable/);
+  assert.doesNotMatch(html, /secret/);
+  assert.deepEqual(world.failures, ['Hosted signup request failed.']);
+});
+
+test('Given a cancelled Create account request, when the provider start completes later, then no failure is logged', async () => {
+  const world = setup();
+  let complete!: (value: BrowserSignInStart) => void;
+  let started!: () => void;
+  const starting = new Promise<void>((resolve) => { started = resolve; });
+  world.session.startSignIn = () => new Promise((resolve) => { complete = resolve; started(); });
+  const cancellation = new AbortController();
+
+  const answer = world.routes.handle(new Request('https://thermus.example/signup/start', { signal: cancellation.signal }));
+  await Promise.race([starting, answer]);
+  cancellation.abort(new Error('cancelled'));
+
+  await assert.rejects(answer, /cancelled/);
+  complete(authKitStart);
+  assert.deepEqual(world.failures, []);
+});
+
 test('Given enabled signup without approved documents, when composed, then startup fails', () => {
   const world = setup();
   assert.throws(() => new WorkOSSignupRoutes({ publicBaseUrl: 'https://thermus.example/', enabled: true, session: world.session, activation: world.activation, reportFailure: () => {} }));
@@ -51,14 +140,49 @@ test('Given legacy personal-access documents, when organization creation is enab
     session: world.session, activation: world.activation, reportFailure: () => {} }), /organization.*documents/i);
 });
 
-test('Given signed-out signup, when opened, then the full escaped notice appears before the sign-in action', async () => {
+test('Given signed-out signup, when opened, then the full escaped notice appears before Create account, and the sign-in line opens login without a return path', async () => {
   const world = setup(true, false);
   const answer = await world.routes.handle(new Request('https://thermus.example/signup'));
   const html = await answer.text();
+  const page = parseHTML(html).document;
   assert.match(html, /Test &lt;notice&gt;/);
-  assert.match(html, /login\?return_to=%2Fsignup/);
-  assert.ok(html.indexOf('Test &lt;notice&gt;') < html.indexOf('>Sign in to continue</a>'));
+  assert.equal(page.querySelector('.primary-action')?.getAttribute('href'), '/signup/start');
+  assert.equal(page.querySelector('a[href="/login"]')?.textContent, 'Sign in');
+  assert.doesNotMatch(html, /return_to/);
+  assert.ok(html.indexOf('Test &lt;notice&gt;') < html.indexOf('>Create account</a>'));
   assert.equal(world.inspections(), 0);
+  assert.deepEqual(world.starts, []);
+});
+
+test('Given an existing account without product access, when signup is read, then it says the account exists and offers the selector without agreement or activation', async () => {
+  const world = setup();
+  world.activation.inspect = async () => ({ status: 'existing-account' });
+
+  const answer = await world.routes.handle(new Request('https://thermus.example/signup'));
+
+  assert.equal(answer.status, 200);
+  const page = parseHTML(await answer.text()).document;
+  assert.equal(page.querySelector('h1')?.textContent, 'You already have a Thermus account');
+  assert.equal(page.querySelector('.primary-action')?.getAttribute('href'), '/organizations?return_to=%2F');
+  assert.equal(page.querySelector('.primary-action')?.textContent, 'Open your workspace');
+  assert.equal(page.querySelector('.secondary-action')?.getAttribute('href'), 'mailto:legal@thermus.ai');
+  assert.equal(page.querySelectorAll('form, input').length, 0);
+  assert.deepEqual(answer.headers.getSetCookie(), ['renewed=session; Secure']);
+  assert.equal(world.calls(), 0);
+});
+
+test('Given an existing account returned during creation, when the form is posted, then it refuses with the existing-account page and no organization switch', async () => {
+  const world = setup();
+  world.activation.activate = async () => ({ status: 'existing-account' });
+
+  const answer = await world.routes.handle(post());
+
+  assert.equal(answer.status, 403);
+  const page = parseHTML(await answer.text()).document;
+  assert.equal(page.querySelector('h1')?.textContent, 'You already have a Thermus account');
+  assert.equal(page.querySelector('.primary-action')?.getAttribute('href'), '/organizations?return_to=%2F');
+  assert.equal(answer.headers.get('Location'), null);
+  assert.deepEqual(world.selections, []);
 });
 
 test('Given signed-in signup and the current agreement, when a valid name is posted, then it switches to the confirmed organization and opens Quick start with the latest cookie', async () => {
@@ -117,6 +241,20 @@ for (const failure of ['result', 'exception']) {
     assert.equal(world.calls(), 0);
   });
 }
+
+test('Given a public-base path, when a visitor opens signup and Create account, then the links and the return to signup use that path', async () => {
+  const world = setup(true, false, 'https://thermus.example/app/');
+
+  const page = parseHTML(await (await world.routes.handle(new Request('https://thermus.example/app/signup'))).text()).document;
+  const answer = await world.routes.handle(start('GET', 'https://thermus.example/app/signup/start'));
+
+  assert.equal(page.querySelector('.primary-action')?.getAttribute('href'), '/app/signup/start');
+  assert.equal(page.querySelector('a[href="/app/login"]')?.textContent, 'Sign in');
+  assert.equal(answer.status, 303);
+  assert.deepEqual(world.starts, [{ returnTo: '/app/signup', screenHint: 'sign-up' }]);
+  assert.equal(world.routes.handles('/app/signup/start'), true);
+  assert.equal(world.routes.handles('/signup/start'), false);
+});
 
 test('Given a public-base path, when existing access continues or creation succeeds, then the selector and direct landing use that server-owned portal path', async () => {
   const world = setup(true, true, 'https://thermus.example/app/');
@@ -351,8 +489,8 @@ test('Given a full subject limiter, when a new subject posts, then it is refused
   let subject = 'user_0';
   let time = 0;
   let activations = 0;
-  const session: BrowserSession = { authenticate: async () => ({ status: 'signed-in', user: { authority: 'workos:test', subject }, csrfToken: 'secret', mfaCompleted: false,
-    cookies: [], selectOrganization: async () => { throw new Error('No switch'); } }) };
+  const session: WorkOSSignupRoutesOptions['session'] = { authenticate: async () => ({ status: 'signed-in', user: { authority: 'workos:test', subject }, csrfToken: 'secret', mfaCompleted: false,
+    cookies: [], selectOrganization: async () => { throw new Error('No switch'); } }), startSignIn: async () => authKitStart };
   const activation: SignupActivation = { inspect: async () => ({ status: 'eligible' }), activate: async () => { activations++; return { status: 'existing-access' }; } };
   const routes = new WorkOSSignupRoutes({ publicBaseUrl: 'https://thermus.example/', enabled: true, documents, session, activation, reportFailure: () => {}, clock: () => time });
   for (let index = 0; index < 1024; index++) {

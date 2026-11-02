@@ -24,13 +24,20 @@ export function signupClosedPage(status = 200): Response {
   });
 }
 
-export function signupSignInPage(documents: SignupDocuments, loginUrl: string, status = 200): Response {
+// The two ways to an account in step 1: the account creation for a new person, and the sign-in for a person who has one.
+export interface AccountPaths {
+  readonly creation: string;
+  readonly signIn: string;
+}
+
+export function signupCreateAccountPage(documents: SignupDocuments, account: AccountPaths, status = 200): Response {
   return answer({ title: 'Start free access', heading: 'Start free access.', description: 'Connect your AI assistant to Thermus in two steps.', current: 1, content: [
-    '<p class="step-caption">STEP 1 OF 2</p><h2>Sign in to continue</h2>',
-    '<p class="task-copy">After sign-in, you will return here to name your organization and review the terms.</p>',
+    '<p class="step-caption">STEP 1 OF 2</p><h2>Create your account</h2>',
+    '<p class="task-copy">Free access is for new Thermus accounts. After you create your account and verify your email, you return here to name your organization and review the terms.</p>',
     signupDocumentReader('privacy-notice', 'Privacy Notice', documents.notice),
-    link(loginUrl, 'Sign in to continue', 'primary-action'),
+    link(account.creation, 'Create account', 'primary-action'),
     `<p class="task-copy">${FREE_ACCESS}</p>`,
+    `<p class="task-copy">Already have a Thermus account? <a href="${escapeHtml(account.signIn)}">Sign in</a> to open your workspace.</p>`,
   ], response: { status } });
 }
 
@@ -51,6 +58,12 @@ export function signupFormPage(documents: SignupDocuments, csrfToken: string, ac
 
 export function signupContinuePage(destination: string): Response {
   return notice('Your access is ready', 'You already have access to a workspace.', { actions: [link(destination, 'Continue', 'primary-action')] });
+}
+
+export function signupExistingAccountPage(destination: string, status = 200): Response {
+  return notice('You already have a Thermus account', 'Free access creates a new account and its organization. Your account already exists, so free access cannot create an organization for it. Open your workspace, or ask an Admin of your organization to invite you. If you have an invitation, accept it from its email.', {
+    actions: [link(destination, 'Open your workspace', 'primary-action'), link('mailto:legal@thermus.ai', 'Contact', 'secondary-action')], status,
+  });
 }
 
 export function signupFailurePage(status: number, message: string, destination?: string): Response {
@@ -81,7 +94,7 @@ function link(destination: string, label: string, className: string): string {
 
 function steps(current: 1 | 2): string {
   return `<ol class="steps" aria-label="Free access steps">
-    <li${current === 1 ? ' aria-current="step"' : ''}><span class="step-number" aria-hidden="true">${current === 2 ? '✓' : '1'}</span><span><span class="step-name">${current === 2 ? 'Signed in' : 'Sign in'}</span><span class="step-description">Use your email and password.</span></span></li>
+    <li${current === 1 ? ' aria-current="step"' : ''}><span class="step-number" aria-hidden="true">${current === 2 ? '✓' : '1'}</span><span><span class="step-name">${current === 2 ? 'Account created' : 'Create account'}</span><span class="step-description">Use your email and a password.</span></span></li>
     <li${current === 2 ? ' aria-current="step"' : ''}><span class="step-number" aria-hidden="true">2</span><span><span class="step-name">Create organization</span><span class="step-description">Review the terms and open your workspace.</span></span></li>
   </ol><p class="free-note">No card required.<br>No automatic charge.</p>`;
 }

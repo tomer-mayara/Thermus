@@ -1,5 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import type { CookieEffects } from '../../identity/browser-session.ts';
+import type { BrowserSignInRequest } from '../../identity/browser-session-controls.ts';
 import { sameSecret, SIGN_IN_MAX_AGE_SECONDS, signInCookie, type SealedCookie, type SessionEnvelope, type SignInEnvelope } from './session-cookies.ts';
 import { isOAuthRefusal, sealedSessionOf, type CodeExchange, type SessionFacts, type WorkOSSessionClient } from './workos-session-client.ts';
 import type { WorkOSSettings } from './workos-settings.ts';
@@ -57,11 +58,12 @@ export class AuthKitSignIn {
     this.signInCookie = signInCookie(options.settings.cookiePassword);
   }
 
-  async start(returnTo?: string): Promise<SignInStart> {
+  async start({ returnTo, screenHint }: BrowserSignInRequest): Promise<SignInStart> {
     const { url, state, codeVerifier } = await this.userManagement.getAuthorizationUrlWithPKCE({
       provider: 'authkit',
       redirectUri: this.settings.redirectUri,
       clientId: this.settings.clientId,
+      ...(screenHint === undefined ? {} : { screenHint }),
     });
     const expiresAt = this.clock() + SIGN_IN_MAX_AGE_SECONDS * 1_000;
     return { url, cookies: [this.signInCookie.setCookie({ state, codeVerifier, returnTo, expiresAt })] };

@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import type { CreateOrganizationOptions, CreateOrganizationMembershipOptions, ListOrganizationMembershipsOptions } from '@workos-inc/node';
+import type { CreateOrganizationOptions, CreateOrganizationMembershipOptions, ListOrganizationMembershipsOptions, OrganizationMembershipStatus } from '@workos-inc/node';
 import type { AuthenticatedUser } from '../../identity/access-context.ts';
 import type { OrganizationDirectory } from '../../organizations/organization-directory.ts';
 import { organizationNameIn, type SignupActivation, type SignupDocuments, type SignupResult, type SignupState } from '../../organizations/signup-activation.ts';
@@ -56,6 +56,8 @@ const SCHEMA = 'thermus-signup-v2';
 const LEGACY_SCHEMA = 'thermus-signup-v1';
 const SUPPORT = Object.freeze({ status: 'support-required' as const });
 const UNAVAILABLE = Object.freeze({ status: 'unavailable' as const });
+// Each read names every status, so that no default filter of WorkOS hides a membership record.
+const MEMBERSHIP_STATUSES: readonly OrganizationMembershipStatus[] = Object.freeze(['active', 'pending', 'inactive']);
 const RECORD_KEYS = ['schema', 'subject', 'authority_accepted_at', 'documents_version', 'terms_version', 'terms_sha256', 'notice_version', 'notice_sha256', 'agreement_version', 'agreement_sha256'];
 const LEGACY_RECORD_KEYS = ['schema', 'subject', 'accepted_at', 'documents_version', 'terms_version', 'terms_sha256', 'notice_version', 'notice_sha256', 'agreement_version'];
 
@@ -79,7 +81,7 @@ export class WorkOSSignup implements SignupActivation {
         if (access.status === 'active') return { status: 'existing-access' };
         return { status: 'support-required', canContinue: await this.hasProductAccess(request, existing.id) };
       }
-      return { status: await this.hasProductAccess(request) ? 'existing-access' : 'eligible' };
+      return { status: await this.accountState(request) };
     } catch {
       return UNAVAILABLE;
     }
@@ -109,8 +111,16 @@ export class WorkOSSignup implements SignupActivation {
     const existing = await this.findOrganization(personalExternalId(user));
     signal.throwIfAborted();
     if (existing !== undefined) return this.savedAccess(existing, request);
-    if (await this.hasProductAccess(request)) return { status: 'existing-access' };
-    return this.createOrganization(request);
+    const account = await this.accountState(request);
+    return account === 'eligible' ? this.createOrganization(request) : { status: account };
+  }
+
+  // Free access creates new accounts only. Product access comes first, so that existing access can continue. Then one
+  // membership record of any status makes an existing account; a user without a record can still finish an
+  // interrupted signup.
+  private async accountState(request: InspectionRequest): Promise<'existing-access' | 'existing-account' | 'eligible'> {
+    if (await this.hasProductAccess(request)) return 'existing-access';
+    return await this.hasMembershipRecord(request) ? 'existing-account' : 'eligible';
   }
 
   private async hasProductAccess({ user, signal }: InspectionRequest, excludedOrganizationId?: string): Promise<boolean> {
@@ -119,6 +129,14 @@ export class WorkOSSignup implements SignupActivation {
     signal.throwIfAborted();
     return memberships.some((membership) => membership.organizationId !== excludedOrganizationId && membership.active
       && membership.grants.some((grant) => grant.permissions.includes('product:access')));
+  }
+
+  private async hasMembershipRecord({ user, signal }: InspectionRequest): Promise<boolean> {
+    signal.throwIfAborted();
+    const page = await this.options.workos.userManagement.listOrganizationMemberships({ userId: user.subject, statuses: [...MEMBERSHIP_STATUSES], limit: 1 });
+    signal.throwIfAborted();
+    if (page.data.some((record) => record.userId !== user.subject)) throw new Error('Invalid signup membership response');
+    return page.data.length > 0;
   }
 
   private async createOrganization(request: ActivationRequest): Promise<SignupResult> {
@@ -188,9 +206,9 @@ export class WorkOSSignup implements SignupActivation {
     let after: string | undefined;
     const cursors = new Set<string>();
     for (let pageNumber = 0; pageNumber < 10; pageNumber++) {
-      const page = await this.options.workos.userManagement.listOrganizationMemberships({ organizationId, statuses: ['active', 'pending', 'inactive'], limit: 100, ...(after === undefined ? {} : { after }) });
+      const page = await this.options.workos.userManagement.listOrganizationMemberships({ organizationId, statuses: [...MEMBERSHIP_STATUSES], limit: 100, ...(after === undefined ? {} : { after }) });
       signal.throwIfAborted();
-      if (page.data.length > 100 || page.data.some((record) => record.organizationId !== organizationId || !record.userId || !['active', 'pending', 'inactive'].includes(record.status) || typeof record.directoryManaged !== 'boolean')) {
+      if (page.data.length > 100 || page.data.some((record) => record.organizationId !== organizationId || !record.userId || !MEMBERSHIP_STATUSES.some((status) => status === record.status) || typeof record.directoryManaged !== 'boolean')) {
         throw new Error('Invalid signup membership response');
       }
       records.push(...page.data);

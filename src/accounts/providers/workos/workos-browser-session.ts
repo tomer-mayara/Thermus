@@ -1,7 +1,7 @@
 import { decodeJwt, errors } from 'jose';
 import type { AuthenticatedUser } from '../../identity/access-context.ts';
 import type { CookieEffects, OrganizationSwitch } from '../../identity/browser-session.ts';
-import type { BrowserProfile, BrowserSessionControls, BrowserSignInCompletion, ProfiledBrowserSessionState, ProfiledSignedInBrowserSession, SessionEnd } from '../../identity/browser-session-controls.ts';
+import type { BrowserProfile, BrowserSessionControls, BrowserSignInCompletion, BrowserSignInRequest, ProfiledBrowserSessionState, ProfiledSignedInBrowserSession, SessionEnd } from '../../identity/browser-session-controls.ts';
 import { sessionCookie, type SealedCookie, type SessionEnvelope } from './session-cookies.ts';
 import { isDamagedSeal, isMissingOrganizationMembership, isNewSigningKey, isOAuthRefusal, sealedSessionOf } from './workos-session-client.ts';
 import type { SealRefresh, SessionFacts, WorkOSSealedSession, WorkOSSessionClient } from './workos-session-client.ts';
@@ -49,8 +49,8 @@ export class WorkOSBrowserSession implements BrowserSessionControls {
     return this.signedIn(envelope, check, []);
   }
 
-  startSignIn(request: { readonly returnTo?: string }): Promise<SignInStart> {
-    return this.signIn.start(request.returnTo);
+  startSignIn(request: BrowserSignInRequest): Promise<SignInStart> {
+    return this.signIn.start(request);
   }
 
   async completeSignIn(callback: SignInCallback): Promise<BrowserSignInCompletion> {

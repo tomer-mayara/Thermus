@@ -8,13 +8,16 @@ export interface SignupDocuments {
   readonly agreement: { readonly version: string; readonly text: string };
 }
 
+// existing-access: current product access in an organization. existing-account: a membership record of any status
+// (active, pending, or inactive) without current product access. eligible: no membership record and no retained
+// signup organization. Only an eligible user can create an organization.
 export type SignupResult =
   // Active means that a current read confirmed usable membership in this organization.
   | { readonly status: 'active'; readonly organizationId: string }
-  | { readonly status: 'existing-access' | 'unverified' | 'support-required' | 'unavailable' | 'sign-in-required' };
+  | { readonly status: 'existing-access' | 'existing-account' | 'unverified' | 'support-required' | 'unavailable' | 'sign-in-required' };
 
 export type SignupState =
-  | { readonly status: 'eligible' | 'existing-access' | 'unavailable' | 'sign-in-required' }
+  | { readonly status: 'eligible' | 'existing-access' | 'existing-account' | 'unavailable' | 'sign-in-required' }
   | { readonly status: 'support-required'; readonly canContinue: boolean };
 
 export interface SignupActivation {

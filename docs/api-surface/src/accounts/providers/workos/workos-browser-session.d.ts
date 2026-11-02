@@ -1,4 +1,4 @@
-import type { BrowserSessionControls, BrowserSignInCompletion, ProfiledBrowserSessionState, SessionEnd } from '../../identity/browser-session-controls.ts';
+import type { BrowserSessionControls, BrowserSignInCompletion, BrowserSignInRequest, ProfiledBrowserSessionState, SessionEnd } from '../../identity/browser-session-controls.ts';
 import type { WorkOSSessionClient } from './workos-session-client.ts';
 import { type SignInCallback, type SignInStart, type SignInOnboarding } from './workos-sign-in.ts';
 import type { WorkOSSettings } from './workos-settings.ts';
@@ -17,9 +17,7 @@ export declare class WorkOSBrowserSession implements BrowserSessionControls {
     private readonly signIn;
     constructor(options: WorkOSBrowserSessionOptions);
     authenticate(cookieHeader: string | null): Promise<ProfiledBrowserSessionState>;
-    startSignIn(request: {
-        readonly returnTo?: string;
-    }): Promise<SignInStart>;
+    startSignIn(request: BrowserSignInRequest): Promise<SignInStart>;
     completeSignIn(callback: SignInCallback): Promise<BrowserSignInCompletion>;
     endSession(cookieHeader: string | null): Promise<SessionEnd>;
     csrfTokenOf(cookieHeader: string | null): string | undefined;
