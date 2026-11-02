@@ -15,13 +15,13 @@
   },
   "architecture": {
     "modelUpdated": false,
-    "summary": "Documents only: the SO-12 release record docs/implementation/self-onboarding-s2-release.md gets the entry Organization name (2 November 2026) under step 3, next to the claim lease entry. It records the production application of the migration 20261102161257_tenant_organization_name.sql of #319 (SHA-256 96778ee9...) on the owner's decision of about 19:53 UTC, as the Supabase migration 20261102195507 tenant_organization_name at 19:55:07 UTC, with the pre-check of 19:54:43 UTC, the checks of 19:55:22 and 19:55:24 UTC, and the note that 20261101023017_tenant_sweep_ticks.sql of #311 stays pending in production. Every fact comes from the production migration record comment of #319. No source, test, configuration, workflow, migration, or Mermaid block changes; the production architecture is unchanged.",
+    "summary": "Documents only: the SO-12 release record docs/implementation/self-onboarding-s2-release.md gets the entry Sweep ticks (2 November 2026) under step 3, after the organization name entry. It records the production application of the migration 20261101023017_tenant_sweep_ticks.sql of #311 (SHA-256 5b31913d...) on the owner's decision of about 19:57 UTC, as the Supabase migration 20261102195758 tenant_sweep_ticks at 19:57:58 UTC, with the pre-check of 19:57:44 UTC and the checks of 19:58:16 and 19:58:29 UTC; production now holds the three tenant migrations of #306, #311, and #319. The organization name entry no longer says that the tick migration is pending and points to the new entry. Every fact comes from the production migration record comment of #311. No source, test, configuration, workflow, migration, or Mermaid block changes; the production architecture is unchanged.",
     "views": [
       "All 24 Mermaid views of architecture/components.md unchanged (the candidate does not touch the file)"
     ],
     "evidence": [
-      "docs/implementation/self-onboarding-s2-release.md (step 3, the Organization name bullet)",
-      "https://github.com/tomer-mayara/Thermus/pull/319#issuecomment-6587019039 (the production migration record of #319)"
+      "docs/implementation/self-onboarding-s2-release.md (step 3, the Sweep ticks bullet and the organization name bullet)",
+      "https://github.com/tomer-mayara/Thermus/pull/311#issuecomment-6587078488 (the production migration record of #311)"
     ]
   }
 }
