@@ -271,7 +271,8 @@ the answer `yes` before each write; another answer writes nothing.
 4. Run `fleet.ts delete --organization <organization ID>`. Check the row and
    the service that it prints, then answer `yes`. It deletes the service of the
    row through the adapter and sets the row `deleted`. A row without a service
-   ID only becomes `deleted`.
+   ID only becomes `deleted`. The row keeps its organization name, so step 6
+   gives the revived row the same service name (2 November 2026).
 5. Check: `fleet.ts status --organization <organization ID>` shows the row
    `deleted`, and the Render Dashboard does not list its service.
 6. Run `fleet.ts request --organization <organization ID>` through the WorkOS
@@ -472,7 +473,10 @@ runbook gives this order and the registry rows.
    The command deletes the Render service through the adapter, then sets the
    row `deleted` from the state and the service that it read. A row that
    another writer changed meanwhile, also a new provision of the organization
-   with a new service, stays as it is, and the command says so.
+   with a new service, stays as it is, and the command says so. The row keeps
+   its organization name, as after the repair "delete, then request"; only a
+   delete by the sweep below leaves the row without it, and the sweep reads no
+   `deleted` row again (2 November 2026).
 3. Check: `fleet.ts status --organization <organization ID>` shows the row
    `deleted`, and the Render Dashboard does not list the service. A service
    that Render no longer has counts as deleted, so a repeat of step 2 is safe.
@@ -490,7 +494,8 @@ read would make every organization look gone. Then do steps 2 to 4 by hand for
 each organization that is really gone. Inside that bound, the sweep reads each
 organization that the list leaves out by its ID, and it deletes only after a
 `404`, because the WorkOS lists lag for some seconds. Then the row is
-`deleted`, and the log has one `Tenant removal record:` line for the tenant. A
+`deleted` without its organization name (2 November 2026), and the log has one
+`Tenant removal record:` line for the tenant. A
 row that the provisioner works on (`creating` or `deploying`) waits for the
 next sweep.
 

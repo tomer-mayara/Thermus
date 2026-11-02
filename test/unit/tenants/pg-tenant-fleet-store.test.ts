@@ -13,6 +13,7 @@ type Rows = Record<string, unknown>[];
 const readFleet = /^SELECT organization_id, state, plan, applied_plan, render_service_id, service_name, internal_url, image_digest,\s+failure_reason, last_active_at, created_at, updated_at FROM thermus_admin\.tenants ORDER BY organization_id$/;
 const readIdle = /^SELECT organization_id, state, plan, applied_plan, render_service_id, service_name, internal_url, image_digest,\s+failure_reason, last_active_at, created_at, updated_at FROM thermus_admin\.tenants\s+WHERE state = 'live' AND render_service_id IS NOT NULL AND plan = \$1 AND COALESCE\(last_active_at, created_at\) <= \$2::timestamptz\s+ORDER BY organization_id$/;
 const markDeleted = /^UPDATE thermus_admin\.tenants SET state = 'deleted', internal_url = NULL, updated_at = now\(\)\s+WHERE organization_id = \$1 AND state = \$2 AND state <> 'deleted' AND render_service_id IS NOT DISTINCT FROM \$3 RETURNING organization_id$/;
+const markDeletedWithoutOrganizationName = /^UPDATE thermus_admin\.tenants SET state = 'deleted', internal_url = NULL, organization_name = NULL, updated_at = now\(\)\s+WHERE organization_id = \$1 AND state = \$2 AND state <> 'deleted' AND render_service_id IS NOT DISTINCT FROM \$3 RETURNING organization_id$/;
 const markSuspended = /^UPDATE thermus_admin\.tenants SET state = 'suspended', updated_at = now\(\)\s+WHERE organization_id = \$1 AND state = 'live' AND render_service_id = \$2 RETURNING organization_id$/;
 const markResumed = /^UPDATE thermus_admin\.tenants SET state = 'deploying', updated_at = now\(\)\s+WHERE organization_id = \$1 AND state = 'suspended' AND render_service_id = \$2 RETURNING organization_id$/;
 const recordDigest = /^UPDATE thermus_admin\.tenants SET image_digest = \$3, updated_at = now\(\)\s+WHERE organization_id = \$1 AND render_service_id = \$2 AND state = 'live' RETURNING organization_id$/;
@@ -103,6 +104,21 @@ test('Given a row in the state and on the service that the caller read, when it 
   assert.deepEqual(queries[0]?.values, ['org_01A', 'suspended', 'srv-a']);
   assert.deepEqual(await store.markDeleted('org_01A', 'requested', null), { status: 'recorded' }, 'A row without a service binds to no service');
   assert.deepEqual(queries[1]?.values, ['org_01A', 'requested', null]);
+});
+
+// The delete of the organization sweep (2 November 2026): the row of an organization that the identity provider no
+// longer has keeps no organization name. The delete of the operator above keeps it for the revive of the repair.
+test('Given the tenant of an organization that the identity provider no longer has, when it is marked deleted without its organization name, then one UPDATE from that state and that service ends its route and clears the name', async (t) => {
+  const { store, queries } = fleetStore(t, changed(markDeletedWithoutOrganizationName));
+  assert.deepEqual(await store.markDeletedWithoutOrganizationName('org_01A', 'live', 'srv-a'), { status: 'recorded' });
+  assert.match(queries[0]?.text ?? '', markDeletedWithoutOrganizationName);
+  assert.deepEqual(queries[0]?.values, ['org_01A', 'live', 'srv-a']);
+  assert.deepEqual(await store.markDeletedWithoutOrganizationName('org_01A', 'requested', null), { status: 'recorded' }, 'A row without a service binds to no service');
+  assert.deepEqual(queries[1]?.values, ['org_01A', 'requested', null]);
+  const moved = fleetStore(t, () => []);
+  assert.deepEqual(await moved.store.markDeletedWithoutOrganizationName('org_01A', 'live', 'srv-a'), { status: 'moved' });
+  const failed = fleetStore(t, () => new Error('connection reset'));
+  assert.deepEqual(await failed.store.markDeletedWithoutOrganizationName('org_01A', 'live', 'srv-a'), { status: 'unavailable' });
 });
 
 test('Given a row that another writer moved, or a write that fails, when it is marked deleted, then the result is moved or unavailable', async (t) => {

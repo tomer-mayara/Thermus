@@ -318,8 +318,10 @@ production prefix `thermus-tenant-`, and a production name does not match the
 staging prefix. Only an organization slug that holds the other prefix, such as
 the slug of "Thermus Spike Tenant", gives a name that matches the two
 prefixes. A resumed row keeps the service name of its
-create. A revived `deleted` row keeps its organization name, and its next claim
-makes the same name. The provisioner moves rows only from `requested` to `live`
+create. A row that the fleet command `delete` deleted keeps its organization
+name, so a revive makes the same name at its next claim. The organization sweep
+clears the name when it deletes the tenant of a removed organization
+(2 November 2026). The provisioner moves rows only from `requested` to `live`
 and, after a resume,
 from `deploying` to `live`. The create call carries every tenant variable,
 because creation starts the first deploy at once. It creates an image-backed
@@ -485,9 +487,9 @@ tenant says "Your workspace was paused after 14 days without use. It restarts
 on the next request, which can take about a minute.". The daily sweep also
 writes the fleet summary line of SO-09. A weekly sweep compares the registry
 with the WorkOS organization list; the tenant of an organization that no longer
-exists is deleted, and its row becomes `deleted`. Before a delete, the sweep
-reads the organization by ID and deletes only on a `404`, because the lists lag
-for seconds (27 October 2026).
+exists is deleted, and its row becomes `deleted` without its organization name
+(2 November 2026). Before a delete, the sweep reads the organization by ID and
+deletes only on a `404`, because the lists lag for seconds (27 October 2026).
 
 **Release.** A GitHub Actions workflow builds `Dockerfile.hosted` for
 `linux/amd64`, runs the offline gate that the Dockerfile already contains, and
@@ -520,7 +522,7 @@ operations, and a committed intent before a provider effect.
 
 | Table | Columns | Notes |
 | --- | --- | --- |
-| `tenants` | `organization_id` (key), `render_service_id`, `service_name`, `internal_url`, `state`, `plan`, `applied_plan`, `image_digest`, `last_active_at`, `failure_reason`, `created_at`, `updated_at`, `claimed_by`, `claimed_until`, `organization_name` | One row for each organization. `state` is `requested`, `creating`, `deploying`, `live`, `suspended`, `failed`, or `deleted`. `plan` is the wanted Render plan; `applied_plan` is the current one. `claimed_by` and `claimed_until` hold the claim of the provisioner loop that works on the row and the end of its lease, both empty when no loop holds it (SO-12 rehearsal of 31 October 2026). `organization_name` holds the organization name of the hosted signup form, for the service name. A request on a different path stores no name in it (2 November 2026). |
+| `tenants` | `organization_id` (key), `render_service_id`, `service_name`, `internal_url`, `state`, `plan`, `applied_plan`, `image_digest`, `last_active_at`, `failure_reason`, `created_at`, `updated_at`, `claimed_by`, `claimed_until`, `organization_name` | One row for each organization. `state` is `requested`, `creating`, `deploying`, `live`, `suspended`, `failed`, or `deleted`. `plan` is the wanted Render plan; `applied_plan` is the current one. `claimed_by` and `claimed_until` hold the claim of the provisioner loop that works on the row and the end of its lease, both empty when no loop holds it (SO-12 rehearsal of 31 October 2026). `organization_name` holds the organization name of the hosted signup form, for the service name. A request on a different path stores no name in it. The organization sweep clears it when it deletes the tenant of a removed organization; the fleet command `delete` keeps it (2 November 2026). |
 | `subscriptions` | `organization_id` (key), `stripe_customer_id`, `stripe_subscription_id`, `status`, `current_period_end`, `cancel_at_period_end`, `terms_accepted_at`, `updated_at` | The last Stripe-confirmed state. No row means `free`. |
 | `billing_events` | `stripe_event_id` (key), `type`, `received_at`, `applied_at` | Duplicate protection; `applied_at` is set after a successful apply. |
 | `tenant_sweep_ticks` | `tick_at` (key), `claimed_by`, `claimed_at` | One row for each daily tick of the tenant sweeps: the claim of the instance that runs it, so two instances of a deploy run each tick one time (SO-12 rehearsal of 31 October 2026). The rows stay as the record of the ticks. |

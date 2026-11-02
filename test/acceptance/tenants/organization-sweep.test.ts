@@ -27,6 +27,23 @@ test('Given an organization that WorkOS no longer lists, when the sweep runs, th
   assert.deepEqual(harness.errorLines(), []);
 });
 
+// The delete of the sweep clears organization_name, because the organization is gone (2 November 2026); the service
+// name of the row stays for the record.
+test('Given a tenant with the organization name of hosted signup whose organization WorkOS no longer has, when the sweep runs, then its row is deleted without the organization name, and the row of a listed organization keeps its name', async (t) => {
+  const harness = await SweepHarness.start(t, [organizationA, organizationB]);
+  harness.liveTenant(organizationA, { organizationName: 'Acme Corp' });
+  const removed = harness.liveTenant(organizationB, { organizationName: 'Müller GmbH' });
+  harness.workos.removedOrganizationIds.add(organizationB);
+
+  await harness.runOneTick(mondayBeforeTheSweep);
+
+  assert.deepEqual(harness.render.requestsOf('delete service').map((request) => request.path), [`/services/${removed.id}`]);
+  const deleted = harness.store.row(organizationB);
+  assert.deepEqual([deleted.state, deleted.organizationName, deleted.serviceName, deleted.serviceId, deleted.internalUrl], ['deleted', null, removed.name, removed.id, null], 'The deleted row keeps its service for the record and loses the organization name');
+  assert.deepEqual([harness.store.stateOf(organizationA), harness.store.row(organizationA).organizationName], ['live', 'Acme Corp'], 'The tenant of the listed organization keeps its name');
+  assert.deepEqual(harness.errorLines(), []);
+});
+
 test('Given organizations that WorkOS lists, when the sweep runs, then their tenants stay', async (t) => {
   const harness = await SweepHarness.start(t, [organizationA, organizationB]);
   harness.liveTenant(organizationA);

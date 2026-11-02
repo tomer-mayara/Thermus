@@ -52,14 +52,21 @@ export interface TenantFleetStore {
   readIdle(plan: string, cutoff: string): Promise<FleetRead>;
   /**
    * from, the state that the caller read, to deleted, after the platform deleted serviceId, the service that the caller
-   * read (null for a row without a service). The row keeps its service ID and name for the record; its internal address
-   * goes, so no route leads to the deleted service.
+   * read (null for a row without a service). The row keeps its service ID and name for the record, and its organization
+   * name for the revive of the repair "delete, then request" (2 November 2026); its internal address goes, so no route
+   * leads to the deleted service.
    */
   markDeleted(organizationId: string, from: RemovableState, serviceId: string | null): Promise<FleetWrite>;
   /**
+   * As markDeleted, for the tenant of an organization that the identity provider no longer has: the row also loses its
+   * organization name, because the organization is gone (2 November 2026). Its service name stays for the record.
+   */
+  markDeletedWithoutOrganizationName(organizationId: string, from: RemovableState, serviceId: string | null): Promise<FleetWrite>;
+  /**
    * deleted to requested inside the cap, under the registry lock: the request of "delete, then request". The row starts
    * again as a new request: its service, address, plans, digest, last use, and failure reason go, and its creation time
-   * is now.
+   * is now. It keeps its organization name, if it still has one, so its next claim gives the same service name; after a
+   * delete of the sweep it has none, and the claim gives the name of the ID alone.
    */
   reviveDeleted(organizationId: string, admit: (count: RegistryCount) => boolean): Promise<ReviveResult>;
   /** live to suspended on the service that the caller read, after the platform took the suspend of that service. */

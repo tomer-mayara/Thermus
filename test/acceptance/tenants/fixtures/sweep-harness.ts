@@ -2,6 +2,7 @@ import type { TestContext } from 'node:test';
 import { tenantPlatformOf } from '../../../../src/app/tenant-provisioning.ts';
 import { startTenantSweeps } from '../../../../src/app/tenant-sweeps.ts';
 import { loadTenantProvisioningSettings } from '../../../../src/runtime/config/mcp-tenants-config.ts';
+import { serviceNameOf as tenantServiceNameOf } from '../../../../src/tenancy/tenants/tenant-environment.ts';
 import { OperatorLogSpy } from '../../../support/doubles/application/operator-log-spy.ts';
 import { RenderFake, type FakeService } from '../../../support/doubles/render/render-fake.ts';
 import { TenantFleetStoreFake } from '../../../support/doubles/tenants/tenant-fleet-store-fake.ts';
@@ -29,15 +30,17 @@ const REAL_WAIT_LIMIT_MS = 10_000;
 // A live tenant served its last call on Sunday 1 November 2026, so the idle sweep of these days leaves it.
 const recentUse = '2026-11-01T12:00:00.000Z';
 
-/** The facts of a live tenant row that a test can choose: its plan, its last use, and its creation. */
+/** The facts of a live tenant row that a test can choose: its plan, its last use, its creation, and the organization name of hosted signup. */
 export interface LiveTenantRow {
   readonly plan?: string;
   readonly lastActiveAt?: string | null;
   readonly createdAt?: string;
+  readonly organizationName?: string;
 }
 
-export function serviceNameOf(organizationId: string): string {
-  return `thermus-tenant-${organizationId.toLowerCase().replace(/[^a-z0-9-]/g, '-')}`;
+/** The service name of the tenant by the name rule of the provisioner with the production prefix: the ID alone, or with the slug of the organization name. */
+export function serviceNameOf(organizationId: string, organizationName: string | null = null): string {
+  return tenantServiceNameOf('thermus-tenant-', organizationId, organizationName);
 }
 
 export class SweepHarness {
@@ -59,11 +62,12 @@ export class SweepHarness {
 
   /** A live tenant of the organization: its Render service and its registry row, a free tenant with a recent call unless the row says else. */
   liveTenant(organizationId: string, row: LiveTenantRow = {}): FakeService {
-    const name = serviceNameOf(organizationId);
+    const organizationName = row.organizationName ?? null;
+    const name = serviceNameOf(organizationId, organizationName);
     const service = this.render.addService(name);
     const plan = row.plan ?? freePlan;
     this.store.put({
-      organizationId, state: 'live', serviceName: name, serviceId: service.id, internalUrl: `http://${service.slug}:8080`,
+      organizationId, state: 'live', organizationName, serviceName: name, serviceId: service.id, internalUrl: `http://${service.slug}:8080`,
       plan, appliedPlan: plan, imageDigest: tenantImageDigest, lastActiveAt: row.lastActiveAt === undefined ? recentUse : row.lastActiveAt,
       ...(row.createdAt === undefined ? {} : { createdAt: row.createdAt }),
     });

@@ -5,7 +5,7 @@ interface FakeRow {
   readonly state: TenantState;
   readonly internalUrl: string | null;
   readonly serviceId: string | null;
-  /** The organization name that the tenant request stored; null without one. No later change of the row removes it. */
+  /** The organization name that the tenant request stored; null without one. This fake has no delete, so no change of its rows removes it; the delete of the sweep in TenantFleetStoreFake does. */
   readonly organizationName: string | null;
   /** The time of the last change on the clock of the fake, as updated_at gives it in the database. */
   readonly changedAt: number;

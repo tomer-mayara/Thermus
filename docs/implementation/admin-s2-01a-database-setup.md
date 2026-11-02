@@ -149,7 +149,9 @@ the prefix, and the organization ID.
 [Plan section 4.2](self-onboarding-plan.md#42-flows) gives the rule of the
 name. The claim comes after the request, in the loop, so the registry keeps the
 name for it. A revived `deleted` row keeps the name too, so its next claim
-makes the same service name. A request on a different path stores no name, and
+makes the same service name. The organization sweep clears the name when it
+deletes the tenant of a removed organization (2 November 2026). A request on a
+different path stores no name, and
 its tenant gets the service name of the prefix and the organization ID, as
 before. Apply the migration once after the tick migration, with stop-on-error,
 and before the deploy of a control plane that stores the name. Without the
