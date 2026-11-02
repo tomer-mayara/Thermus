@@ -869,8 +869,10 @@ separately within their stated scope.
   a confirmed result followed by a failed read, the removed-member record written
   before the deletion, and a store that cannot keep that record (nothing deleted,
   the unavailable result).
-- `hosted-member-self-removal.test.ts` checks another workspace, eligible signup,
-  saved-start recovery, actual sign-in-link traversal, and unknown self-removal.
+- `hosted-member-self-removal.test.ts` checks another workspace, the
+  existing-account notice at signup after self-removal (the removed-member
+  record), saved-start recovery, actual sign-in-link traversal, and unknown
+  self-removal.
 - `hosted-member-removal-scope.test.ts` checks account/factor/other-membership
   preservation, fresh invitation role, throwing capture sinks, and forged tenants.
 - `hosted-member-removal-browser.runtime.ts` checks real Chromium keyboard use
