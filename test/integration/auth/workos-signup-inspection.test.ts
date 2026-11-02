@@ -2,10 +2,11 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { adminGrant, memberRole, superAdminGrant } from '../../support/fixtures/hosted-roles.ts';
 import { WorkOSSignup } from '../../../src/accounts/providers/workos/workos-signup.ts';
-import { SignupClientFake, documents, organizationName, user } from './fixtures/signup-client-fake.ts';
+import { RemovedMemberStoreSpy, SignupClientFake, documents, organizationName, user } from './fixtures/signup-client-fake.ts';
 
 const inspect = (fake: SignupClientFake, signal = new AbortController().signal) => new WorkOSSignup(fake.options()).inspect({ user, signal });
 const activate = (fake: SignupClientFake) => new WorkOSSignup(fake.options()).activate({ user, organizationName, documents, signal: new AbortController().signal });
+const runSignup = (fake: SignupClientFake, operation: 'inspect' | 'activate', signal = new AbortController().signal) => new WorkOSSignup(fake.options())[operation]({ user, organizationName, documents, signal });
 const otherAccess = { organizationId: 'org_other', organizationName: 'Other workspace', active: true, grants: [{ role: 'user', permissions: ['product:access' as const] }] };
 const recordOf = (status: 'active' | 'pending' | 'inactive', role = 'user') => ({ userId: user.subject, organizationId: 'org_other', status, directoryManaged: false, roles: [{ slug: role }] });
 
@@ -188,4 +189,59 @@ for (const operation of ['inspect', 'activate'] as const) {
     assert.deepEqual(fake.organizationWrites, []);
     assert.deepEqual(fake.membershipWrites, []);
   });
+}
+
+test('Given no removed-member record, when signup state is inspected for a user with display facts, then one read names only the authority and subject, and signup stays eligible', async () => {
+  const fake = new SignupClientFake();
+  fake.removedMembers = new RemovedMemberStoreSpy('absent');
+  const named = { ...user, name: 'Person', selectedOrganizationId: 'org_other' };
+
+  assert.deepEqual(await new WorkOSSignup(fake.options()).inspect({ user: named, signal: new AbortController().signal }), { status: 'eligible' });
+  assert.deepEqual(fake.removedMembers.reads, [{ authority: user.authority, subject: user.subject }]);
+});
+
+for (const operation of ['inspect', 'activate'] as const) {
+  test(`Given a removed-member record and no membership record or product access, when signup ${operation} runs, then it is an existing account without an organization or membership write`, async () => {
+    const fake = new SignupClientFake();
+    fake.removedMembers = new RemovedMemberStoreSpy('found');
+
+    assert.deepEqual(await runSignup(fake, operation), { status: 'existing-account' });
+    assert.deepEqual(fake.removedMembers.reads, [{ authority: user.authority, subject: user.subject }]);
+    assert.deepEqual(fake.organizationWrites, []);
+    assert.deepEqual(fake.membershipWrites, []);
+  });
+
+  test(`Given the removed-member read is unavailable, when signup ${operation} runs, then the failure cannot become eligibility and no write occurs`, async () => {
+    const fake = new SignupClientFake();
+    fake.removedMembers = new RemovedMemberStoreSpy('unavailable');
+
+    assert.deepEqual(await runSignup(fake, operation), { status: 'unavailable' });
+    assert.equal(fake.removedMembers.reads.length, 1);
+    assert.deepEqual(fake.organizationWrites, []);
+    assert.deepEqual(fake.membershipWrites, []);
+  });
+
+  test(`Given a request is cancelled during the removed-member read, when signup ${operation} continues, then it is unavailable without a write`, async () => {
+    const fake = new SignupClientFake();
+    const controller = new AbortController();
+    fake.removedMembers = new RemovedMemberStoreSpy('absent');
+    fake.removedMembers.afterRead = () => controller.abort();
+
+    assert.deepEqual(await runSignup(fake, operation, controller.signal), { status: 'unavailable' });
+    assert.equal(fake.removedMembers.reads.length, 1);
+    assert.deepEqual(fake.organizationWrites, []);
+    assert.deepEqual(fake.membershipWrites, []);
+  });
+
+  for (const account of ['membership record', 'product access'] as const) {
+    test(`Given a ${account} and a removed-member record, when signup ${operation} runs, then it decides from WorkOS without a removed-member read`, async () => {
+      const fake = new SignupClientFake();
+      fake.removedMembers = new RemovedMemberStoreSpy('found');
+      if (account === 'membership record') fake.memberships = [recordOf('inactive')];
+      else fake.existingAccess = [otherAccess];
+
+      assert.deepEqual(await runSignup(fake, operation), { status: account === 'membership record' ? 'existing-account' : 'existing-access' });
+      assert.deepEqual(fake.removedMembers.reads, []);
+    });
+  }
 }
