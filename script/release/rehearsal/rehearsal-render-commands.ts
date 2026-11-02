@@ -1,5 +1,6 @@
 // The Render commands of the rehearsal helper. Each one reads the fleet key from the environment; each write names the
-// staging control plane thermus-spike-control or a thermus-spike-tenant-* service that it confirmed first.
+// staging control plane thermus-spike-control or a thermus-spike-tenant-* or *-thermus-spike-tenant-* service that it
+// confirmed first.
 import { setTimeout as delay } from 'node:timers/promises';
 import { fieldJson, fieldText } from '../../spike/render-tenant-lifecycle/answers.ts';
 import { createControl, gitBody, imageBody, patchControl, printDeploy, printService, putVariables } from './rehearsal-control.ts';

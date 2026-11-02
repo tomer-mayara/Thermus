@@ -41,7 +41,7 @@ export function workspaceTenantsOf(tenants: Pick<GatewayTenants, 'find' | 'reque
 /**
  * The tenant port of signup. FREE_TENANT_LIMIT bounds the tenant containers and is read only with MCP_TENANTS_ENABLED
  * on, so only then does signup check the cap, on the registry copy. With the switch off, signup only inserts the
- * requested row (plan section 4.1).
+ * requested row (plan section 4.1). The row keeps the organization name for the service name of the tenant.
  */
 export function signupTenantsOf(registry: SignupRegistry, capped: boolean): SignupTenants {
   return {
@@ -51,7 +51,7 @@ export function signupTenantsOf(registry: SignupRegistry, capped: boolean): Sign
       if (counted.status !== 'counted') return 'unavailable';
       return registry.requests.hasPlaceIn(counted.rowsByState) ? 'open' : 'full';
     },
-    request: async (organizationId) => (await registry.requests.request(organizationId)).status,
+    request: async (organizationId, organizationName) => (await registry.requests.request(organizationId, organizationName)).status,
   };
 }
 

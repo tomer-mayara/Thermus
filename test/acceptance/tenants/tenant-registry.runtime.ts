@@ -40,7 +40,7 @@ async function makeLive(site: Site, organizationId: string): Promise<void> {
     image_digest = 'sha256:${'a'.repeat(64)}', updated_at = '2026-10-27T10:00:00Z' WHERE organization_id = '${organizationId}'`);
 }
 
-test('Given the migrations, when they are applied, then the three tables exist with the columns of the data model, the seven tenant states, and a claim of a holder with an end time or no claim', { timeout: 60_000 }, async (t) => {
+test('Given the migrations, when they are applied, then the three tables exist with the columns of the data model, the seven tenant states, a claim of a holder with an end time or no claim, and an organization name with text or no name', { timeout: 60_000 }, async (t) => {
   const site = await postgresSettingsSite(t);
   const columns = await site.ownerQuery(`SELECT table_name || ': ' || string_agg(column_name, ', ' ORDER BY ordinal_position)
     FROM information_schema.columns WHERE table_schema = 'thermus_admin' AND table_name IN ('tenants', 'subscriptions', 'billing_events')
@@ -48,7 +48,7 @@ test('Given the migrations, when they are applied, then the three tables exist w
   assert.deepEqual(columns.split('\n'), [
     'billing_events: stripe_event_id, type, received_at, applied_at',
     'subscriptions: organization_id, stripe_customer_id, stripe_subscription_id, status, current_period_end, cancel_at_period_end, terms_accepted_at, updated_at',
-    'tenants: organization_id, render_service_id, service_name, internal_url, state, plan, applied_plan, image_digest, last_active_at, failure_reason, created_at, updated_at, claimed_by, claimed_until',
+    'tenants: organization_id, render_service_id, service_name, internal_url, state, plan, applied_plan, image_digest, last_active_at, failure_reason, created_at, updated_at, claimed_by, claimed_until, organization_name',
   ]);
   const keys = await site.ownerQuery(`SELECT constraints.table_name || ': ' || usage.column_name
     FROM information_schema.table_constraints constraints JOIN information_schema.key_column_usage usage USING (constraint_schema, constraint_name)
@@ -65,7 +65,18 @@ test('Given the migrations, when they are applied, then the three tables exist w
   await assert.rejects(site.ownerQuery("UPDATE thermus_admin.tenants SET claimed_until = NULL WHERE organization_id = 'org_A'"), /tenants_claim_pair/);
   await assert.rejects(site.ownerQuery("UPDATE thermus_admin.tenants SET claimed_by = NULL WHERE organization_id = 'org_A'"), /tenants_claim_pair/);
   await site.ownerQuery("UPDATE thermus_admin.tenants SET claimed_by = NULL, claimed_until = NULL WHERE organization_id = 'org_A'");
+  await site.ownerQuery("UPDATE thermus_admin.tenants SET organization_name = 'Acme Corp' WHERE organization_id = 'org_A'");
+  await assert.rejects(site.ownerQuery("UPDATE thermus_admin.tenants SET organization_name = '' WHERE organization_id = 'org_A'"), /tenants_organization_name_check/);
+  await assert.rejects(site.ownerQuery("INSERT INTO thermus_admin.tenants (organization_id, state, organization_name) VALUES ('org_B', 'requested', '')"), /tenants_organization_name_check/);
   assert.deepEqual(await tenantRows(site), ['org_A live']);
+});
+
+test('Given a tenant request with the organization name of hosted signup and a request without a name, when the control plane role inserts the rows, then the first row holds the name and the second holds no name', { timeout: 60_000 }, async (t) => {
+  const { site, requests } = await openRegistry(t);
+  assert.deepEqual(await requests.request('org_A', 'Acme Corp'), { status: 'requested' });
+  assert.deepEqual(await requests.request('org_B'), { status: 'requested' });
+  const names = await site.ownerQuery("SELECT organization_id || ' ' || state || ' ' || coalesce(quote_literal(organization_name), 'NULL') FROM thermus_admin.tenants ORDER BY organization_id");
+  assert.deepEqual(names.split('\n'), ["org_A requested 'Acme Corp'", 'org_B requested NULL']);
 });
 
 test('Given a tenants row for organization A, when the gateway asks for A, then it gets the state and the internal address of the row', { timeout: 60_000 }, async (t) => {

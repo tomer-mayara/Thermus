@@ -1,4 +1,4 @@
--- Run once as the administrative owner, after 20261101023017_tenant_sweep_ticks.sql and before the deploy of the
+-- Run once as the administrative owner, after 20261102161257_tenant_organization_name.sql and before the deploy of the
 -- control plane that keeps the record of each removed member. Free access refuses an account whose only membership an
 -- Admin removed (rule of 2 November 2026): WorkOS keeps no record of a deleted membership, so the removal writes the
 -- row of the removed member before the deletion, and signup reads it. One row for each removed membership; the row has

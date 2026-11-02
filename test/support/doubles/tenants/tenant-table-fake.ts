@@ -11,10 +11,10 @@ import { TenantFleetStoreFake } from './tenant-fleet-store-fake.ts';
 export class TenantTableFake extends TenantFleetStoreFake implements TenantRegistryStore, TenantGatewayStore {
   readonly activeWrites: string[] = [];
 
-  async insertRequested(organizationId: string, admit: (count: RegistryCount) => boolean): Promise<InsertRequestedResult> {
+  async insertRequested(organizationId: string, admit: (count: RegistryCount) => boolean, organizationName?: string): Promise<InsertRequestedResult> {
     const count = this.countFor(organizationId);
     if (!admit(count)) return { status: 'refused', count };
-    this.request(organizationId);
+    this.request(organizationId, organizationName);
     return { status: 'inserted' };
   }
 

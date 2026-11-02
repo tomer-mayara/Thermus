@@ -38,7 +38,7 @@ of the SO-12 order, so production has no tenant yet.
 | Situation | Runbook |
 | --- | --- |
 | A `Tenant provisioning failed:` line, or a row in state `failed` | [1. Failed provision](#1-failed-provision) |
-| A `thermus-tenant-*` service with no registry row, or with a `deleted` row | [2. Orphaned Render service](#2-orphaned-render-service) |
+| A `thermus-tenant-*` or `*-thermus-tenant-*` service with no registry row, or with a `deleted` row | [2. Orphaned Render service](#2-orphaned-render-service) |
 | A pause email of Supabase, or `Tenant provisioning cannot read the tenant registry.` lines | [3. Paused Supabase project](#3-paused-supabase-project) |
 | The owner removes an organization | [4. Deletion of a tenant](#4-deletion-of-a-tenant) |
 | A key expires, is exposed, or is due, or the month ends | [5. Rotations and the monthly pruning](#5-rotations-and-the-monthly-pruning) |
@@ -294,8 +294,8 @@ starts from, and SQL by hand does not.
 ## 2. Orphaned Render service
 
 **Definition.** An orphaned service is a private service in the workspace
-Thermus AI whose name starts with `TENANT_NAME_PREFIX`, and that has no usable
-row in the registry:
+Thermus AI whose name starts with `TENANT_NAME_PREFIX` or holds it immediately
+after a hyphen, and that has no usable row in the registry:
 
 - no row of `thermus_admin.tenants` has its service ID in `render_service_id`
   or its name in `service_name`; or
@@ -303,6 +303,15 @@ row in the registry:
 
 The prefix is `thermus-tenant-` in production. The staging control plane of
 the SO-12 rehearsal and the Render interface gate use `thermus-spike-tenant-`.
+Since 2 November 2026, a tenant name can start with the slug of the
+organization name and a hyphen, before the prefix
+([plan section 4.2](self-onboarding-plan.md#42-flows)). An example is
+`acme-corp-thermus-tenant-org-01m6asdn5ykzsy19rqen97ndh3`. This definition and
+the filter of `fleet.ts list` use the same rule. With it, a name of the staging
+prefix does not match the production prefix, and a production name does not
+match the staging prefix. Only an organization slug that holds the other
+prefix, such as the slug of "Thermus Spike Tenant", gives a name that matches
+the two prefixes.
 An orphan costs about 7 USD a month while it runs on `0.5c-512mb`
 ([plan section 8](self-onboarding-plan.md#8-cost-model)). An orphan with the
 name of a tenant is also a risk. The next provision of that tenant takes it as
@@ -314,8 +323,8 @@ These services are not orphans:
 - the service of a `creating` row: the row has the name, and the provisioner
   finds the service by it;
 - the service of a `failed` row: use [runbook 1](#1-failed-provision);
-- a service whose name does not start with the prefix, for example the
-  production service `srv-db8mnqg473hc739d529g`.
+- a service whose name does not hold the prefix at its start or immediately
+  after a hyphen, for example the production service `srv-db8mnqg473hc739d529g`.
 
 A person or a rehearsal can make an orphan by hand. An extra service of a
 duplicate name is an orphan too. So is a service whose delete failed after its
@@ -344,9 +353,9 @@ row became `deleted`.
 
 1. Check that the service ID is not `srv-db8mnqg473hc739d529g`, the production
    service.
-2. Check that the name starts with the prefix. Read the rows again (step 2 of
-   "Find"). Stop if a row in a state other than `deleted` has the ID or the
-   name of the service.
+2. Check that the name starts with the prefix or holds it immediately after a
+   hyphen. Read the rows again (step 2 of "Find"). Stop if a row in a state
+   other than `deleted` has the ID or the name of the service.
 3. In the Render Dashboard, open the service, open **Settings**, and use the
    delete control at the end of the page. Type the confirmation that Render
    asks for. The fleet script cannot delete a service without a row. The

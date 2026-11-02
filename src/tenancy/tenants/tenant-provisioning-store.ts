@@ -14,7 +14,8 @@ export interface LiveTarget {
 }
 
 export interface ClaimRequest {
-  serviceNameOf(organizationId: string): string;
+  /** The service name of a new claim, from the organization ID and the organization name that the row holds, if any. */
+  serviceNameOf(organizationId: string, organizationName: string | null): string;
   readonly plan: string;
   /** The mark of the loop that claims. A row of another holder waits until the claim lease of that holder ends. */
   readonly holder: string;

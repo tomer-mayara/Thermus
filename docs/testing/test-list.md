@@ -1,5 +1,71 @@
 # Test inventory
 
+## Current tenant service name inventory scope
+
+The owner wants the organization name in the name of the Render service of a
+tenant from hosted signup (2 November 2026). The tenant request of signup
+stores the organization name in the new column `organization_name`, and at the
+claim the provisioner names the service
+`<organization slug>-<prefix><organization ID slug>`. The slug comes first, so
+the operator sees the organization first in the Render service list, and the
+ID at the end keeps each name unique. A request without a name keeps the name
+of the prefix and the ID alone, as before: the request of the workspace status
+read after a failed signup request, of the first MCP call, and of the fleet
+script. The fleet script finds the tenants of its prefix with
+`isServiceNameOfPrefix`: the prefix is at the start of the name or after a
+hyphen. This change adds the migration of the column. Inventory presence is not
+a passing result; the pull request records the runs.
+
+- `test/acceptance/tenants/provisioner.test.ts` (1 new case) runs the loop as
+  app composes it against the fake of the Render API: the tenant that hosted
+  signup requested for "Acme Corp" gets the name
+  `acme-corp-thermus-tenant-org-01m6asdn5ykzsy19rqen97ndh3` in the create call
+  and in its row, with the address that Render returns, and a tenant requested
+  without a name keeps `thermus-tenant-org-01jtenantaaaaaaaaaaaaaaaa`. The
+  registry fake `test/support/doubles/tenants/tenant-provisioning-store-fake.ts`
+  keeps the organization name of each row and gives it to the name rule at the
+  claim; `tenant-registry-fake.ts`, `tenant-table-fake.ts`, and
+  `tenant-fleet-store-fake.ts` keep it too, also after a revive, as the SQL
+  adapters do.
+- `test/acceptance/auth/hosted-signup-workspace.test.ts` checks that the row of
+  the tenant request of signup holds the organization name of the form.
+- `test/acceptance/tenants/tenant-registry.runtime.ts` (1 new case) checks the
+  column `organization_name`, the refusal of an empty name by its check, and a
+  request with the name and a request without it through the runtime role.
+  `test/integration/tenants/provisioner-registry.runtime.ts` (1 new case)
+  requests a tenant with the name through the real registry store, and the
+  provisioner gives the create call and the row the name with the slug. Both
+  files run in `npm run test:logging:postgres`.
+- `test/unit/tenants/provisioner.test.ts` (6 new cases) checks the name rule:
+  `Acme Corp`, `Müller GmbH`, `--Acme (US)--` with spaces at both ends, and
+  full-width letters give their slugs, before the prefix and the ID; no name,
+  an empty name, and a name without a letter or digit of a-z and 0-9, such as
+  a name in Hebrew letters only, give the name of the prefix and the ID alone;
+  a slug is cut to 30 characters without a final hyphen; the ID part keeps its
+  rule; and the loop searches, creates, and records the service with the slug.
+  It checks `isServiceNameOfPrefix` too: `thermus-tenant-org-01a` and
+  `acme-thermus-tenant-org-01a` hold `thermus-tenant-`, the staging names
+  `thermus-spike-tenant-org-01a` and `acme-thermus-spike-tenant-org-01a` do
+  not, the production names do not hold `thermus-spike-tenant-`, and
+  `xthermus-tenant-org-01a` does not hold `thermus-tenant-`.
+  `pg-tenant-provisioning-store.test.ts` (1 new case) checks that the claim
+  selects `organization_name` and gives it, or null, to the name rule,
+  `pg-tenant-registry-store.test.ts` (1 new case) the insert with and without
+  the name, and `tenant-requests.test.ts` (1 new case) the name in the row.
+- `test/integration/auth/workos-signup-tenants.test.ts` and
+  `test/unit/app/workspace-composition.test.ts` check that signup requests the
+  tenant with the organization name of the form, and that the signup port of
+  app gives the name to the tenant request.
+- `test/acceptance/auth/hosted-live/signup-workspace-server.ts` expects the
+  name `acme-workspace-thermus-tenant-<organization ID slug>` in the create call
+  of the live gate.
+
+```sh
+npm run build && node --test dist/test/unit/tenants/*.test.js dist/test/acceptance/tenants/provisioner.test.js dist/test/integration/auth/workos-signup-tenants.test.js dist/test/unit/app/workspace-composition.test.js dist/test/acceptance/auth/hosted-signup-workspace.test.js
+npm run build && node --test dist/test/acceptance/tenants/tenant-registry.runtime.js
+npm run build && node --test dist/test/integration/tenants/provisioner-registry.runtime.js
+```
+
 ## Current SO-12 sweep tick claim inventory scope
 
 The SO-12 release rehearsal of 31 October 2026 measured that Render keeps the
@@ -227,19 +293,21 @@ records the runs.
   registry rules over the in-memory registry
   `test/support/doubles/tenants/tenant-registry-fake.ts` and a clock of the
   test, through `test/support/in-process/signup-workspace-site.ts`. A case moves
-  a row as the provisioner would. It checks the requested row after signup at
-  `?tier=free` and the setup state until `live`, the same page for another tier
-  value or no tier, the closed notice with the switch off and at a full cap
-  before the notice of the documents, the tenant request again after a failed
-  request at signup, the tenant request of an existing organization without a
-  row, the denials without product access or for another organization, the
-  request at each read of a full cap until a place frees, the one report of a
-  failed setup, and signup and the status with `MCP_TENANTS_ENABLED` off.
+  a row as the provisioner would. It checks the requested row with the
+  organization name after signup at `?tier=free` and the setup state until
+  `live`, the same page for another tier value or no tier, the closed notice
+  with the switch off and at a full cap before the notice of the documents, the
+  tenant request again after a failed request at signup, the tenant request of
+  an existing organization without a row, the denials without product access or
+  for another organization, the request at each read of a full cap until a
+  place frees, the one report of a failed setup, and signup and the status with
+  `MCP_TENANTS_ENABLED` off.
 - `test/integration/auth/workos-signup-tenants.test.ts` checks the tier
   values, the switch before the cap, the closed notice at a full cap without
-  session work, an unreadable cap, the tenant request after the confirmed first
-  Admin membership and before Quick start opens, no request for another
-  activation result, and a failed request that does not stop signup.
+  session work, an unreadable cap, the tenant request with the organization
+  name after the confirmed first Admin membership and before Quick start opens,
+  no request for another activation result, and a failed request that does not
+  stop signup.
 - `test/integration/hosted-admin/workspace-status-route.test.ts` checks the
   route with the account routes, the workspace status, the port of app, and the
   real registry rules: each row state, the request for a missing row, the full
@@ -249,8 +317,8 @@ records the runs.
   `test/unit/tenants/tenant-lookup.test.ts`, and `tenant-requests.test.ts`
   check the view and the words of each state with the one report of a failed
   setup, the port of app on the gateway port, the signup port with the cap only
-  with the switch on, the row counts of the registry copy, and the place under
-  the cap.
+  with the switch on and the request with the organization name, the row counts
+  of the registry copy, and the place under the cap.
 - `test/acceptance/user-portal/workspace-setup.test.ts` and
   `test/unit/user-portal/workspace-status.test.ts` check the setup words with a
   meta refresh every 5 s and no connection guide until the workspace is ready,
@@ -567,18 +635,19 @@ adds the tenant provisioner, the Render adapter of the tenant platform, and the
 switch `MCP_TENANTS_ENABLED`. Inventory presence is not a passing result; the
 pull request records the runs.
 
-- `test/acceptance/tenants/provisioner.test.ts` has the fourteen acceptance
-  cases of the ticket, its answers of 27 October 2026, and the name rule of the
-  manager. It runs the loop as app composes it from the control plane settings,
-  against the fake of the Render API
-  `test/support/doubles/render/render-fake.ts`, which makes the slug as Render
-  does: a long name is shortened at a separator, and a second service with the
-  same start gets a suffix, the registry fake
+- `test/acceptance/tenants/provisioner.test.ts` has the fifteen acceptance cases
+  of the ticket, its answers of 27 October 2026, the name rule of the manager,
+  and the organization name of the owner (2 November 2026). It runs the loop as
+  app composes it from the control plane settings, against the fake of the
+  Render API `test/support/doubles/render/render-fake.ts`, which makes the slug
+  as Render does: a long name is shortened at a separator, and a second service
+  with the same start gets a suffix, the registry fake
   `test/support/doubles/tenants/tenant-provisioning-store-fake.ts`, and a
   virtual clock: a requested row reaches `live` with `http://<slug>:8080` and
   `OPERATION_CAPACITY=5`; the service name is the prefix and the organization ID
   in lower case with each character outside a-z, 0-9, and hyphen as a hyphen,
-  and two tenants with the same shortened start get two addresses; the hosted
+  and two tenants with the same shortened start get two addresses; a tenant of
+  hosted signup has its organization slug before the prefix; the hosted
   image reads the create variables in the tenant role; the create call holds the
   tenant variables and no secret; a `429` waits for `Retry-After`; a restart and
   a lost create answer find the service by name; two services of the name and a
@@ -1534,11 +1603,11 @@ Only the hosted edition reads `FREE_TENANT_LIMIT`.
 A store fake keeps rows in memory, the lookup reads a clock double, and the SQL adapter runs on the real
 bounded runtime over a client double.
 
-[V] A request inserts one `requested` row; a row in any state stays as it is and the result names its state
+[V] A request inserts one `requested` row, with the organization name of hosted signup or without a name; a row in any state stays as it is and the result names its state
 [V] At `FREE_TENANT_LIMIT` rows in `requested`, `creating`, `deploying`, `live`, or `suspended`, a new organization gets the full cap and nothing is inserted; failed and deleted rows hold no place; 0 refuses every new organization
 [V] Unavailable or unconfirmed storage gives an unavailable request, and a repeat finds a committed row
 [V] The lookup answers from its copy inside 10 s, refreshes at 10 s, serves a stale copy after a failed refresh until 60 s from the start of its read, then fails; concurrent asks share one read
-[V] The adapter locks the registry in `SHARE ROW EXCLUSIVE` mode, counts the rows by state, inserts only when the decision allows it, and commits in one transaction; a failure before the commit destroys the client, a failure after the insert is unconfirmed, and a route read maps each organization to its state and internal address
+[V] The adapter locks the registry in `SHARE ROW EXCLUSIVE` mode, counts the rows by state, inserts only when the decision allows it, with the organization name or NULL, and commits in one transaction; a failure before the commit destroys the client, a failure after the insert is unconfirmed, and a route read maps each organization to its state and internal address
 
 ```sh
 npm run build && node --test dist/test/unit/tenants/*.test.js
@@ -1558,12 +1627,14 @@ Only the hosted edition reads `MCP_TENANTS_ENABLED`, and only with `true` the te
 A fake of the tenant platform, the registry fake, a virtual clock, and a spy of the operator log run the state machine; the SQL adapter runs on the real bounded runtime over a client double.
 
 [V] A requested row is named with the prefix and the organization ID in lower case, each character outside a-z, 0-9, and hyphen as a hyphen (also for capital letters, dots, plus signs, and letters outside a-z), created once on the free plan with the closed list of tenant variables and `OPERATION_CAPACITY` 5, and recorded as `creating`, `deploying`, and `live`, with one record line for each state
+[V] With the organization name of hosted signup, the slug of the name and a hyphen come first, before the prefix and the organization ID: the letters and digits of a-z and 0-9 in lower case after the marks are removed, one hyphen for each run of other characters, no hyphen at the ends, and at most 30 characters without a final hyphen (`Acme Corp`, `Müller GmbH`, `--Acme (US)--` with spaces at both ends, full-width letters, 100 characters); no name, an empty name, or a name without such a letter or digit keeps the name of the prefix and the ID alone; the loop searches, creates, and records the service with the slug
+[V] `isServiceNameOfPrefix`, for the fleet script, finds the prefix at the start of a service name without an organization slug, or after the hyphen that follows the slug (`thermus-tenant-org-01a`, `acme-thermus-tenant-org-01a`); the names of the staging prefix `thermus-spike-tenant-` do not hold the production prefix `thermus-tenant-`, and the other way round; a name with the prefix neither at its start nor after a hyphen, such as `xthermus-tenant-org-01a`, does not hold it
 [V] One service of the name is taken without a create; two services, a refused create, and a failed deploy give `failed` with the reason and one operator report
 [V] A create without a clear answer waits 30 s and searches by name before another create; a rate-limited create waits the given time, at most one hour; three attempts without a service, or three unavailable service lists, give `failed`
 [V] The newest deploy is read every 5 s for at most 15 minutes, 180 reads; a live deploy waits for the internal address; a gone service fails the row
 [V] A `deploying` row after a resume goes `live` without a create; a `deploying` row without a service ID fails; a row that another writer gave a new service during the watch is left with that service, and the live deploy of the old service records nothing
 [V] An idle loop reads the registry every 5 s; an unreadable registry, a failed write, and an unexpected failure log one error and wait 60 s; a row that changed elsewhere is left; a failure that the registry cannot record is reported once it is recorded; a stop leaves the row for the next claim
-[V] The claim selects with `FOR UPDATE SKIP LOCKED` in one transaction and moves the oldest requested row to `creating` with its name and plan; a resumed row keeps its name; each record names the state that it starts from, and the live record the service of the work too; a failure reason is bounded to 1000 characters; the write guard owns a service ID only when a row has it
+[V] The claim selects with `FOR UPDATE SKIP LOCKED` in one transaction and moves the oldest requested row to `creating` with its name and plan; the name rule gets the organization name of the row, or null; a resumed row keeps its name; each record names the state that it starts from, and the live record the service of the work too; a failure reason is bounded to 1000 characters; the write guard owns a service ID only when a row has it
 [V] Each claim names the holder of the loop and holds the row for 60 s: a row without a claim, a row of the holder, or a row whose lease ended; the row is held at each platform call, renewed right before each create and before each read of the deploy, and freed by the live record; a renewal that finds another holder sends no create, ends the watch, and leaves the row; a renewal that the registry does not answer sends no create and waits 60 s; in a run of two loops with a deploy of three minutes, the second loop never gets the row; a stop during the create keeps the `creating` row held, and a stop during the watch frees the `deploying` row; after the stop, a search or a create in flight ends with no renewal, and a claim that commits during the stop starts no work and frees its row
 [V] The renewal, the release, and each record name the holder; the release never frees a `creating` row, and the release of a claim without work frees each state; the live and failed records free the claim; the live record of the fleet resume names no holder
 

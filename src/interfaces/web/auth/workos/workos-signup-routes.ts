@@ -173,7 +173,7 @@ export class WorkOSSignupRoutes {
     request.signal.throwIfAborted();
     if (result.status !== 'active') return this.activationAnswer(result);
     // An active result confirms the first Admin membership, so the tenant request comes now, before Quick start opens.
-    await this.handoff?.requestTenant(request, result.organizationId, run);
+    await this.handoff?.requestTenant(request, { organizationId: result.organizationId, organizationName: creation.organizationName }, run);
     const selected = await run(() => state.selectOrganization(result.organizationId));
     request.signal.throwIfAborted();
     return this.selectionAnswer(selected);

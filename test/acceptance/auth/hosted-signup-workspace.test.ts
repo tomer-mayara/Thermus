@@ -28,7 +28,7 @@ function withMember(roles: readonly string[], organizations: readonly string[] =
 }
 
 describe('Free signup requests the tenant of the new organization (SO-07)', () => {
-  test('Given an eligible visitor at /signup?tier=free, when the agreement is accepted, then the organization exists, its row is requested, and the workspace status gives the setup state until the row is live', async (t) => {
+  test('Given an eligible visitor at /signup?tier=free, when the agreement is accepted, then the organization exists, its row is requested with the organization name, and the workspace status gives the setup state until the row is live', async (t) => {
     const site = await openSignupWorkspaceSite(t);
 
     const { browser, answer, organizationId } = await site.signUp(creator, 'Acme Labs');
@@ -38,6 +38,7 @@ describe('Free signup requests the tenant of the new organization (SO-07)', () =
     assert.ok(organizationId, 'The organization exists.');
     assert.deepEqual(site.world.rolesOf(creator, organizationId), ['admin']);
     assert.equal(site.registry.stateOf(organizationId), 'requested');
+    assert.equal(site.registry.organizationNameOf(organizationId), 'Acme Labs', 'The row keeps the organization name for the service name.');
     assert.deepEqual(await site.status(browser), { status: 200, body: { state: 'requested', ready: false, message: settingUp } });
     for (const state of ['creating', 'deploying'] as const) {
       site.provision(organizationId, state);

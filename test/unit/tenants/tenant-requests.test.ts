@@ -13,10 +13,16 @@ function registryWith(rows: Readonly<Record<string, TenantState>>): TenantRegist
   return store;
 }
 
-test('Given an organization without a row and a free place, when it requests a tenant, then one requested row is inserted', async () => {
+test('Given an organization without a row and a free place, when it requests a tenant, then one requested row is inserted, without an organization name', async () => {
   const store = registryWith({});
   assert.deepEqual(await new TenantRequests(store, 25).request('org_A'), { status: 'requested' });
-  assert.deepEqual([...store.rows], [['org_A', { state: 'requested', internalUrl: null }]]);
+  assert.deepEqual([...store.rows], [['org_A', { state: 'requested', internalUrl: null, organizationName: null }]]);
+});
+
+test('Given the organization name of hosted signup, when the organization requests a tenant, then the requested row holds that name for the service name', async () => {
+  const store = registryWith({});
+  assert.deepEqual(await new TenantRequests(store, 25).request('org_A', 'Acme Corp'), { status: 'requested' });
+  assert.deepEqual([...store.rows], [['org_A', { state: 'requested', internalUrl: null, organizationName: 'Acme Corp' }]]);
 });
 
 test('Given a row for the organization in any state, when it requests a tenant again, then the row stays as it is and the result names its state', async () => {

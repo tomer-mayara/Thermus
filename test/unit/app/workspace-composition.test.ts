@@ -56,7 +56,7 @@ function registryOf(count: TenantCountResult, request: TenantRequestResult = { s
     lookup: { countByState: async () => { calls.push('count'); return count; } },
     requests: {
       hasPlaceIn: (rowsByState: ReadonlyMap<TenantState, number>) => { calls.push('cap'); return [...rowsByState.values()].reduce((sum, rows) => sum + rows, 0) < freeTenantLimit; },
-      request: async (organizationId: string) => { calls.push(`request ${organizationId}`); return request; },
+      request: async (organizationId: string, organizationName?: string) => { calls.push(`request ${organizationId} ${organizationName}`); return request; },
     },
   };
 }
@@ -78,12 +78,12 @@ test('Given MCP_TENANTS_ENABLED off, when signup asks for a place, then the plac
   assert.deepEqual(registry.calls, []);
 });
 
-test('Given a new organization, when signup requests its tenant, then the tenant request inside the cap answers with its status, with the switch on or off', async () => {
+test('Given a new organization, when signup requests its tenant, then the tenant request inside the cap gets the organization name and answers with its status, with the switch on or off', async () => {
   for (const capped of [true, false]) {
     for (const result of [{ status: 'requested' }, { status: 'full' }, { status: 'unavailable' }, { status: 'present', state: 'live' }] as const) {
       const registry = registryOf({ status: 'unavailable' }, result);
-      assert.equal(await signupTenantsOf(registry, capped).request('org_NEW'), result.status);
-      assert.deepEqual(registry.calls, ['request org_NEW']);
+      assert.equal(await signupTenantsOf(registry, capped).request('org_NEW', 'New Labs'), result.status);
+      assert.deepEqual(registry.calls, ['request org_NEW New Labs']);
     }
   }
 });

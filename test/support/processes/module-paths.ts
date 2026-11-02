@@ -62,6 +62,7 @@ export const thermusAdminMigrations = [
   '20261027175430_tenant_registry_and_billing.sql',
   '20261031221342_tenant_claim_lease.sql',
   '20261101023017_tenant_sweep_ticks.sql',
+  '20261102161257_tenant_organization_name.sql',
   '20261102184225_removed_members.sql',
 ].map(name => fileURLToPath(new URL(`sql/migrations/${name}`, repositoryRoot)));
 

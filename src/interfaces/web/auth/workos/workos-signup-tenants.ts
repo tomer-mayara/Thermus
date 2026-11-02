@@ -10,12 +10,18 @@ export type SignupTenantRequest = 'requested' | 'present' | 'full' | 'unavailabl
 export interface SignupTenants {
   /** Whether the free-tenant cap has a place for a new organization. Signup asks before the notice. */
   place(): Promise<SignupPlace>;
-  /** Requests the tenant of a new organization after its confirmed first Admin membership. */
-  request(organizationId: string): Promise<SignupTenantRequest>;
+  /** Requests the tenant of a new organization after its confirmed first Admin membership, with the organization name of the form. */
+  request(organizationId: string, organizationName: string): Promise<SignupTenantRequest>;
 }
 
 /** One provider operation of a signup request. It stops at the abort of the request; a POST holds its slot until it settles. */
 export type RequestOperation = <T>(start: () => Promise<T>) => Promise<T>;
+
+/** The organization that signup created: the ID from the confirmed activation and the name from the form. */
+interface CreatedOrganization {
+  readonly organizationId: string;
+  readonly organizationName: string;
+}
 
 const CAP_UNREADABLE = 'Hosted signup could not read the free-tenant cap.';
 const TENANT_NOT_REQUESTED = 'Hosted signup could not request the tenant of the new organization. Its first workspace status read requests it again.';
@@ -50,9 +56,12 @@ export class SignupTenantHandoff {
     return signupFailurePage(503, 'Activation is temporarily unavailable. Try again later.');
   }
 
-  /** A failed request does not stop signup: the first workspace status read of the organization requests the tenant again. */
-  async requestTenant(request: Request, organizationId: string, run: RequestOperation): Promise<void> {
-    const result = await run(() => this.tenants.request(organizationId)).catch((error: unknown) => {
+  /**
+   * A failed request does not stop signup: the first workspace status read of the organization requests the tenant
+   * again, but without the organization name.
+   */
+  async requestTenant(request: Request, organization: CreatedOrganization, run: RequestOperation): Promise<void> {
+    const result = await run(() => this.tenants.request(organization.organizationId, organization.organizationName)).catch((error: unknown) => {
       if (request.signal.aborted) throw error;
       return 'unavailable' as const;
     });

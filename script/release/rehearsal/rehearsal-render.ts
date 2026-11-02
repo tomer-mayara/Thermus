@@ -1,6 +1,7 @@
 // The Render calls of the rehearsal, through the guarded client of the Render probes: it refuses each call to a service
 // that this run did not confirm as a thermus-spike-* service, and always the production service. A read repeats after
 // a 429, a 5xx answer, or a network failure; a create, an update, or a deploy goes one time only.
+import { isServiceNameOfPrefix } from '../../../src/tenancy/tenants/tenant-environment.ts';
 import type { Call } from '../../spike/render-tenant-lifecycle/calls.ts';
 import { fieldJson, fieldText, listItems } from '../../spike/render-tenant-lifecycle/answers.ts';
 import { sleep } from '../../spike/render-tenant-lifecycle/polls.ts';
@@ -76,11 +77,14 @@ export class RehearsalRender {
     return id;
   }
 
-  /** A tenant service of the rehearsal: a private service whose name starts with thermus-spike-tenant-. */
+  /**
+   * A tenant service of the rehearsal: a private service whose name holds thermus-spike-tenant- at its start, or after
+   * the organization slug and a hyphen (2 November 2026).
+   */
   async confirmTenant(serviceId: string): Promise<string> {
     const tenant = (await this.services({ type: 'private_service' })).find((service) => service.id === serviceId);
-    if (tenant === undefined || !tenant.name.startsWith(TENANT_PREFIX) || tenant.id === PRODUCTION_SERVICE_ID) {
-      throw new Error(`${serviceId} is not a private service whose name starts with ${TENANT_PREFIX}.`);
+    if (tenant === undefined || !isServiceNameOfPrefix(TENANT_PREFIX, tenant.name) || tenant.id === PRODUCTION_SERVICE_ID) {
+      throw new Error(`${serviceId} is not a private service whose name holds ${TENANT_PREFIX} at its start or after the organization slug and a hyphen.`);
     }
     this.client.confirmOwnService(tenant.id, tenant.name);
     return tenant.name;

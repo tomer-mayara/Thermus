@@ -7,7 +7,7 @@ import type { InsertRequestedResult, ReadRoutesResult, RegistryCount, TenantRegi
 export const LOCK_REGISTRY = 'LOCK TABLE thermus_admin.tenants IN SHARE ROW EXCLUSIVE MODE';
 export const COUNT_ROWS = `SELECT state, count(*)::integer AS rows, bool_or(organization_id = $1) AS current
   FROM thermus_admin.tenants GROUP BY state`;
-const INSERT_REQUESTED = "INSERT INTO thermus_admin.tenants (organization_id, state) VALUES ($1, 'requested')";
+const INSERT_REQUESTED = "INSERT INTO thermus_admin.tenants (organization_id, state, organization_name) VALUES ($1, 'requested', $2)";
 // The time since the last change comes from the clock of the database, which also writes updated_at.
 const READ_ROUTES = `SELECT organization_id, state, internal_url, extract(epoch FROM now() - updated_at)::float8 * 1000 AS since_change_ms
   FROM thermus_admin.tenants`;
@@ -26,13 +26,13 @@ export class PgTenantRegistryStore implements TenantRegistryStore, TenantGateway
   constructor(runtime: BoundedSqlRuntime) { this.runtime = runtime; }
 
   // A failure before COMMIT destroys the client, so PostgreSQL rolls the transaction back and frees the lock.
-  async insertRequested(organizationId: string, admit: (count: RegistryCount) => boolean): Promise<InsertRequestedResult> {
+  async insertRequested(organizationId: string, admit: (count: RegistryCount) => boolean, organizationName?: string): Promise<InsertRequestedResult> {
     const result = await this.runtime.run(async (session) => {
       await session.query('BEGIN');
       await session.query(LOCK_REGISTRY);
       const count = registryCount(await session.query(COUNT_ROWS, [organizationId]));
       const inserted = admit(count);
-      if (inserted) await session.query(INSERT_REQUESTED, [organizationId], true);
+      if (inserted) await session.query(INSERT_REQUESTED, [organizationId, organizationName ?? null], true);
       await session.query('COMMIT', [], inserted);
       return inserted ? { status: 'inserted' as const } : { status: 'refused' as const, count };
     });
