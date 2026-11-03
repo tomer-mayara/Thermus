@@ -7,7 +7,7 @@ import { HostedBrowser, formsIn } from '../../support/drivers/browser/hosted-bro
 import { hostedRootConfig } from '../../support/fixtures/hosted-config.ts';
 import { serveWorkOSSite } from '../../support/in-process/workos-site.ts';
 
-test('Given a new visitor, when free signup opens, then the branded two-step page offers the complete readable notice before account creation, a sign-in line for an existing account, and a compact mobile disclosure', async (t) => {
+test('Given a new visitor, when free signup opens, then the branded two-step page offers the complete readable notice before the email form of the account creation, a sign-in line for an existing account, and a compact mobile disclosure', async (t) => {
   const site = await serveWorkOSSite(t, { config: hostedRootConfig, organizations: [], signupFake: true,
     signup: { enabled: true, documents: signupDocuments } });
   const answer = await new HostedBrowser(site.transport, site.publicBaseUrl).open('signup');
@@ -27,17 +27,26 @@ test('Given a new visitor, when free signup opens, then the branded two-step pag
   assert.ok(disclosure);
   assert.equal(disclosure.hasAttribute('open'), false);
   assert.match(disclosure.querySelector('summary')?.textContent ?? '', /Read full privacy notice/);
-  const action = document.querySelector('.task-card .primary-action');
-  assert.ok(action);
-  assert.equal(action.textContent, 'Create account');
-  assert.equal(action.getAttribute('href'), '/signup/start');
-  assert.ok(answer.body.indexOf(signupDocuments.notice.text) < answer.body.indexOf('>Create account</a>'));
+  const form = document.querySelector('.task-card form[action="/signup/start"]');
+  assert.ok(form);
+  assert.equal(form.getAttribute('method'), 'post');
+  const email = form.querySelector('input[name="email"]');
+  assert.ok(email);
+  assert.equal(email.getAttribute('type'), 'email');
+  assert.equal(email.getAttribute('autocomplete'), 'email');
+  const label = document.querySelector(`label[for="${email.id}"]`);
+  assert.ok(label);
+  assert.equal(label.textContent, 'Email address');
+  const button = form.querySelector('button[type="submit"]');
+  assert.ok(button);
+  assert.equal(button.textContent, 'Create account');
+  assert.ok(answer.body.indexOf(signupDocuments.notice.text) < answer.body.indexOf('>Create account</button>'));
   const signIn = document.querySelector('.task-card a[href="/login"]');
   assert.ok(signIn);
   assert.equal(signIn.textContent, 'Sign in');
   assert.match(signIn.parentElement?.textContent ?? '', /^Already have a Thermus account\? Sign in to open your workspace\.$/);
   assert.doesNotMatch(answer.body, /return_to/);
-  assert.deepEqual(formsIn(answer.body), []);
+  assert.deepEqual(formsIn(answer.body), [{ action: '/signup/start', fields: {}, label: 'Create account' }]);
   assert.deepEqual(site.signupFake.organizations, []);
 });
 

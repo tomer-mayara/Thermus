@@ -105,17 +105,23 @@ describe('Free signup requests the tenant of the new organization (SO-07)', () =
     assert.deepEqual(site.registry.requests, []);
   });
 
-  test('Given a full free-tenant cap, when a visitor follows Create account at /signup/start, then the closed notice shows and no provider sign-in starts', async (t) => {
+  test('Given a full free-tenant cap, when a visitor follows Create account or posts an email at /signup/start, then the closed notice shows and no WorkOS read or provider sign-in starts', async (t) => {
     const site = await openSignupWorkspaceSite(t, { freeTenantLimit: 1 });
     site.provision('org_01OTHERTENANT', 'live', 'http://thermus-tenant-org-01othertenant:8080');
     site.world.fake.takeRequests();
+    const visitor = new HostedBrowser(site.transport, site.publicBaseUrl);
 
-    const answer = await new HostedBrowser(site.transport, site.publicBaseUrl).open('signup/start');
+    const answer = await visitor.open('signup/start');
+    const posted = await visitor.post('signup/start', { email: creator.email });
 
     assert.equal(answer.status, 200, answer.body);
     assert.match(answer.body, /Activation is closed/);
     assert.equal(answer.location, undefined);
     assert.deepEqual(answer.cookies, []);
+    assert.equal(posted.status, 403, posted.body);
+    assert.match(posted.body, /Activation is closed/);
+    assert.equal(posted.location, undefined);
+    assert.deepEqual(posted.cookies, []);
     assert.deepEqual(site.world.fake.takeRequests(), []);
     assert.deepEqual(site.registry.requests, []);
   });

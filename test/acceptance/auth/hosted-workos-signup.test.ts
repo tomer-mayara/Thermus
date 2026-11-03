@@ -38,18 +38,23 @@ describe('Hosted self-service signup is closed by default', () => {
     assert.deepEqual(site.world.fake.takeRequests(), []);
   });
 
-  test('Given no signup setting, when a visitor follows Create account, then the closed notice appears and no provider sign-in starts', async (t) => {
+  test('Given no signup setting, when a visitor follows Create account or posts an email at step 1, then the closed notice appears and no WorkOS read or provider sign-in starts', async (t) => {
     const site = await openSignupSite(t);
     const browser = new HostedBrowser(site.transport, site.publicBaseUrl);
     site.world.fake.takeRequests();
 
     const answer = await browser.open('signup/start');
+    const posted = await browser.post('signup/start', { email: 'person@example.com' });
 
     assert.equal(answer.status, 200, answer.body);
     assert.match(answer.body, /activation is closed/i);
     assert.equal(answer.location, undefined);
     assert.deepEqual(answer.cookies, []);
     assert.equal(answer.headers.get('Cache-Control'), 'no-store');
+    assert.equal(posted.status, 403, posted.body);
+    assert.match(posted.body, /activation is closed/i);
+    assert.equal(posted.location, undefined);
+    assert.deepEqual(posted.cookies, []);
     assert.deepEqual(site.world.fake.takeRequests(), []);
   });
 
@@ -149,10 +154,9 @@ describe('Hosted self-service signup with a test legal bundle', () => {
     assert.equal(writes.filter(({ path }) => path === '/user_management/organization_memberships').length, 1);
   });
 
-  test('Given a new visitor, when Create account is followed and AuthKit returns a new verified user, then the provider starts at its sign-up screen, signup offers the organization form, and creation opens Quick start', async (t) => {
+  test('Given a new visitor, when step 1 posts a new email and AuthKit returns the new verified user, then the provider starts at its sign-up screen with the email as login hint, signup offers the organization form, and creation opens Quick start', async (t) => {
     const site = await openSignupSite(t, true);
     const user = { id: 'user_NEW_ACCOUNT', email: 'new@example.com', firstName: 'New', emailVerified: true };
-    site.world.users = [user];
 
     const { browser, start, callback } = await signUpThroughServer(site, user);
 
@@ -160,6 +164,7 @@ describe('Hosted self-service signup with a test legal bundle', () => {
     assert.equal(start.location?.pathname, '/user_management/authorize');
     assert.equal(start.location?.searchParams.get('screen_hint'), 'sign-up');
     assert.equal(start.location?.searchParams.get('provider'), 'authkit');
+    assert.equal(start.location?.searchParams.get('login_hint'), user.email);
     assert.ok(start.location?.searchParams.get('state'));
     assert.ok(start.cookies.some((cookie) => cookie.startsWith('__Host-thermus-sign-in=')), start.cookies.join('\n'));
     assert.equal(callback.status, 303, callback.body);
@@ -186,7 +191,7 @@ describe('Hosted self-service signup with a test legal bundle', () => {
 
     assert.equal(answer.status, 200);
     assert.ok(answer.body.includes(signupDocuments.notice.text));
-    assert.ok(answer.body.indexOf(signupDocuments.notice.text) < answer.body.indexOf('href="/signup/start"'));
+    assert.ok(answer.body.indexOf(signupDocuments.notice.text) < answer.body.indexOf('action="/signup/start"'));
     assert.doesNotMatch(answer.body, /return_to/);
     assert.deepEqual(site.signupFake.organizations, []);
   });
@@ -208,12 +213,9 @@ describe('Hosted self-service signup with a test legal bundle', () => {
       assert.equal(answer.status, method === 'GET' ? 200 : 401, answer.body);
       assert.ok(answer.body.includes(signupDocuments.notice.text), answer.body);
       const page = parseHTML(answer.body).document;
-      const creation = page.querySelector('.task-card a[href="/signup/start"]');
-      assert.ok(creation);
-      assert.equal(creation.textContent, 'Create account');
+      assertAccountCreationForm(answer.body);
       assert.equal(page.querySelector('header img')?.getAttribute('src'), '/assets/thermus-logo.svg');
       assert.equal(page.querySelector('#privacy-notice .document-reader')?.getAttribute('tabindex'), '0');
-      assert.deepEqual(formsIn(answer.body), []);
       assert.doesNotMatch(answer.body, /type="checkbox"|temporarily unavailable/);
       assert.deepEqual(site.signupFake.organizations, []);
       assert.deepEqual(site.world.memberships, []);
@@ -221,7 +223,7 @@ describe('Hosted self-service signup with a test legal bundle', () => {
     });
   }
 
-  test('Given a signed-out visitor posts an old signup form, when signup answers, then the full notice and a Create account link appear without writes', async (t) => {
+  test('Given a signed-out visitor posts an old signup form, when signup answers, then the full notice and the step 1 email form appear without writes', async (t) => {
     const site = await openSignupSite(t, true);
     const browser = new HostedBrowser(site.transport, site.publicBaseUrl);
     site.world.fake.takeRequests();
@@ -229,26 +231,23 @@ describe('Hosted self-service signup with a test legal bundle', () => {
 
     assert.equal(answer.status, 401, answer.body);
     assert.ok(answer.body.includes(signupDocuments.notice.text), answer.body);
-    const creation = parseHTML(answer.body).document.querySelector('.task-card a[href="/signup/start"]');
-    assert.ok(creation);
-    assert.equal(creation.textContent, 'Create account');
-    assert.deepEqual(formsIn(answer.body), []);
+    assertAccountCreationForm(answer.body);
     assert.equal(site.signupFake.organizations.length, 0);
     assert.equal(site.world.memberships.length, 0);
     assert.deepEqual(site.world.fake.takeRequests(), []);
   });
 
-  test('Given a deleted user follows Create account of signup, when a fresh user returns and accepts the agreement, then one new organization receives Admin access', async (t) => {
+  test('Given a deleted user posts the email of step 1, when a fresh user returns and accepts the agreement, then one new organization receives Admin access', async (t) => {
     const site = await openSignupSite(t, true);
     const deleted = { id: 'user_OLD', email: 'returning@example.com', firstName: 'Person' };
     site.world.users = [deleted];
     const { browser } = await signInThroughServer(site, deleted);
     site.world.users = [];
     const recovery = await browser.open('signup');
-    const creation = parseHTML(recovery.body).document.querySelector('a[href="/signup/start"]');
-    assert.ok(creation, recovery.body);
-    const start = await browser.open(creation.getAttribute('href') ?? '');
+    assertAccountCreationForm(recovery.body);
+    const start = await browser.post('signup/start', { email: deleted.email });
     assert.equal(start.location?.searchParams.get('screen_hint'), 'sign-up');
+    assert.equal(start.location?.searchParams.get('login_hint'), deleted.email);
     const state = start.location?.searchParams.get('state');
     assert.ok(state);
     const fresh = { ...deleted, id: 'user_FRESH' };
@@ -479,6 +478,66 @@ describe('Hosted self-service signup with a test legal bundle', () => {
 });
 
 
+describe('Step 1 of free access checks the email address before AuthKit opens', () => {
+  test('Given a person whose email already has a Thermus account, when step 1 posts that email, then step 1 says that the account exists, offers Sign in, keeps the email, and starts no provider sign-in', async (t) => {
+    const site = await openSignupSite(t, true);
+    site.world.users = [{ id: 'user_EXISTING', email: 'person@example.com', firstName: 'Person' }];
+    const browser = new HostedBrowser(site.transport, site.publicBaseUrl);
+    site.world.fake.takeRequests();
+
+    const answer = await browser.post('signup/start', { email: ' Person@Example.com ' });
+
+    assert.equal(answer.status, 409, answer.body);
+    const page = parseHTML(answer.body).document;
+    const message = page.querySelector('.task-card .form-message');
+    assert.ok(message, answer.body);
+    assert.match(message.textContent, /^An account with this email address already exists\. Sign in to open your workspace\.$/);
+    assert.equal(message.getAttribute('role'), 'alert');
+    assert.equal(message.querySelector('a[href="/login"]')?.textContent, 'Sign in');
+    assert.equal(page.querySelector('input[name="email"]')?.getAttribute('value'), 'person@example.com');
+    assertAccountCreationForm(answer.body);
+    assert.equal(answer.location, undefined);
+    assert.deepEqual(answer.cookies, []);
+    const requests = site.world.fake.takeRequests();
+    assert.deepEqual(requests.map(({ method, path }) => `${method} ${new URL(path, 'http://fake').pathname}`), ['GET /user_management/users']);
+    assert.equal(new URL(requests[0]?.path ?? '', 'http://fake').searchParams.get('email'), 'person@example.com');
+  });
+
+  test('Given an email address that is not valid, when step 1 posts it, then step 1 asks for a valid address and no WorkOS read or provider sign-in starts', async (t) => {
+    const site = await openSignupSite(t, true);
+    const browser = new HostedBrowser(site.transport, site.publicBaseUrl);
+    site.world.fake.takeRequests();
+
+    for (const email of ['', 'person', 'person@example', 'two words@example.com', `${'a'.repeat(250)}@example.com`]) {
+      const answer = await browser.post('signup/start', { email });
+
+      assert.equal(answer.status, 400, email);
+      assert.equal(parseHTML(answer.body).document.querySelector('.task-card .form-message')?.textContent, 'Enter a valid email address.');
+      assertAccountCreationForm(answer.body);
+      assert.equal(answer.location, undefined);
+      assert.deepEqual(answer.cookies, []);
+    }
+    assert.deepEqual(site.world.fake.takeRequests(), []);
+  });
+
+  test('Given the WorkOS user read fails, when step 1 posts a new email, then the provider sign-in still starts with the email as login hint and the operator log has only fixed text', async (t) => {
+    const site = await openSignupSite(t, true);
+    site.world.fake.answer('GET /user_management/users', { status: 500, body: { message: 'private provider error' } });
+    const browser = new HostedBrowser(site.transport, site.publicBaseUrl);
+
+    const answer = await browser.post('signup/start', { email: 'new@example.com' });
+
+    assert.equal(answer.status, 303, answer.body);
+    assert.equal(answer.location?.pathname, '/user_management/authorize');
+    assert.equal(answer.location?.searchParams.get('screen_hint'), 'sign-up');
+    assert.equal(answer.location?.searchParams.get('login_hint'), 'new@example.com');
+    assert.ok(answer.cookies.some((cookie) => cookie.startsWith('__Host-thermus-sign-in=')), answer.cookies.join('\n'));
+    assert.deepEqual(site.log.lines.filter((line) => line.startsWith('ERROR ')), ['ERROR Hosted signup could not check the email address.']);
+    assert.ok(site.log.lines.every((line) => !line.includes('private provider error')), site.log.lines.join('\n'));
+  });
+});
+
+
 describe('S2.5 production signup documents', () => {
   test('Given production signup is off by default, when GET, HEAD, or an old form arrives, then it stays closed without policy bytes or provider reads', async (t) => {
     const site = await openProductionSignupSite(t);
@@ -512,7 +571,7 @@ describe('S2.5 production signup documents', () => {
     const privacy = await readFile('docs/legal/organization-removal-2026-10-26-proposal-v1/privacy.md', 'utf8');
     assert.equal(publicNotice.text, renderedText(privacy));
     assert.equal(publicNotice.version, expected.notice.version);
-    assert.deepEqual(formsIn(publicPage.body), []);
+    assertAccountCreationForm(publicPage.body);
     assert.deepEqual(site.world.fake.takeRequests(), []);
     const user = { id: 'user_AUDIT_CREATOR', email: 'creator@example.com', firstName: 'Creator', emailVerified: true };
     site.world.users = [user];
@@ -589,6 +648,17 @@ for (const part of ['terms', 'notice'] as const) {
       assert.deepEqual(world?.fake.takeRequests(), []);
     });
   }
+}
+
+// Step 1 of free access: the one form, which posts the email address to the account creation path.
+function assertAccountCreationForm(body: string) {
+  const form = parseHTML(body).document.querySelector('.task-card form[action="/signup/start"]');
+  assert.ok(form, body);
+  const email = form.querySelector('input[name="email"]');
+  assert.ok(email, body);
+  assert.equal(email.getAttribute('type'), 'email');
+  assert.equal(email.hasAttribute('required'), true);
+  assert.deepEqual(formsIn(body), [{ action: '/signup/start', fields: {}, label: 'Create account' }]);
 }
 
 function renderedText(markdown: string) {

@@ -30,15 +30,38 @@ export interface AccountPaths {
   readonly signIn: string;
 }
 
-export function signupCreateAccountPage(documents: SignupDocuments, account: AccountPaths, status = 200): Response {
+// What step 1 shows after a POST of its form: the status, a message, and the typed email that the field keeps.
+export interface AccountCreationState {
+  readonly status?: number;
+  readonly message?: 'invalid-email' | 'existing-account';
+  readonly email?: string;
+}
+
+export function signupCreateAccountPage(documents: SignupDocuments, account: AccountPaths, state: AccountCreationState = {}): Response {
   return answer({ title: 'Start free access', heading: 'Start free access.', description: 'Connect your AI assistant to Thermus in two steps.', current: 1, content: [
     '<p class="step-caption">STEP 1 OF 2</p><h2>Create your account</h2>',
     '<p class="task-copy">Free access is for new Thermus accounts. After you create your account and verify your email, you return here to name your organization and review the terms.</p>',
     signupDocumentReader('privacy-notice', 'Privacy Notice', documents.notice),
-    link(account.creation, 'Create account', 'primary-action'),
+    ...accountCreationForm(account, state),
     `<p class="task-copy">${FREE_ACCESS}</p>`,
     `<p class="task-copy">Already have a Thermus account? <a href="${escapeHtml(account.signIn)}">Sign in</a> to open your workspace.</p>`,
-  ], response: { status } });
+  ], response: { status: state.status ?? 200, headers: FORM_HEADERS } });
+}
+
+// The form has no CSRF token: step 1 has no session yet, so the Origin check of its POST protects it. The message
+// comes after the field, and the field names it for assistive technology.
+function accountCreationForm(account: AccountPaths, state: AccountCreationState): string[] {
+  const value = state.email === undefined ? '' : ` value="${escapeHtml(state.email)}"`;
+  const described = state.message === undefined ? '' : ' aria-describedby="account-email-message"';
+  return postForm(account.creation, [
+    `<div class="account-email"><label for="account-email">Email address</label><input id="account-email" type="email" name="email" maxlength="254" autocomplete="email" required${value}${described}></div>`,
+    ...(state.message === undefined ? [] : [`<p class="form-message" id="account-email-message" role="alert">${accountMessage(state.message, account)}</p>`]),
+  ], 'Create account');
+}
+
+function accountMessage(message: NonNullable<AccountCreationState['message']>, account: AccountPaths): string {
+  if (message === 'invalid-email') return 'Enter a valid email address.';
+  return `An account with this email address already exists. <a href="${escapeHtml(account.signIn)}">Sign in</a> to open your workspace.`;
 }
 
 export function signupFormPage(documents: SignupDocuments, csrfToken: string, action: string): Response {
@@ -64,6 +87,11 @@ export function signupExistingAccountPage(destination: string, status = 200): Re
   return notice('You already have a Thermus account', 'Free access creates a new account and its organization. Your account already exists, so free access cannot create an organization for it. Open your workspace, or ask an Admin of your organization to invite you. If you have an invitation, accept it from its email.', {
     actions: [link(destination, 'Open your workspace', 'primary-action'), link('mailto:legal@thermus.ai', 'Contact', 'secondary-action')], status,
   });
+}
+
+// The answer when the provider or the tenant registry cannot answer. The fixed text holds no provider detail.
+export function signupUnavailablePage(): Response {
+  return signupFailurePage(503, 'Activation is temporarily unavailable. Try again later.');
 }
 
 export function signupFailurePage(status: number, message: string, destination?: string): Response {

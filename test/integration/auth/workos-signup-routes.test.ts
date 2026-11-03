@@ -5,7 +5,7 @@ import { parseHTML } from 'linkedom';
 import type { BrowserSessionState, SignedInBrowserSession } from '../../../src/accounts/identity/browser-session.ts';
 import type { BrowserSignInRequest, BrowserSignInStart } from '../../../src/accounts/identity/browser-session-controls.ts';
 import { WorkOSSignupRoutes, type WorkOSSignupRoutesOptions } from '../../../src/interfaces/web/auth/workos/workos-signup-routes.ts';
-import type { SignupActivation, SignupDocuments } from '../../../src/accounts/organizations/signup-activation.ts';
+import type { AccountLookup, SignupActivation, SignupDocuments } from '../../../src/accounts/organizations/signup-activation.ts';
 
 const document = (text: string) => ({ version: 'v1', text, sha256: createHash('sha256').update(text).digest('hex') });
 const documents: SignupDocuments = { purpose: 'organization-creation', version: 'v1', terms: document('Test <terms>'), notice: document('Test <notice>'), agreement: { version: 'v1', text: 'TEST ONLY. I accept the test terms and have authority to act for this organization.' } };
@@ -31,6 +31,20 @@ function setup(enabled = true, signedIn = true, publicBaseUrl = 'https://thermus
 }
 
 const start = (method = 'GET', url = 'https://thermus.example/signup/start') => new Request(url, { method });
+
+interface StepOnePost {
+  readonly origin?: string | null;
+  readonly url?: string;
+  readonly contentType?: string;
+  readonly signal?: AbortSignal;
+}
+
+// The POST of the email form of step 1.
+function postEmail(body = 'email=new%40example.com', options: StepOnePost = {}): Request {
+  const headers = new Headers({ 'Content-Type': options.contentType ?? 'application/x-www-form-urlencoded' });
+  if (options.origin !== null) headers.set('Origin', options.origin ?? 'https://thermus.example');
+  return new Request(options.url ?? 'https://thermus.example/signup/start', { method: 'POST', headers, body, signal: options.signal });
+}
 
 const acceptedForm = 'csrf_token=secret&document_version=v1&organization_name=Acme+Labs&agreement=accepted';
 
@@ -74,15 +88,204 @@ test('Given open signup, when Create account gets HEAD, then the answer has the 
   assert.equal(await answer.text(), '');
 });
 
-test('Given Create account, when another method arrives, then the branded refusal allows GET and HEAD and no provider sign-in starts', async () => {
+test('Given Create account, when another method arrives, then the branded refusal allows GET, HEAD, and POST and no provider sign-in starts', async () => {
   const world = setup();
 
-  const answer = await world.routes.handle(start('POST'));
+  const answer = await world.routes.handle(start('DELETE'));
 
   assert.equal(answer.status, 405);
-  assert.equal(answer.headers.get('Allow'), 'GET, HEAD');
+  assert.equal(answer.headers.get('Allow'), 'GET, HEAD, POST');
   assert.equal(parseHTML(await answer.text()).document.querySelector('h1')?.textContent, 'Method not allowed');
   assert.deepEqual(world.starts, []);
+  assert.deepEqual(world.lookups, []);
+});
+
+test('Given open signup and an email without an account, when step 1 posts it, then the provider sign-in starts at its sign-up screen with the normalized email as login hint and the return to signup, without a session read', async () => {
+  const world = setup();
+
+  const answer = await world.routes.handle(postEmail('email=+New%40Example.COM+'));
+
+  assert.equal(answer.status, 303);
+  assert.equal(answer.headers.get('Location'), authKitStart.url);
+  assert.deepEqual(answer.headers.getSetCookie(), authKitStart.cookies);
+  assert.equal(answer.headers.get('Cache-Control'), 'no-store');
+  assert.deepEqual(world.lookups, ['new@example.com']);
+  assert.deepEqual(world.starts, [{ returnTo: '/signup', screenHint: 'sign-up', loginHint: 'new@example.com' }]);
+  assert.equal(world.sessions(), 0);
+  assert.deepEqual(world.failures, []);
+});
+
+test('Given an email that has an account, when step 1 posts it, then step 1 answers 409 with the message, a Sign in link, and the email in the field, and no provider sign-in starts', async () => {
+  const world = setup();
+  world.activation.findAccount = async (request) => { world.lookups.push(request.email); return { status: 'found' }; };
+
+  const answer = await world.routes.handle(postEmail('email=Person%40Example.com'));
+
+  assert.equal(answer.status, 409);
+  assert.equal(answer.headers.get('Location'), null);
+  assert.deepEqual(answer.headers.getSetCookie(), []);
+  assert.match(answer.headers.get('Content-Security-Policy') ?? '', /form-action 'self'/);
+  const page = parseHTML(await answer.text()).document;
+  assert.equal(page.querySelector('.form-message')?.textContent, 'An account with this email address already exists. Sign in to open your workspace.');
+  assert.equal(page.querySelector('.form-message a')?.getAttribute('href'), '/login');
+  assert.equal(page.querySelector('form')?.getAttribute('action'), '/signup/start');
+  assert.equal(page.querySelector('input[name="email"]')?.getAttribute('value'), 'person@example.com');
+  assert.deepEqual(world.lookups, ['person@example.com']);
+  assert.deepEqual(world.starts, []);
+  assert.deepEqual(world.failures, []);
+});
+
+test('Given an account lookup that is unavailable, when step 1 posts an email, then the provider sign-in still starts with the login hint and the log has one fixed line', async () => {
+  const world = setup();
+  world.activation.findAccount = async () => ({ status: 'unavailable' });
+
+  const answer = await world.routes.handle(postEmail());
+
+  assert.equal(answer.status, 303);
+  assert.equal(answer.headers.get('Location'), authKitStart.url);
+  assert.deepEqual(world.starts, [{ returnTo: '/signup', screenHint: 'sign-up', loginHint: 'new@example.com' }]);
+  assert.deepEqual(world.failures, ['Hosted signup could not check the email address.']);
+});
+
+test('Given a missing, repeated, or invalid email, when step 1 posts it, then step 1 answers 400 with the message and keeps the typed text, and no lookup or provider sign-in starts', async () => {
+  const cases = [
+    { body: '', typed: '' },
+    { body: 'email=', typed: '' },
+    { body: 'email=+++', typed: '' },
+    { body: 'email=person', typed: 'person' },
+    { body: 'email=person%40example', typed: 'person@example' },
+    { body: 'email=%40example.com', typed: '@example.com' },
+    { body: 'email=person%40.com', typed: 'person@.com' },
+    { body: 'email=a%40b.c%40d.e', typed: 'a@b.c@d.e' },
+    { body: 'email=two+words%40example.com', typed: 'two words@example.com' },
+    { body: 'email=person%40exa%00mple.com', typed: 'person@exa\u0000mple.com' },
+    { body: 'email=a%40b.com&email=a%40b.com', typed: '' },
+    { body: `email=${'a'.repeat(243)}%40example.com`, typed: '' },
+  ];
+  for (const { body, typed } of cases) {
+    const world = setup();
+    const answer = await world.routes.handle(postEmail(body));
+    assert.equal(answer.status, 400, body);
+    const page = parseHTML(await answer.text()).document;
+    assert.equal(page.querySelector('.form-message')?.textContent, 'Enter a valid email address.', body);
+    assert.equal(page.querySelector('input[name="email"]')?.getAttribute('value') ?? '', typed, body);
+    assert.deepEqual(world.lookups, [], body);
+    assert.deepEqual(world.starts, [], body);
+    assert.deepEqual(world.failures, [], body);
+  }
+});
+
+test('Given an email of 254 characters, when step 1 posts it, then the lookup gets it', async () => {
+  const world = setup();
+  const email = `${'a'.repeat(242)}@example.com`;
+
+  const answer = await world.routes.handle(postEmail(new URLSearchParams({ email }).toString()));
+
+  assert.equal(email.length, 254);
+  assert.equal(answer.status, 303);
+  assert.deepEqual(world.lookups, [email]);
+});
+
+test('Given a foreign or missing Origin, when step 1 posts an email, then the branded refusal answers and no lookup or provider sign-in starts', async () => {
+  for (const origin of ['https://other.example', null]) {
+    const world = setup();
+    const answer = await world.routes.handle(postEmail(undefined, { origin }));
+    assert.equal(answer.status, 403);
+    const page = parseHTML(await answer.text()).document;
+    assert.equal(page.querySelector('h1')?.textContent, 'Request refused');
+    assert.equal(page.querySelector('.primary-action')?.getAttribute('href'), '/signup');
+    assert.deepEqual(world.lookups, []);
+    assert.deepEqual(world.starts, []);
+  }
+});
+
+test('Given closed signup, when step 1 posts an email, then the closed notice answers 403 and no lookup or provider sign-in starts', async () => {
+  const world = setup(false);
+
+  const answer = await world.routes.handle(postEmail());
+
+  assert.equal(answer.status, 403);
+  assert.match(await answer.text(), /Activation is closed/);
+  assert.deepEqual(world.lookups, []);
+  assert.deepEqual(world.starts, []);
+});
+
+test('Given a body that is not HTML form data or is too large, when step 1 posts it, then the branded refusal keeps its status and no lookup starts', async () => {
+  const world = setup();
+
+  const typed = await world.routes.handle(postEmail('{"email":"new@example.com"}', { contentType: 'application/json' }));
+  const large = await world.routes.handle(postEmail(`email=${'a'.repeat(16 * 1024)}`));
+
+  assert.equal(typed.status, 415);
+  assert.equal(parseHTML(await typed.text()).document.querySelector('h1')?.textContent, 'Form not accepted');
+  assert.equal(large.status, 413);
+  assert.deepEqual(world.lookups, []);
+  assert.deepEqual(world.starts, []);
+});
+
+test('Given a provider start that fails after the lookup, when step 1 posts an email, then the failure page answers and the log has only fixed text', async () => {
+  const world = setup();
+  world.session.startSignIn = async () => { throw new Error('secret provider detail'); };
+
+  const answer = await world.routes.handle(postEmail());
+
+  assert.equal(answer.status, 503);
+  const html = await answer.text();
+  assert.match(html, /Activation is temporarily unavailable/);
+  assert.doesNotMatch(html, /secret/);
+  assert.deepEqual(world.lookups, ['new@example.com']);
+  assert.deepEqual(world.failures, ['Hosted signup request failed.']);
+});
+
+test('Given a cancelled step 1 request, when its lookup completes later, then no provider sign-in starts and no failure is logged', async () => {
+  const world = setup();
+  let complete!: (lookup: AccountLookup) => void;
+  let started!: () => void;
+  const looking = new Promise<void>((resolve) => { started = resolve; });
+  world.activation.findAccount = () => new Promise((resolve) => { complete = resolve; started(); });
+  const cancellation = new AbortController();
+
+  const answer = world.routes.handle(postEmail(undefined, { signal: cancellation.signal }));
+  await looking;
+  cancellation.abort(new Error('cancelled'));
+
+  await assert.rejects(answer, /cancelled/);
+  complete({ status: 'absent' });
+  assert.deepEqual(world.starts, []);
+  assert.deepEqual(world.failures, []);
+});
+
+test('Given three posts of one email in a minute, when a fourth post of that email arrives, then admission refuses it before the lookup, and another email still starts', async () => {
+  const world = setup();
+  for (const body of ['email=person%40example.com', 'email=Person%40Example.com', 'email=+person%40example.com']) {
+    assert.equal((await world.routes.handle(postEmail(body))).status, 303, body);
+  }
+  assert.equal((await world.routes.handle(postEmail('email=person'))).status, 400);
+
+  const refused = await world.routes.handle(postEmail('email=PERSON%40example.com'));
+
+  assert.equal(refused.status, 429);
+  assert.equal(refused.headers.get('Retry-After'), '60');
+  assert.deepEqual(world.lookups, ['person@example.com', 'person@example.com', 'person@example.com']);
+  assert.equal((await world.routes.handle(postEmail('email=other%40example.com'))).status, 303);
+});
+
+test('Given eight step 1 posts with lookups still running, when another POST of step 1 or of the organization form arrives, then admission refuses it before the form, the lookup, and the session', async () => {
+  const world = setup();
+  const pending: Array<(lookup: AccountLookup) => void> = [];
+  let allStarted!: () => void;
+  const started = new Promise<void>((resolve) => { allStarted = resolve; });
+  world.activation.findAccount = () => new Promise((resolve) => { pending.push(resolve); if (pending.length === 8) allStarted(); });
+  const requests = Array.from({ length: 8 }, (_, index) => world.routes.handle(postEmail(`email=person${index}%40example.com`)));
+
+  assert.equal((await world.routes.handle(postEmail('email=other%40example.com'))).status, 429);
+  assert.equal((await world.routes.handle(post())).status, 429);
+  assert.equal(world.sessions(), 0);
+  await started;
+  for (const resolve of pending) resolve({ status: 'absent' });
+  assert.deepEqual((await Promise.all(requests)).map(({ status }) => status), Array(8).fill(303));
+  world.activation.findAccount = async () => ({ status: 'absent' });
+  assert.equal((await world.routes.handle(postEmail('email=other%40example.com'))).status, 303);
 });
 
 test('Given closed signup, when Create account gets GET or HEAD, then the closed notice answers and no provider sign-in starts', async () => {
@@ -142,16 +345,17 @@ test('Given legacy personal-access documents, when organization creation is enab
     session: world.session, activation: world.activation, reportFailure: () => {} }), /organization.*documents/i);
 });
 
-test('Given signed-out signup, when opened, then the full escaped notice appears before Create account, and the sign-in line opens login without a return path', async () => {
+test('Given signed-out signup, when opened, then the full escaped notice appears before the email form of Create account, and the sign-in line opens login without a return path', async () => {
   const world = setup(true, false);
   const answer = await world.routes.handle(new Request('https://thermus.example/signup'));
   const html = await answer.text();
   const page = parseHTML(html).document;
   assert.match(html, /Test &lt;notice&gt;/);
-  assert.equal(page.querySelector('.primary-action')?.getAttribute('href'), '/signup/start');
+  assert.equal(page.querySelector('.task-card form')?.getAttribute('action'), '/signup/start');
+  assert.equal(page.querySelector('.task-card form input[name="email"]')?.getAttribute('type'), 'email');
   assert.equal(page.querySelector('a[href="/login"]')?.textContent, 'Sign in');
   assert.doesNotMatch(html, /return_to/);
-  assert.ok(html.indexOf('Test &lt;notice&gt;') < html.indexOf('>Create account</a>'));
+  assert.ok(html.indexOf('Test &lt;notice&gt;') < html.indexOf('>Create account</button>'));
   assert.equal(world.inspections(), 0);
   assert.deepEqual(world.starts, []);
 });
@@ -244,16 +448,23 @@ for (const failure of ['result', 'exception']) {
   });
 }
 
-test('Given a public-base path, when a visitor opens signup and Create account, then the links and the return to signup use that path', async () => {
+test('Given a public-base path, when a visitor opens signup, follows Create account, or posts an email, then the form, the links, and the return to signup use that path', async () => {
   const world = setup(true, false, 'https://thermus.example/app/');
+  const creation = 'https://thermus.example/app/signup/start';
 
   const page = parseHTML(await (await world.routes.handle(new Request('https://thermus.example/app/signup'))).text()).document;
-  const answer = await world.routes.handle(start('GET', 'https://thermus.example/app/signup/start'));
+  const answer = await world.routes.handle(start('GET', creation));
+  const posted = await world.routes.handle(postEmail(undefined, { url: creation }));
+  world.activation.findAccount = async () => ({ status: 'found' });
+  const found = parseHTML(await (await world.routes.handle(postEmail('email=person%40example.com', { url: creation }))).text()).document;
 
-  assert.equal(page.querySelector('.primary-action')?.getAttribute('href'), '/app/signup/start');
+  assert.equal(page.querySelector('.task-card form')?.getAttribute('action'), '/app/signup/start');
   assert.equal(page.querySelector('a[href="/app/login"]')?.textContent, 'Sign in');
   assert.equal(answer.status, 303);
-  assert.deepEqual(world.starts, [{ returnTo: '/app/signup', screenHint: 'sign-up' }]);
+  assert.equal(posted.status, 303);
+  assert.deepEqual(world.starts, [{ returnTo: '/app/signup', screenHint: 'sign-up' }, { returnTo: '/app/signup', screenHint: 'sign-up', loginHint: 'new@example.com' }]);
+  assert.equal(found.querySelector('form')?.getAttribute('action'), '/app/signup/start');
+  assert.equal(found.querySelector('.form-message a')?.getAttribute('href'), '/app/login');
   assert.equal(world.routes.handles('/app/signup/start'), true);
   assert.equal(world.routes.handles('/signup/start'), false);
 });
@@ -336,6 +547,17 @@ test('Given an unsupported signup request method, when it is refused, then the b
   assert.equal((policy.match(/style-src /g) ?? []).length, 1);
   assert.equal(world.sessions(), 0);
   assert.equal(world.calls(), 0);
+});
+
+test('Given open signup, when HEAD arrives, then it gets the status and the page headers of step 1, which allow its form', async () => {
+  const world = setup(true, false);
+
+  const head = await world.routes.handle(new Request('https://thermus.example/signup', { method: 'HEAD' }));
+  const page = await world.routes.handle(new Request('https://thermus.example/signup'));
+
+  assert.equal(head.status, page.status);
+  for (const name of ['Content-Type', 'Cache-Control', 'Content-Security-Policy', 'X-Frame-Options']) assert.equal(head.headers.get(name), page.headers.get(name), name);
+  assert.match(head.headers.get('Content-Security-Policy') ?? '', /form-action 'self'/);
 });
 
 test('Given signup HEAD, when handled, then the response has no body and no session or activation work', async () => {
@@ -526,7 +748,7 @@ test('Given literal policy markup, when signup opens before or after sign-in, th
     const policy = response.headers.get('Content-Security-Policy') ?? '';
     assert.ok(policy.includes(`style-src 'sha256-${hash}'`), policy);
     assert.match(policy, /default-src 'none'/);
-    assert.ok(policy.includes(`form-action '${signedIn ? 'self' : 'none'}'`), policy);
+    assert.ok(policy.includes("form-action 'self'"), policy);
     assert.match(policy, /img-src 'self'/);
     assert.match(policy, /font-src 'self'/);
     assert.doesNotMatch(policy, /unsafe-inline|script-src/);
