@@ -1025,7 +1025,7 @@ separately within their stated scope.
   the unavailable result).
 - `hosted-member-self-removal.test.ts` checks another workspace, saved-start
   recovery, actual sign-in-link traversal, unknown self-removal, and, since the
-  owner decision of 2 November 2026, the organization form at signup after
+  owner decision of 3 November 2026, the organization form at signup after
   self-removal:
   - "Given an invited Admin without another membership or creator record, when the Admin removes itself and follows guidance, then no-membership invitation guidance is usable, signup offers the organization form, and the new organization restores no access to the old organization"
 - `hosted-member-removal-scope.test.ts` checks account/factor/other-membership
@@ -1183,7 +1183,7 @@ limits; this inventory does not claim a successful test run.
 - `test/acceptance/auth/hosted-signup-eligibility.test.ts` covers retained v1
   User access without promotion or acceptance overwrite after restart, revoked
   legacy access, and malformed retained records with and without other current
-  access. Since the owner decision of 2 November 2026, each account can create
+  access. Since the owner decision of 3 November 2026, each account can create
   one organization, so these scenarios replace the refusals of a membership
   record and of a removed-member record, the `503` of an unavailable record
   read, and the selection without a Create action:
@@ -1196,7 +1196,7 @@ limits; this inventory does not claim a successful test run.
   retries. Current provider-read failures remain unavailable rather than eligible.
   A broken or unusable retained record requires support and cannot repair access;
   current access in another organization remains usable. Since the owner
-  decision of 2 November 2026, the integration cases of the adapter, its
+  decision of 3 November 2026, the integration cases of the adapter, its
   inspection, and the routes check that an account without a retained
   organization is eligible after the current-user and retained-record reads,
   with no membership list read and no removed-member read, also when it has
@@ -1269,7 +1269,7 @@ and invitations do not count. Legacy internal seat API names remain compatible.
 Session regressions cover fresh password callbacks and retained encrypted
 `mfa:true` values across read, refresh, and organization selection: all report
 `mfaCompleted: false`. Application MFA policy modes and MFA refusals are removed.
-Admin-only existing signup access offered Continue until 2 November 2026; since
+Admin-only existing signup access offered Continue until 3 November 2026; since
 the owner decision of that day, Admin-only access in an invited organization gets
 the organization form (see the signup entry below). Named creation and first
 Admin are covered by the S1-03a overlay above. The live fixture has one password-only profile with
@@ -1314,7 +1314,7 @@ Current compatibility scenarios replace the older matching entries below:
   challenge; membership outages keep the server failure without signup guidance.
 
 - Signup inspection and activation tests use the canonical Admin catalog.
-  Since the owner decision of 2 November 2026, active Admin product access in
+  Since the owner decision of 3 November 2026, active Admin product access in
   another organization no longer gives `existing-access`: without a retained
   organization of its own, the account is eligible, as with inactive product
   and default/retired grants. `test/acceptance/auth/hosted-workos-signup.test.ts`
@@ -2730,7 +2730,7 @@ This file and the two selection files below also use `fixtures/organization-rout
 [V] For a failed organization list, gives the 500 failure page with the session cookies, and gives the operator the path and the cause
 [V] Given a signup URL in the route options, when a signed-in user with authorized organizations opens the organization page, then the page links Create an organization to that URL
 
-The Create an organization link of the picker (owner decision of 2 November 2026) has two more levels. `test/integration/hosted-admin/organization-selection-page.test.ts` checks "Given a signup URL, when the selector renders, then a Create an organization link outside the header menu opens that URL" and "Given no signup URL, when the selector renders, then it has no Create an organization link". The acceptance case in `test/acceptance/auth/hosted-workspace-selection.test.ts` checks "Given a signed-in person with workspaces at ${base.pathname}, when the person opens Switch Workspace, then the organization card offers Create an organization at the hosted signup URL outside the header menu".
+The Create an organization link of the picker (owner decision of 3 November 2026) has two more levels. `test/integration/hosted-admin/organization-selection-page.test.ts` checks "Given a signup URL, when the selector renders, then a Create an organization link outside the header menu opens that URL" and "Given no signup URL, when the selector renders, then it has no Create an organization link". The acceptance case in `test/acceptance/auth/hosted-workspace-selection.test.ts` checks "Given a signed-in person with workspaces at ${base.pathname}, when the person opens Switch Workspace, then the organization card offers Create an organization at the hosted signup URL outside the header menu".
 
 **Selection input checks** (`test/integration/hosted-admin/account-routes-selection-input.test.ts`)
 

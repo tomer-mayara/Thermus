@@ -60,7 +60,7 @@ email that has an account gets a message and Sign in, and another email opens
 the screen with the email filled in. Each account can create one organization:
 memberships in other organizations do not stop it, and an account whose
 organization exists gets **Your organization exists** with Continue (owner
-decision of 2 November 2026). Show an editable organization name and one
+decision of 3 November 2026). Show an editable organization name and one
 unchecked organization/authority agreement. Trim the name and accept 1 to 100
 UTF-16 units of well-formed text without controls.
 Do not add account or payment fields. Keep all approved document text, versions,
@@ -168,7 +168,7 @@ Connect and Switch Workspace. The display lookup gives no selection authority.
 In the organization card, say "Each account can create one organization." and
 link **Create an organization** to the hosted signup URL. Keep this link out of
 the header menu. Signup decides whether the account can still create its one
-organization; the link gives no authority (owner decision of 2 November 2026).
+organization; the link gives no authority (owner decision of 3 November 2026).
 
 The implemented [desktop](portal-screenshots/organizations-desktop.png) and
 [mobile](portal-screenshots/organizations-mobile.png) previews use the built

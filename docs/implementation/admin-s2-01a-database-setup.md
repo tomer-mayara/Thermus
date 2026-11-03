@@ -179,8 +179,8 @@ Admin removed through Members. A row holds the authority and subject of the
 removed member, the organization, the removal operation, and the time. WorkOS
 deletes a removed membership and keeps no record of the deleted membership. So
 the removal writes the row before the deletion, as the audit evidence of the
-removal (rule of 2 November 2026). Until a later owner decision of the same
-day, free access refused an account with a row; since then, signup does not
+removal (rule of 2 November 2026). Until the owner decision of 3 November
+2026, free access refused an account with a row; since then, signup does not
 read the table, and the control plane only writes rows. Apply the migration
 one time, after the organization name migration, with stop-on-error. Apply it
 before you deploy the control plane that writes the row. Without the table,

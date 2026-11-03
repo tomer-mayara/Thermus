@@ -29,7 +29,7 @@ workspace." and offers Sign in. Another email opens the AuthKit sign-up
 screen with the email filled in, and AuthKit then returns to `signup`. The
 sign-in line of step 1 says "Already have a Thermus account? Sign in to create
 your organization or to open your workspace." Each Thermus account can create
-one organization (owner decision of 2 November 2026). Memberships in other
+one organization (owner decision of 3 November 2026). Memberships in other
 organizations, of any status, do not stop it, and neither does a membership
 that an Admin removed through Members: an invited User or Admin and a removed
 member can each create one organization. An account whose organization from

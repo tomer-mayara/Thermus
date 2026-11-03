@@ -88,7 +88,7 @@ Member rows remain read-only. The retired `POST <base>/members/grants` path
 returns `404` after the session and current-access checks, with no membership
 write or change record. Removal and role changes are later work. Admin product
 access means existing signup access offers Continue. Since the owner decision
-of 2 November 2026, Continue needs the retained signup organization of the
+of 3 November 2026, Continue needs the retained signup organization of the
 account: access in another organization, Admin alone included, no longer stops
 the creation of its one organization. S1-03a adds named
 organization creation and confirmed first Admin through the separate signup
@@ -1522,7 +1522,7 @@ step 1.
    and `HEAD` of `signup/start` still start the sign-up screen without an
    email. The sign-up screen also lets an existing account sign in, so signup
    still decides after the return. Each verified account can create one
-   organization through free access (owner decision of 2 November 2026). After
+   organization through free access (owner decision of 3 November 2026). After
    the return, for an account without a saved organization, signup makes only
    two reads, the current user and the organization at the personal external ID
    `thermus-signup:<hash>` of the account, and no read of the membership list
@@ -1553,8 +1553,8 @@ The cap can fill between the notice and the creation. Then the request answers
 full, and the new organization has no tenant. This race is accepted, with no
 reservation (answer 4 of 27 October 2026).
 
-**Removed-member record** (decisions of 2 November 2026). The first rule of
-that day was that a person who already had a Thermus account could not create
+**Removed-member record** (decisions of 2 and 3 November 2026). The first rule, of
+2 November 2026, was that a person who already had a Thermus account could not create
 a new organization through free access. WorkOS deletes a removed membership,
 so the removal keeps its own lasting marker: before the deletion, the
 [removal coordinator](../../src/accounts/organizations/membership-removal.ts)
@@ -1564,7 +1564,7 @@ writes a row to `thermus_admin.removed_members` through the
 The row holds the authority and subject of the removed member, the
 organization, the membership, the removal operation, and the time. Signup read
 the row last and refused the account, and it gave `503` when the read was
-unavailable. A later owner decision of the same day replaced the rule: each
+unavailable. An owner decision of 3 November 2026 replaced the rule: each
 verified account can create one organization through free access, whatever
 its memberships, and no account can create a second one. Signup no longer
 reads the row, so the row cannot stop signup and cannot cause a `503`. App
@@ -2105,7 +2105,7 @@ Only the activation POST can create a workspace or grant. It still requires a
 fresh verified-email read. Both successful activation and Continue use the
 existing organization selector with a server-built return path to the portal.
 See the [FS-02 record](../implementation/fs-02.md). A later owner decision of
-2 November 2026 limits Continue in place of the creation to the retained
+3 November 2026 limits Continue in place of the creation to the retained
 organization of the account: product access in another organization no
 longer stops the creation of the one organization of each account
 ([signup handoff](#signup-handoff-and-workspace-status)).

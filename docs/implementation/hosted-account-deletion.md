@@ -349,7 +349,7 @@ The removed-member table `thermus_admin.removed_members` keeps one row for each
 membership that an Admin removed through Members: the WorkOS user ID and the
 authority of the removed member, the organization, the membership, the removal
 operation, and the time. The row is the audit evidence of the removal (rule of
-2 November 2026); since a later owner decision of the same day, free access
+2 November 2026); since the owner decision of 3 November 2026, free access
 does not read it, so the row does not stop that account from creating its one
 organization. The runtime role cannot delete it. For a whole-account
 deletion, record the row as retained data with the request. The owner decides

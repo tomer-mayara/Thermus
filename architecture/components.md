@@ -311,7 +311,7 @@ contract; the answer grants nothing. An email with an account gets a message
 and Sign in. Otherwise the route starts the account creation through the
 supplied session controls, with the sign-up screen hint and the email as
 login hint, and returns to itself. Each verified account can create one
-organization (owner decision of 2 November 2026). For an account without a
+organization (owner decision of 3 November 2026). For an account without a
 saved organization, the WorkOS adapter reads only the current user and the
 organization at the personal external ID `thermus-signup:<hash>`: no
 membership list of the user and no removed-member record. So memberships in
@@ -454,7 +454,7 @@ checks and before the deletion, the coordinator writes the removed member
 same store; a write that is not confirmed completes the operation with
 `no-effect` and the result `unavailable`, so that a deleted membership always
 has its row. The row is the audit evidence of the removal. Signup does not
-read it (owner decision of 2 November 2026 in the authentication design), so
+read it (owner decision of 3 November 2026 in the authentication design), so
 `readRemovedMember` of the store role, its SQL statement, the identity index,
 and the SELECT grant have no production caller. The retention of the rows and
 a later cleanup of that read path are owner follow-ups.
@@ -692,7 +692,7 @@ adds the table `removed_members` of the membership removal: one row for each
 membership that an Admin removed through Members, keyed by the membership,
 with the authority and subject of the removed member, the organization, the
 removal operation, and the time; the server role can only read and add its
-rows. Since the owner decision of 2 November 2026, no production code reads
+rows. Since the owner decision of 3 November 2026, no production code reads
 them; the comments of the applied file still say that signup reads them. The
 `subscriptions` and `billing_events` tables have no store until Slice 3.
 
@@ -1763,7 +1763,7 @@ Without an explicit safe return path, a successful choice opens Connect at the
 public base path. When app supplies the hosted signup URL, the organization
 card of the picker also says "Each account can create one organization." and
 links Create an organization to that URL, outside the header menu (owner
-decision of 2 November 2026). The link gives no authority: the signup route
+decision of 3 November 2026). The link gives no authority: the signup route
 decides whether the account can still create its one organization.
 The server-owned Quick start route checks the session and current product and
 Admin access for the selected organization before a current-membership read
