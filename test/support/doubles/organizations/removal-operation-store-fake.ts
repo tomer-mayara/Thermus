@@ -3,10 +3,9 @@ import type { RemovalIntent, RemovalOperation, RemovalOperationStore, RemovalSto
 export class RemovalOperationStoreFake implements RemovalStore {
   readonly operations = new Map<string, RemovalOperation>();
   readonly admissions: RemovalIntent[] = [];
-  // Each confirmed record, in order. A scripted answer replaces the confirmation or the read.
+  // Each confirmed record, in order. A scripted answer replaces the confirmation.
   readonly removedMembers: RemovedMember[] = [];
   recordAnswer?: 'unavailable' | 'unconfirmed';
-  readAnswer?: 'unavailable';
 
   async admitRemoval(intent: RemovalIntent): ReturnType<RemovalOperationStore['admitRemoval']> {
     if (this.operations.get(intent.organizationId)?.outcome === null) return { status: 'busy' };
@@ -34,7 +33,6 @@ export class RemovalOperationStoreFake implements RemovalStore {
   }
 
   async readRemovedMember(identity: { readonly authority: string; readonly subject: string }): ReturnType<RemovedMemberStore['readRemovedMember']> {
-    if (this.readAnswer !== undefined) return { status: this.readAnswer };
     return { status: this.removedMembers.some((member) => member.authority === identity.authority && member.subject === identity.subject) ? 'found' : 'absent' };
   }
 }

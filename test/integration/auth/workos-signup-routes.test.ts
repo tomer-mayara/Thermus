@@ -126,7 +126,7 @@ test('Given an email that has an account, when step 1 posts it, then step 1 answ
   assert.deepEqual(answer.headers.getSetCookie(), []);
   assert.match(answer.headers.get('Content-Security-Policy') ?? '', /form-action 'self'/);
   const page = parseHTML(await answer.text()).document;
-  assert.equal(page.querySelector('.form-message')?.textContent, 'An account with this email address already exists. Sign in to open your workspace.');
+  assert.equal(page.querySelector('.form-message')?.textContent, 'An account with this email address already exists. Sign in to create your organization or to open your workspace.');
   assert.equal(page.querySelector('.form-message a')?.getAttribute('href'), '/login');
   assert.equal(page.querySelector('form')?.getAttribute('action'), '/signup/start');
   assert.equal(page.querySelector('input[name="email"]')?.getAttribute('value'), 'person@example.com');
@@ -360,37 +360,6 @@ test('Given signed-out signup, when opened, then the full escaped notice appears
   assert.deepEqual(world.starts, []);
 });
 
-test('Given an existing account without product access, when signup is read, then it says the account exists and offers the selector without agreement or activation', async () => {
-  const world = setup();
-  world.activation.inspect = async () => ({ status: 'existing-account' });
-
-  const answer = await world.routes.handle(new Request('https://thermus.example/signup'));
-
-  assert.equal(answer.status, 200);
-  const page = parseHTML(await answer.text()).document;
-  assert.equal(page.querySelector('h1')?.textContent, 'You already have a Thermus account');
-  assert.equal(page.querySelector('.primary-action')?.getAttribute('href'), '/organizations?return_to=%2F');
-  assert.equal(page.querySelector('.primary-action')?.textContent, 'Open your workspace');
-  assert.equal(page.querySelector('.secondary-action')?.getAttribute('href'), 'mailto:legal@thermus.ai');
-  assert.equal(page.querySelectorAll('form, input').length, 0);
-  assert.deepEqual(answer.headers.getSetCookie(), ['renewed=session; Secure']);
-  assert.equal(world.calls(), 0);
-});
-
-test('Given an existing account returned during creation, when the form is posted, then it refuses with the existing-account page and no organization switch', async () => {
-  const world = setup();
-  world.activation.activate = async () => ({ status: 'existing-account' });
-
-  const answer = await world.routes.handle(post());
-
-  assert.equal(answer.status, 403);
-  const page = parseHTML(await answer.text()).document;
-  assert.equal(page.querySelector('h1')?.textContent, 'You already have a Thermus account');
-  assert.equal(page.querySelector('.primary-action')?.getAttribute('href'), '/organizations?return_to=%2F');
-  assert.equal(answer.headers.get('Location'), null);
-  assert.deepEqual(world.selections, []);
-});
-
 test('Given signed-in signup and the current agreement, when a valid name is posted, then it switches to the confirmed organization and opens Quick start with the latest cookie', async () => {
   const world = setup();
   const form = await (await world.routes.handle(new Request('https://thermus.example/signup'))).text();
@@ -409,13 +378,18 @@ test('Given signed-in signup and the current agreement, when a valid name is pos
   assert.equal(world.inspections(), 1);
 });
 
-test('Given current product access, when signup is read, then it offers Continue without agreement or activation and preserves refreshed cookies', async () => {
+test('Given the organization of this account exists, when signup is read, then it says each account can create one organization, offers Continue without agreement or activation, and preserves refreshed cookies', async () => {
   const world = setup();
   world.activation.inspect = async () => ({ status: 'existing-access' });
   const answer = await world.routes.handle(new Request('https://thermus.example/signup?return_to=https://other.example/'));
   assert.equal(answer.status, 200);
   const html = await answer.text();
-  assert.match(html, /<a[^>]* href="\/organizations\?return_to=%2F">Continue<\/a>/);
+  const page = parseHTML(html).document;
+  assert.equal(page.querySelector('h1')?.textContent, 'Your organization exists');
+  assert.equal(page.querySelector('.notice-message')?.textContent, 'Each Thermus account can create one organization through free access. This account already created its organization. Continue to open it.');
+  assert.equal(page.querySelector('.primary-action')?.textContent, 'Continue');
+  assert.equal(page.querySelector('.primary-action')?.getAttribute('href'), '/organizations?return_to=%2F');
+  assert.equal(page.querySelectorAll('form, input').length, 0);
   assert.doesNotMatch(html, /checkbox|Test &lt;terms&gt;|other\.example/);
   assert.deepEqual(answer.headers.getSetCookie(), ['renewed=session; Secure']);
   assert.equal(world.calls(), 0);
@@ -614,15 +588,6 @@ for (const outcome of ['refused', 'signed-out', 'outage'] as const) {
   });
 }
 
-test('Given existing access returned during creation, when the form is posted, then the selector handles that access without switching to a new organization', async () => {
-  const world = setup();
-  world.activation.activate = async () => ({ status: 'existing-access' });
-  const response = await world.routes.handle(post());
-  assert.equal(response.status, 303);
-  assert.equal(response.headers.get('Location'), 'https://thermus.example/organizations?return_to=%2F');
-  assert.deepEqual(world.selections, []);
-});
-
 test('Given a cancelled organization switch, when it later completes, then no new activation starts and no failure detail is logged', async () => {
   const world = setup();
   const state = world.state as SignedInBrowserSession;
@@ -727,17 +692,17 @@ test('Given a full subject limiter, when a new subject posts, then it is refused
   let activations = 0;
   const session: WorkOSSignupRoutesOptions['session'] = { authenticate: async () => ({ status: 'signed-in', user: { authority: 'workos:test', subject }, csrfToken: 'secret', mfaCompleted: false,
     cookies: [], selectOrganization: async () => { throw new Error('No switch'); } }), startSignIn: async () => authKitStart };
-  const activation: SignupActivation = { inspect: async () => ({ status: 'eligible' }), activate: async () => { activations++; return { status: 'existing-access' }; }, findAccount: async () => ({ status: 'absent' }) };
+  const activation: SignupActivation = { inspect: async () => ({ status: 'eligible' }), activate: async () => { activations++; return { status: 'support-required' }; }, findAccount: async () => ({ status: 'absent' }) };
   const routes = new WorkOSSignupRoutes({ publicBaseUrl: 'https://thermus.example/', enabled: true, documents, session, activation, reportFailure: () => {}, clock: () => time });
   for (let index = 0; index < 1024; index++) {
     subject = `user_${index}`;
-    assert.equal((await routes.handle(post())).status, 303);
+    assert.equal((await routes.handle(post())).status, 409);
   }
   subject = 'user_overflow';
   assert.equal((await routes.handle(post())).status, 429);
   assert.equal(activations, 1024);
   time = 60_000;
-  assert.equal((await routes.handle(post())).status, 303);
+  assert.equal((await routes.handle(post())).status, 409);
 });
 
 

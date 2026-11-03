@@ -11,6 +11,9 @@ interface OrganizationSelectionForm {
   readonly organizations: readonly AuthorizedOrganization[];
   readonly product: string;
   readonly admin?: boolean;
+  // The URL of the signup page. The signup page tells if the account can make an organization. Without this URL, the
+  // selection page shows no signup link.
+  readonly signupUrl?: string;
 }
 
 const styleHash = createHash('sha256').update(ORGANIZATION_SELECTION_STYLE).digest('base64');
@@ -29,6 +32,8 @@ export function organizationSelectionPage(form: OrganizationSelectionForm): Resp
     ], `${organization.organizationName}${organization.selected ? ' (selected)' : ''}`),
     '</li>',
   ]);
+  const signupNote = form.signupUrl === undefined ? ''
+    : `\n    <p class="selection-note">Each account can create one organization. <a href="${escapeHtml(form.signupUrl)}">Create an organization</a>.</p>`;
   const page = `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Select an organization · Thermus</title><link rel="icon" href="/assets/thermus-favicon.svg" type="image/svg+xml"><style>${ORGANIZATION_SELECTION_STYLE}</style></head>
@@ -39,7 +44,7 @@ export function organizationSelectionPage(form: OrganizationSelectionForm): Resp
   <section class="organization-introduction" aria-labelledby="page-title"><p class="eyebrow">Your workspace</p><h1 id="page-title">Select an organization</h1><p class="introduction-copy">Select the organization to use in this browser.</p></section>
   <section class="organization-card" aria-labelledby="organizations-heading"><p class="card-caption">Workspace access</p><h2 id="organizations-heading">Your organizations</h2><p class="card-copy">Choose where to continue.</p>
     <ul class="organization-list">${items.join('\n')}</ul>
-    <p class="selection-note">Your choice applies to this browser.</p>
+    <p class="selection-note">Your choice applies to this browser.</p>${signupNote}
   </section>
 </main><footer class="site-footer">Thermus AI Inc.</footer></body></html>`;
   return new Response(page, { status: 200, headers });

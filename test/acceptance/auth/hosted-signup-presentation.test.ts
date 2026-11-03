@@ -7,7 +7,7 @@ import { HostedBrowser, formsIn } from '../../support/drivers/browser/hosted-bro
 import { hostedRootConfig } from '../../support/fixtures/hosted-config.ts';
 import { serveWorkOSSite } from '../../support/in-process/workos-site.ts';
 
-test('Given a new visitor, when free signup opens, then the branded two-step page offers the complete readable notice before the email form of the account creation, a sign-in line for an existing account, and a compact mobile disclosure', async (t) => {
+test('Given a new visitor, when free signup opens, then the branded two-step page says that each account can create one organization and offers the complete readable notice before the email form of the account creation, a sign-in line for an existing account, and a compact mobile disclosure', async (t) => {
   const site = await serveWorkOSSite(t, { config: hostedRootConfig, organizations: [], signupFake: true,
     signup: { enabled: true, documents: signupDocuments } });
   const answer = await new HostedBrowser(site.transport, site.publicBaseUrl).open('signup');
@@ -16,6 +16,7 @@ test('Given a new visitor, when free signup opens, then the branded two-step pag
   assert.equal(answer.status, 200);
   assert.equal(document.querySelector('h1')?.textContent, 'Start free access.');
   assert.equal(document.querySelector('.task-card h2')?.textContent, 'Create your account');
+  assert.equal(document.querySelector('.task-card .task-copy')?.textContent, 'Each Thermus account can create one organization. After you create your account and verify your email, you return here to name your organization and review the terms.');
   assert.equal(document.querySelector('header img')?.getAttribute('src'), '/assets/thermus-logo.svg');
   assert.equal(document.querySelector('[aria-current="step"] .step-name')?.textContent, 'Create account');
   const reader = document.querySelector('#privacy-notice .document-reader');
@@ -44,7 +45,7 @@ test('Given a new visitor, when free signup opens, then the branded two-step pag
   const signIn = document.querySelector('.task-card a[href="/login"]');
   assert.ok(signIn);
   assert.equal(signIn.textContent, 'Sign in');
-  assert.match(signIn.parentElement?.textContent ?? '', /^Already have a Thermus account\? Sign in to open your workspace\.$/);
+  assert.match(signIn.parentElement?.textContent ?? '', /^Already have a Thermus account\? Sign in to create your organization or to open your workspace\.$/);
   assert.doesNotMatch(answer.body, /return_to/);
   assert.deepEqual(formsIn(answer.body), [{ action: '/signup/start', fields: {}, label: 'Create account' }]);
   assert.deepEqual(site.signupFake.organizations, []);

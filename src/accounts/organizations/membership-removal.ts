@@ -83,7 +83,8 @@ class AdmittedRemoval {
   }
 
   // The provider keeps no record of a deleted membership, so a deletion starts only after a confirmed record. A record
-  // without a deletion, after an unconfirmed write, changes nothing: signup refuses a person with a membership.
+  // without a deletion, after an unconfirmed write, changes nothing: the record is only audit evidence, and signup does
+  // not read it.
   async recordRemovedMember(member: Pick<RemovedMember, 'authority' | 'subject'>, recordedAt: Date): Promise<boolean> {
     const { store, intent } = this;
     const record: RemovedMember = { ...member, organizationId: intent.organizationId, membershipId: intent.membershipId, operationId: intent.operationId, recordedAt: recordedAt.toISOString() };

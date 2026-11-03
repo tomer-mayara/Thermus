@@ -313,7 +313,7 @@ activation completed.
 | Initial session load | Quiet `Loading…` status; reveal actions when state is known |
 | Session unavailable | Existing `Failed to load your session. Please try again.` message; a page-reload control is a proposed recovery improvement |
 | Signup closed | `New account activation is closed.` with Sign in and Contact |
-| Existing access | `Your access is ready` and `You already have access to a workspace.` with Continue |
+| Existing access | `Your organization exists` and `Each Thermus account can create one organization through free access. This account already created its organization. Continue to open it.` with Continue; since 3 November 2026, only for the account's own organization from free access |
 | Unverified email | `Verify your email before you activate access.`; do not invent an app-owned resend action |
 | Support required | `Contact support to review this activation.` with Contact; offer another workspace only when the server allows it |
 | Activation unavailable | `Activation is temporarily unavailable. Try again later.` |
@@ -399,7 +399,10 @@ These are acceptance scenarios for implementation. They have not been run.
    eligible identity, when activation succeeds, then the existing personal
    workspace flow reaches the organization selector and returns to the portal.
 7. **Existing or uncertain access.** Given existing product access, when signup
-   opens, then Continue is offered without a new agreement or workspace. Given
+   opens, then Continue is offered without a new agreement or workspace. Since
+   3 November 2026, only access in the account's own organization from free
+   access gives Continue; access in another organization gets the organization
+   form, because each account can create one organization. Given
    a retained inconsistent activation, then support guidance replaces activation,
    with another workspace link only when the server permits it.
 8. **Provider ownership.** Given any enabled identity method, recovery,

@@ -22,7 +22,6 @@ import type { Billing } from '../accounts/billing/billing.ts';
 import type { GoogleOnboardingSettings } from '../accounts/providers/workos/workos-google-onboarding.ts';
 import type { WorkOSSettings } from '../accounts/providers/workos/workos-settings.ts';
 import type { WorkOSOrganizations } from '../accounts/providers/workos/workos-organizations.ts';
-import type { WorkOSSignupOptions } from '../accounts/providers/workos/workos-signup.ts';
 import type { SignupDocuments } from '../accounts/organizations/signup-activation.ts';
 import type { SignupTenants } from '../interfaces/web/auth/workos/workos-signup-tenants.ts';
 import { portalAccessOperation, PRODUCT_ACCESS, type PortalReads } from '../interfaces/web/account/portal-access.ts';
@@ -199,7 +198,7 @@ async function workosProviderParts(config: RouteConfig, connection: WorkOSConnec
     enabled: parts.signup?.enabled ?? false,
     documents: parts.signup?.documents,
     session,
-    activation: new WorkOSSignup({ authority, workos, directory: organizations, ...removedMembersOf(parts.loggingStorage) }),
+    activation: new WorkOSSignup({ authority, workos, directory: organizations }),
     reportFailure: (message) => logger.error(message),
     ...(parts.signupTenants === undefined ? {} : { tenants: parts.signupTenants }),
     // The POST of step 1 redirects to the authorization of the WorkOS API, which redirects to AuthKit.
@@ -210,9 +209,4 @@ async function workosProviderParts(config: RouteConfig, connection: WorkOSConnec
     handle: (request: Request) => signupRoutes.handles(new URL(request.url).pathname) ? signupRoutes.handle(request) : sessionRoutes.handle(request),
   };
   return { session, accessResolver: provider, organizations, mcp, browserRoutes, internalRoutes: gateway?.internalRoutes };
-}
-
-// Signup reads the removed-member records that member removal writes to the same hosted storage.
-function removedMembersOf(storage: HostedLoggingStorage | undefined): Pick<WorkOSSignupOptions, 'removedMembers'> {
-  return storage?.removalStore === undefined ? {} : { removedMembers: storage.removalStore };
 }

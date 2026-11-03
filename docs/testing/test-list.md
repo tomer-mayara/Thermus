@@ -1023,10 +1023,11 @@ separately within their stated scope.
   a confirmed result followed by a failed read, the removed-member record written
   before the deletion, and a store that cannot keep that record (nothing deleted,
   the unavailable result).
-- `hosted-member-self-removal.test.ts` checks another workspace, the
-  existing-account notice at signup after self-removal (the removed-member
-  record), saved-start recovery, actual sign-in-link traversal, and unknown
-  self-removal.
+- `hosted-member-self-removal.test.ts` checks another workspace, saved-start
+  recovery, actual sign-in-link traversal, unknown self-removal, and, since the
+  owner decision of 3 November 2026, the organization form at signup after
+  self-removal:
+  - "Given an invited Admin without another membership or creator record, when the Admin removes itself and follows guidance, then no-membership invitation guidance is usable, signup offers the organization form, and the new organization restores no access to the old organization"
 - `hosted-member-removal-scope.test.ts` checks account/factor/other-membership
   preservation, fresh invitation role, throwing capture sinks, and forged tenants.
 - `hosted-member-removal-browser.runtime.ts` checks real Chromium keyboard use
@@ -1179,17 +1180,29 @@ limits; this inventory does not claim a successful test run.
   `test/support/dsl/workos-signup.ts`.
 - `test/acceptance/auth/hosted-signup-restart.test.ts` retains the closed-signup,
   revoked-first-Admin, old-form, and separate-workspace recovery coverage.
-- `test/acceptance/auth/hosted-signup-eligibility.test.ts` covers the refusal of
-  an inactive or pending membership record, of a person whose only membership an
-  Admin removed through Members, and of a removed-member record without a
-  membership record, the `503` of an unavailable record read, retained v1 User
-  access without promotion or acceptance overwrite after restart, revoked legacy
-  access, malformed retained records with and without other current access, and
-  selection among current User/Admin memberships without an extra Create action.
+- `test/acceptance/auth/hosted-signup-eligibility.test.ts` covers retained v1
+  User access without promotion or acceptance overwrite after restart, revoked
+  legacy access, and malformed retained records with and without other current
+  access. Since the owner decision of 3 November 2026, each account can create
+  one organization, so these scenarios replace the refusals of a membership
+  record and of a removed-member record, the `503` of an unavailable record
+  read, and the selection without a Create action:
+  - "Given a signed-in person whose only membership is ${status}, when the person names and accepts an organization at signup, then signup creates the person's one organization with the person as its first Admin and leaves the ${status} membership unchanged", for `pending` and `inactive`
+  - "Given a person whose only membership an Admin removed through Members, when the person names and accepts an organization at signup, then signup creates the person's one organization, the removed membership stays removed, and the removed-member record stays"
+  - "Given a removed-member record of the signed-in person and a removed-member read that fails, when the person names and accepts an organization at signup, then signup creates the organization and makes no removed-member read"
+  - "Given current User and Admin memberships in invited organizations, when the person names and accepts an organization at signup, then the person's own organization opens at Quick start with the person as its first Admin, and both invited workspaces stay selectable"
+  - "Given an account whose organization from free access exists, when it opens signup and posts the form again with another name, then signup says each account can create one organization and that this organization exists, offers Continue, and the post opens the same organization without a second organization or grant"
 - The signup integration cases check saved names and acceptance records across
   retries. Current provider-read failures remain unavailable rather than eligible.
   A broken or unusable retained record requires support and cannot repair access;
-  current access in another organization remains usable.
+  current access in another organization remains usable. Since the owner
+  decision of 3 November 2026, the integration cases of the adapter, its
+  inspection, and the routes check that an account without a retained
+  organization is eligible after the current-user and retained-record reads,
+  with no membership list read and no removed-member read, also when it has
+  memberships of any status, product access in another organization, or a
+  removed-member record. The membership-record, removed-member, and
+  existing-access gate cases are gone.
 
 These offline cases exercise the application against a local provider fake.
 They do not prove WorkOS service behavior, approve legal text, change provider
@@ -1256,7 +1269,9 @@ and invitations do not count. Legacy internal seat API names remain compatible.
 Session regressions cover fresh password callbacks and retained encrypted
 `mfa:true` values across read, refresh, and organization selection: all report
 `mfaCompleted: false`. Application MFA policy modes and MFA refusals are removed.
-Admin-only existing signup access offers Continue. Named creation and first
+Admin-only existing signup access offered Continue until 3 November 2026; since
+the owner decision of that day, Admin-only access in an invited organization gets
+the organization form (see the signup entry below). Named creation and first
 Admin are covered by the S1-03a overlay above. The live fixture has one password-only profile with
 provider read-back `mfaEnabled: false`, `mfaRequired: false`; it writes no settings.
 Live API-created users have verified email already. A future passing password
@@ -1298,12 +1313,16 @@ Current compatibility scenarios replace the older matching entries below:
   token for another workspace still works. Invalid tokens keep the authentication
   challenge; membership outages keep the server failure without signup guidance.
 
-- Signup inspection and activation unit tests use the canonical Admin catalog.
-  Existing active Admin product access gives `existing-access` with no new
-  organization or membership. Inactive product and default/retired grants stay
-  eligible when no retained record blocks signup. Hosted WorkOS signup offers
-  Admin-only Continue without agreement and rechecks Admin access on an old
-  signup form, without creating another organization or User membership.
+- Signup inspection and activation tests use the canonical Admin catalog.
+  Since the owner decision of 3 November 2026, active Admin product access in
+  another organization no longer gives `existing-access`: without a retained
+  organization of its own, the account is eligible, as with inactive product
+  and default/retired grants. `test/acceptance/auth/hosted-workos-signup.test.ts`
+  replaces its Continue cases of current User access, of Admin-only access, and
+  of an old form after Admin access with these scenarios:
+  - "Given current User access in an invited organization and no organization of its own, when signup opens with a foreign return_to, then it offers the organization form without a provider write, and the selector still opens the invited workspace at the portal"
+  - "Given Admin-only access in an invited organization, when the person accepts the signup form, then the person's own organization opens at Quick start with Admin access, and the invited Admin membership stays unchanged"
+  - "Given a signup form opened before an invitation gave Admin access, when the form is submitted, then the person's one organization is created and opens Quick start, and the invited Admin access stays unchanged"
 
 - `test/acceptance/auth/hosted-invitations.test.ts`: Admin can invite either
   role; accepted Admin includes product access. Unsupported roles fail. Pending
@@ -2709,6 +2728,9 @@ This file and the two selection files below also use `fixtures/organization-rout
 [V] Under a public URL without a final slash, gives 400 with the session cookies and lists no organization for a return destination that is an absolute URL, a URL without a scheme, a path with a backslash, a relative path, a path outside the public path, or a path that only starts like it (`/teamevil/` for `/team`), or that has dot segments (also encoded), a query, a fragment, a control character, or a space; also for an empty value, a very long path, and two values
 [V] Gives 405 with `Allow: GET, HEAD` and the session cookies to POST, PUT, and DELETE requests for the organization page, and lists no organization
 [V] For a failed organization list, gives the 500 failure page with the session cookies, and gives the operator the path and the cause
+[V] Given a signup URL in the route options, when a signed-in user with authorized organizations opens the organization page, then the page links Create an organization to that URL
+
+The Create an organization link of the picker (owner decision of 3 November 2026) has two more levels. `test/integration/hosted-admin/organization-selection-page.test.ts` checks "Given a signup URL, when the selector renders, then a Create an organization link outside the header menu opens that URL" and "Given no signup URL, when the selector renders, then it has no Create an organization link". The acceptance case in `test/acceptance/auth/hosted-workspace-selection.test.ts` checks "Given a signed-in person with workspaces at ${base.pathname}, when the person opens Switch Workspace, then the organization card offers Create an organization at the hosted signup URL outside the header menu".
 
 **Selection input checks** (`test/integration/hosted-admin/account-routes-selection-input.test.ts`)
 

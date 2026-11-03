@@ -5,7 +5,7 @@ import { readForm, type FormRefusal } from '../../account/account-form.ts';
 import { noticePage, seeOther } from './workos-session-pages.ts';
 import { validateSignupDocuments } from '../../../../accounts/providers/workos/workos-signup-documents.ts';
 import { signupRequestIn } from './workos-signup-form.ts';
-import { signupClosedPage, signupContinuePage, signupCreateAccountPage, signupExistingAccountPage, signupFailurePage, signupFormPage, signupRequestNotice, signupUnavailablePage, type AccountCreationState, type AccountPaths } from './workos-signup-pages.ts';
+import { signupClosedPage, signupContinuePage, signupCreateAccountPage, signupFailurePage, signupFormPage, signupRequestNotice, signupUnavailablePage, type AccountCreationState, type AccountPaths } from './workos-signup-pages.ts';
 import type { SignupActivation, SignupDocuments, SignupResult } from '../../../../accounts/organizations/signup-activation.ts';
 import { SignupTenantHandoff, type RequestOperation, type SignupTenants } from './workos-signup-tenants.ts';
 import { limitedAnswer, SignupAdmission } from './workos-signup-admission.ts';
@@ -38,7 +38,7 @@ export class WorkOSSignupRoutes {
   private readonly path: string;
   // The account creation path is also the route of Create account.
   private readonly account: AccountPaths;
-  private readonly destination: URL;
+  // The workspace selector, which returns to the portal.
   private readonly selector: string;
   private readonly quickStartDestination: URL;
   private readonly admission: SignupAdmission;
@@ -57,9 +57,9 @@ export class WorkOSSignupRoutes {
     this.path = new URL('signup', base).pathname;
     this.account = accountPathsOf(base, options.providerOrigins);
     this.quickStartDestination = new URL('quick-start', base);
-    this.destination = new URL('organizations', base);
-    this.destination.searchParams.set('return_to', base.pathname);
-    this.selector = this.destination.pathname + this.destination.search;
+    const selector = new URL('organizations', base);
+    selector.searchParams.set('return_to', base.pathname);
+    this.selector = selector.pathname + selector.search;
     this.admission = new SignupAdmission(options.clock ?? Date.now);
     if (options.tenants !== undefined) this.handoff = new SignupTenantHandoff(options.tenants, options.reportFailure);
     this.start = new SignupStart({
@@ -123,7 +123,6 @@ export class WorkOSSignupRoutes {
     request.signal.throwIfAborted();
     if (result.status === 'sign-in-required') return this.createAccountPage();
     if (result.status === 'existing-access') return signupContinuePage(this.selector);
-    if (result.status === 'existing-account') return signupExistingAccountPage(this.selector);
     if (result.status === 'eligible') return signupFormPage(this.requireDocuments(), state.csrfToken, this.path);
     if (result.status === 'support-required') return signupFailurePage(409, 'Contact support to review this activation.', result.canContinue ? this.selector : undefined);
     return signupUnavailablePage();
@@ -152,8 +151,6 @@ export class WorkOSSignupRoutes {
 
   private activationAnswer(result: SignupResult): Response {
     if (result.status === 'sign-in-required') return this.createAccountPage({ status: 401 });
-    if (result.status === 'existing-access') return seeOther(this.destination.href, []);
-    if (result.status === 'existing-account') return signupExistingAccountPage(this.selector, 403);
     if (result.status === 'unverified') return signupFailurePage(403, 'Verify your email before you activate access.');
     if (result.status === 'support-required') return signupFailurePage(409, 'Contact support to review this activation.');
     return signupUnavailablePage();

@@ -310,11 +310,14 @@ user with that email through `findAccount` of the same `SignupActivation`
 contract; the answer grants nothing. An email with an account gets a message
 and Sign in. Otherwise the route starts the account creation through the
 supplied session controls, with the sign-up screen hint and the email as
-login hint, and returns to itself. The WorkOS
-adapter refuses an account with any membership record, and an account with a
-removed-member record, which it reads last through the supplied
-organizations-owned `RemovedMemberStore` role of the same SQL adapter that the
-removal writes (the removal view below).
+login hint, and returns to itself. Each verified account can create one
+organization (owner decision of 3 November 2026). For an account without a
+saved organization, the WorkOS adapter reads only the current user and the
+organization at the personal external ID `thermus-signup:<hash>`: no
+membership list of the user and no removed-member record. So memberships in
+other organizations, of any status, and a removal through Members do not stop
+the creation. While the retained organization exists, it is the barrier
+against a second creation, and signup offers Continue to the selector.
 The WorkOS adapter saves the canonical creator/authority record on the named
 organization and confirms active Admin/product access after a new create. The
 signup route uses supplied session controls to select that organization after
@@ -389,8 +392,9 @@ Scope: one hosted Node server container. Organizations owns the checked removal
 operation and its lifetime. App supplies the existing SQL adapter through the
 organizations-owned RemovalOperationStore and RemovedMemberStore roles; the
 adapter runs on the one bounded runtime of the `sql` owner, which app opens.
-The WorkOS signup adapter reads the removed-member record through the same
-supplied role, so that free access refuses a removed member. Thick arrows show composition;
+Only the removal uses these roles: since the owner decision of 2 November
+2026, the WorkOS signup adapter does not read the removed-member record, and
+app does not supply the store to signup. Thick arrows show composition;
 solid arrows show runtime calls. The adapter's source type dependency points
 from audit-logs to organizations and is omitted from this runtime view.
 PostgreSQL is an existing supporting Level 2 container. Web invokes the operation
@@ -398,7 +402,7 @@ only after session, current-access, trusted-tenant, and native form checks.
 Customer capture uses the existing audit-logs owner and does not settle removal.
 
 ```mermaid
-%%{init: {"flowchart": {"wrappingWidth": 180, "nodeSpacing": 45, "rankSpacing": 40, "subGraphTitleMargin": {"top": 10, "bottom": 25}}}}%%
+%%{init: {"flowchart": {"wrappingWidth": 180, "nodeSpacing": 45, "rankSpacing": 40, "subGraphTitleMargin": {"top": 10, "bottom": 40}}}}%%
 flowchart TB
   subgraph removal_server["Container: Thermus Node server · hosted"]
     removal_web["web · TypeScript<br/>Trusted access and removal form gates<br/>Fixed result; safe navigation"]
@@ -406,17 +410,16 @@ flowchart TB
     removal_org["organizations · TypeScript<br/>Current Admin and target checks<br/>Last-Admin rule; bounded removal"]
     removal_audit["audit-logs · TypeScript<br/>SQL adapter: intent / receipts / removed members<br/>Best-effort customer capture"]
     removal_sql["sql · TypeScript / pg<br/>Bounded runtime and pool"]
-    removal_workos["workos · TypeScript / SDK<br/>Current reads; stop signal checks<br/>One exact membership deletion; signup refusal"]
+    removal_workos["workos · TypeScript / SDK<br/>Current reads; stop signal checks<br/>One exact membership deletion"]
     removal_app ==>|supplies account routes| removal_web
     removal_web -->|checked removeMember call| removal_org
     removal_app ==>|composition / lifetime| removal_org
     removal_app ==>|store composition| removal_audit
     removal_app ==>|runtime / pool lifetime| removal_sql
     removal_web -->|trusted-tenant result capture| removal_audit
-    removal_org -->|supplied RemovalOperationStore| removal_audit
+    removal_org -->|supplied RemovalOperationStore / RemovedMemberStore| removal_audit
     removal_audit -->|bounded statements| removal_sql
     removal_org -->|supplied OrganizationDirectory| removal_workos
-    removal_workos -->|supplied RemovedMemberStore read at signup| removal_audit
   end
   removal_db[("L2: PostgreSQL<br/>Private settings and removal intent")]
   removal_provider["External system: WorkOS<br/>Identity and memberships"]
@@ -450,10 +453,11 @@ checks and before the deletion, the coordinator writes the removed member
 `thermus_admin.removed_members` through the `RemovedMemberStore` role of the
 same store; a write that is not confirmed completes the operation with
 `no-effect` and the result `unavailable`, so that a deleted membership always
-has its row. The WorkOS signup adapter reads the row of the signed-in user last,
-after the product access and membership record reads, and refuses free access
-with `existing-account` when one exists; an unavailable read gives `unavailable`,
-never eligibility (decision of 2 November 2026 in the authentication design).
+has its row. The row is the audit evidence of the removal. Signup does not
+read it (owner decision of 3 November 2026 in the authentication design), so
+`readRemovedMember` of the store role, its SQL statement, the identity index,
+and the SELECT grant have no production caller. The retention of the rows and
+a later cleanup of that read path are owner follow-ups.
 
 The scan uses the directory's
 [membership-facts page](../src/accounts/organizations/organization-directory.ts)
@@ -537,7 +541,7 @@ flowchart TB
 and server key only when hosted storage configuration is available. It constructs
 one service, collector, and sender; saved Test and export use that same sender.
 The same adapter and pool implement the organizations-owned removal store,
-including the removed-member record that the WorkOS signup adapter reads.
+including the removed-member record that the removal writes.
 App opens the one [bounded SQL runtime](../src/runtime/sql/bounded-sql-runtime.ts)
 of the `sql` owner and gives it to this adapter and to the tenant registry.
 Destination settings and export keep their existing contracts.
@@ -688,8 +692,9 @@ adds the table `removed_members` of the membership removal: one row for each
 membership that an Admin removed through Members, keyed by the membership,
 with the authority and subject of the removed member, the organization, the
 removal operation, and the time; the server role can only read and add its
-rows, and free signup reads them. The `subscriptions` and `billing_events`
-tables have no store until Slice 3.
+rows. Since the owner decision of 3 November 2026, no production code reads
+them; the comments of the applied file still say that signup reads them. The
+`subscriptions` and `billing_events` tables have no store until Slice 3.
 
 The [provisioner](../src/tenancy/tenants/tenant-provisioner.ts) moves rows only
 from `requested` to `live` and, after a resume, from `deploying` to `live`. Its
@@ -1755,7 +1760,11 @@ still admits it. An optional current-access read controls Admin links for the
 selected workspace only; a denial, mismatch, or lookup outage keeps the picker
 usable. Its selection POST still checks current membership and session authority.
 Without an explicit safe return path, a successful choice opens Connect at the
-public base path.
+public base path. When app supplies the hosted signup URL, the organization
+card of the picker also says "Each account can create one organization." and
+links Create an organization to that URL, outside the header menu (owner
+decision of 3 November 2026). The link gives no authority: the signup route
+decides whether the account can still create its one organization.
 The server-owned Quick start route checks the session and current product and
 Admin access for the selected organization before a current-membership read
 provides its name. Query hints cannot select its organization. App supplies the
@@ -2096,12 +2105,14 @@ step 3a applied the [claim migration](../sql/migrations/20261031221342_tenant_cl
 on 1 November 2026, before the deploy of a control plane that claims with a
 lease. The [tick migration](../sql/migrations/20261101023017_tenant_sweep_ticks.sql),
 which comes before the deploy of a control plane that claims the ticks of the
-sweeps, is not recorded as applied. The
-[removed-member migration](../sql/migrations/20261102184225_removed_members.sql)
-comes before the deploy of a control plane that keeps the record of each
-removed member; without its table, that control plane answers unavailable to a
-member removal and `503` to the signup of a new account. It is not recorded as
-applied. A deploy of the Render service starts a new instance and keeps the
+sweeps, and the
+[removed-member migration](../sql/migrations/20261102184225_removed_members.sql),
+which comes before the deploy of a control plane that keeps the record of each
+removed member, were applied there on 2 November 2026 (step 3 of the
+[release record](../docs/implementation/self-onboarding-s2-release.md#step-3-database-migration-of-so-04)).
+Without the removed-member table, a control plane that keeps the record answers
+unavailable to a member removal; signup does not use the table. A deploy of
+the Render service starts a new instance and keeps the
 old one for about 120 s after the new deploy is live (SO-12 rehearsal of
 31 October 2026), so two Node server processes run for about 2 minutes; the
 claim lease of the [tenant provisioning](#scenario-tenant-provisioning)

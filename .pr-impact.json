@@ -3,28 +3,35 @@
   "classification": {
     "container": false,
     "external": false,
-    "contract": false,
+    "contract": true,
     "deployment": false,
     "crossCutting": false,
     "component": false,
-    "internalInterface": false,
-    "sensitiveBehavior": false,
+    "internalInterface": true,
+    "sensitiveBehavior": true,
     "dependencyRisk": false,
     "policy": false,
     "uncertain": false
   },
   "architecture": {
-    "modelUpdated": false,
-    "summary": "Documents only: the SO-12 release record docs/implementation/self-onboarding-s2-release.md records the release of main 9655378d (the merge of #333, 'Ask for the email on step 1 of free access and say when the account exists') to production on 3 November 2026 as step 13. The control plane deploy: the go-ahead of the owner (about 03:29 UTC, '333 merged - deploy'), the image run 41572452393 of the merge (gate 7 of 7, digest sha256:ae982c9a...), the dispatch of 03:36:44 UTC, run 41573248093, deploy dep-dbkldr59fdbs73bluetg live at 03:37:39 UTC, the start lines of the new instance, the stop of the old instance 120 s later, health, portal, and signup 200 with the new email field, the check of the new step on the public host (409 with the message for an email that has an account, 400 for an address that is not valid, no account created and no sign-in started), and no warn, error, or fatal line on Render or in the Axiom dataset system-log. The TENANT_IMAGE update and the tenant upgrade: the go-ahead of the owner (about 03:48 UTC, 'Update and upgrade'), one PUT of TENANT_IMAGE at 03:49:38 UTC (200, no deploy), run 41574491381 and deploy dep-dbkljsajnfac7399p4mg live at 03:50:45 UTC with the provisioner line that names the new image, and the fleet upgrade --all of 03:51:23 UTC in one batch of 3 (a third tenant, made by free signup at 02:00 UTC that day, joined the two of step 12; dep-dbklkg2jnfac7399qop0, dep-dbklkh0u01pc73dlffj0, and dep-dbklki2jnfac7399qtpg live after 15.9 s, 20.9 s, and 26.2 s, digest recorded), with the checks on Render, the registry rows, and system-log. Section 1.2 gets the new candidate in its table and a candidate-change paragraph of 3 November 2026 (the 14 changed source files are control plane code; the tenant role does not change; no migration was added), section 5 step 4 names sha256:5d187664... as the rollback image and shifts the older images down, section 6 item 14 names the digests to keep at the GHCR pruning, and section 7 gets three rows. Production is uniform on the released image, and nothing stays open. Every fact comes from the session that made the release. No source, test, configuration, workflow, migration, or Mermaid block changes; the production architecture is unchanged.",
+    "modelUpdated": true,
+    "summary": "Owner decision of 3 November 2026 (UTC): every verified account can create exactly one organization through hosted free access and choose its name; no account can create a second one. The WorkOS signup adapter no longer refuses an account with a membership record of any status in another organization (PR #320) or with a removed-member record (PR #322), and no longer gives an account with product access elsewhere only a Continue link. For an account without a saved organization at its personal external ID it now makes two reads (the current user and the external-ID lookup) and then creates the organization and grants the first Admin as before; the retained organization at the external ID stays the barrier and the only grant authority, so a second POST opens the same organization without a write. Public contracts change (contract, internalInterface): SignupState of the organizations-owned SignupActivation contract loses existing-account, SignupResult loses existing-account and existing-access (nothing produces them), and WorkOSSignupOptions loses the removedMembers option; the signup adapter keeps the OrganizationDirectory read only for Continue when the created organization needs support. The browser contract changes (contract): the existing-account page and its 403 answer go, the notice of a created organization says that each account can create one organization and offers Continue, step 1 and its account-exists message say that sign-in can create the organization, and the Switch Workspace page (GET /organizations) links Create an organization to the signup URL that app supplies. Composition (app) no longer gives the removed-member store to signup; member removal still writes the removed-member record as audit evidence and still answers unavailable without it, so the record, its table, the Pg read, and the migration are unchanged (no deployment or stored-data change). The registry removal view loses the edge of the signup read and the signup-refusal responsibility of the WorkOS adapter node (modelUpdated). No container, component, dependency edge, external integration, or trust boundary changes: the WorkOS calls of signup are a subset of the earlier ones. Team flag sensitiveBehavior: the admission rule of organization creation changes and the security file workos-signup.ts changes; every other guard stays: the origin check of each POST, the admission slots, the switch and the cap before any read, the email verification, the external-ID lookup before each create, recovery by external ID, and the Admin-only grant check. Legal bundle, env, and migrations unchanged.",
     "views": [
-      "All 24 Mermaid views of architecture/components.md unchanged (the candidate does not touch the file)"
+      "Selected C4 components: hosted membership removal in the Node server (Mermaid edited: the edge workos to audit-logs, supplied RemovedMemberStore read at signup, is removed, and the workos node no longer names the signup refusal; the write edge of the record stays)",
+      "Selected C4 components: hosted authentication in the Node server (prose edited, Mermaid unchanged: the WorkOS signup adapter creates one organization for each account and reads no membership record or removed-member record)",
+      "C4 containers: hosted edition (prose edited, Mermaid unchanged: the datastore row of the removed member is audit evidence that signup does not read)",
+      "Selected C4 components: hosted audit settings and storage (prose edited, Mermaid unchanged: the same adapter still implements the removed-member record; no production caller reads it)",
+      "The other 23 Mermaid views of architecture/components.md unchanged (checked: no container, component, dependency, or deployment-unit change)"
     ],
     "evidence": [
-      "docs/implementation/self-onboarding-s2-release.md (section 1.2, the table and the candidate change of 3 November 2026; step 13; section 5, step 4; section 6, item 14; section 7, the three rows of step 13)",
-      "https://github.com/tomer-mayara/Thermus/actions/runs/41572452393 (the image run of main 9655378d)",
-      "https://github.com/tomer-mayara/Thermus/actions/runs/41573248093 (the deploy run of the release)",
-      "https://github.com/tomer-mayara/Thermus/actions/runs/41574491381 (the deploy run of the TENANT_IMAGE update)",
-      "https://github.com/tomer-mayara/Thermus/pull/333 (the released change)"
+      "src/accounts/organizations/signup-activation.ts, src/accounts/providers/workos/workos-signup.ts (the contract and the rule)",
+      "src/interfaces/web/auth/workos/workos-signup-routes.ts, workos-signup-pages.ts (the removed existing-account page, the notice, the step 1 copy)",
+      "src/interfaces/web/account/account-routes.ts, organization-selection-page.ts, organization-selection-style.ts (the Create an organization link)",
+      "src/app/hosted-workos-application.ts (signup gets no removed-member store)",
+      "src/accounts/organizations/removal-operation-store.ts, membership-removal.ts (comment-only: the record is audit evidence)",
+      "docs/api-surface/src/accounts/organizations/signup-activation.d.ts, providers/workos/workos-signup.d.ts",
+      "test/acceptance/auth/hosted-signup-eligibility.test.ts, hosted-member-self-removal.test.ts, hosted-workos-signup.test.ts, hosted-signup-presentation.test.ts, hosted-workspace-selection.test.ts; test/integration/auth/workos-signup*.test.ts and fixtures/signup-client-fake.ts; test/integration/hosted-admin/organization-selection-page.test.ts, account-routes-organization-page.test.ts",
+      "architecture/components.md (the removal view and the signup prose), docs/design/authentication-design.md, docs/user-portal.md, docs/free-subscription-guide.md, docs/design/portal-design.md, docs/design/portal-redesign-v1/design-plan.md, docs/design/organization-admin-plan.md, docs/implementation/self-onboarding-plan.md, admin-s2-01a-database-setup.md, hosted-account-deletion.md, hosted-user-onboarding.md, hosted-signup-recovery.md, docs/testing/test-list.md, README.md"
     ]
   }
 }

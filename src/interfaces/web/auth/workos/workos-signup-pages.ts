@@ -42,11 +42,11 @@ export interface AccountCreationState {
 export function signupCreateAccountPage(documents: SignupDocuments, account: AccountPaths, state: AccountCreationState = {}): Response {
   return answer({ title: 'Start free access', heading: 'Start free access.', description: 'Connect your AI assistant to Thermus in two steps.', current: 1, content: [
     '<p class="step-caption">STEP 1 OF 2</p><h2>Create your account</h2>',
-    '<p class="task-copy">Free access is for new Thermus accounts. After you create your account and verify your email, you return here to name your organization and review the terms.</p>',
+    '<p class="task-copy">Each Thermus account can create one organization. After you create your account and verify your email, you return here to name your organization and review the terms.</p>',
     signupDocumentReader('privacy-notice', 'Privacy Notice', documents.notice),
     ...accountCreationForm(account, state),
     `<p class="task-copy">${FREE_ACCESS}</p>`,
-    `<p class="task-copy">Already have a Thermus account? <a href="${escapeHtml(account.signIn)}">Sign in</a> to open your workspace.</p>`,
+    `<p class="task-copy">Already have a Thermus account? <a href="${escapeHtml(account.signIn)}">Sign in</a> to create your organization or to open your workspace.</p>`,
   ], response: { status: state.status ?? 200, headers: accountCreationHeaders(account) } });
 }
 
@@ -70,7 +70,7 @@ function accountCreationForm(account: AccountPaths, state: AccountCreationState)
 
 function accountMessage(message: NonNullable<AccountCreationState['message']>, account: AccountPaths): string {
   if (message === 'invalid-email') return 'Enter a valid email address.';
-  return `An account with this email address already exists. <a href="${escapeHtml(account.signIn)}">Sign in</a> to open your workspace.`;
+  return `An account with this email address already exists. <a href="${escapeHtml(account.signIn)}">Sign in</a> to create your organization or to open your workspace.`;
 }
 
 export function signupFormPage(documents: SignupDocuments, csrfToken: string, action: string): Response {
@@ -88,13 +88,10 @@ export function signupFormPage(documents: SignupDocuments, csrfToken: string, ac
   ], response: { status: 200, headers: FORM_HEADERS } });
 }
 
+// The notice for an account that already created its organization through free access. Continue opens the selector.
 export function signupContinuePage(destination: string): Response {
-  return notice('Your access is ready', 'You already have access to a workspace.', { actions: [link(destination, 'Continue', 'primary-action')] });
-}
-
-export function signupExistingAccountPage(destination: string, status = 200): Response {
-  return notice('You already have a Thermus account', 'Free access creates a new account and its organization. Your account already exists, so free access cannot create an organization for it. Open your workspace, or ask an Admin of your organization to invite you. If you have an invitation, accept it from its email.', {
-    actions: [link(destination, 'Open your workspace', 'primary-action'), link('mailto:legal@thermus.ai', 'Contact', 'secondary-action')], status,
+  return notice('Your organization exists', 'Each Thermus account can create one organization through free access. This account already created its organization. Continue to open it.', {
+    actions: [link(destination, 'Continue', 'primary-action')],
   });
 }
 

@@ -2,7 +2,9 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { test } from 'node:test';
 import { parseHTML } from 'linkedom';
-import { HostedBrowser, formsIn } from '../../support/drivers/browser/hosted-browser.ts';
+import { HostedBrowser, formsIn, type BrowserAnswer, type PageForm } from '../../support/drivers/browser/hosted-browser.ts';
+import type { FakeUser } from '../../support/doubles/workos/workos-fake.ts';
+import type { WorkOSSignupFake } from '../../support/doubles/workos/workos-signup-fake.ts';
 import { signInThroughServer } from '../../support/dsl/workos-sign-in.ts';
 import { removalForm } from '../../support/dsl/hosted-member-removal.ts';
 import { signupWrites } from '../../support/dsl/workos-signup.ts';
@@ -13,7 +15,7 @@ import { serveWorkOSSite, type WorkOSSite } from '../../support/in-process/worko
 import { workosAuthority } from '../../../src/accounts/providers/workos/workos-settings.ts';
 
 for (const status of ['inactive', 'pending'] as const) {
-  test(`Given a signed-in person whose only membership is ${status}, when signup opens and an old agreement form is posted, then signup says the account exists, offers the workspace selector, and creates no organization or membership`, async (t) => {
+  test(`Given a signed-in person whose only membership is ${status}, when the person names and accepts an organization at signup, then signup creates the person's one organization with the person as its first Admin and leaves the ${status} membership unchanged`, async (t) => {
     const site = await serveWorkOSSite(t, {
       config: hostedRootConfig, organizations: ['org_FORMER'], signupFake: true,
       signup: { enabled: true, documents: signupDocuments },
@@ -21,33 +23,19 @@ for (const status of ['inactive', 'pending'] as const) {
     const user = { id: 'user_FORMER', email: 'former@company.example', firstName: 'Former', emailVerified: true };
     site.world.users = [user];
     site.world.memberships = [{ userId: user.id, organizationId: 'org_FORMER', roles: ['user'], status }];
-    const memberships = structuredClone(site.world.memberships);
     const { browser } = await signInThroughServer(site, user);
-    const session = JSON.parse((await browser.open('session')).body) as { csrfToken: string };
+    const form = await organizationForm(browser);
     signupWrites(site);
 
-    const page = await browser.open('signup');
-    const posted = await browser.post('signup', { csrf_token: session.csrfToken, document_version: signupDocuments.version, organization_name: 'Independent Labs', agreement: 'accepted' });
+    const created = await nameAndAccept(browser, form, 'Independent Labs');
 
-    assert.equal(page.status, 200, page.body);
-    assert.equal(posted.status, 403, posted.body);
-    for (const answer of [page, posted]) {
-      const document = parseHTML(answer.body).document;
-      assert.equal(document.querySelector('h1')?.textContent, 'You already have a Thermus account');
-      assert.match(document.querySelector('.notice-message')?.textContent ?? '', /cannot create an organization for it/);
-      const selector = document.querySelector('.primary-action');
-      assert.equal(selector?.textContent, 'Open your workspace');
-      assert.equal(selector?.getAttribute('href'), '/organizations?return_to=%2F');
-      assert.deepEqual(formsIn(answer.body), []);
-      assert.ok(!answer.body.includes(signupDocuments.terms.text));
-    }
-    assert.deepEqual(site.signupFake.organizations, []);
-    assert.deepEqual(site.world.memberships, memberships);
-    assert.deepEqual(signupWrites(site), []);
+    assertOneNewOrganization(site, user, created);
+    assert.equal(site.world.statusOf(user, 'org_FORMER'), status);
+    assert.deepEqual(site.world.rolesOf(user, 'org_FORMER'), ['user']);
   });
 }
 
-test('Given a person whose only membership an Admin removed through Members, when signup opens and an old agreement form is posted, then signup says the account exists and creates no organization or membership', async (t) => {
+test('Given a person whose only membership an Admin removed through Members, when the person names and accepts an organization at signup, then signup creates the person\'s one organization, the removed membership stays removed, and the removed-member record stays', async (t) => {
   const site = await serveMemberRemovalSite(t, { config: hostedRootConfig, setUp: (world) => {
     world.memberships = world.memberships.filter((membership) => !(membership.userId === removalUser.id && membership.organizationId === otherOrganization));
   } });
@@ -55,68 +43,40 @@ test('Given a person whose only membership an Admin removed through Members, whe
   const targetId = site.world.membershipId(removalUser, removalOrganization);
   const removed = await admin.browser.submit(await removalForm(admin.browser, targetId));
   assert.ok(removed.status < 400, removed.body);
-  assert.deepEqual([...site.world.deletedMembershipIds], [targetId]);
-  assert.deepEqual(site.world.memberships.filter((membership) => membership.userId === removalUser.id).map((membership) => membership.organizationId), [removalOrganization]);
+  const records = structuredClone(site.removalStore.removedMembers);
+  assert.deepEqual(records.map(({ subject, organizationId, membershipId }) => [subject, organizationId, membershipId]), [[removalUser.id, removalOrganization, targetId]]);
   const { browser } = await signInThroughServer(site, removalUser);
-  const session = JSON.parse((await browser.open('session')).body) as { csrfToken: string };
+  const form = await organizationForm(browser);
   signupWrites(site);
 
-  const page = await browser.open('signup');
-  const posted = await browser.post('signup', { csrf_token: session.csrfToken, document_version: signupDocuments.version, organization_name: 'Independent Labs', agreement: 'accepted' });
+  const created = await nameAndAccept(browser, form, 'Independent Labs');
 
-  assert.equal(page.status, 200, page.body);
-  assert.equal(posted.status, 403, posted.body);
-  for (const answer of [page, posted]) {
-    const document = parseHTML(answer.body).document;
-    assert.equal(document.querySelector('h1')?.textContent, 'You already have a Thermus account');
-    assert.equal(document.querySelector('.primary-action')?.getAttribute('href'), '/organizations?return_to=%2F');
-    assert.deepEqual(formsIn(answer.body), []);
-    assert.ok(!answer.body.includes(signupDocuments.terms.text));
-  }
-  assert.deepEqual(site.signupFake.organizations, []);
-  assert.deepEqual(signupWrites(site), []);
+  const organizationId = assertOneNewOrganization(site, removalUser, created);
   assert.deepEqual([...site.world.deletedMembershipIds], [targetId]);
+  assert.equal(site.world.membershipId(removalUser, removalOrganization), targetId);
+  const access = await browser.open('portal/access');
+  assert.equal(access.status, 200, access.body);
+  assert.equal((JSON.parse(access.body) as { organizationId: string }).organizationId, organizationId);
+  assert.deepEqual(site.removalStore.removedMembers, records);
 });
 
 const formerMember = { id: 'user_FORMER', email: 'former@company.example', firstName: 'Former' };
 
-test('Given a removed-member record of the signed-in person and no membership record, when signup opens and an old agreement form is posted, then signup says the account exists and creates no organization or membership', async (t) => {
+test('Given a removed-member record of the signed-in person and a removed-member read that fails, when the person names and accepts an organization at signup, then signup creates the organization and makes no removed-member read', async (t) => {
   const site = await serveMemberRemovalSite(t, { config: hostedRootConfig, setUp: (world) => { world.users = [...world.users, formerMember]; } });
   site.removalStore.removedMembers.push({ authority: workosAuthority(site.world.settings.clientId), subject: formerMember.id, organizationId: removalOrganization,
     membershipId: 'om_FORMER', operationId: randomUUID(), recordedAt: '2026-11-02T12:00:00.000Z' });
+  const records = structuredClone(site.removalStore.removedMembers);
+  const reads = t.mock.method(site.removalStore, 'readRemovedMember', async () => { throw new Error('removal storage outage'); });
   const { browser } = await signInThroughServer(site, formerMember);
+  const form = await organizationForm(browser);
+  signupWrites(site);
 
-  const { page, posted } = await openSignupThenPostOldForm(site, browser);
+  const created = await nameAndAccept(browser, form, 'Independent Labs');
 
-  assert.equal(page.status, 200, page.body);
-  assert.equal(posted.status, 403, posted.body);
-  for (const answer of [page, posted]) {
-    const document = parseHTML(answer.body).document;
-    assert.equal(document.querySelector('h1')?.textContent, 'You already have a Thermus account');
-    assert.equal(document.querySelector('.primary-action')?.getAttribute('href'), '/organizations?return_to=%2F');
-    assert.deepEqual(formsIn(answer.body), []);
-    assert.ok(!answer.body.includes(signupDocuments.terms.text));
-  }
-  assert.deepEqual(site.signupFake.organizations, []);
-  assert.deepEqual(signupWrites(site), []);
-});
-
-test('Given removal storage whose record read is unavailable and a verified person without a record, when signup opens and an old agreement form is posted, then signup says activation is unavailable and creates no organization or membership', async (t) => {
-  const site = await serveMemberRemovalSite(t, { config: hostedRootConfig, setUp: (world) => { world.users = [...world.users, formerMember]; } });
-  site.removalStore.readAnswer = 'unavailable';
-  const { browser } = await signInThroughServer(site, formerMember);
-
-  const { page, posted } = await openSignupThenPostOldForm(site, browser);
-
-  for (const answer of [page, posted]) {
-    assert.equal(answer.status, 503, answer.body);
-    const document = parseHTML(answer.body).document;
-    assert.equal(document.querySelector('.notice-message')?.textContent, 'Activation is temporarily unavailable. Try again later.');
-    assert.deepEqual(formsIn(answer.body), []);
-    assert.ok(!answer.body.includes(signupDocuments.terms.text));
-  }
-  assert.deepEqual(site.signupFake.organizations, []);
-  assert.deepEqual(signupWrites(site), []);
+  assertOneNewOrganization(site, formerMember, created);
+  assert.equal(reads.mock.callCount(), 0);
+  assert.deepEqual(site.removalStore.removedMembers, records);
   assert.deepEqual(site.log.lines, []);
 });
 
@@ -198,7 +158,7 @@ for (const otherAccess of [false, true]) {
   });
 }
 
-test('Given current User and Admin memberships, when signup continues through each choice, then both workspaces remain usable without a new organization or agreement', async (t) => {
+test('Given current User and Admin memberships in invited organizations, when the person names and accepts an organization at signup, then the person\'s own organization opens at Quick start with the person as its first Admin, and both invited workspaces stay selectable', async (t) => {
   const site = await serveWorkOSSite(t, {
     config: hostedRootConfig, organizations: ['org_USER', 'org_ADMIN'], signupFake: true,
     signup: { enabled: true, documents: signupDocuments },
@@ -207,36 +167,97 @@ test('Given current User and Admin memberships, when signup continues through ea
   site.world.users = [user];
   site.world.memberships = [{ userId: user.id, organizationId: 'org_USER', roles: ['user'], status: 'active' },
     { userId: user.id, organizationId: 'org_ADMIN', roles: ['admin'], status: 'active' }];
-  const memberships = structuredClone(site.world.memberships);
+  const invited = structuredClone(site.world.memberships);
   const { browser } = await signInThroughServer(site, user);
-  site.world.fake.takeRequests();
+  const form = await organizationForm(browser);
+  signupWrites(site);
 
-  const signup = await browser.open('signup');
-  assert.equal(signup.status, 200, signup.body);
-  assert.match(signup.body, /href="\/organizations\?return_to=%2F">Continue<\/a>/);
-  assert.deepEqual(formsIn(signup.body), []);
-  assert.doesNotMatch(signup.body, /organization_name|name="agreement"/);
-  for (const organizationId of ['org_USER', 'org_ADMIN']) {
+  const created = await nameAndAccept(browser, form, 'Member Labs');
+
+  const ownOrganization = assertOneNewOrganization(site, user, created);
+  const own = await browser.open('portal/access');
+  assert.equal(own.status, 200, own.body);
+  const { organizationId, organizationName, roles } = JSON.parse(own.body) as { organizationId: string; organizationName: string; roles: string[] };
+  assert.deepEqual({ organizationId, organizationName, roles }, { organizationId: ownOrganization, organizationName: 'Member Labs', roles: ['admin'] });
+  for (const invitedOrganization of ['org_USER', 'org_ADMIN']) {
     const choices = formsIn((await browser.open('organizations?return_to=%2F')).body);
-    assert.deepEqual(choices.map(({ fields }) => fields.organization_id).filter(Boolean).sort(), ['org_ADMIN', 'org_USER']);
-    const choice = choices.find(({ fields }) => fields.organization_id === organizationId);
+    assert.deepEqual(choices.map(({ fields }) => fields.organization_id).filter(Boolean).sort(), ['org_ADMIN', 'org_USER', ownOrganization].sort());
+    const choice = choices.find(({ fields }) => fields.organization_id === invitedOrganization);
     assert.ok(choice);
     assert.equal((await browser.submit(choice)).status, 303);
     const access = await browser.open('portal/access');
     assert.equal(access.status, 200, access.body);
-    assert.equal((JSON.parse(access.body) as { organizationId: string }).organizationId, organizationId);
+    assert.equal((JSON.parse(access.body) as { organizationId: string }).organizationId, invitedOrganization);
   }
-  assert.deepEqual(site.signupFake.organizations, []);
-  assert.deepEqual(site.world.memberships, memberships);
-  assert.deepEqual(site.world.fake.takeRequests().filter(({ method, path }) => method !== 'GET' && path !== '/user_management/authenticate'), []);
+  assert.deepEqual(site.world.memberships.slice(0, invited.length), invited);
+  assert.deepEqual(signupWrites(site), []);
 });
 
-// An old agreement form has the CSRF token of the session and the current document version. The step clears the request
-// log of the fake first, so that signupWrites gives only the writes of signup.
-async function openSignupThenPostOldForm(site: WorkOSSite, browser: HostedBrowser) {
-  const session = JSON.parse((await browser.open('session')).body) as { csrfToken: string };
+test('Given an account whose organization from free access exists, when it opens signup and posts the form again with another name, then signup says each account can create one organization and that this organization exists, offers Continue, and the post opens the same organization without a second organization or grant', async (t) => {
+  const site = await serveWorkOSSite(t, { config: hostedRootConfig, organizations: [], signupFake: true, signup: { enabled: true, documents: signupDocuments } });
+  const user = { id: 'user_CREATOR', email: 'creator@company.example', firstName: 'Creator', emailVerified: true };
+  site.world.users = [user];
+  const { browser } = await signInThroughServer(site, user);
+  const form = await organizationForm(browser);
   signupWrites(site);
+  const organizationId = assertOneNewOrganization(site, user, await nameAndAccept(browser, form, 'First Labs'));
+  const saved = structuredClone(site.signupFake.organizations);
+  const memberships = structuredClone(site.world.memberships);
+
   const page = await browser.open('signup');
-  const posted = await browser.post('signup', { csrf_token: session.csrfToken, document_version: signupDocuments.version, organization_name: 'Independent Labs', agreement: 'accepted' });
-  return { page, posted };
+  const posted = await nameAndAccept(browser, form, 'Second Labs');
+
+  assert.equal(page.status, 200, page.body);
+  const notice = parseHTML(page.body).document;
+  assert.equal(notice.querySelector('h1')?.textContent, 'Your organization exists');
+  assert.equal(notice.querySelector('.notice-message')?.textContent, 'Each Thermus account can create one organization through free access. This account already created its organization. Continue to open it.');
+  const action = notice.querySelector('.primary-action');
+  assert.equal(action?.textContent, 'Continue');
+  assert.equal(action?.getAttribute('href'), '/organizations?return_to=%2F');
+  assert.deepEqual(formsIn(page.body), []);
+  assert.ok(!page.body.includes(signupDocuments.terms.text));
+  assert.equal(posted.answer.status, 303, posted.answer.body);
+  assert.equal(posted.answer.location?.pathname, '/quick-start');
+  const access = await browser.open('portal/access');
+  assert.equal(access.status, 200, access.body);
+  assert.equal((JSON.parse(access.body) as { organizationId: string }).organizationId, organizationId);
+  assert.deepEqual(site.signupFake.organizations, saved);
+  assert.deepEqual(site.world.memberships, memberships);
+  assert.deepEqual(signupWrites(site), []);
+});
+
+// Opens signup as the signed-in person and gives the organization form, which the page must offer.
+async function organizationForm(browser: HostedBrowser): Promise<PageForm> {
+  const page = await browser.open('signup');
+  assert.equal(page.status, 200, page.body);
+  const form = formsIn(page.body).find(({ action }) => action === '/signup');
+  assert.ok(form, page.body);
+  return form;
+}
+
+// One posted creation of an organization: the name that the person gave, and the answer of signup to it.
+interface OrganizationCreation {
+  readonly organizationName: string;
+  readonly answer: BrowserAnswer;
+}
+
+// Posts the organization form with this name and the accepted agreement, as the person does in the browser.
+async function nameAndAccept(browser: HostedBrowser, form: PageForm, organizationName: string): Promise<OrganizationCreation> {
+  return { organizationName, answer: await browser.post('signup', { ...form.fields, organization_name: organizationName, agreement: 'accepted' }) };
+}
+
+// Signup created one organization with the name of this creation, made the person its first Admin, and opened Quick
+// start. The writes are those after the last signupWrites call: one organization and one membership. Gives the ID of
+// the organization.
+function assertOneNewOrganization(site: WorkOSSite & { readonly signupFake: WorkOSSignupFake }, user: FakeUser, { organizationName, answer }: OrganizationCreation): string {
+  assert.equal(answer.status, 303, answer.body);
+  assert.equal(answer.location?.pathname, '/quick-start');
+  assert.equal(site.signupFake.organizations.length, 1);
+  const [organization] = site.signupFake.organizations;
+  assert.equal(organization?.name, organizationName);
+  const organizationId = String(organization?.id);
+  assert.deepEqual(site.world.rolesOf(user, organizationId), ['admin']);
+  assert.equal(site.world.statusOf(user, organizationId), 'active');
+  assert.deepEqual(signupWrites(site).map(({ method, path }) => `${method} ${path}`), ['POST /organizations', 'POST /user_management/organization_memberships']);
+  return organizationId;
 }

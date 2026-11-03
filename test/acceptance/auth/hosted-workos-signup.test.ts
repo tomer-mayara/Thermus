@@ -12,6 +12,7 @@ import { signupDocuments } from '../../support/fixtures/signup-documents.ts';
 import { describe, test, type TestContext } from 'node:test';
 import { HostedBrowser, formsIn } from '../../support/drivers/browser/hosted-browser.ts';
 import { signInThroughServer, signUpThroughServer } from '../../support/dsl/workos-sign-in.ts';
+import { signupWrites } from '../../support/dsl/workos-signup.ts';
 import { serveWorkOSSite } from '../../support/in-process/workos-site.ts';
 import { WorkOSFake } from '../../support/doubles/workos/workos-fake.ts';
 
@@ -296,7 +297,7 @@ describe('Hosted self-service signup with a test legal bundle', () => {
     });
   }
 
-  test('Given current User access, when signup opens, then Continue uses the selector and returns to the portal without another agreement or provider write', async (t) => {
+  test('Given current User access in an invited organization and no organization of its own, when signup opens with a foreign return_to, then it offers the organization form without a provider write, and the selector still opens the invited workspace at the portal', async (t) => {
     const site = await openSignupSite(t, true);
     const user = { id: 'user_CONTINUE', email: 'person@company.example', firstName: 'Person' };
     site.world.users = [user];
@@ -307,10 +308,10 @@ describe('Hosted self-service signup with a test legal bundle', () => {
     const page = await browser.open('signup?return_to=https://other.example/');
 
     assert.equal(page.status, 200, page.body);
-    assert.match(page.body, /<a[^>]* href="\/organizations\?return_to=%2F">Continue<\/a>/);
-    assert.deepEqual(formsIn(page.body), []);
-    assert.doesNotMatch(page.body, /type="checkbox"|other\.example/);
-    assert.ok(!page.body.includes(signupDocuments.terms.text));
+    assert.equal(formsIn(page.body).find(({ action }) => action === '/signup')?.label, 'Create organization');
+    assert.ok(parseHTML(page.body).document.querySelector('input[name="organization_name"]'), page.body);
+    assert.ok(page.body.includes(signupDocuments.terms.text));
+    assert.doesNotMatch(page.body, /other\.example/);
     assert.deepEqual(site.signupFake.organizations, []);
     assert.deepEqual(site.world.fake.takeRequests().filter(({ method }) => method !== 'GET'), []);
     const selector = await browser.open('organizations?return_to=%2F');
@@ -399,26 +400,32 @@ describe('Hosted self-service signup with a test legal bundle', () => {
     assert.deepEqual(site.world.memberships, []);
   });
 
-  test('Given existing Admin-only access, when signup opens, then Continue preserves existing access without agreement, organization creation, or a new User membership', async (t) => {
+  test('Given Admin-only access in an invited organization, when the person accepts the signup form, then the person\'s own organization opens at Quick start with Admin access, and the invited Admin membership stays unchanged', async (t) => {
     const site = await openSignupSite(t, true);
     const user = { id: 'user_ADMIN', email: 'admin@company.example', firstName: 'Admin' };
     site.world.users = [user];
     site.world.memberships = [{ userId: user.id, organizationId: 'org_INTERNAL', roles: ['admin'], status: 'active' }];
+    const invited = structuredClone(site.world.memberships);
     const { browser } = await signInThroughServer(site, user);
-    site.world.fake.takeRequests();
+    const form = formsIn((await browser.open('signup')).body).find(({ action }) => action === '/signup');
+    assert.ok(form);
+    signupWrites(site);
 
-    const page = await browser.open('signup');
+    const answer = await browser.post('signup', { ...form.fields, organization_name: 'Own Labs', agreement: 'accepted' });
 
-    assert.equal(page.status, 200, page.body);
-    assert.match(page.body, /href="\/organizations\?return_to=%2F">Continue<\/a>/);
-    assert.deepEqual(formsIn(page.body), []);
-    assert.deepEqual(site.world.rolesOf(user, 'org_INTERNAL'), ['admin']);
-    assert.deepEqual(site.signupFake.organizations, []);
-    assert.equal(site.world.memberships.length, 1);
-    assert.deepEqual(site.world.fake.takeRequests().filter(({ method }) => method !== 'GET'), []);
+    assert.equal(answer.status, 303, answer.body);
+    assert.equal(answer.location?.pathname, '/quick-start');
+    assert.equal(site.signupFake.organizations.length, 1);
+    const organizationId = String(site.signupFake.organizations[0]?.id);
+    const access = await browser.open('portal/access');
+    assert.equal(access.status, 200, access.body);
+    const opened = JSON.parse(access.body) as { organizationId: string; roles: string[] };
+    assert.deepEqual([opened.organizationId, opened.roles], [organizationId, ['admin']]);
+    assert.deepEqual(site.world.memberships.slice(0, invited.length), invited);
+    assert.deepEqual(signupWrites(site).map(({ path }) => path), ['/organizations', '/user_management/organization_memberships']);
   });
 
-  test('Given a signup form opened before Admin access was granted, when the old form is submitted, then existing access is used without another organization or grant', async (t) => {
+  test('Given a signup form opened before an invitation gave Admin access, when the form is submitted, then the person\'s one organization is created and opens Quick start, and the invited Admin access stays unchanged', async (t) => {
     const site = await openSignupSite(t, true);
     const user = { id: 'user_STALE_FORM', email: 'person@company.example', firstName: 'Person' };
     site.world.users = [user];
@@ -426,15 +433,17 @@ describe('Hosted self-service signup with a test legal bundle', () => {
     const form = formsIn((await browser.open('signup')).body).find(({ action }) => action === '/signup');
     assert.ok(form);
     site.world.memberships = [{ userId: user.id, organizationId: 'org_INTERNAL', roles: ['admin'], status: 'active' }];
-    site.world.fake.takeRequests();
+    const invited = structuredClone(site.world.memberships);
+    signupWrites(site);
 
     const answer = await browser.post('signup', { ...form.fields, organization_name: 'Acme Labs', agreement: 'accepted' });
 
     assert.equal(answer.status, 303, answer.body);
-    assert.equal(answer.location?.searchParams.get('return_to'), '/');
-    assert.deepEqual(site.world.rolesOf(user, 'org_INTERNAL'), ['admin']);
-    assert.deepEqual(site.signupFake.organizations, []);
-    assert.deepEqual(site.world.fake.takeRequests().filter(({ method }) => method !== 'GET'), []);
+    assert.equal(answer.location?.pathname, '/quick-start');
+    assert.equal(site.signupFake.organizations.length, 1);
+    assert.deepEqual(site.world.rolesOf(user, String(site.signupFake.organizations[0]?.id)), ['admin']);
+    assert.deepEqual(site.world.memberships.slice(0, invited.length), invited);
+    assert.deepEqual(signupWrites(site).map(({ path }) => path), ['/organizations', '/user_management/organization_memberships']);
   });
 
   test('Given a revoked created organization and current access elsewhere, when signup opens, then it requires support and lets other access continue without a new agreement or repair', async (t) => {
@@ -495,7 +504,7 @@ describe('Step 1 of free access checks the email address before AuthKit opens', 
     const page = parseHTML(answer.body).document;
     const message = page.querySelector('.task-card .form-message');
     assert.ok(message, answer.body);
-    assert.match(message.textContent, /^An account with this email address already exists\. Sign in to open your workspace\.$/);
+    assert.match(message.textContent, /^An account with this email address already exists\. Sign in to create your organization or to open your workspace\.$/);
     assert.equal(message.getAttribute('role'), 'alert');
     assert.equal(message.querySelector('a[href="/login"]')?.textContent, 'Sign in');
     assert.equal(page.querySelector('input[name="email"]')?.getAttribute('value'), 'person@example.com');

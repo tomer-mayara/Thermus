@@ -130,7 +130,7 @@ Account deletion needs the distinct decision in the deletion runbook.
    | Current-user read confirms the user is absent (404) | Offer fresh Sign in with the full notice; POST returns 401. Make no activation write. |
    | Valid signup marker and current active product access | Continue through the selector; no create or role update. |
    | Marker exists but is invalid, or its membership is absent, pending, inactive, or inconsistent | Support required. Keep the marker; no grant replay or repair. Continue remains available for current product access in another organization. |
-   | No marker and current product access elsewhere, including Admin alone | Continue through the selector; no extra organization. |
+   | No marker and current product access elsewhere, including Admin alone | Since the owner decision of 3 November 2026: normal signup offers the organization form, and the account creates its one organization; before it, Continue through the selector and no extra organization. |
    | No marker and no product access, with no uncertain earlier write | Normal signup may offer agreement when separately enabled; this is not an operator grant. |
    | Failed read or unresolved earlier write | State is unknown. Stop the affected recovery and escalate. Preserve evidence; make no activation write. |
 
@@ -152,9 +152,10 @@ Account deletion needs the distinct decision in the deletion runbook.
 After confirmed new creation, the browser switch must use current membership
 and select the same organization as the MCP guide. A refused or failed switch
 must not replay the initial grant. A valid historical v1 record with current usable
-User access can Continue without an Admin upgrade or a new agreement record. Past
-invited membership alone does not bar normal creation when no current product
-access or retained signup record remains. Multiple current memberships still use
+User access can Continue without an Admin upgrade or a new agreement record. Past or
+current membership in another organization does not bar normal creation when no
+retained signup record remains (owner decision of 3 November 2026; before it,
+current product access elsewhere gave Continue in place of the creation). Multiple current memberships still use
 the selector; recovery does not select an arbitrary organization.
 
 The [S1-03b record](admin-s1-03b.md) gives the application recovery and eligibility

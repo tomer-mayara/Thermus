@@ -24,16 +24,17 @@ and whether the user can activate access. The public page does not grant access.
 Step 1 of signup creates the Thermus account. The visitor enters the email
 address, and **Create account** posts it to `signup/start`. When a Thermus
 account already has that email, step 1 says "An account with this email
-address already exists. Sign in to open your workspace." and offers Sign in.
-Another email opens the AuthKit sign-up screen with the email filled in, and
-AuthKit then returns to `signup`. An account that has an organization
-membership of any status, but no product access, cannot create a new
-organization: signup shows **You already have a Thermus account** and a link
-to the workspace selector. Current
-product access shows **Your access is ready** and Continue. A membership that
-an Admin removed through Members is deleted at WorkOS, but the removal keeps a
-row of the removed member in the hosted datastore before the deletion, so that
-account gets the same notice.
+address already exists. Sign in to create your organization or to open your
+workspace." and offers Sign in. Another email opens the AuthKit sign-up
+screen with the email filled in, and AuthKit then returns to `signup`. The
+sign-in line of step 1 says "Already have a Thermus account? Sign in to create
+your organization or to open your workspace." Each Thermus account can create
+one organization (owner decision of 3 November 2026). Memberships in other
+organizations, of any status, do not stop it, and neither does a membership
+that an Admin removed through Members: an invited User or Admin and a removed
+member can each create one organization. An account whose organization from
+free access exists cannot create a second one: signup shows **Your
+organization exists** and Continue to the workspace selector.
 The **Start free** link of the marketing site opens
 `https://app.thermus.ai/signup?tier=free`. Only the free tier exists, so the
 route ignores the `tier` value (SO-07). The
@@ -108,7 +109,11 @@ independently. Members keeps the trusted workspace name above the same menu.
 The organization picker keeps that menu with Switch Workspace active. It reads
 current access only to decide whether to show Admin links. A failed lookup or
 missing current access leaves the picker available with Connect and Switch
-Workspace. Roles in another workspace cannot show Admin links.
+Workspace. Roles in another workspace cannot show Admin links. In its
+organization card, the picker says "Each account can create one
+organization." and links **Create an organization** to the hosted signup URL,
+outside the header menu. The link gives no access: signup decides whether the
+account can still create its one organization.
 
 ## Admin Quick start
 

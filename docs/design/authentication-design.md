@@ -87,7 +87,10 @@ No factor, MFA UI, or admission marker is added.
 Member rows remain read-only. The retired `POST <base>/members/grants` path
 returns `404` after the session and current-access checks, with no membership
 write or change record. Removal and role changes are later work. Admin product
-access means existing signup access offers Continue. S1-03a adds named
+access means existing signup access offers Continue. Since the owner decision
+of 3 November 2026, Continue needs the retained signup organization of the
+account: access in another organization, Admin alone included, no longer stops
+the creation of its one organization. S1-03a adds named
 organization creation and confirmed first Admin through the separate signup
 route. Billing stays free and read-only.
 
@@ -1482,7 +1485,12 @@ step 1.
    With the switch off, `FREE_TENANT_LIMIT` is not read and signup checks no
    cap.
 3. Step 1 creates the account. Its form has one field, the email address, and
-   **Create account** posts it to `signup/start`. The form has no CSRF token,
+   **Create account** posts it to `signup/start`. Step 1 says "Each Thermus
+   account can create one organization. After you create your account and
+   verify your email, you return here to name your organization and review
+   the terms." Its sign-in line says "Already have a Thermus account? Sign in
+   to create your organization or to open your workspace." and links to
+   `login`. The form has no CSRF token,
    because step 1 has no session: the origin check protects the `POST`. The
    route trims the address and changes it to lowercase. It accepts at most
    254 characters, with one `@`, a dot after it, and no space or control
@@ -1492,7 +1500,8 @@ step 1.
    `SignupActivation` contract: one read of at most one user
    (`GET /user_management/users` with `email` and `limit=1`). A user with
    that email gives `409` "An account with this email address already exists.
-   Sign in to open your workspace.", with **Sign in** as a link to `login`
+   Sign in to create your organization or to open your workspace.", with
+   **Sign in** as a link to `login`
    and the email in the field, and no sign-in starts. Without such a user, the
    route starts the AuthKit sign-in at its sign-up screen
    (`screen_hint=sign-up`) with the email as `login_hint`, so AuthKit fills in
@@ -1512,20 +1521,25 @@ step 1.
    email has an account. The AuthKit sign-up screen already tells this. `GET`
    and `HEAD` of `signup/start` still start the sign-up screen without an
    email. The sign-up screen also lets an existing account sign in, so signup
-   still decides after the return. Current product access gives
-   **Continue**. A membership record of any status without product access
-   gives "You already have a Thermus account", and `403` for a `POST`. Only a
-   user without a membership record and without a retained signup
-   organization gets the agreement and the organization creation, as before.
-   A membership that an Admin removed through Members is deleted at WorkOS,
-   which keeps no record of it, so the removal keeps its own: before the
-   deletion, the [removal coordinator](../../src/accounts/organizations/membership-removal.ts)
-   writes the removed member to `thermus_admin.removed_members` through the
-   `RemovedMemberStore` role of the organizations-owned
-   [removal store contract](../../src/accounts/organizations/removal-operation-store.ts),
-   and signup reads it last, after the product access and the membership
-   record reads. A found record gives the same existing-account notice. The
-   removed-member record below gives the decision.
+   still decides after the return. Each verified account can create one
+   organization through free access (owner decision of 3 November 2026). After
+   the return, for an account without a saved organization, signup makes only
+   two reads, the current user and the organization at the personal external ID
+   `thermus-signup:<hash>` of the account, and no read of the membership list
+   of the account or of the removed-member record. So an account with
+   memberships in other organizations (active, pending, or inactive), or with a
+   membership that an Admin removed through Members, gets the organization
+   name, the agreement, and the organization creation, as a new account does.
+   No account can create a second organization: the retained organization is
+   the barrier. While it exists, `GET` shows "Your organization exists" ("Each
+   Thermus account can create one organization through free access. This
+   account already created its organization. Continue to open it.") with
+   **Continue** to the selector, and a `POST` opens the same organization
+   without a second organization or grant. A broken retained record still
+   requires support, with Continue when the account has access in another
+   organization. A `POST` from an unverified email is still refused. The
+   removed-member record below gives the earlier rules of that day and the
+   record that stays.
 4. An `active` result of the activation confirms the first Admin membership.
    Then signup requests the tenant of the new organization (SO-04), before it
    selects the organization and opens Quick start. The request is the one
@@ -1539,29 +1553,41 @@ The cap can fill between the notice and the creation. Then the request answers
 full, and the new organization has no tenant. This race is accepted, with no
 reservation (answer 4 of 27 October 2026).
 
-**Removed-member record** (decision of 2 November 2026). The rule is that a
-person who already has a Thermus account cannot create a new organization
-through free access, for now. WorkOS deletes a removed membership, so the
-lasting marker is a row that the removal writes before the deletion: the
-authority and subject of the removed member, the organization, the membership,
-the removal operation, and the time. A write that is not confirmed stops the
-removal with `unavailable` and deletes nothing, so a deleted membership always
-has its row; a repeated write of the same membership is recorded. Signup gives
-`503` when the read is unavailable, never eligibility. The existing
+**Removed-member record** (decisions of 2 and 3 November 2026). The first rule, of
+2 November 2026, was that a person who already had a Thermus account could not create
+a new organization through free access. WorkOS deletes a removed membership,
+so the removal keeps its own lasting marker: before the deletion, the
+[removal coordinator](../../src/accounts/organizations/membership-removal.ts)
+writes a row to `thermus_admin.removed_members` through the
+`RemovedMemberStore` role of the organizations-owned
+[removal store contract](../../src/accounts/organizations/removal-operation-store.ts).
+The row holds the authority and subject of the removed member, the
+organization, the membership, the removal operation, and the time. Signup read
+the row last and refused the account, and it gave `503` when the read was
+unavailable. An owner decision of 3 November 2026 replaced the rule: each
+verified account can create one organization through free access, whatever
+its memberships, and no account can create a second one. Signup no longer
+reads the row, so the row cannot stop signup and cannot cause a `503`. App
+supplies the store to the removal only; no owner joins. The row stays as the
+audit evidence of each removal through Members, and the approved legal text
+does not change. A write that is not confirmed still stops the removal with
+`unavailable` and deletes nothing, so a deleted membership always has its row;
+a repeated write of the same membership is recorded. The existing
 `membership_removal_operations` table cannot serve: it keeps one row per
 organization, which the next removal replaces, and it names the membership, not
 the member. A WorkOS user metadata field cannot serve: a field written at the
 first membership misses invitation acceptance, which happens in AuthKit outside
 the application, and a field written at removal would add a second provider
 write to the removal and change the account record of the member, which the
-removal promise keeps unchanged. App supplies the same SQL adapter and pool to
-the removal and to the WorkOS signup adapter; no owner joins. The row covers
-removals through Thermus: a membership that the operator deletes in the WorkOS
-dashboard leaves no row. The row has no expiry. The data-flow review of
-26 October 2026 named one current removal record per organization and no
-history, so the owner reviews this retention with the privacy documents.
-Without the table, member removal and the signup of a new account answer
-unavailable: the [database setup](../implementation/admin-s2-01a-database-setup.md#add-the-removed-member-record-before-the-deploy)
+removal promise keeps unchanged. The row covers removals through Thermus: a
+membership that the operator deletes in the WorkOS dashboard leaves no row. The
+row has no expiry. The data-flow review of 26 October 2026 named one current
+removal record per organization and no history. Two owner follow-ups stay
+open: the retention of these rows, which the owner reviews with the privacy
+documents, and a later cleanup of the read path that has no production caller
+now (`readRemovedMember` of the store contract, its SQL statement, the
+identity index, and the SELECT grant). Without the table, member removal
+answers unavailable, and signup works: the [database setup](../implementation/admin-s2-01a-database-setup.md#add-the-removed-member-record-before-the-deploy)
 applies the migration before the deploy.
 
 **Workspace status.** `GET <base>workspace/status` is an account route of the
@@ -2078,7 +2104,11 @@ can still be selected. A provider failure never becomes signup eligibility.
 Only the activation POST can create a workspace or grant. It still requires a
 fresh verified-email read. Both successful activation and Continue use the
 existing organization selector with a server-built return path to the portal.
-See the [FS-02 record](../implementation/fs-02.md).
+See the [FS-02 record](../implementation/fs-02.md). A later owner decision of
+3 November 2026 limits Continue in place of the creation to the retained
+organization of the account: product access in another organization no
+longer stops the creation of the one organization of each account
+([signup handoff](#signup-handoff-and-workspace-status)).
 
 S1-03a extends that historical signup flow with an editable organization name
 and one organization/authority agreement. The supplied bundle must identify

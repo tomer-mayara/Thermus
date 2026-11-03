@@ -63,7 +63,12 @@ The exact version 2 organization/authority bundle is approved and wired.
 Publication and opening remain subject to the recorded operational release checks.
 
 Existing product access, including Admin alone, offers Continue without another
-agreement or organization. A retained v1 personal record remains a replay
+agreement or organization. Since the owner decision of 3 November 2026, that
+Continue applies only to the retained signup organization of the account:
+product access in another organization no longer stops the creation of the one
+organization of each account (see the
+[authentication design](../design/authentication-design.md#signup-handoff-and-workspace-status)).
+A retained v1 personal record remains a replay
 barrier, not organization consent or authority for an Admin upgrade. A retained
 record with missing, pending, inactive, or inconsistent access requires support;
 it does not authorize a new grant. Use [signup inspection and recovery](hosted-signup-recovery.md),
