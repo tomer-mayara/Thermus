@@ -8,6 +8,7 @@ import { signupRequestIn } from './workos-signup-form.ts';
 import { signupClosedPage, signupContinuePage, signupCreateAccountPage, signupExistingAccountPage, signupFailurePage, signupFormPage, signupRequestNotice, type AccountPaths } from './workos-signup-pages.ts';
 import type { SignupActivation, SignupDocuments, SignupResult } from '../../../../accounts/organizations/signup-activation.ts';
 import { SignupTenantHandoff, type RequestOperation, type SignupTenants } from './workos-signup-tenants.ts';
+import { limitedAnswer, SignupAdmission } from './workos-signup-admission.ts';
 
 export interface WorkOSSignupRoutesOptions {
   readonly publicBaseUrl: string;
@@ -22,12 +23,6 @@ export interface WorkOSSignupRoutesOptions {
   readonly tenants?: SignupTenants;
 }
 
-// Process-local admission only: eight concurrent POSTs, three attempts per subject per minute, at most 1,024
-// subjects retained. A full table refuses new subjects until an entry expires. It is not a global provider quota.
-const MAX_CONCURRENT_POSTS = 8;
-const MAX_SUBJECTS = 1024;
-const ATTEMPTS_PER_MINUTE = 3;
-const WINDOW_MS = 60_000;
 // Fixed texts: the operator log and the page get no request value and no provider detail.
 const REQUEST_FAILED = 'Hosted signup request failed.';
 const UNAVAILABLE = 'Activation is temporarily unavailable. Try again later.';
@@ -42,10 +37,8 @@ export class WorkOSSignupRoutes {
   private readonly destination: URL;
   private readonly selector: string;
   private readonly quickStartDestination: URL;
-  private readonly clock: () => number;
+  private readonly admission: SignupAdmission;
   private readonly handoff?: SignupTenantHandoff;
-  private readonly attempts = new Map<string, { until: number; count: number }>();
-  private pending = 0;
 
   constructor(options: WorkOSSignupRoutesOptions) {
     this.options = options;
@@ -61,7 +54,7 @@ export class WorkOSSignupRoutes {
     this.destination = new URL('organizations', base);
     this.destination.searchParams.set('return_to', base.pathname);
     this.selector = this.destination.pathname + this.destination.search;
-    this.clock = options.clock ?? Date.now;
+    this.admission = new SignupAdmission(options.clock ?? Date.now);
     if (options.tenants !== undefined) this.handoff = new SignupTenantHandoff(options.tenants, options.reportFailure);
   }
 
@@ -112,26 +105,11 @@ export class WorkOSSignupRoutes {
     }
   }
 
+  // A POST runs in an admission slot, after the Origin check.
   private async handleEnabled(request: Request): Promise<Response> {
-    const post = request.method === 'POST';
-    if (post && request.headers.get('Origin') !== this.origin) return signupRequestNotice(noticePage('forgedRequest'));
-    if (post && this.pending >= MAX_CONCURRENT_POSTS) return limited();
-    if (post) this.pending++;
-    let outstanding: Promise<unknown> | undefined;
-    const run: RequestOperation = (start) => waitForRequest(request.signal, () => {
-      const operation = start();
-      outstanding = operation;
-      return operation;
-    });
-    try {
-      return await this.answerSession(request, run);
-    } finally {
-      if (post) {
-        // A disconnected request still holds its slot until its last provider operation settles.
-        if (outstanding === undefined) this.pending--;
-        else void outstanding.then(() => { this.pending--; }, () => { this.pending--; });
-      }
-    }
+    if (request.method !== 'POST') return this.answerSession(request, (start) => waitForRequest(request.signal, start));
+    if (request.headers.get('Origin') !== this.origin) return signupRequestNotice(noticePage('forgedRequest'));
+    return await this.admission.inSlot(request, (run) => this.answerSession(request, run)) ?? limitedAnswer();
   }
 
   private async answerSession(request: Request, run: RequestOperation): Promise<Response> {
@@ -165,7 +143,7 @@ export class WorkOSSignupRoutes {
   }
 
   private async activateForm(request: Request, state: SignedInBrowserSession, run: RequestOperation): Promise<Response> {
-    if (!this.admit(state.user.subject)) return limited();
+    if (!this.admission.admit(state.user.subject)) return limitedAnswer();
     const documents = this.requireDocuments();
     const creation = await creationIn(request, state.csrfToken, documents.version);
     if (typeof creation === 'string') return signupRequestNotice(noticePage(creation));
@@ -203,20 +181,6 @@ export class WorkOSSignupRoutes {
     if (this.documents === undefined) throw new Error('Enabled signup requires approved documents.');
     return this.documents;
   }
-
-  private admit(subject: string): boolean {
-    const now = this.clock();
-    for (const [key, entry] of this.attempts) if (entry.until <= now) this.attempts.delete(key);
-    const prior = this.attempts.get(subject);
-    if (prior !== undefined) {
-      if (prior.count >= ATTEMPTS_PER_MINUTE) return false;
-      prior.count++;
-      return true;
-    }
-    if (this.attempts.size >= MAX_SUBJECTS) return false;
-    this.attempts.set(subject, { until: now + WINDOW_MS, count: 1 });
-    return true;
-  }
 }
 
 async function creationIn(request: Request, csrfToken: string, documentVersion: string): Promise<{ readonly organizationName: string } | FormRefusal> {
@@ -225,11 +189,6 @@ async function creationIn(request: Request, csrfToken: string, documentVersion: 
   return typeof form === 'string' ? form : signupRequestIn(form, csrfToken, documentVersion);
 }
 
-function limited(): Response {
-  const answer = signupFailurePage(429, 'Too many activation requests. Try again later.');
-  answer.headers.set('Retry-After', '60');
-  return answer;
-}
 
 function withCookies(answer: Response, cookies: CookieEffects): Response {
   const headers = new Headers([...answer.headers].filter(([name]) => name !== 'set-cookie'));
