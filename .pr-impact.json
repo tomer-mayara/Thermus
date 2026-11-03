@@ -3,25 +3,31 @@
   "classification": {
     "container": false,
     "external": false,
-    "contract": false,
+    "contract": true,
     "deployment": false,
     "crossCutting": false,
     "component": false,
-    "internalInterface": false,
-    "sensitiveBehavior": false,
+    "internalInterface": true,
+    "sensitiveBehavior": true,
     "dependencyRisk": false,
     "policy": false,
     "uncertain": false
   },
   "architecture": {
-    "modelUpdated": false,
-    "summary": "Documents only: docs/implementation/tenant-fleet-runbooks.md loses the stale sentence of section How to use these runbooks, which said that the production control plane runs with MCP_TENANTS_ENABLED off until step 6 of the SO-12 order and that production has no tenant yet. The new paragraph says that the switch is on since step 6 (1 November 2026), that production had two live tenants on the released image on 2 November 2026 (SO-12 step 12, the tenant upgrade), and that the fleet command list gives the current rows. No source, test, configuration, workflow, migration, or Mermaid block changes; the production architecture is unchanged.",
+    "modelUpdated": true,
+    "summary": "Step 1 of free access asks for the email address before the AuthKit sign-up screen opens, so that a person whose email already has a Thermus account gets a clear message instead of the AuthKit text 'This email is not available'. The new POST /signup/start reads whether WorkOS has a user with that email through findAccount, a new method of the organizations-owned SignupActivation contract, which the WorkOS signup adapter implements with one read of the WorkOS user list (GET /user_management/users with email and limit 1, at most one user). A user with that email gives 409 with 'An account with this email address already exists. Sign in to open your workspace.' and no sign-in starts. No user gives the AuthKit sign-in at its sign-up screen with the email as login_hint. A lookup that cannot answer gives the same start and one fixed error line, because the lookup grants nothing and AuthKit gives its own answer. An address that is not valid gives 400 and no read. GET and HEAD /signup/start keep their behavior. Public contracts change (contract, internalInterface): BrowserSignInRequest.loginHint in identity; AccountLookup and SignupActivation.findAccount in organizations; the userManagement shape of WorkOSSignupOptions and WorkOSSignup.findAccount in workos. The browser contract changes (contract): the new POST, the email form of step 1, its 409 and 400 answers, and the form-action policy of the step 1 page, which names the WorkOS API origin and the AuthKit issuer origin that app supplies, because Chrome applies form-action to each redirect after a form post. No container, component, dependency edge, deployment, stored data, or trust boundary changes. The WorkOS integration gains one read-only call and the login_hint parameter of the existing authorization URL; no external system is added or replaced, so external stays false. Team flag sensitiveBehavior: the entry of the account creation changes and the security file workos-signup.ts changes; every existing guard of signup stays: the origin check of each POST, the shared admission slots (eight POSTs; three attempts in a minute for each subject or for each hashed email), the switch and the cap before any read, and the eligibility decision after the return from AuthKit. The registry prose of the hosted authentication view changes; no Mermaid block changes.",
     "views": [
-      "All 24 Mermaid views of architecture/components.md unchanged (the candidate does not touch the file)"
+      "Selected C4 components: hosted authentication in the Node server (prose edited, Mermaid unchanged: the signup route reads the email of step 1 through findAccount of the SignupActivation contract and starts the sign-up screen with the login hint; composition supplies the provider origins of the step 1 form policy)",
+      "All 24 Mermaid blocks of architecture/components.md unchanged (checked: no container, component, dependency, or deployment-unit change)"
     ],
     "evidence": [
-      "docs/implementation/tenant-fleet-runbooks.md (section How to use these runbooks, the paragraph before the situation table)",
-      "docs/implementation/self-onboarding-s2-release.md (step 6, result 6b of 1 November 2026; step 12, the tenant upgrade of 2 November 2026)"
+      "src/accounts/identity/browser-session-controls.ts, src/accounts/organizations/signup-activation.ts (the contract changes)",
+      "src/accounts/providers/workos/workos-account-lookup.ts, workos-signup.ts, workos-sign-in.ts, workos-session-client.ts (the read and the login hint)",
+      "src/interfaces/web/auth/workos/workos-signup-start.ts, workos-signup-email.ts, workos-signup-admission.ts, workos-signup-pages.ts, workos-signup-routes.ts (the step 1 form, the POST, the admission, the page policy)",
+      "src/app/hosted-workos-application.ts (the provider origins of the step 1 form policy)",
+      "docs/api-surface/src/accounts/identity/browser-session-controls.d.ts, organizations/signup-activation.d.ts, providers/workos/workos-signup.d.ts",
+      "test/acceptance/auth/hosted-workos-signup.test.ts, hosted-signup-presentation.test.ts, hosted-signup-workspace.test.ts, hosted-image.test.ts; test/integration/auth/workos-signup-routes.test.ts, workos-signup-pages.test.ts, workos-signup-inspection.test.ts, workos-signup-tenants.test.ts; test/unit/accounts/workos-browser-session-sign-in.test.ts",
+      "docs/design/authentication-design.md (the Signup section, step 3), docs/design/portal-design.md, docs/user-portal.md, docs/free-subscription-guide.md, docs/implementation/self-onboarding-plan.md, architecture/components.md (the hosted authentication prose)"
     ]
   }
 }
