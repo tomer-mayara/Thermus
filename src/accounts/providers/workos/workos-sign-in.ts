@@ -58,12 +58,14 @@ export class AuthKitSignIn {
     this.signInCookie = signInCookie(options.settings.cookiePassword);
   }
 
-  async start({ returnTo, screenHint }: BrowserSignInRequest): Promise<SignInStart> {
+  // The login hint goes only to the authorization URL. The sign-in cookie keeps no email.
+  async start({ returnTo, screenHint, loginHint }: BrowserSignInRequest): Promise<SignInStart> {
     const { url, state, codeVerifier } = await this.userManagement.getAuthorizationUrlWithPKCE({
       provider: 'authkit',
       redirectUri: this.settings.redirectUri,
       clientId: this.settings.clientId,
       ...(screenHint === undefined ? {} : { screenHint }),
+      ...(loginHint === undefined ? {} : { loginHint }),
     });
     const expiresAt = this.clock() + SIGN_IN_MAX_AGE_SECONDS * 1_000;
     return { url, cookies: [this.signInCookie.setCookie({ state, codeVerifier, returnTo, expiresAt })] };

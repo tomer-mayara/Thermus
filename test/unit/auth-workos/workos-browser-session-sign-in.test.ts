@@ -76,6 +76,26 @@ describe('WorkOSBrowserSession: the start of a sign-in', () => {
 
     assert.equal(Object.hasOwn(client.calls[0]?.input ?? {}, 'screenHint'), false);
   });
+
+  test('Given the sign-up screen hint and a login hint, when a sign-in starts, then WorkOS makes the AuthKit URL of the sign-up screen with the email as login hint, and the sign-in cookie keeps no email', async () => {
+    const client = new WorkOSSessionClientDouble();
+
+    const start = await browserSession(client).startSignIn({ returnTo: '/signup', screenHint: 'sign-up', loginHint: 'new@example.com' });
+
+    assert.deepEqual(client.calls, [{
+      method: 'getAuthorizationUrlWithPKCE',
+      input: { provider: 'authkit', redirectUri: settings.redirectUri, clientId: settings.clientId, screenHint: 'sign-up', loginHint: 'new@example.com' },
+    }]);
+    assert.deepEqual(signInEnvelopeIn(start.cookies[0]), { state: 'state-1', codeVerifier: 'verifier-1', returnTo: '/signup', expiresAt: startedAt + 600_000 });
+  });
+
+  test('Given no login hint, when a sign-in starts, then the WorkOS call has no login hint field', async () => {
+    const client = new WorkOSSessionClientDouble();
+
+    await browserSession(client).startSignIn({ returnTo: '/signup', screenHint: 'sign-up' });
+
+    assert.equal(Object.hasOwn(client.calls[0]?.input ?? {}, 'loginHint'), false);
+  });
 });
 
 describe('WorkOSBrowserSession: the sign-in callback', () => {

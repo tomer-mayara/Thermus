@@ -15,6 +15,7 @@ export type ProfiledBrowserSessionState = ProfiledSignedInBrowserSession | {
 export interface BrowserSignInRequest {
     readonly returnTo?: string;
     readonly screenHint?: 'sign-up';
+    readonly loginHint?: string;
 }
 export interface BrowserSignInStart {
     readonly url: string;
