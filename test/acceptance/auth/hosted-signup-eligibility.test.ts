@@ -29,7 +29,7 @@ for (const status of ['inactive', 'pending'] as const) {
 
     const created = await nameAndAccept(browser, form, 'Independent Labs');
 
-    assertOneNewOrganization(site, user, 'Independent Labs', created);
+    assertOneNewOrganization(site, user, created);
     assert.equal(site.world.statusOf(user, 'org_FORMER'), status);
     assert.deepEqual(site.world.rolesOf(user, 'org_FORMER'), ['user']);
   });
@@ -51,7 +51,7 @@ test('Given a person whose only membership an Admin removed through Members, whe
 
   const created = await nameAndAccept(browser, form, 'Independent Labs');
 
-  const organizationId = assertOneNewOrganization(site, removalUser, 'Independent Labs', created);
+  const organizationId = assertOneNewOrganization(site, removalUser, created);
   assert.deepEqual([...site.world.deletedMembershipIds], [targetId]);
   assert.equal(site.world.membershipId(removalUser, removalOrganization), targetId);
   const access = await browser.open('portal/access');
@@ -74,7 +74,7 @@ test('Given a removed-member record of the signed-in person and a removed-member
 
   const created = await nameAndAccept(browser, form, 'Independent Labs');
 
-  assertOneNewOrganization(site, formerMember, 'Independent Labs', created);
+  assertOneNewOrganization(site, formerMember, created);
   assert.equal(reads.mock.callCount(), 0);
   assert.deepEqual(site.removalStore.removedMembers, records);
   assert.deepEqual(site.log.lines, []);
@@ -174,7 +174,7 @@ test('Given current User and Admin memberships in invited organizations, when th
 
   const created = await nameAndAccept(browser, form, 'Member Labs');
 
-  const ownOrganization = assertOneNewOrganization(site, user, 'Member Labs', created);
+  const ownOrganization = assertOneNewOrganization(site, user, created);
   const own = await browser.open('portal/access');
   assert.equal(own.status, 200, own.body);
   const { organizationId, organizationName, roles } = JSON.parse(own.body) as { organizationId: string; organizationName: string; roles: string[] };
@@ -200,7 +200,7 @@ test('Given an account whose organization from free access exists, when it opens
   const { browser } = await signInThroughServer(site, user);
   const form = await organizationForm(browser);
   signupWrites(site);
-  const organizationId = assertOneNewOrganization(site, user, 'First Labs', await nameAndAccept(browser, form, 'First Labs'));
+  const organizationId = assertOneNewOrganization(site, user, await nameAndAccept(browser, form, 'First Labs'));
   const saved = structuredClone(site.signupFake.organizations);
   const memberships = structuredClone(site.world.memberships);
 
@@ -216,8 +216,8 @@ test('Given an account whose organization from free access exists, when it opens
   assert.equal(action?.getAttribute('href'), '/organizations?return_to=%2F');
   assert.deepEqual(formsIn(page.body), []);
   assert.ok(!page.body.includes(signupDocuments.terms.text));
-  assert.equal(posted.status, 303, posted.body);
-  assert.equal(posted.location?.pathname, '/quick-start');
+  assert.equal(posted.answer.status, 303, posted.answer.body);
+  assert.equal(posted.answer.location?.pathname, '/quick-start');
   const access = await browser.open('portal/access');
   assert.equal(access.status, 200, access.body);
   assert.equal((JSON.parse(access.body) as { organizationId: string }).organizationId, organizationId);
@@ -235,14 +235,21 @@ async function organizationForm(browser: HostedBrowser): Promise<PageForm> {
   return form;
 }
 
-// Posts the organization form with this name and the accepted agreement, as the person does in the browser.
-function nameAndAccept(browser: HostedBrowser, form: PageForm, organizationName: string): Promise<BrowserAnswer> {
-  return browser.post('signup', { ...form.fields, organization_name: organizationName, agreement: 'accepted' });
+// One posted creation of an organization: the name that the person gave, and the answer of signup to it.
+interface OrganizationCreation {
+  readonly organizationName: string;
+  readonly answer: BrowserAnswer;
 }
 
-// Signup created one organization with this name, made the person its first Admin, and opened Quick start. The writes
-// are those after the last signupWrites call: one organization and one membership. Gives the ID of the organization.
-function assertOneNewOrganization(site: WorkOSSite & { readonly signupFake: WorkOSSignupFake }, user: FakeUser, organizationName: string, answer: BrowserAnswer): string {
+// Posts the organization form with this name and the accepted agreement, as the person does in the browser.
+async function nameAndAccept(browser: HostedBrowser, form: PageForm, organizationName: string): Promise<OrganizationCreation> {
+  return { organizationName, answer: await browser.post('signup', { ...form.fields, organization_name: organizationName, agreement: 'accepted' }) };
+}
+
+// Signup created one organization with the name of this creation, made the person its first Admin, and opened Quick
+// start. The writes are those after the last signupWrites call: one organization and one membership. Gives the ID of
+// the organization.
+function assertOneNewOrganization(site: WorkOSSite & { readonly signupFake: WorkOSSignupFake }, user: FakeUser, { organizationName, answer }: OrganizationCreation): string {
   assert.equal(answer.status, 303, answer.body);
   assert.equal(answer.location?.pathname, '/quick-start');
   assert.equal(site.signupFake.organizations.length, 1);
