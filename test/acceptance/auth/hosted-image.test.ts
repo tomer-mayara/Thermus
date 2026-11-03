@@ -55,7 +55,7 @@ test('Given a clean hosted build without live secrets, when checks pass, then th
     assert.equal((await server.stop()).code, 0);
   });
 
-  await t.test('Given the approved organization removal bundle in the image, when signup is enabled, then startup succeeds and the exact notice is readable before sign-in', { timeout: 45_000 }, async (step) => {
+  await t.test('Given the approved organization removal bundle in the image, when signup is enabled, then startup succeeds and the exact notice is readable before sign-in, with the email form of step 1 as the only form', { timeout: 45_000 }, async (step) => {
     const server = await gate.server({ SELF_SERVE_SIGNUP_ENABLED: 'true' }, false, step.signal);
     await server.started();
     const answer = await fetch(new URL('/signup', server.url), { signal: step.signal });
@@ -64,7 +64,7 @@ test('Given a clean hosted build without live secrets, when checks pass, then th
     const expected = parseHTML(`<div id=expected>${micromark(organizationRemovalDocuments.notice.text, { extensions: [gfm()], htmlExtensions: [gfmHtml()] })}</div>`).document.querySelector('#expected')?.textContent;
     assert.equal(document.querySelector('#privacy-notice .document-reader')?.textContent, expected);
     assert.equal(document.querySelector('#privacy-notice')?.getAttribute('data-document-version'), organizationRemovalDocuments.notice.version);
-    assert.equal(document.querySelectorAll('form').length, 0);
+    assert.deepEqual([...document.querySelectorAll('form')].map((form) => form.getAttribute('action')), ['/signup/start']);
     assert.equal((await server.stop()).code, 0);
   });
 
