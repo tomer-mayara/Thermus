@@ -15,15 +15,13 @@
   },
   "architecture": {
     "modelUpdated": false,
-    "summary": "Documents only: the SO-12 release record docs/implementation/self-onboarding-s2-release.md records the release of main 007f3db2 to production on 2 November 2026 as step 12. The control plane deploy: the go-ahead of the owner (about 22:45 UTC, \"Start release\"), the dispatch of 22:46:08 UTC, run 41540017697, deploy dep-dbkh5jmc6qcc73fqkkng live at 22:47:01 UTC with the image sha256:5d187664... of run 41538396601, the start lines of the new instance, the stop of the old instance 120 s later, health, portal, and signup 200, and no warn, error, or fatal line on Render or in the Axiom dataset system-log. The TENANT_IMAGE update and the tenant upgrade: the go-ahead of the owner (about 23:03 UTC, \"Update and upgrade\"), one PUT of TENANT_IMAGE at 23:04:46 UTC (200, no deploy), run 41542588342 and deploy dep-dbkheim1egvs73avvrng live at 23:06:08 UTC with the provisioner line that names the new image, and the fleet upgrade --all of 23:08:00 UTC in one batch of 2 (dep-dbkhflifngtc73bqkcp0 and dep-dbkhfmh5efls73d6j0dg live after 29.3 s and 26.2 s, digest recorded), with the checks on Render, the registry rows, and system-log. A finding records that the fleet commands ran from the Mac of the operator with the documented command and the bounds of #329, without the scratch runner of step 11. Production is uniform on the released image, and nothing stays open. Section 1.2 gets the new candidate in its table and a second candidate-change paragraph of 2 November 2026 (the 13 changed source files are control plane code; the tenant role does not change; the one migration since 7b1ce3b6 is in production), section 5 step 4 names sha256:515a70f6... as the rollback image and shifts the older images down, and section 7 gets three rows. Every fact comes from the session that made the release. No source, test, configuration, workflow, migration, or Mermaid block changes; the production architecture is unchanged.",
+    "summary": "Documents only: docs/implementation/tenant-fleet-runbooks.md loses the stale sentence of section How to use these runbooks, which said that the production control plane runs with MCP_TENANTS_ENABLED off until step 6 of the SO-12 order and that production has no tenant yet. The new paragraph says that the switch is on since step 6 (1 November 2026), that production had two live tenants on the released image on 2 November 2026 (SO-12 step 12, the tenant upgrade), and that the fleet command list gives the current rows. No source, test, configuration, workflow, migration, or Mermaid block changes; the production architecture is unchanged.",
     "views": [
       "All 24 Mermaid views of architecture/components.md unchanged (the candidate does not touch the file)"
     ],
     "evidence": [
-      "docs/implementation/self-onboarding-s2-release.md (section 1.2, the table and the second candidate change of 2 November 2026; step 12; section 5, step 4; section 7, the three rows of step 12)",
-      "https://github.com/tomer-mayara/Thermus/actions/runs/41538396601 (the image run of main 007f3db2)",
-      "https://github.com/tomer-mayara/Thermus/actions/runs/41540017697 (the deploy run of the release)",
-      "https://github.com/tomer-mayara/Thermus/actions/runs/41542588342 (the deploy run of the TENANT_IMAGE update)"
+      "docs/implementation/tenant-fleet-runbooks.md (section How to use these runbooks, the paragraph before the situation table)",
+      "docs/implementation/self-onboarding-s2-release.md (step 6, result 6b of 1 November 2026; step 12, the tenant upgrade of 2 November 2026)"
     ]
   }
 }
