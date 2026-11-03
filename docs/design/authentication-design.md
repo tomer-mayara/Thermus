@@ -1457,11 +1457,16 @@ the `tenants` owner in
 exists, so the [signup route](../../src/interfaces/web/auth/workos/workos-signup-routes.ts)
 ignores the `tier` value: another value and no value give the same page. Its
 [tenant handoff](../../src/interfaces/web/auth/workos/workos-signup-tenants.ts)
-holds the cap check and the tenant request.
+holds the cap check and the tenant request. Its
+[account creation](../../src/interfaces/web/auth/workos/workos-signup-start.ts)
+answers `signup/start`, with the
+[email check](../../src/interfaces/web/auth/workos/workos-signup-email.ts) of
+step 1.
 
 1. `SELF_SERVE_SIGNUP_ENABLED` comes first: with the switch off, each `GET`,
-   `HEAD`, and `POST` gets the closed notice, as before. `GET` and `HEAD` of
-   `signup/start` get it too and start no sign-in.
+   `HEAD`, and `POST` gets the closed notice, as before. `GET`, `HEAD`, and
+   `POST` of `signup/start` get it too (`403` for the `POST`), and start no
+   WorkOS read and no sign-in.
 2. The free-tenant cap comes next, before the session and the notice. With
    `MCP_TENANTS_ENABLED` on, signup counts the rows of the registry copy of the
    gateway lookup, which reads the registry again only when it is 10 s old, so
@@ -1470,15 +1475,39 @@ holds the cap check and the tenant request.
    stay under `FREE_TENANT_LIMIT`. At a full cap, signup gives the closed
    notice: `200` for `GET` and `HEAD`, and `403` for a `POST`, which then
    creates no organization. `signup/start` at a full cap also gives the closed
-   notice and starts no sign-in. A `POST` reads the cap inside its admission slot,
-   after the origin check. A copy that cannot be read gives `503` "Activation
-   is temporarily unavailable. Try again later." and the error line `Hosted
-   signup could not read the free-tenant cap.`. With the switch off,
-   `FREE_TENANT_LIMIT` is not read and signup checks no cap.
-3. Step 1 creates the account. **Create account** opens `signup/start`, which
-   starts the AuthKit sign-in at its sign-up screen (`screen_hint=sign-up`)
-   and returns to `signup`. That screen also lets an existing account sign in,
-   so signup decides after the return. Current product access gives
+   notice and starts no WorkOS read and no sign-in. A `POST` reads the cap
+   inside its admission slot, after the origin check. A copy that cannot be
+   read gives `503` "Activation is temporarily unavailable. Try again later."
+   and the error line `Hosted signup could not read the free-tenant cap.`.
+   With the switch off, `FREE_TENANT_LIMIT` is not read and signup checks no
+   cap.
+3. Step 1 creates the account. Its form has one field, the email address, and
+   **Create account** posts it to `signup/start`. The form has no CSRF token,
+   because step 1 has no session: the origin check protects the `POST`. The
+   route trims the address and changes it to lowercase. It accepts at most
+   254 characters, with one `@`, a dot after it, and no space or control
+   character. An address that is not valid gives `400` "Enter a valid email
+   address." and no WorkOS read. For a valid address, the route asks WorkOS
+   for a user with that email through `findAccount` of the organizations-owned
+   `SignupActivation` contract: one read of at most one user
+   (`GET /user_management/users` with `email` and `limit=1`). A user with
+   that email gives `409` "An account with this email address already exists.
+   Sign in to open your workspace.", with **Sign in** as a link to `login`
+   and the email in the field, and no sign-in starts. Without such a user, the
+   route starts the AuthKit sign-in at its sign-up screen
+   (`screen_hint=sign-up`) with the email as `login_hint`, so AuthKit fills in
+   the address, and AuthKit returns to `signup`. A read that fails gives the
+   same start and the error line `Hosted signup could not check the email
+   address.`: the check grants nothing, so its outage does not stop the
+   account creation, and AuthKit then gives its own answer. Neither the page
+   nor the log gets a provider detail. The `POST` shares the admission of the
+   organization form: the same eight slots, and three attempts in a minute
+   for each key `email:<SHA-256 hex of the address>`, so that an email key
+   cannot be the same as a subject. The check tells a visitor whether an
+   email has an account. The AuthKit sign-up screen already tells this. `GET`
+   and `HEAD` of `signup/start` still start the sign-up screen without an
+   email. The sign-up screen also lets an existing account sign in, so signup
+   still decides after the return. Current product access gives
    **Continue**. A membership record of any status without product access
    gives "You already have a Thermus account", and `403` for a `POST`. Only a
    user without a membership record and without a retained signup

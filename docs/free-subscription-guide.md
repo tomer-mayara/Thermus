@@ -20,7 +20,7 @@ The **Start free** link in the pricing section of [thermus.ai](https://thermus.a
 Keep activation on for this test.
 
 1. Use an email address that has no Thermus account. Hosted sign-in uses email and password through WorkOS, and signup needs a verified email address.
-2. Open [the signup page](https://app.thermus.ai/signup?tier=free) and select **Create account**. AuthKit opens its sign-up screen. Enter the email address and a password, then verify the email address. WorkOS sends you back to the signup page.
+2. Open [the signup page](https://app.thermus.ai/signup?tier=free). Enter the email address in **Email address** and select **Create account**. AuthKit opens its sign-up screen with the email address filled in. Enter a password, then verify the email address. WorkOS sends you back to the signup page. If the email address already has a Thermus account, the signup page says "An account with this email address already exists" and offers **Sign in**, and AuthKit does not open: use another fresh address.
 3. Enter the organization name. Read the Terms of Service and the Privacy Notice on the page. Select the agreement checkbox, then select **Create organization**. You become the first Admin of the organization.
 4. **Quick start** opens for the new organization. Select **Connect**.
 5. With `MCP_TENANTS_ENABLED` on, Connect first shows "Setting up your workspace. This takes about two minutes." under **Connect your MCP client**. The page reloads every 5 seconds. When the workspace is ready, the connection guide replaces these words. With the switch off, the control plane serves the tools itself, and Connect shows the connection guide at once.
