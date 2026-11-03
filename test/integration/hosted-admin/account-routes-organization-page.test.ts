@@ -66,6 +66,19 @@ describe('HostedAccountRoutes organization page', () => {
     });
   }
 
+  test('Given a signup URL in the route options, when a signed-in user with authorized organizations opens the organization page, then the page links Create an organization to that URL', async () => {
+    const signupUrl = 'https://thermus.example/signup';
+    const { routes } = serveAnn({}, { signupUrl });
+
+    const response = await routes.handle(accountRequest('/organizations', 'session=ann'));
+    const body = await response.text();
+
+    assert.equal(response.status, 200);
+    const createLinks = [...parseHTML(body).document.querySelectorAll('a')].filter(link => link.textContent === 'Create an organization');
+    assert.deepEqual(createLinks.map(link => link.getAttribute('href')), [signupUrl]);
+    assert.deepEqual(formsIn(body).map(({ label }) => label), ['Acme (selected)', 'Globex']);
+  });
+
   test('Given a signed-in user without an authorized organization, when the organization page opens, then it tells the user to accept an invitation or to contact the operator, has no form, and resolves no tenant access', async () => {
     const { routes, organizations, resolver, operations } = serve({ sessions: new Map([['session=ben', signedIn(ben, { cookies: sessionCookies })]]) });
 

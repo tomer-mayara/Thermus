@@ -140,7 +140,7 @@ export class HostedAccountRoutes {
     if (organizations.length === 0) return noOrganizationPage(this.signupUrl);
     const selected = organizations.some(organization => organization.organizationId === session.user.selectedOrganizationId);
     const admin = selected && await this.showAdminNavigation(request, session.user);
-    return organizationSelectionPage({ action: this.paths.selection, csrfToken: session.csrfToken, returnTo, organizations, product: this.destinations.fallback, admin });
+    return organizationSelectionPage({ action: this.paths.selection, csrfToken: session.csrfToken, returnTo, organizations, product: this.destinations.fallback, admin, signupUrl: this.signupUrl });
   }
 
   private async showAdminNavigation(request: Request, user: AuthenticatedUser): Promise<boolean> {

@@ -37,6 +37,8 @@ h2{font-size:32px}
 .organization-list button:hover{background:#2C2D34;border-color:#F3F2EE}
 .organization-list [aria-current="true"] button{border-color:#E8552A;box-shadow:inset 3px 0 #E8552A}
 .selection-note{margin:24px 0 0;padding-top:20px;border-top:1px solid #43454E;color:#B4BAC0;font-size:12px}
+.selection-note+.selection-note{margin-top:8px;padding-top:0;border-top:0}
+.selection-note a{color:#F3F2EE}
 .site-footer{padding:24px 0;border-top:1px solid #2C2D34;color:#B4BAC0;font-size:12px}
 @media(max-width:960px){
  .organization-layout{grid-template-columns:minmax(0,1fr);gap:32px;max-width:650px;padding-block:36px 48px}

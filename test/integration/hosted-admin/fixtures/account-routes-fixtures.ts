@@ -35,6 +35,7 @@ export interface Setup {
   readonly withOperation?: boolean;
   readonly operationAnswer?: OperationAnswer;
   readonly workspaces?: HostedAccountRoutesOptions['workspaces'];
+  readonly signupUrl?: HostedAccountRoutesOptions['signupUrl'];
 }
 
 export function serve(setup: Setup) {
@@ -55,6 +56,7 @@ export function serve(setup: Setup) {
     audit: setup.audit,
     operation,
     workspaces: setup.workspaces,
+    signupUrl: setup.signupUrl,
   });
   return { routes, session, resolver, organizations, operations, failures };
 }

@@ -51,6 +51,25 @@ for (const config of [hostedRootConfig, hostedConfig]) {
     });
   }
 
+  test(`Given a signed-in person with workspaces at ${base.pathname}, when the person opens Switch Workspace, then the organization card offers Create an organization at the hosted signup URL outside the header menu`, async (t) => {
+    const site = await serveWorkspaceSelectionSite(t, config);
+    const { browser } = await signInThroughServer(site, workspaceSelectionUser, 'org_ACME');
+    const picker = await browser.open('organizations');
+    assert.equal(picker.status, 200, picker.body);
+    const { document } = parseHTML(picker.body);
+    const createLinks = [...document.querySelectorAll('a')].filter(link => link.textContent === 'Create an organization');
+    assert.equal(createLinks.length, 1, 'The picker must offer one way to create an organization');
+    const [createLink] = createLinks;
+    assert.equal(createLink?.getAttribute('href'), new URL('signup', base).href, 'The link must open the signup page of the hosted application');
+    assert.equal(createLink?.closest('section')?.querySelector('h2')?.textContent, 'Your organizations', 'The link must be in the organization card');
+    assert.equal(createLink?.closest('nav'), null, 'The link must not be in the header menu');
+    const navigation = document.querySelector('header nav[aria-label="Workspace"]');
+    assert.deepEqual([...navigation?.querySelectorAll('a') ?? []].map(link => [link.textContent, link.getAttribute('href')]), [
+      ['Connect', base.pathname], ['Switch Workspace', new URL('organizations', base).pathname],
+    ]);
+    assert.deepEqual(formsIn(picker.body).map(form => form.label), ['Acme (selected)', 'Globex']);
+  });
+
   test(`Given an explicit safe return destination at ${base.pathname}, when the user selects an authorized workspace, then that destination is preserved instead of the default Connect page`, async (t) => {
     const site = await serveWorkspaceSelectionSite(t, config);
     for (const path of ['members', 'organizations']) {
