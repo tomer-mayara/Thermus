@@ -43,20 +43,21 @@ The tier rules are in [plan section 4.4](self-onboarding-plan.md#44-tier-rules):
 ### 1.2 Release candidate
 
 The candidate changed on 1 November 2026, after step 5 of the production
-order, two times on 2 November 2026, after step 10 and after step 11, and on
-3 November 2026, after step 12 (the paragraphs below the table). The entries
-of 1 November 2026 use "the current candidate" for main `322a2a3a`, the
-candidate of that day. The current candidate since the release of
-3 November 2026 ([step 13](#step-13-release-of-main-9655378d-3-november-2026)):
+order, two times on 2 November 2026, after step 10 and after step 11, and two
+times on 3 November 2026, after step 12 and after step 13 (the paragraphs
+below the table). The entries of 1 November 2026 use "the current candidate"
+for main `322a2a3a`, the candidate of that day. The current candidate since
+the second release of 3 November 2026
+([step 14](#step-14-release-of-main-5d1cd816-3-november-2026)):
 
 | Item | Value |
 | --- | --- |
-| Commit | main `9655378d4f97d52ef6bd504319a96518ccff2921` (the merge of #333, after #329) |
-| Image | `ghcr.io/tomer-mayara/thermus-hosted@sha256:ae982c9adb1f6815a32a13fc0b51520caa110eebb8d68a9f4ffa1e7aa5a591b6`, tag `ghcr.io/tomer-mayara/thermus-hosted:9655378d4f97d52ef6bd504319a96518ccff2921` |
-| Run | [41572452393](https://github.com/tomer-mayara/Thermus/actions/runs/41572452393), push on `main`, job 03:29:01 to 03:35:46 UTC on 3 November 2026 |
-| Checks in the image build | `npm run build:hosted` under `--network=none`: 4,034 backend unit, 59 portal unit, 28 portal acceptance, 1,325 integration, 235 selected acceptance and interface, and 13 renderer tests passed, with no failure, cancellation, skip, or todo |
+| Commit | main `5d1cd816bfcbc07a6bc382bad7e1982b8dcf0c14` (the merge of #335, after #334) |
+| Image | `ghcr.io/tomer-mayara/thermus-hosted@sha256:aaae282cf42ef65091593f33b455fdc6dff7e7b21d574680ff5dd05859873c46`, tag `ghcr.io/tomer-mayara/thermus-hosted:5d1cd816bfcbc07a6bc382bad7e1982b8dcf0c14` |
+| Run | [41672383252](https://github.com/tomer-mayara/Thermus/actions/runs/41672383252), push on `main`, job 16:15:55 to 16:31:59 UTC on 3 November 2026 |
+| Checks in the image build | `npm run build:hosted` under `--network=none`: 4,034 backend unit, 59 portal unit, 28 portal acceptance, 1,307 integration, 235 selected acceptance and interface, and 13 renderer tests passed, with no failure, cancellation, skip, or todo |
 | Hosted image gate | `npm run test:container:hosted` on the native AMD64 runner: 7 of 7 passed |
-| Size and times | 155,623,295 bytes (148.4 MiB) compressed, 16 layers, `linux/amd64`; build 294 s, gate 11 s, push 14 s |
+| Size and times | 155,622,769 bytes (148.4 MiB) compressed, 16 layers, `linux/amd64`; build 255 s, gate 10 s, push 621 s |
 
 **Candidate change of 1 November 2026.** The first candidate was main
 `fa787be415c2d4afd23745dd2840a4ea3357cc6a` (SO-10, #295), image
@@ -218,6 +219,66 @@ candidate of the first release of 2 November 2026 is the second fallback,
 the candidate of 1 November 2026 the third, and the first candidate the
 fourth. The candidate added no migration, so each of them runs with the
 database as it is.
+
+**Second candidate change of 3 November 2026.** The candidate of the first
+release of 3 November 2026 was main
+`9655378d4f97d52ef6bd504319a96518ccff2921` (#333, after #329), image
+`sha256:ae982c9adb1f6815a32a13fc0b51520caa110eebb8d68a9f4ffa1e7aa5a591b6` of
+run [41572452393](https://github.com/tomer-mayara/Thermus/actions/runs/41572452393)
+(push on `main`, 03:29:01 to 03:35:46 UTC on 3 November 2026; 4,034 backend
+unit, 59 portal unit, 28 portal acceptance, 1,325 integration, 235 selected
+acceptance and interface, and 13 renderer tests; the gate 7 of 7;
+155,623,295 bytes, 16 layers; build 294 s, gate 11 s, push 14 s). It ran as
+the control plane from [step 13](#step-13-release-of-main-9655378d-3-november-2026)
+(03:37 UTC) to [step 14](#step-14-release-of-main-5d1cd816-3-november-2026)
+(16:39 UTC on 3 November 2026); it is `TENANT_IMAGE` since 03:49 UTC, and
+the three live tenants run it since the tenant upgrade of step 13 (03:52 UTC
+on 3 November 2026). The current candidate is main `5d1cd816`, the merge of
+[#335](https://github.com/tomer-mayara/Thermus/pull/335) ("Let each account
+create and name one organization through free access") at 16:15:47 UTC on
+3 November 2026; the tree of the merge commit equals the tree of the
+reviewed head `31cfd6f1`. Since `9655378d`, main also got the record pull
+request #334. Run 41672383252 built, gated, and pushed its image (the
+table); its push step took 621 s, against 14 to 16 s in the earlier runs,
+and the job passed. The owner took it at 16:38 UTC on 3 November 2026
+(step 14, the go-ahead). `git diff --stat 9655378d 5d1cd816 -- src` changes
+10 files, all in the control plane: every verified account can create one
+organization through free access and name it; a membership in another
+organization or a removed-member record no longer stops that creation; the
+retained organization at the personal external ID stays the barrier; the
+existing-account page goes; step 1 and its account-exists message say that
+sign-in can create the organization; and the Switch Workspace page links
+"Create an organization" to signup (#335: `signup-activation.ts`,
+`workos-signup.ts`, `hosted-workos-application.ts`,
+`workos-signup-routes.ts`, `workos-signup-pages.ts`, `account-routes.ts`,
+`organization-selection-page.ts`, `organization-selection-style.ts`, and one
+comment in each of `membership-removal.ts` and
+`removal-operation-store.ts`). The tenant role does not change: no file of
+`src/app/tenant-application.ts`, `src/app/tenant-mcp.ts`,
+`src/app/tenant-requests.ts`, `src/app/fetch-tool.ts`,
+`src/accounts/identity/`, the audit relay sink, `src/runtime/config/`, or
+`src/interfaces/mcp/` changes. The static import closure of
+`src/app/tenant-application.ts`, measured with value imports and without
+dynamic imports, holds 129 files (the count of 150 in the first candidate
+change of 3 November 2026 came from another measurement). Four of the ten
+changed files are in it through the shared composition of
+`src/app/application.ts`: `account-routes.ts`, the two files of the Switch
+Workspace page, and the comment-only `membership-removal.ts`. The six
+signup files are outside it, behind the dynamic import of
+`hosted-workos-application.ts`. A tenant routes only `/healthz` and its MCP
+path (`src/app/tenant-requests.ts`), so it never serves the Switch
+Workspace page or signup. So this release needs no fleet upgrade. No
+migration was added since `9655378d` (`git diff c2d33f67 5d1cd816` under
+the migration folders is empty), so the release needs no migration step.
+Outside `src/`, the diff changes the tests, the design documents and user
+guides, the membership removal view of the registry, two declaration
+snapshots, the architecture declaration, and the metrics record. The
+candidate of the first release of 3 November 2026 is now the rollback image
+of [section 5](#5-rollback); the candidate of the second release of
+2 November 2026 is the second fallback, the candidate of the first release
+of 2 November 2026 the third, the candidate of 1 November 2026 the fourth,
+and the first candidate the fifth. The candidate added no migration, so
+each of them runs with the database as it is.
 
 The pushed digest is on the line `<commit>: digest: sha256:... size: 3667` of
 the record step of the job log. The line `Digest: sha256:...` of the same log
@@ -1177,6 +1238,33 @@ release of step 12.
   Finding: the fleet commands `list`, `status`, and `upgrade` ran from the Mac of the operator with the documented command and the bounds of [#329](https://github.com/tomer-mayara/Thermus/pull/329): `list` took about 1 s. A scratch runner outside the repository read `DATABASE_URL` of the production service through the Render API into the environment of the command only, and set `DATABASE_CA_CERT_PATH` to the official CA file `supabase-root-2021-ca.pem`, `RENDER_OWNER_ID`, and `TENANT_NAME_PREFIX`; it printed nothing of the address.
 - **Open for the owner:** nothing stays open in step 13. Production holds every migration of main up to `9655378d`.
 
+### Step 14. Release of main 5d1cd816 (3 November 2026)
+
+This step deploys the second candidate of 3 November 2026
+([1.2](#12-release-candidate)) to the control plane: #335 on top of the
+release of step 13.
+
+- **Who:** the agent, after the owner's go-ahead, in a session that the
+  manager started.
+- **Before:** production holds every migration of main
+  ([step 3](#step-3-database-migration-of-so-04)), and the candidate adds
+  none: `git diff c2d33f67 5d1cd816` under the migration folders is empty.
+  Run 41672383252 built, gated, and pushed the image
+  ([1.2](#12-release-candidate)). The tenant role does not change
+  ([1.2](#12-release-candidate)), so no fleet upgrade is needed.
+- **Action:**
+  `gh workflow run hosted-image.yml --repo tomer-mayara/Thermus --ref main -f digest=sha256:aaae282cf42ef65091593f33b455fdc6dff7e7b21d574680ff5dd05859873c46 -f service_id=srv-db8mnqg473hc739d529g -f confirm_production=srv-db8mnqg473hc739d529g`.
+- **Check:** the checks of step 13 from outside, without a signup, a
+  sign-in, or an MCP call, and the new copy of step 1 on the public host:
+  `/signup` says "Each Thermus account can create one organization", and
+  the Sign in link says that sign-in can create the organization. The
+  Switch Workspace page needs a signed-in account, so its new link is not
+  part of this check.
+- **Go-ahead:** the owner, 3 November 2026 at about 16:38 UTC, in the Claude Code session: "Start release".
+- **Result:** done, 3 November 2026, 16:38 to 16:44 UTC, by the agent. Before, read from 16:21 to 16:23 UTC and again at 16:38:53 UTC: [#335](https://github.com/tomer-mayara/Thermus/pull/335) merged at 16:15:47 UTC as the merge commit `5d1cd816`, whose tree equals the reviewed head `31cfd6f1`; the service `srv-db8mnqg473hc739d529g` with the runtime `image`, `autoDeploy: no`, the image `sha256:ae982c9a…`, and the live deploy `dep-dbkljsajnfac7399p4mg` (live since 03:50:44 UTC); the three tenant services `live` on `sha256:ae982c9a…` (`srv-dbjb9ibbc2fs73cb0r20`, `srv-dbjct3u7bikc73f36760`, and `srv-dbkjvr59fdbs73bhvd30`, each last updated at the tenant upgrade of step 13); `https://app.thermus.ai/healthz` `200` with `ok`, the portal root `200`, and `/signup` `200` with "Create your account" and the step 1 copy "Free access is for new Thermus accounts"; the Axiom dataset `system-log` with 12 INFO lines of the control plane and no other level in the 14 hours before. The agent waited for the image run of the merge, [run 41672383252](https://github.com/tomer-mayara/Thermus/actions/runs/41672383252) (16:15:55 to 16:31:59 UTC, the gate 7 of 7), and read the pushed digest from the line `5d1cd816…: digest:` of its push step. At 16:38:56 UTC, the agent dispatched the command of the action on `main`. It ran as [run 41676347128](https://github.com/tomer-mayara/Thermus/actions/runs/41676347128) (workflow commit `5d1cd816`), with the deploy job in the GitHub environment `production` from 16:39:03 to 16:40:06 UTC: the request check, the GHCR check, and the deploy step passed, and the job summary says "Deploy: live". Deploy `dep-dbl0shoae00c73c9s7n0` was created at 16:39:35 UTC and `live` at 16:39:58 UTC (23 s; 30.4 s after the deploy call), with the digest `sha256:aaae282c…` in the live deploy and in `imagePath`; the previous deploy `dep-dbkljsajnfac7399p4mg` is `deactivated`; the health request of the job answered `200` with `ok` at request 1. Checks: the new instance `srv-db8mnqg473hc739d529g-5457fd74b4-lv29v` wrote the WorkOS line, `The tenant provisioner runs:` (Render workspace `tea-db8i6ceq1p3s73dev9og`, image `sha256:ae982c9a…` as `TENANT_IMAGE`, plan `0.5c-512mb`, name prefix `thermus-tenant-`), `The tenant sweeps run each day at 04:00 UTC`, and `Listening on http://0.0.0.0:8080` at 16:39:49 UTC, and no `FATAL`, `Logging storage is unavailable:`, `System log export failed:`, or `Tenant provisioning cannot read the tenant registry.` line. The Axiom dataset `system-log` shows the four lines of that instance (the query of [runbook 7.3](tenant-fleet-runbooks.md#73-axiom-monitors)). The old instance `srv-db8mnqg473hc739d529g-5885cfbc4f-tl2z4` wrote `Stopping after SIGTERM` at 16:41:58 UTC, 120 s after the new deploy was `live`, on Render and in `system-log`. The Render logs of the control plane and of the three tenants from 16:30 to 16:44 UTC have no line at the level warn, error, or fatal, and `system-log` has no ERROR, WARN, or FATAL line of the control plane in that window. `https://app.thermus.ai/healthz` answered `200` with `ok` three times at 16:40:37 UTC, the portal root `200`, and `/signup` `200` with "Create your account", the email field, the form that posts to `/signup/start`, and the new copy of step 1: "Each Thermus account can create one organization. After you create your account and verify your email, you return here to name your organization and review the terms." and "Already have a Thermus account? Sign in to create your organization or to open your workspace." At 16:40:38 UTC, a post of `/signup/start` from the origin of the site with `not-an-address` answered `400` in 0.28 s with "Enter a valid email address."; no post with an email address was made. No account was created, no sign-in started, no MCP call was made, and no registry row was read or changed: Render shows the three tenant services with their deploys of step 13 (read at 16:41 UTC), and `system-log` has no provisioning line in the window.
+- **Rollback:** the command of [section 5](#5-rollback), step 4, with the digest `sha256:ae982c9adb1f6815a32a13fc0b51520caa110eebb8d68a9f4ffa1e7aa5a591b6` of the first release of 3 November 2026. The candidate added no migration, so that image runs with the database as it is.
+- **Open for the owner:** `TENANT_IMAGE` and the three live tenants still run `sha256:ae982c9a…`. The tenant role did not change ([1.2](#12-release-candidate)), so the update of `TENANT_IMAGE` and the tenant upgrade are optional, as in steps 11 to 13, and wait for the owner's word. Production holds every migration of main up to `5d1cd816`.
+
 ## 5. Rollback
 
 Do these steps in this order. Stop when the service is healthy again.
@@ -1193,21 +1281,29 @@ Do these steps in this order. Stop when the service is healthy again.
    Record the list of `fleet.ts list`.
 4. **Redeploy the previous control plane release, if necessary.** After step
    5 of the order, run
-   `gh workflow run hosted-image.yml --repo tomer-mayara/Thermus --ref main -f digest=sha256:5d187664269f20c4469adcaa0e1d752307bfef77175a1d9f9d7517fe1ae4fc45 -f service_id=srv-db8mnqg473hc739d529g -f confirm_production=srv-db8mnqg473hc739d529g`.
-   This image is the candidate of the second release of 2 November 2026 in
+   `gh workflow run hosted-image.yml --repo tomer-mayara/Thermus --ref main -f digest=sha256:ae982c9adb1f6815a32a13fc0b51520caa110eebb8d68a9f4ffa1e7aa5a591b6 -f service_id=srv-db8mnqg473hc739d529g -f confirm_production=srv-db8mnqg473hc739d529g`.
+   This image is the candidate of the first release of 3 November 2026 in
    [1.2](#12-release-candidate), the rollback image of
-   [step 13](#step-13-release-of-main-9655378d-3-november-2026). It ran as
-   the control plane from 22:47 UTC on 2 November to 03:37 UTC on
-   3 November 2026, it was `TENANT_IMAGE` from 23:04 UTC on 2 November to
-   03:49 UTC on 3 November 2026, and the live tenants ran it from 23:08 UTC
-   on 2 November to 03:52 UTC on 3 November 2026. Every
-   migration of main is in production, and the candidate of step 13 added
-   none, so it runs with them. The candidate of the first release of
-   2 November 2026,
+   [step 14](#step-14-release-of-main-5d1cd816-3-november-2026). It ran as
+   the control plane from 03:37 to 16:39 UTC on 3 November 2026, it is
+   `TENANT_IMAGE` since 03:49 UTC on 3 November 2026, and the three live
+   tenants run it since 03:52 UTC on 3 November 2026. Every migration of
+   main is in production, and the candidate of step 14 added none, so it
+   runs with them. The candidate of the second release of 2 November 2026,
+   `sha256:5d187664269f20c4469adcaa0e1d752307bfef77175a1d9f9d7517fe1ae4fc45`,
+   the rollback image of
+   [step 13](#step-13-release-of-main-9655378d-3-november-2026), is the
+   second fallback, by the same command. It ran as the control plane from
+   22:47 UTC on 2 November to 03:37 UTC on 3 November 2026, it was
+   `TENANT_IMAGE` from 23:04 UTC on 2 November to 03:49 UTC on 3 November
+   2026, and the live tenants ran it from 23:08 UTC on 2 November to
+   03:52 UTC on 3 November 2026. The candidate of step 13 added no
+   migration, so it runs with the database as it is. The candidate of the
+   first release of 2 November 2026,
    `sha256:515a70f69368736e6184fddd21d0ea9e8fa03336c3a4a35aa63b0117fdda9f9c`,
    the rollback image of
    [step 12](#step-12-release-of-main-007f3db2-2-november-2026), is the
-   second fallback, by the same command. It ran as the control plane from
+   third fallback, by the same command. It ran as the control plane from
    20:15 to 22:47 UTC on 2 November 2026, and the two live tenants ran it
    from 22:04 to 23:08 UTC. The migration of #322 in
    [step 3](#step-3-database-migration-of-so-04) adds a table, so it runs
@@ -1215,12 +1311,12 @@ Do these steps in this order. Stop when the service is healthy again.
    `sha256:72f51715d46ca0fd43379e44296a0d237f46f607b2bfaea2c8a9c65f1976f333`,
    the rollback image of
    [step 11](#step-11-release-of-main-7b1ce3b6-2-november-2026), is the
-   third fallback, by the same command. It ran as the control plane from
+   fourth fallback, by the same command. It ran as the control plane from
    02:34 UTC on 1 November to 20:15 UTC on 2 November 2026. The two other
    migrations of 2 November 2026 are additive and nullable, so it runs with
    them. The first candidate,
    `sha256:8025ae1b37b10575f80e5df415f7723f79f58822ce88f3d6d85bd705f63084d9`,
-   is the fourth fallback, by the same command. It ran in production with the
+   is the fifth fallback, by the same command. It ran in production with the
    switch off from 23:16 UTC on 31 October to 02:34 UTC on 1 November 2026,
    and the claim lease columns of step 3 do not affect it: both are nullable,
    and its code does not name them. Do it after step 1: with the switch off,
@@ -1228,7 +1324,7 @@ Do these steps in this order. Stop when the service is healthy again.
    this release,
    `sha256:bbee3f8951ea2f93835b8beb671f85d6bf3b7a8aea91598fb511dc9504c9e40f`
    ([1.3](#13-production-state-on-31-october-2026)), stays in GHCR as the
-   fifth fallback, by the same command. Check: the deploy is `live`,
+   sixth fallback, by the same command. Check: the deploy is `live`,
    `/healthz` answers `200`, and an MCP call answers. Step R14 recorded that
    Render can switch an image service back to a Git build.
 
@@ -1254,7 +1350,7 @@ publishes the revert.
 | 11 | Decide the window of the signup switch around step 8. | Decided: open from 04:02 to 05:45:15 UTC on 1 November 2026, then closed until step 10 |
 | 12 | If step R4 shows that Render cannot switch a Git build to an image, decide the path of step 5. Answered by run 2 of the rehearsal: Render accepts the switch ([3.7](#37-part-b-findings), item 7), so no decision is needed. | Step 5 |
 | 13 | Review the copy of the marketing pull request, and give the go-ahead for its merge at step 9. | Done, 1 November 2026 (step 9) |
-| 14 | At the monthly GHCR pruning, keep the current candidate digest `sha256:ae982c9a…` (the control plane, `TENANT_IMAGE`, and the three live tenants since step 13), the rollback digest `sha256:5d187664…`, the second fallback `sha256:515a70f6…`, the third fallback `sha256:72f51715…`, the first candidate and fourth fallback `sha256:8025ae1b…`, the fifth fallback `sha256:bbee3f89…`, and the upgrade digest `sha256:fd8d747e…` until the release is complete ([runbook 5.5](tenant-fleet-runbooks.md#55-monthly-ghcr-pruning)). | Each pruning |
+| 14 | At the monthly GHCR pruning, keep the current candidate digest `sha256:aaae282c…` (the control plane since step 14), the rollback digest `sha256:ae982c9a…` (`TENANT_IMAGE` and the three live tenants since step 13), the second fallback `sha256:5d187664…`, the third fallback `sha256:515a70f6…`, the fourth fallback `sha256:72f51715…`, the first candidate and fifth fallback `sha256:8025ae1b…`, the sixth fallback `sha256:bbee3f89…`, and the upgrade digest `sha256:fd8d747e…` until the release is complete ([runbook 5.5](tenant-fleet-runbooks.md#55-monthly-ghcr-pruning)). | Each pruning |
 | 15 | Follow-ups of the rehearsal ([3.7](#37-part-b-findings), items 5 and 6). (a) A new tenant refuses calls for about 75 s after its row is `live`, and the first candidate wrote `MCP gateway tenant restart:` lines at the level ERROR, so the monitor Tenant restart would send an email for each new tenant. Closed: [#307](https://github.com/tomer-mayara/Thermus/pull/307), merged as `322a2a3a` at 02:18 UTC on 1 November 2026 and in the current candidate of [1.2](#12-release-candidate), writes the INFO line `MCP gateway tenant starting:` for a refused call in the first 2 minutes after the live record ([runbook 7.3](tenant-fleet-runbooks.md#73-axiom-monitors)). (b) During each deploy of the control plane, the old instance runs its provisioner loop for about two minutes, and in R9 it claimed a row a second time; [plan section 7](self-onboarding-plan.md#7-risks-and-limits) names a shared claim for a second instance. Closed: [#306](https://github.com/tomer-mayara/Thermus/pull/306), merged as `7168d960` at 23:53 UTC on 31 October 2026 and in the current candidate, holds each claimed row for its loop with a lease of 60 s that the loop renews while it works on the row; the claim lease migration of [step 3](#step-3-database-migration-of-so-04) (1 November 2026) adds its columns. Step 7 no longer waits for the old instance. | Closed on 1 November 2026 |
 
 ## 7. Record
@@ -1304,3 +1400,4 @@ no secret.
 | 13 Release of main 9655378d | 3 November 2026, 03:36 to 03:41 | done: run 41573248093 deployed `dep-dbkldr59fdbs73bluetg`, `live` in 22 s with `sha256:ae982c9a…`; the provisioner, sweeps, and `Listening on` lines, also in `system-log`, and no warn, error, or fatal line of the control plane or the tenants; health `200`, portal `200`, `/signup` `200` with the email field; a post of an email with an account `409` with the message, and of an address that is not valid `400`; the old instance stopped 120 s after `live`; no fleet upgrade needed; no migration; open: `TENANT_IMAGE` and the two tenants still on `sha256:5d187664…` (optional) | [Step 13](#step-13-release-of-main-9655378d-3-november-2026); [1.2](#12-release-candidate) |
 | 13 Update of `TENANT_IMAGE` | 3 November 2026, 03:49 to 03:53 | done: `TENANT_IMAGE` set to `sha256:ae982c9a…` through the API (`200`, 28 variables, no deploy); run 41574491381 deployed `dep-dbkljsajnfac7399p4mg`, `live` in 35 s with the same digest; the provisioner line with `sha256:ae982c9a…`, the sweeps and `Listening on` lines, also in `system-log`, and no `FATAL`, `Logging storage is unavailable:`, or `System log export failed:` line; the old instance stopped 120 s after `live`; health `200`; a new tenant now gets the released image | [Step 13](#step-13-release-of-main-9655378d-3-november-2026), the result of the `TENANT_IMAGE` update |
 | 13 Upgrade of the three live tenants | 3 November 2026, 03:49 to 03:53 | done: the fleet command `upgrade --all` with `sha256:ae982c9a…` and the answer `yes`, one batch of 3 (a third tenant, made by free signup at 02:00 UTC on 3 November, joined the two of step 12): `dep-dbklkg2jnfac7399qop0`, `dep-dbklkh0u01pc73dlffj0`, and `dep-dbklki2jnfac7399qtpg` `live` after 15.9 s, 20.9 s, and 26.2 s, each `digest recorded`; Render and the registry show the new digest, `applied_plan` `0.5c-512mb`, the same `internal_url`; no `MCP gateway` line and no ERROR, WARN, or FATAL line of the control plane or the tenants; the fleet script ran from the Mac of the operator with the bounds of #329; production is uniform on the released image; nothing open | [Step 13](#step-13-release-of-main-9655378d-3-november-2026), the result of the tenant upgrade |
+| 14 Release of main 5d1cd816 | 3 November 2026, 16:38 to 16:44 | done: run 41676347128 deployed `dep-dbl0shoae00c73c9s7n0`, `live` in 23 s with `sha256:aaae282c…`; the provisioner, sweeps, and `Listening on` lines, also in `system-log`, and no warn, error, or fatal line of the control plane or the tenants; health `200`, portal `200`, `/signup` `200` with the new copy of step 1; a post of an address that is not valid `400`; the old instance stopped 120 s after `live`; no fleet upgrade needed; no migration; open: `TENANT_IMAGE` and the three tenants still on `sha256:ae982c9a…` (optional) | [Step 14](#step-14-release-of-main-5d1cd816-3-november-2026); [1.2](#12-release-candidate) |
