@@ -29,6 +29,9 @@ export type SignupState = {
     readonly status: 'support-required';
     readonly canContinue: boolean;
 };
+export type AccountLookup = {
+    readonly status: 'found' | 'absent' | 'unavailable';
+};
 export interface SignupActivation {
     inspect(request: {
         readonly user: AuthenticatedUser;
@@ -40,5 +43,9 @@ export interface SignupActivation {
         readonly documents: SignupDocuments;
         readonly signal: AbortSignal;
     }): Promise<SignupResult>;
+    findAccount(request: {
+        readonly email: string;
+        readonly signal: AbortSignal;
+    }): Promise<AccountLookup>;
 }
 export declare function organizationNameIn(value: unknown): string | undefined;

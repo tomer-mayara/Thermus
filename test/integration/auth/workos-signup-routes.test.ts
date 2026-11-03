@@ -20,12 +20,14 @@ function setup(enabled = true, signedIn = true, publicBaseUrl = 'https://thermus
   const names: string[] = [];
   const selections: string[] = [];
   const starts: BrowserSignInRequest[] = [];
+  const lookups: string[] = [];
   const state: BrowserSessionState = signedIn ? { status: 'signed-in', user: { authority: 'workos:test', subject: 'user_test' }, csrfToken: 'secret', mfaCompleted: false,
     cookies: ['renewed=session; Secure'], selectOrganization: async (id) => { selections.push(id); return { status: 'switched', cookies: ['renewed=selected; Secure'] }; } } : { status: 'signed-out', cookies: [] };
   const session: WorkOSSignupRoutesOptions['session'] = { authenticate: async () => { sessions++; return state; }, startSignIn: async (request) => { starts.push(request); return authKitStart; } };
-  const activation: SignupActivation = { inspect: async () => { inspections++; return { status: 'eligible' }; }, activate: async (request) => { calls++; names.push(request.organizationName); return { status: 'active', organizationId: 'org_new' }; } };
+  const activation: SignupActivation = { inspect: async () => { inspections++; return { status: 'eligible' }; }, activate: async (request) => { calls++; names.push(request.organizationName); return { status: 'active', organizationId: 'org_new' }; },
+    findAccount: async (request) => { lookups.push(request.email); return { status: 'absent' }; } };
   const routes = new WorkOSSignupRoutes({ publicBaseUrl, enabled, documents, session, activation, reportFailure: (message) => failures.push(message) });
-  return { routes, activation, session, state, failures, names, selections, starts, calls: () => calls, sessions: () => sessions, inspections: () => inspections };
+  return { routes, activation, session, state, failures, names, selections, starts, lookups, calls: () => calls, sessions: () => sessions, inspections: () => inspections };
 }
 
 const start = (method = 'GET', url = 'https://thermus.example/signup/start') => new Request(url, { method });
@@ -491,7 +493,7 @@ test('Given a full subject limiter, when a new subject posts, then it is refused
   let activations = 0;
   const session: WorkOSSignupRoutesOptions['session'] = { authenticate: async () => ({ status: 'signed-in', user: { authority: 'workos:test', subject }, csrfToken: 'secret', mfaCompleted: false,
     cookies: [], selectOrganization: async () => { throw new Error('No switch'); } }), startSignIn: async () => authKitStart };
-  const activation: SignupActivation = { inspect: async () => ({ status: 'eligible' }), activate: async () => { activations++; return { status: 'existing-access' }; } };
+  const activation: SignupActivation = { inspect: async () => ({ status: 'eligible' }), activate: async () => { activations++; return { status: 'existing-access' }; }, findAccount: async () => ({ status: 'absent' }) };
   const routes = new WorkOSSignupRoutes({ publicBaseUrl: 'https://thermus.example/', enabled: true, documents, session, activation, reportFailure: () => {}, clock: () => time });
   for (let index = 0; index < 1024; index++) {
     subject = `user_${index}`;

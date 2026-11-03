@@ -52,7 +52,8 @@ function setup(options: { readonly enabled?: boolean; readonly signedIn?: boolea
     selectOrganization: async (id) => { tenants.events.push(`select ${id}`); selections.push(id); return { status: 'switched', cookies: [] }; } } : { status: 'signed-out', cookies: [] };
   const session: WorkOSSignupRoutesOptions['session'] = { authenticate: async () => { sessions++; return state; },
     startSignIn: async (request) => { tenants.events.push(`start ${request.screenHint}`); return { url: 'https://authkit.example/sign-up', cookies: ['sign-in=started; Secure'] }; } };
-  const activation: SignupActivation = { inspect: async () => ({ status: 'eligible' }), activate: async (request) => { calls++; tenants.events.push(`activate ${request.organizationName}`); return { status: 'active', organizationId: 'org_new' }; } };
+  const activation: SignupActivation = { inspect: async () => ({ status: 'eligible' }), activate: async (request) => { calls++; tenants.events.push(`activate ${request.organizationName}`); return { status: 'active', organizationId: 'org_new' }; },
+    findAccount: async (request) => { tenants.events.push(`find ${request.email}`); return { status: 'absent' }; } };
   const routes = new WorkOSSignupRoutes({ publicBaseUrl: 'https://thermus.example/', enabled, documents, session, activation, tenants, reportFailure: (message) => failures.push(message) });
   const starts = () => tenants.events.filter((event) => event.startsWith('start ')).length;
   return { routes, activation, tenants, state: state as SignedInBrowserSession, failures, selections, sessions: () => sessions, calls: () => calls, starts };
