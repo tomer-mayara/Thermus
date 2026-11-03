@@ -549,6 +549,18 @@ test('Given an unsupported signup request method, when it is refused, then the b
   assert.equal(world.calls(), 0);
 });
 
+test('Given the origins of the provider sign-in, when step 1 is shown before or after a POST, then its policy allows the form and the redirects to those origins once each', async () => {
+  const world = setup(true, false);
+  const routes = new WorkOSSignupRoutes({ publicBaseUrl: 'https://thermus.example/', enabled: true, documents, session: world.session, activation: world.activation,
+    reportFailure: () => {}, providerOrigins: ['https://api.workos.com/', 'https://auth.example.com', 'https://auth.example.com/authkit'] });
+  world.activation.findAccount = async () => ({ status: 'found' });
+
+  const pages = [await routes.handle(new Request('https://thermus.example/signup')), await routes.handle(postEmail('email=person%40example.com')), await routes.handle(postEmail('email=person'))];
+
+  assert.deepEqual(pages.map(({ status }) => status), [200, 409, 400]);
+  for (const page of pages) assert.ok((page.headers.get('Content-Security-Policy') ?? '').includes("form-action 'self' https://api.workos.com https://auth.example.com;"));
+});
+
 test('Given open signup, when HEAD arrives, then it gets the status and the page headers of step 1, which allow its form', async () => {
   const world = setup(true, false);
 

@@ -184,7 +184,7 @@ describe('Hosted self-service signup with a test legal bundle', () => {
     await assert.rejects(serveWorkOSSite(t, { config: hostedRootConfig, organizations: ['org_INTERNAL'], signup: { enabled: true } }), /document|bundle/i);
   });
 
-  test('Given a visitor, when signup opens, then the full notice appears before account creation', async (t) => {
+  test('Given a visitor, when signup opens, then the full notice appears before account creation, and the page policy lets its form reach the WorkOS sign-in', async (t) => {
     const site = await openSignupSite(t, true);
     const browser = new HostedBrowser(site.transport, site.publicBaseUrl);
     const answer = await browser.open('signup');
@@ -192,6 +192,10 @@ describe('Hosted self-service signup with a test legal bundle', () => {
     assert.equal(answer.status, 200);
     assert.ok(answer.body.includes(signupDocuments.notice.text));
     assert.ok(answer.body.indexOf(signupDocuments.notice.text) < answer.body.indexOf('action="/signup/start"'));
+    // The POST of step 1 redirects to the WorkOS authorization, which redirects to AuthKit. Chrome applies form-action to
+    // each redirect after the post, so the policy allows the origins of both; the fake serves both at one origin.
+    const policy = answer.headers.get('Content-Security-Policy') ?? '';
+    assert.ok(policy.includes(`form-action 'self' ${site.world.fake.origin};`), policy);
     assert.doesNotMatch(answer.body, /return_to/);
     assert.deepEqual(site.signupFake.organizations, []);
   });

@@ -84,6 +84,15 @@ test('Given step 1, when it is rendered, then one form posts the email address t
   assert.match(response.headers.get('Content-Security-Policy') ?? '', /form-action 'self'/);
 });
 
+test('Given the origins of the provider sign-in, when step 1 is rendered, then its policy lets the form post here and redirect to those origins', async () => {
+  const response = signupCreateAccountPage(documents, { ...accountPaths, providerOrigins: ['https://api.workos.com', 'https://auth.example.com'] });
+  const policy = response.headers.get('Content-Security-Policy') ?? '';
+
+  assert.ok(policy.includes("form-action 'self' https://api.workos.com https://auth.example.com;"), policy);
+  assert.equal((policy.match(/form-action /g) ?? []).length, 1);
+  assert.match(policy, /default-src 'none'/);
+});
+
 test('Given an email address that is not valid, when step 1 answers, then an alert next to the field asks for a valid address and the field keeps the typed text, escaped', async () => {
   const typed = '"><script>alert(1)</script>';
   const response = signupCreateAccountPage(documents, accountPaths, { status: 400, message: 'invalid-email', email: typed });

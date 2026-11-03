@@ -28,6 +28,8 @@ export function signupClosedPage(status = 200): Response {
 export interface AccountPaths {
   readonly creation: string;
   readonly signIn: string;
+  // The origins of the provider sign-in, where the POST of the account creation redirects.
+  readonly providerOrigins?: readonly string[];
 }
 
 // What step 1 shows after a POST of its form: the status, a message, and the typed email that the field keeps.
@@ -45,7 +47,14 @@ export function signupCreateAccountPage(documents: SignupDocuments, account: Acc
     ...accountCreationForm(account, state),
     `<p class="task-copy">${FREE_ACCESS}</p>`,
     `<p class="task-copy">Already have a Thermus account? <a href="${escapeHtml(account.signIn)}">Sign in</a> to open your workspace.</p>`,
-  ], response: { status: state.status ?? 200, headers: FORM_HEADERS } });
+  ], response: { status: state.status ?? 200, headers: accountCreationHeaders(account) } });
+}
+
+// Chrome applies form-action also to each redirect after a form post. The POST of the account creation redirects to
+// the sign-in of the provider, so the policy of step 1 also allows the provider origins.
+function accountCreationHeaders(account: AccountPaths): Readonly<Record<string, string>> {
+  const formAction = ["form-action 'self'", ...(account.providerOrigins ?? [])].join(' ');
+  return { ...FORM_HEADERS, 'Content-Security-Policy': FORM_HEADERS['Content-Security-Policy'].replace("form-action 'self'", formAction) };
 }
 
 // The form has no CSRF token: step 1 has no session yet, so the Origin check of its POST protects it. The message

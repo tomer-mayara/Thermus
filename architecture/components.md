@@ -325,8 +325,9 @@ port (SO-07). Later sign-ins and normal
 workspace choices keep their Connect destination. A failed switch does not
 repeat the grant. Existing records remain replay barriers.
 The web routes use these neutral contracts; WorkOS cookie and document-validation
-helpers remain provider-specific. Composition supplies the portal's allowed
-form destinations. The portal uses a supplied current active-organization name
+helpers remain provider-specific. Composition supplies the allowed form
+destinations of the portal and of the step 1 page of signup: the WorkOS API
+and AuthKit origins. The portal uses a supplied current active-organization name
 read for workspace display; an absent or blank name returns unavailable rather
 than a fallback identity. Profile data does not grant access.
 

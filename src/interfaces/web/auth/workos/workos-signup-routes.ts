@@ -23,6 +23,9 @@ export interface WorkOSSignupRoutesOptions {
   readonly clock?: () => number;
   // Without the tenant registry, signup checks no cap and requests no tenant.
   readonly tenants?: SignupTenants;
+  // The URLs of the provider sign-in, where the POST of step 1 redirects. The step 1 page allows their origins as form
+  // destinations.
+  readonly providerOrigins?: readonly string[];
 }
 
 // Fixed text: the operator log gets no request value and no provider detail.
@@ -52,7 +55,7 @@ export class WorkOSSignupRoutes {
     if (!base.pathname.endsWith('/')) base.pathname += '/';
     this.origin = base.origin;
     this.path = new URL('signup', base).pathname;
-    this.account = { creation: new URL('signup/start', base).pathname, signIn: new URL('login', base).pathname };
+    this.account = accountPathsOf(base, options.providerOrigins);
     this.quickStartDestination = new URL('quick-start', base);
     this.destination = new URL('organizations', base);
     this.destination.searchParams.set('return_to', base.pathname);
@@ -166,6 +169,12 @@ export class WorkOSSignupRoutes {
     if (this.documents === undefined) throw new Error('Enabled signup requires approved documents.');
     return this.documents;
   }
+}
+
+// The two ways to an account in step 1 under the public base path, and the origin of each provider sign-in URL once.
+function accountPathsOf(base: URL, providerUrls: readonly string[] = []): AccountPaths {
+  return { creation: new URL('signup/start', base).pathname, signIn: new URL('login', base).pathname,
+    providerOrigins: [...new Set(providerUrls.map((value) => new URL(value).origin))] };
 }
 
 async function creationIn(request: Request, csrfToken: string, documentVersion: string): Promise<{ readonly organizationName: string } | FormRefusal> {

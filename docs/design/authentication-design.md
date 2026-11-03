@@ -1496,11 +1496,16 @@ step 1.
    and the email in the field, and no sign-in starts. Without such a user, the
    route starts the AuthKit sign-in at its sign-up screen
    (`screen_hint=sign-up`) with the email as `login_hint`, so AuthKit fills in
-   the address, and AuthKit returns to `signup`. A read that fails gives the
-   same start and the error line `Hosted signup could not check the email
-   address.`: the check grants nothing, so its outage does not stop the
-   account creation, and AuthKit then gives its own answer. Neither the page
-   nor the log gets a provider detail. The `POST` shares the admission of the
+   the address, and AuthKit returns to `signup`. Chrome applies `form-action`
+   also to each redirect after a form post, and this `POST` redirects to the
+   authorization of the WorkOS API, which redirects to AuthKit. So the policy
+   of the step 1 page allows the origin of the WorkOS API (the base URL of the
+   SDK client) and the AuthKit issuer origin as form destinations, as the
+   portal does for sign-out. A read that fails gives the same start and the
+   error line `Hosted signup could not check the email address.`: the check
+   grants nothing, so its outage does not stop the account creation, and
+   AuthKit then gives its own answer. Neither the page nor the log gets a
+   provider detail. The `POST` shares the admission of the
    organization form: the same eight slots, and three attempts in a minute
    for each key `email:<SHA-256 hex of the address>`, so that an email key
    cannot be the same as a subject. The check tells a visitor whether an
