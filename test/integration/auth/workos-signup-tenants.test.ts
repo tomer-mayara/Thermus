@@ -19,6 +19,8 @@ function post(body = acceptedForm, origin = 'https://thermus.example'): Request 
 }
 
 const createAccount = () => new Request('https://thermus.example/signup/start');
+// The POST of the email form of step 1.
+const postEmail = () => new Request('https://thermus.example/signup/start', { method: 'POST', headers: { Origin: 'https://thermus.example', 'Content-Type': 'application/x-www-form-urlencoded' }, body: 'email=new%40example.com' });
 
 // A spy of the tenant registry port of signup: the place under the free-tenant cap that a case gives, and each check
 // and tenant request, with the organization name, in order.
@@ -52,7 +54,8 @@ function setup(options: { readonly enabled?: boolean; readonly signedIn?: boolea
     selectOrganization: async (id) => { tenants.events.push(`select ${id}`); selections.push(id); return { status: 'switched', cookies: [] }; } } : { status: 'signed-out', cookies: [] };
   const session: WorkOSSignupRoutesOptions['session'] = { authenticate: async () => { sessions++; return state; },
     startSignIn: async (request) => { tenants.events.push(`start ${request.screenHint}`); return { url: 'https://authkit.example/sign-up', cookies: ['sign-in=started; Secure'] }; } };
-  const activation: SignupActivation = { inspect: async () => ({ status: 'eligible' }), activate: async (request) => { calls++; tenants.events.push(`activate ${request.organizationName}`); return { status: 'active', organizationId: 'org_new' }; } };
+  const activation: SignupActivation = { inspect: async () => ({ status: 'eligible' }), activate: async (request) => { calls++; tenants.events.push(`activate ${request.organizationName}`); return { status: 'active', organizationId: 'org_new' }; },
+    findAccount: async (request) => { tenants.events.push(`find ${request.email}`); return { status: 'absent' }; } };
   const routes = new WorkOSSignupRoutes({ publicBaseUrl: 'https://thermus.example/', enabled, documents, session, activation, tenants, reportFailure: (message) => failures.push(message) });
   const starts = () => tenants.events.filter((event) => event.startsWith('start ')).length;
   return { routes, activation, tenants, state: state as SignedInBrowserSession, failures, selections, sessions: () => sessions, calls: () => calls, starts };
@@ -73,7 +76,7 @@ test('Given ?tier=free, another tier value, or no tier, when a signed-out or a s
 
 test('Given closed signup, when GET, HEAD, POST, or Create account arrives, then the switch answers before the cap and no tenant work starts', async () => {
   const world = setup({ enabled: false });
-  for (const request of [new Request('https://thermus.example/signup?tier=free'), new Request('https://thermus.example/signup', { method: 'HEAD' }), post(), createAccount()]) {
+  for (const request of [new Request('https://thermus.example/signup?tier=free'), new Request('https://thermus.example/signup', { method: 'HEAD' }), post(), createAccount(), postEmail()]) {
     const answer = await world.routes.handle(request);
     assert.equal(answer.headers.get('Content-Type'), 'text/html; charset=utf-8');
   }
@@ -104,6 +107,45 @@ test('Given a full free-tenant cap, when GET, HEAD, POST, or Create account arri
   assert.equal(world.sessions(), 0);
   assert.equal(world.starts(), 0);
   assert.equal(world.calls(), 0);
+});
+
+test('Given a full free-tenant cap, when step 1 posts an email, then the closed notice answers 403 after the cap read, with no account lookup or provider sign-in', async () => {
+  const world = setup();
+  world.tenants.placeAnswer = 'full';
+
+  const answer = await world.routes.handle(postEmail());
+
+  assert.equal(answer.status, 403);
+  assert.equal(answer.headers.get('Location'), null);
+  assert.match(await answer.text(), /Activation is closed/);
+  assert.deepEqual(world.tenants.events, ['place']);
+  assert.equal(world.sessions(), 0);
+});
+
+for (const failure of ['unavailable', 'exception'] as const) {
+  test(`Given a cap read that is ${failure}, when step 1 posts an email, then it reports unavailability with no account lookup or provider sign-in`, async () => {
+    const world = setup();
+    world.tenants.placeAnswer = failure === 'exception' ? new Error('private registry detail') : 'unavailable';
+
+    const answer = await world.routes.handle(postEmail());
+
+    assert.equal(answer.status, 503);
+    const html = await answer.text();
+    assert.match(html, /Activation is temporarily unavailable/);
+    assert.doesNotMatch(html, /private registry detail/);
+    assert.deepEqual(world.failures, ['Hosted signup could not read the free-tenant cap.']);
+    assert.deepEqual(world.tenants.events, ['place']);
+  });
+}
+
+test('Given a place under the cap, when step 1 posts an email without an account, then the account lookup and the provider sign-in start after the cap read', async () => {
+  const world = setup();
+
+  const answer = await world.routes.handle(postEmail());
+
+  assert.equal(answer.status, 303);
+  assert.equal(answer.headers.get('Location'), 'https://authkit.example/sign-up');
+  assert.deepEqual(world.tenants.events, ['place', 'find new@example.com', 'start sign-up']);
 });
 
 test('Given a cap read that is unavailable, when Create account is opened, then it reports unavailability and no provider sign-in starts', async () => {

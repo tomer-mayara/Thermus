@@ -202,6 +202,8 @@ async function workosProviderParts(config: RouteConfig, connection: WorkOSConnec
     activation: new WorkOSSignup({ authority, workos, directory: organizations, ...removedMembersOf(parts.loggingStorage) }),
     reportFailure: (message) => logger.error(message),
     ...(parts.signupTenants === undefined ? {} : { tenants: parts.signupTenants }),
+    // The POST of step 1 redirects to the authorization of the WorkOS API, which redirects to AuthKit.
+    providerOrigins: [workos.baseURL, settings.authkitIssuer],
   });
   const browserRoutes = {
     handles: (path: string) => signupRoutes.handles(path) || sessionRoutes.handles(path),

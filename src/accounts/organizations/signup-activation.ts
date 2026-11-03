@@ -20,9 +20,14 @@ export type SignupState =
   | { readonly status: 'eligible' | 'existing-access' | 'existing-account' | 'unavailable' | 'sign-in-required' }
   | { readonly status: 'support-required'; readonly canContinue: boolean };
 
+// found: the identity provider has a user with this email. absent: it has none. unavailable: it could not say. The
+// answer grants nothing: step 1 of signup uses it only to offer Sign in instead of the account creation.
+export type AccountLookup = { readonly status: 'found' | 'absent' | 'unavailable' };
+
 export interface SignupActivation {
   inspect(request: { readonly user: AuthenticatedUser; readonly signal: AbortSignal }): Promise<SignupState>;
   activate(request: { readonly user: AuthenticatedUser; readonly organizationName: string; readonly documents: SignupDocuments; readonly signal: AbortSignal }): Promise<SignupResult>;
+  findAccount(request: { readonly email: string; readonly signal: AbortSignal }): Promise<AccountLookup>;
 }
 
 export function organizationNameIn(value: unknown): string | undefined {

@@ -1,4 +1,4 @@
-import { signupClosedPage, signupFailurePage } from './workos-signup-pages.ts';
+import { signupClosedPage, signupUnavailablePage } from './workos-signup-pages.ts';
 
 /** The place under the free-tenant cap for a new organization. unavailable: the registry cannot say. */
 export type SignupPlace = 'open' | 'full' | 'unavailable';
@@ -53,7 +53,7 @@ export class SignupTenantHandoff {
     if (place === 'full') return signupClosedPage(request.method === 'POST' ? 403 : 200);
     if (place === 'open') return undefined;
     this.reportFailure(CAP_UNREADABLE);
-    return signupFailurePage(503, 'Activation is temporarily unavailable. Try again later.');
+    return signupUnavailablePage();
   }
 
   /**

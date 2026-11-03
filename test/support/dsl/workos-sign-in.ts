@@ -16,12 +16,13 @@ export async function signInThroughServer(site: WorkOSServerSite, user: FakeUser
   return { browser, start, callback };
 }
 
-// The account creation of free access: Create account of signup starts AuthKit at its sign-up screen, and AuthKit
-// sends the new user back to the callback.
+// The account creation of free access: step 1 of signup posts the email of the user, and an email without an account
+// starts AuthKit at its sign-up screen. AuthKit creates the user and sends it back to the callback.
 export async function signUpThroughServer(site: WorkOSServerSite, user: FakeUser): Promise<ServerSignIn> {
   const browser = new HostedBrowser(site.transport, site.publicBaseUrl);
-  const start = await browser.open('signup/start');
+  const start = await browser.post('signup/start', { email: user.email });
   const state = start.location?.searchParams.get('state') ?? '';
+  site.world.users = [...site.world.users.filter(({ id }) => id !== user.id), user];
   const callback = await browser.open(`callback?code=${site.world.codeFor(user)}&state=${encodeURIComponent(state)}`);
   return { browser, start, callback };
 }

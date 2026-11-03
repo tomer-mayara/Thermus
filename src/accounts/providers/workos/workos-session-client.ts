@@ -34,7 +34,7 @@ interface SealOptions {
 
 export interface WorkOSSessionClient {
   readonly userManagement: {
-    getAuthorizationUrlWithPKCE(options: { provider: 'authkit'; redirectUri: string; clientId: string; screenHint?: 'sign-up' }): Promise<{ url: string; state: string; codeVerifier: string }>;
+    getAuthorizationUrlWithPKCE(options: { provider: 'authkit'; redirectUri: string; clientId: string; screenHint?: 'sign-up'; loginHint?: string }): Promise<{ url: string; state: string; codeVerifier: string }>;
     authenticateWithCode(payload: {
       clientId: string;
       code: string;

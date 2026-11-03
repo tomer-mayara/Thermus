@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { hostedRolePermissions } from '../../../support/fixtures/hosted-roles.ts';
-import type { CreateOrganizationOptions, CreateOrganizationMembershipOptions, ListOrganizationMembershipsOptions } from '@workos-inc/node';
+import type { CreateOrganizationOptions, CreateOrganizationMembershipOptions, ListOrganizationMembershipsOptions, ListUsersOptions } from '@workos-inc/node';
 import type { OrganizationMembership } from '../../../../src/accounts/organizations/organization-directory.ts';
 import type { RemovedMemberStore } from '../../../../src/accounts/organizations/removal-operation-store.ts';
 import type { SignupDocuments } from '../../../../src/accounts/organizations/signup-activation.ts';
@@ -39,9 +39,14 @@ export class SignupClientFake {
   readonly organizationWrites: CreateOrganizationOptions[] = [];
   readonly membershipWrites: CreateOrganizationMembershipOptions[] = [];
   readonly membershipReads: ListOrganizationMembershipsOptions[] = [];
+  readonly userReads: ListUsersOptions[] = [];
   organization: Organization | undefined;
   memberships: Membership[] = [];
   currentUser = { id: user.subject, emailVerified: true };
+  // The users of the user list. A read by email gives the users of that address.
+  users: { readonly id: string; readonly email: string }[] = [];
+  userReadFailure = false;
+  afterUserRead?: () => void;
   existingAccess: readonly OrganizationMembership[] = [];
   roles: Roles = Object.entries(hostedRolePermissions).map(([slug, permissions]) => ({ slug, permissions: [...permissions] }));
   organizationFailure: 'before' | 'after' | undefined;
@@ -85,6 +90,13 @@ export class SignupClientFake {
 
   readonly userManagement = {
     getUser: async (_id: string) => this.currentUser,
+    // WorkOS compares addresses without letter case and gives at most the limit.
+    listUsers: async (options: ListUsersOptions) => {
+      this.userReads.push(options);
+      this.afterUserRead?.();
+      if (this.userReadFailure) throw new Error('provider secret');
+      return { data: this.users.filter((record) => record.email.toLowerCase() === options.email?.toLowerCase()).slice(0, options.limit) };
+    },
     // A read for one user gives only the records of that user, as WorkOS does.
     listOrganizationMemberships: async (options: ListOrganizationMembershipsOptions) => {
       this.membershipReads.push(options);

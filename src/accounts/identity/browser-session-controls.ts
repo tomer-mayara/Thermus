@@ -21,6 +21,8 @@ export interface BrowserSignInRequest {
   // sign-up opens the account creation screen of the provider. The provider still lets an existing account sign in
   // there, so the signup route decides eligibility after the return.
   readonly screenHint?: 'sign-up';
+  // The provider fills in this email on its screen. The person can change it, so it grants nothing.
+  readonly loginHint?: string;
 }
 
 export interface BrowserSignInStart {

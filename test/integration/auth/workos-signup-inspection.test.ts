@@ -245,3 +245,68 @@ for (const operation of ['inspect', 'activate'] as const) {
     });
   }
 }
+
+// Step 1 of free access asks WorkOS for a user of the typed email before the provider sign-up starts.
+const findAccount = (fake: SignupClientFake, email = 'person@example.com', signal = new AbortController().signal) => new WorkOSSignup(fake.options()).findAccount({ email, signal });
+
+test('Given a WorkOS user with the email, when step 1 looks up the account, then it is found after one read of at most one user of that email, without a write', async () => {
+  const fake = new SignupClientFake();
+  fake.users = [{ id: 'user_existing', email: 'person@example.com' }];
+
+  assert.deepEqual(await findAccount(fake), { status: 'found' });
+  assert.deepEqual(fake.userReads, [{ email: 'person@example.com', limit: 1 }]);
+  assert.deepEqual(fake.organizationWrites, []);
+  assert.deepEqual(fake.membershipWrites, []);
+});
+
+test('Given a WorkOS user whose email has other capital letters, when step 1 looks up the lowercase email, then it is found', async () => {
+  const fake = new SignupClientFake();
+  fake.users = [{ id: 'user_existing', email: 'Person@Example.com' }];
+
+  assert.deepEqual(await findAccount(fake), { status: 'found' });
+});
+
+test('Given no WorkOS user with the email, when step 1 looks up the account, then it is absent', async () => {
+  const fake = new SignupClientFake();
+  fake.users = [{ id: 'user_other', email: 'other@example.com' }];
+
+  assert.deepEqual(await findAccount(fake), { status: 'absent' });
+  assert.equal(fake.userReads.length, 1);
+});
+
+for (const [answer, data] of [['a user of another email', [{ email: 'other@example.com' }]], ['a user without an email', [{}]], ['no list', undefined]] as const) {
+  test(`Given WorkOS answers ${answer}, when step 1 looks up the account, then the answer is not valid and the lookup is unavailable`, async () => {
+    const fake = new SignupClientFake();
+    const options = fake.options();
+    options.workos.userManagement.listUsers = async () => ({ data } as never);
+
+    assert.deepEqual(await new WorkOSSignup(options).findAccount({ email: 'person@example.com', signal: new AbortController().signal }), { status: 'unavailable' });
+  });
+}
+
+test('Given the WorkOS user read fails, when step 1 looks up the account, then the lookup is unavailable', async () => {
+  const fake = new SignupClientFake();
+  fake.userReadFailure = true;
+
+  assert.deepEqual(await findAccount(fake), { status: 'unavailable' });
+  assert.equal(fake.userReads.length, 1);
+});
+
+test('Given a request is cancelled during the user read, when the read returns a user, then the lookup is unavailable', async () => {
+  const fake = new SignupClientFake();
+  const controller = new AbortController();
+  fake.users = [{ id: 'user_existing', email: 'person@example.com' }];
+  fake.afterUserRead = () => controller.abort();
+
+  assert.deepEqual(await findAccount(fake, 'person@example.com', controller.signal), { status: 'unavailable' });
+  assert.equal(fake.userReads.length, 1);
+});
+
+test('Given a request that is already cancelled, when step 1 looks up the account, then no user read starts and the lookup is unavailable', async () => {
+  const fake = new SignupClientFake();
+  const controller = new AbortController();
+  controller.abort();
+
+  assert.deepEqual(await findAccount(fake, 'person@example.com', controller.signal), { status: 'unavailable' });
+  assert.deepEqual(fake.userReads, []);
+});

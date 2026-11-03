@@ -305,8 +305,12 @@ uses the organizations-owned `SignupActivation` contract,
 including the requested organization name and purpose-marked legal bundle. The
 signup form calls the public organizations name validator, so this dependency
 includes runtime behavior. The dependency rules declare that existing owner pair.
-The signup route starts the account creation through the supplied session
-controls, with the sign-up screen hint, and returns to itself. The WorkOS
+The signup route takes the email of step 1 and reads whether WorkOS has a
+user with that email through `findAccount` of the same `SignupActivation`
+contract; the answer grants nothing. An email with an account gets a message
+and Sign in. Otherwise the route starts the account creation through the
+supplied session controls, with the sign-up screen hint and the email as
+login hint, and returns to itself. The WorkOS
 adapter refuses an account with any membership record, and an account with a
 removed-member record, which it reads last through the supplied
 organizations-owned `RemovedMemberStore` role of the same SQL adapter that the
@@ -321,8 +325,9 @@ port (SO-07). Later sign-ins and normal
 workspace choices keep their Connect destination. A failed switch does not
 repeat the grant. Existing records remain replay barriers.
 The web routes use these neutral contracts; WorkOS cookie and document-validation
-helpers remain provider-specific. Composition supplies the portal's allowed
-form destinations. The portal uses a supplied current active-organization name
+helpers remain provider-specific. Composition supplies the allowed form
+destinations of the portal and of the step 1 page of signup: the WorkOS API
+and AuthKit origins. The portal uses a supplied current active-organization name
 read for workspace display; an absent or blank name returns unavailable rather
 than a fallback identity. Profile data does not grant access.
 

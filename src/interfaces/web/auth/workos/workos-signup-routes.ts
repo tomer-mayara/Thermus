@@ -5,32 +5,31 @@ import { readForm, type FormRefusal } from '../../account/account-form.ts';
 import { noticePage, seeOther } from './workos-session-pages.ts';
 import { validateSignupDocuments } from '../../../../accounts/providers/workos/workos-signup-documents.ts';
 import { signupRequestIn } from './workos-signup-form.ts';
-import { signupClosedPage, signupContinuePage, signupCreateAccountPage, signupExistingAccountPage, signupFailurePage, signupFormPage, signupRequestNotice, type AccountPaths } from './workos-signup-pages.ts';
+import { signupClosedPage, signupContinuePage, signupCreateAccountPage, signupExistingAccountPage, signupFailurePage, signupFormPage, signupRequestNotice, signupUnavailablePage, type AccountCreationState, type AccountPaths } from './workos-signup-pages.ts';
 import type { SignupActivation, SignupDocuments, SignupResult } from '../../../../accounts/organizations/signup-activation.ts';
 import { SignupTenantHandoff, type RequestOperation, type SignupTenants } from './workos-signup-tenants.ts';
+import { limitedAnswer, SignupAdmission } from './workos-signup-admission.ts';
+import { SignupStart } from './workos-signup-start.ts';
 
 export interface WorkOSSignupRoutesOptions {
   readonly publicBaseUrl: string;
   readonly enabled: boolean;
   readonly documents?: SignupDocuments;
-  // Signup reads the session. Create account starts the account creation of the provider and returns to signup.
+  // Signup reads the session. Create account looks up the email and starts the account creation of the provider, which
+  // returns to signup.
   readonly session: BrowserSession & Pick<BrowserSessionControls, 'startSignIn'>;
   readonly activation: SignupActivation;
   readonly reportFailure: (message: string) => void;
   readonly clock?: () => number;
   // Without the tenant registry, signup checks no cap and requests no tenant.
   readonly tenants?: SignupTenants;
+  // The URLs of the provider sign-in, where the POST of step 1 redirects. The step 1 page allows their origins as form
+  // destinations.
+  readonly providerOrigins?: readonly string[];
 }
 
-// Process-local admission only: eight concurrent POSTs, three attempts per subject per minute, at most 1,024
-// subjects retained. A full table refuses new subjects until an entry expires. It is not a global provider quota.
-const MAX_CONCURRENT_POSTS = 8;
-const MAX_SUBJECTS = 1024;
-const ATTEMPTS_PER_MINUTE = 3;
-const WINDOW_MS = 60_000;
-// Fixed texts: the operator log and the page get no request value and no provider detail.
+// Fixed text: the operator log gets no request value and no provider detail.
 const REQUEST_FAILED = 'Hosted signup request failed.';
-const UNAVAILABLE = 'Activation is temporarily unavailable. Try again later.';
 
 export class WorkOSSignupRoutes {
   private readonly options: WorkOSSignupRoutesOptions;
@@ -42,10 +41,10 @@ export class WorkOSSignupRoutes {
   private readonly destination: URL;
   private readonly selector: string;
   private readonly quickStartDestination: URL;
-  private readonly clock: () => number;
+  private readonly admission: SignupAdmission;
   private readonly handoff?: SignupTenantHandoff;
-  private readonly attempts = new Map<string, { until: number; count: number }>();
-  private pending = 0;
+  // Step 1: the account creation at the account creation path.
+  private readonly start: SignupStart;
 
   constructor(options: WorkOSSignupRoutesOptions) {
     this.options = options;
@@ -56,13 +55,17 @@ export class WorkOSSignupRoutes {
     if (!base.pathname.endsWith('/')) base.pathname += '/';
     this.origin = base.origin;
     this.path = new URL('signup', base).pathname;
-    this.account = { creation: new URL('signup/start', base).pathname, signIn: new URL('login', base).pathname };
+    this.account = accountPathsOf(base, options.providerOrigins);
     this.quickStartDestination = new URL('quick-start', base);
     this.destination = new URL('organizations', base);
     this.destination.searchParams.set('return_to', base.pathname);
     this.selector = this.destination.pathname + this.destination.search;
-    this.clock = options.clock ?? Date.now;
+    this.admission = new SignupAdmission(options.clock ?? Date.now);
     if (options.tenants !== undefined) this.handoff = new SignupTenantHandoff(options.tenants, options.reportFailure);
+    this.start = new SignupStart({
+      enabled: options.enabled, origin: this.origin, returnTo: this.path, session: options.session, activation: options.activation,
+      admission: this.admission, handoff: this.handoff, reportFailure: options.reportFailure, accountPage: (state) => this.createAccountPage(state),
+    });
   }
 
   handles(pathname: string): boolean {
@@ -72,7 +75,7 @@ export class WorkOSSignupRoutes {
   async handle(request: Request): Promise<Response> {
     request.signal.throwIfAborted();
     const pathname = new URL(request.url).pathname;
-    if (pathname === this.account.creation) return this.handleStart(request);
+    if (pathname === this.account.creation) return this.start.handle(request);
     if (pathname !== this.path) return signupRequestNotice(noticePage('notFound'));
     if (!['GET', 'HEAD', 'POST'].includes(request.method)) return signupRequestNotice(noticePage('methodNotAllowed', { Allow: 'GET, HEAD, POST' }));
     // Only the free tier exists, so the route ignores the tier of the marketing link (plan section 4.2).
@@ -81,57 +84,19 @@ export class WorkOSSignupRoutes {
     return this.handleEnabled(request);
   }
 
-  // HEAD gets the headers of the page that GET gives before the session: closed with the switch off or a full cap.
+  // HEAD gets the headers of the page that GET gives before the session: closed with the switch off or a full cap, and
+  // else step 1.
   private async headAnswer(request: Request): Promise<Response> {
     const closed = this.options.enabled ? await this.handoff?.closedAnswer(request, (start) => waitForRequest(request.signal, start)) : signupClosedPage();
-    const answer = closed ?? signupFailurePage(200, 'Create your account to start free access.');
+    const answer = closed ?? this.createAccountPage();
     return new Response(null, { status: answer.status, headers: answer.headers });
   }
 
-  // Create account starts the account creation at the sign-up screen of the provider, which returns to signup. Like the
-  // sign-in route, it reads no session and needs no Origin check. HEAD gets the status and headers of GET.
-  private async handleStart(request: Request): Promise<Response> {
-    if (request.method !== 'GET' && request.method !== 'HEAD') return signupRequestNotice(noticePage('methodNotAllowed', { Allow: 'GET, HEAD' }));
-    const answer = await this.startAnswer(request);
-    return request.method === 'HEAD' ? new Response(null, { status: answer.status, headers: answer.headers }) : answer;
-  }
-
-  // Closed signup and a full cap start no provider sign-in.
-  private async startAnswer(request: Request): Promise<Response> {
-    if (!this.options.enabled) return signupClosedPage();
-    const run: RequestOperation = (start) => waitForRequest(request.signal, start);
-    try {
-      const closed = await this.handoff?.closedAnswer(request, run);
-      if (closed !== undefined) return closed;
-      const start = await run(() => this.options.session.startSignIn({ returnTo: this.path, screenHint: 'sign-up' }));
-      return seeOther(start.url, start.cookies);
-    } catch (error) {
-      if (request.signal.aborted) throw error;
-      this.options.reportFailure(REQUEST_FAILED);
-      return signupFailurePage(503, UNAVAILABLE);
-    }
-  }
-
+  // A POST runs in an admission slot, after the Origin check.
   private async handleEnabled(request: Request): Promise<Response> {
-    const post = request.method === 'POST';
-    if (post && request.headers.get('Origin') !== this.origin) return signupRequestNotice(noticePage('forgedRequest'));
-    if (post && this.pending >= MAX_CONCURRENT_POSTS) return limited();
-    if (post) this.pending++;
-    let outstanding: Promise<unknown> | undefined;
-    const run: RequestOperation = (start) => waitForRequest(request.signal, () => {
-      const operation = start();
-      outstanding = operation;
-      return operation;
-    });
-    try {
-      return await this.answerSession(request, run);
-    } finally {
-      if (post) {
-        // A disconnected request still holds its slot until its last provider operation settles.
-        if (outstanding === undefined) this.pending--;
-        else void outstanding.then(() => { this.pending--; }, () => { this.pending--; });
-      }
-    }
+    if (request.method !== 'POST') return this.answerSession(request, (start) => waitForRequest(request.signal, start));
+    if (request.headers.get('Origin') !== this.origin) return signupRequestNotice(noticePage('forgedRequest'));
+    return await this.admission.inSlot(request, (run) => this.answerSession(request, run)) ?? limitedAnswer();
   }
 
   private async answerSession(request: Request, run: RequestOperation): Promise<Response> {
@@ -143,13 +108,13 @@ export class WorkOSSignupRoutes {
       const state = await run(() => this.options.session.authenticate(request.headers.get('Cookie')));
       request.signal.throwIfAborted();
       cookies = state.cookies;
-      if (state.status === 'signed-out') return withCookies(this.createAccountPage(request.method === 'GET' ? 200 : 401), cookies);
+      if (state.status === 'signed-out') return withCookies(this.createAccountPage({ status: request.method === 'GET' ? 200 : 401 }), cookies);
       const answer = request.method === 'GET' ? await this.inspectSignup(request, state, run) : await this.activateForm(request, state, run);
       return withCookies(answer, cookies);
     } catch (error) {
       if (request.signal.aborted) throw error;
       this.options.reportFailure(REQUEST_FAILED);
-      return withCookies(signupFailurePage(503, UNAVAILABLE), cookies);
+      return withCookies(signupUnavailablePage(), cookies);
     }
   }
 
@@ -161,11 +126,11 @@ export class WorkOSSignupRoutes {
     if (result.status === 'existing-account') return signupExistingAccountPage(this.selector);
     if (result.status === 'eligible') return signupFormPage(this.requireDocuments(), state.csrfToken, this.path);
     if (result.status === 'support-required') return signupFailurePage(409, 'Contact support to review this activation.', result.canContinue ? this.selector : undefined);
-    return signupFailurePage(503, UNAVAILABLE);
+    return signupUnavailablePage();
   }
 
   private async activateForm(request: Request, state: SignedInBrowserSession, run: RequestOperation): Promise<Response> {
-    if (!this.admit(state.user.subject)) return limited();
+    if (!this.admission.admit(state.user.subject)) return limitedAnswer();
     const documents = this.requireDocuments();
     const creation = await creationIn(request, state.csrfToken, documents.version);
     if (typeof creation === 'string') return signupRequestNotice(noticePage(creation));
@@ -186,37 +151,30 @@ export class WorkOSSignupRoutes {
   }
 
   private activationAnswer(result: SignupResult): Response {
-    if (result.status === 'sign-in-required') return this.createAccountPage(401);
+    if (result.status === 'sign-in-required') return this.createAccountPage({ status: 401 });
     if (result.status === 'existing-access') return seeOther(this.destination.href, []);
     if (result.status === 'existing-account') return signupExistingAccountPage(this.selector, 403);
     if (result.status === 'unverified') return signupFailurePage(403, 'Verify your email before you activate access.');
     if (result.status === 'support-required') return signupFailurePage(409, 'Contact support to review this activation.');
-    return signupFailurePage(503, UNAVAILABLE);
+    return signupUnavailablePage();
   }
 
-  // Step 1 of free access: the notice, Create account, and a sign-in line for a person who has an account.
-  private createAccountPage(status = 200): Response {
-    return signupCreateAccountPage(this.requireDocuments(), this.account, status);
+  // Step 1 of free access: the notice, the email form of Create account, and a sign-in line for a person who has an
+  // account. After a POST of the form, it also shows the answer to the posted email.
+  private createAccountPage(state: AccountCreationState = {}): Response {
+    return signupCreateAccountPage(this.requireDocuments(), this.account, state);
   }
 
   private requireDocuments(): SignupDocuments {
     if (this.documents === undefined) throw new Error('Enabled signup requires approved documents.');
     return this.documents;
   }
+}
 
-  private admit(subject: string): boolean {
-    const now = this.clock();
-    for (const [key, entry] of this.attempts) if (entry.until <= now) this.attempts.delete(key);
-    const prior = this.attempts.get(subject);
-    if (prior !== undefined) {
-      if (prior.count >= ATTEMPTS_PER_MINUTE) return false;
-      prior.count++;
-      return true;
-    }
-    if (this.attempts.size >= MAX_SUBJECTS) return false;
-    this.attempts.set(subject, { until: now + WINDOW_MS, count: 1 });
-    return true;
-  }
+// The two ways to an account in step 1 under the public base path, and the origin of each provider sign-in URL once.
+function accountPathsOf(base: URL, providerUrls: readonly string[] = []): AccountPaths {
+  return { creation: new URL('signup/start', base).pathname, signIn: new URL('login', base).pathname,
+    providerOrigins: [...new Set(providerUrls.map((value) => new URL(value).origin))] };
 }
 
 async function creationIn(request: Request, csrfToken: string, documentVersion: string): Promise<{ readonly organizationName: string } | FormRefusal> {
@@ -225,11 +183,6 @@ async function creationIn(request: Request, csrfToken: string, documentVersion: 
   return typeof form === 'string' ? form : signupRequestIn(form, csrfToken, documentVersion);
 }
 
-function limited(): Response {
-  const answer = signupFailurePage(429, 'Too many activation requests. Try again later.');
-  answer.headers.set('Retry-After', '60');
-  return answer;
-}
 
 function withCookies(answer: Response, cookies: CookieEffects): Response {
   const headers = new Headers([...answer.headers].filter(([name]) => name !== 'set-cookie'));

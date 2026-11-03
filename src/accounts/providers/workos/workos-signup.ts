@@ -3,8 +3,9 @@ import type { CreateOrganizationOptions, CreateOrganizationMembershipOptions, Li
 import type { AuthenticatedUser } from '../../identity/access-context.ts';
 import type { OrganizationDirectory } from '../../organizations/organization-directory.ts';
 import type { RemovedMemberStore } from '../../organizations/removal-operation-store.ts';
-import { organizationNameIn, type SignupActivation, type SignupDocuments, type SignupResult, type SignupState } from '../../organizations/signup-activation.ts';
+import { organizationNameIn, type AccountLookup, type SignupActivation, type SignupDocuments, type SignupResult, type SignupState } from '../../organizations/signup-activation.ts';
 import { grantsOfRoles, type RoleRecord } from './hosted-role-mapping.ts';
+import { lookUpAccount, type UsersByEmail } from './workos-account-lookup.ts';
 import { unlessNotFound } from './workos-answers.ts';
 import { validateSignupDocuments } from './workos-signup-documents.ts';
 
@@ -40,7 +41,7 @@ export interface WorkOSSignupOptions {
       getOrganization(id: string): Promise<SignupOrganization>;
       createOrganization(options: CreateOrganizationOptions): Promise<SignupOrganization>;
     };
-    readonly userManagement: {
+    readonly userManagement: UsersByEmail & {
       getUser(userId: string): Promise<{ readonly id: string; readonly emailVerified: boolean }>;
       listOrganizationMemberships(options: ListOrganizationMembershipsOptions): Promise<{ readonly data: readonly Membership[]; readonly listMetadata: { readonly after?: string | null } }>;
       createOrganizationMembership(options: CreateOrganizationMembershipOptions): Promise<Membership>;
@@ -103,6 +104,10 @@ export class WorkOSSignup implements SignupActivation {
     } catch {
       return UNAVAILABLE;
     }
+  }
+
+  findAccount(request: Parameters<SignupActivation['findAccount']>[0]): Promise<AccountLookup> {
+    return lookUpAccount(this.options.workos.userManagement, request);
   }
 
   private currentUser(subject: string): Promise<{ readonly id: string; readonly emailVerified: boolean } | undefined> {

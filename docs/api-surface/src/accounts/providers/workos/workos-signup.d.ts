@@ -1,8 +1,9 @@
 import type { CreateOrganizationOptions, CreateOrganizationMembershipOptions, ListOrganizationMembershipsOptions } from '@workos-inc/node';
 import type { OrganizationDirectory } from '../../organizations/organization-directory.ts';
 import type { RemovedMemberStore } from '../../organizations/removal-operation-store.ts';
-import { type SignupActivation, type SignupResult, type SignupState } from '../../organizations/signup-activation.ts';
+import { type AccountLookup, type SignupActivation, type SignupResult, type SignupState } from '../../organizations/signup-activation.ts';
 import { type RoleRecord } from './hosted-role-mapping.ts';
+import { type UsersByEmail } from './workos-account-lookup.ts';
 type InspectionRequest = Parameters<SignupActivation['inspect']>[0];
 type ActivationRequest = Parameters<SignupActivation['activate']>[0];
 interface SignupOrganization {
@@ -29,7 +30,7 @@ export interface WorkOSSignupOptions {
             getOrganization(id: string): Promise<SignupOrganization>;
             createOrganization(options: CreateOrganizationOptions): Promise<SignupOrganization>;
         };
-        readonly userManagement: {
+        readonly userManagement: UsersByEmail & {
             getUser(userId: string): Promise<{
                 readonly id: string;
                 readonly emailVerified: boolean;
@@ -57,6 +58,7 @@ export declare class WorkOSSignup implements SignupActivation {
     constructor(options: WorkOSSignupOptions);
     inspect(request: InspectionRequest): Promise<SignupState>;
     activate(request: ActivationRequest): Promise<SignupResult>;
+    findAccount(request: Parameters<SignupActivation['findAccount']>[0]): Promise<AccountLookup>;
     private currentUser;
     private chooseWorkspace;
     private accountState;
