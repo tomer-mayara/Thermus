@@ -37,8 +37,10 @@ runtime, `fleet.ts list` ended there with
 `The tenant registry cannot be read. Nothing changed.` ([SO-12 step 11](self-onboarding-s2-release.md#step-11-release-of-main-7b1ce3b6-2-november-2026),
 the tenant upgrade).
 
-The production control plane runs with `MCP_TENANTS_ENABLED` off until step 6
-of the SO-12 order, so production has no tenant yet.
+Since step 6 of the SO-12 order (1 November 2026), the production control
+plane runs with `MCP_TENANTS_ENABLED` on. On 2 November 2026, production had
+two live tenants, both on the released image ([SO-12 step 12](self-onboarding-s2-release.md#step-12-release-of-main-007f3db2-2-november-2026),
+the tenant upgrade). The fleet command `list` gives the current rows.
 
 | Situation | Runbook |
 | --- | --- |
