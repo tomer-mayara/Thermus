@@ -119,7 +119,7 @@ test('Given an email address that has an account, when step 1 answers, then an a
   const message = page.querySelector('form .form-message');
   assert.ok(message);
   assert.equal(message.getAttribute('role'), 'alert');
-  assert.equal(message.textContent, 'An account with this email address already exists. Sign in to open your workspace.');
+  assert.equal(message.textContent, 'An account with this email address already exists. Sign in to create your organization or to open your workspace.');
   assert.equal(message.querySelector('a')?.getAttribute('href'), '/app/login');
   assert.equal(message.querySelector('a')?.textContent, 'Sign in');
   assert.equal(page.querySelector('form')?.getAttribute('action'), '/app/signup/start');

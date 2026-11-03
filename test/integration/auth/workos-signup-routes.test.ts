@@ -126,7 +126,7 @@ test('Given an email that has an account, when step 1 posts it, then step 1 answ
   assert.deepEqual(answer.headers.getSetCookie(), []);
   assert.match(answer.headers.get('Content-Security-Policy') ?? '', /form-action 'self'/);
   const page = parseHTML(await answer.text()).document;
-  assert.equal(page.querySelector('.form-message')?.textContent, 'An account with this email address already exists. Sign in to open your workspace.');
+  assert.equal(page.querySelector('.form-message')?.textContent, 'An account with this email address already exists. Sign in to create your organization or to open your workspace.');
   assert.equal(page.querySelector('.form-message a')?.getAttribute('href'), '/login');
   assert.equal(page.querySelector('form')?.getAttribute('action'), '/signup/start');
   assert.equal(page.querySelector('input[name="email"]')?.getAttribute('value'), 'person@example.com');

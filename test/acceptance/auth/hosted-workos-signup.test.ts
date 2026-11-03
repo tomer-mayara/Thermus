@@ -504,7 +504,7 @@ describe('Step 1 of free access checks the email address before AuthKit opens', 
     const page = parseHTML(answer.body).document;
     const message = page.querySelector('.task-card .form-message');
     assert.ok(message, answer.body);
-    assert.match(message.textContent, /^An account with this email address already exists\. Sign in to open your workspace\.$/);
+    assert.match(message.textContent, /^An account with this email address already exists\. Sign in to create your organization or to open your workspace\.$/);
     assert.equal(message.getAttribute('role'), 'alert');
     assert.equal(message.querySelector('a[href="/login"]')?.textContent, 'Sign in');
     assert.equal(page.querySelector('input[name="email"]')?.getAttribute('value'), 'person@example.com');

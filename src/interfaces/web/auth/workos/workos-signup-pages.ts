@@ -70,7 +70,7 @@ function accountCreationForm(account: AccountPaths, state: AccountCreationState)
 
 function accountMessage(message: NonNullable<AccountCreationState['message']>, account: AccountPaths): string {
   if (message === 'invalid-email') return 'Enter a valid email address.';
-  return `An account with this email address already exists. <a href="${escapeHtml(account.signIn)}">Sign in</a> to open your workspace.`;
+  return `An account with this email address already exists. <a href="${escapeHtml(account.signIn)}">Sign in</a> to create your organization or to open your workspace.`;
 }
 
 export function signupFormPage(documents: SignupDocuments, csrfToken: string, action: string): Response {
