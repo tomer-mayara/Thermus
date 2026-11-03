@@ -198,7 +198,7 @@ test('Given a place under the cap and confirmed creation, when the form is poste
   assert.deepEqual(world.failures, []);
 });
 
-for (const result of [{ status: 'existing-access' }, { status: 'support-required' }, { status: 'unverified' }, { status: 'unavailable' }, { status: 'sign-in-required' }] as const) {
+for (const result of [{ status: 'support-required' }, { status: 'unverified' }, { status: 'unavailable' }, { status: 'sign-in-required' }] as const) {
   test(`Given an activation result ${result.status}, when the form is posted, then no tenant is requested`, async () => {
     const world = setup();
     world.activation.activate = async () => result;

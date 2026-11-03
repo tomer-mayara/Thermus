@@ -2,7 +2,6 @@ import { createHash } from 'node:crypto';
 import type { CreateOrganizationOptions, CreateOrganizationMembershipOptions, ListOrganizationMembershipsOptions, OrganizationMembershipStatus } from '@workos-inc/node';
 import type { AuthenticatedUser } from '../../identity/access-context.ts';
 import type { OrganizationDirectory } from '../../organizations/organization-directory.ts';
-import type { RemovedMemberStore } from '../../organizations/removal-operation-store.ts';
 import { organizationNameIn, type AccountLookup, type SignupActivation, type SignupDocuments, type SignupResult, type SignupState } from '../../organizations/signup-activation.ts';
 import { grantsOfRoles, type RoleRecord } from './hosted-role-mapping.ts';
 import { lookUpAccount, type UsersByEmail } from './workos-account-lookup.ts';
@@ -50,9 +49,9 @@ export interface WorkOSSignupOptions {
       listOrganizationRoles(organizationId: string): Promise<{ readonly data: readonly RoleRecord[] }>;
     };
   };
+  // Tells if the account has product access in another organization. Signup reads it only to offer Continue when the
+  // organization that the account created needs support.
   readonly directory: Pick<OrganizationDirectory, 'membershipsOf'>;
-  // Without hosted storage, no member removal runs, so no removed-member record can exist.
-  readonly removedMembers?: Pick<RemovedMemberStore, 'readRemovedMember'>;
   readonly clock?: () => Date;
 }
 
@@ -65,8 +64,10 @@ const MEMBERSHIP_STATUSES: readonly OrganizationMembershipStatus[] = Object.free
 const RECORD_KEYS = ['schema', 'subject', 'authority_accepted_at', 'documents_version', 'terms_version', 'terms_sha256', 'notice_version', 'notice_sha256', 'agreement_version', 'agreement_sha256'];
 const LEGACY_RECORD_KEYS = ['schema', 'subject', 'accepted_at', 'documents_version', 'terms_version', 'terms_sha256', 'notice_version', 'notice_sha256', 'agreement_version'];
 
-// The retained external ID makes only a confirmed new-create response a grant authority. An uncertain write or a
-// later request can read access, but cannot create or restore a membership. The client must have retries disabled.
+// Free access creates one organization for each account. The retained external ID of the account is the barrier:
+// while an organization has it, signup creates no other organization. It is also the only grant authority: only a
+// confirmed new-create response for it can grant the first Admin. An uncertain write or a later request can read
+// access, but cannot create or restore a membership. The client must have retries disabled.
 export class WorkOSSignup implements SignupActivation {
   constructor(private readonly options: WorkOSSignupOptions) {}
 
@@ -80,12 +81,10 @@ export class WorkOSSignup implements SignupActivation {
       if (current.id !== user.subject) return UNAVAILABLE;
       const existing = await this.findOrganization(personalExternalId(user));
       signal.throwIfAborted();
-      if (existing !== undefined) {
-        const access = await this.savedAccess(existing, request);
-        if (access.status === 'active') return { status: 'existing-access' };
-        return { status: 'support-required', canContinue: await this.hasProductAccess(request, existing.id) };
-      }
-      return { status: await this.accountState(request) };
+      if (existing === undefined) return { status: 'eligible' };
+      const access = await this.savedAccess(existing, request);
+      if (access.status === 'active') return { status: 'existing-access' };
+      return { status: 'support-required', canContinue: await this.hasProductAccess(request, existing.id) };
     } catch {
       return UNAVAILABLE;
     }
@@ -114,51 +113,22 @@ export class WorkOSSignup implements SignupActivation {
     return unlessNotFound(() => this.options.workos.userManagement.getUser(subject));
   }
 
+  // The lookup of the retained external ID comes before each create. Memberships in other organizations and
+  // removed-member records do not stop the one creation of the account.
   private async chooseWorkspace(request: ActivationRequest): Promise<SignupResult> {
     const { user, signal } = request;
     const existing = await this.findOrganization(personalExternalId(user));
     signal.throwIfAborted();
-    if (existing !== undefined) return this.savedAccess(existing, request);
-    const account = await this.accountState(request);
-    return account === 'eligible' ? this.createOrganization(request) : { status: account };
+    return existing === undefined ? this.createOrganization(request) : this.savedAccess(existing, request);
   }
 
-  // Free access creates new accounts only. Product access comes first, so that existing access can continue. Then one
-  // membership record of any status, or a removed-member record, makes an existing account. A user without a record
-  // can still finish an interrupted signup. The removed-member read is last, so that a WorkOS record causes no
-  // database read.
-  private async accountState(request: InspectionRequest): Promise<'existing-access' | 'existing-account' | 'eligible'> {
-    if (await this.hasProductAccess(request)) return 'existing-access';
-    if (await this.hasMembershipRecord(request)) return 'existing-account';
-    return await this.hasRemovedMemberRecord(request) ? 'existing-account' : 'eligible';
-  }
-
-  private async hasProductAccess({ user, signal }: InspectionRequest, excludedOrganizationId?: string): Promise<boolean> {
+  // Product access in an organization other than the one that the account created.
+  private async hasProductAccess({ user, signal }: InspectionRequest, excludedOrganizationId: string): Promise<boolean> {
     signal.throwIfAborted();
     const memberships = await this.options.directory.membershipsOf(user);
     signal.throwIfAborted();
     return memberships.some((membership) => membership.organizationId !== excludedOrganizationId && membership.active
       && membership.grants.some((grant) => grant.permissions.includes('product:access')));
-  }
-
-  private async hasMembershipRecord({ user, signal }: InspectionRequest): Promise<boolean> {
-    signal.throwIfAborted();
-    const page = await this.options.workos.userManagement.listOrganizationMemberships({ userId: user.subject, statuses: [...MEMBERSHIP_STATUSES], limit: 1 });
-    signal.throwIfAborted();
-    if (page.data.some((record) => record.userId !== user.subject)) throw new Error('Invalid signup membership response');
-    return page.data.length > 0;
-  }
-
-  // WorkOS keeps no record of a membership that an Admin removed, so the removal keeps its own record. Each answer
-  // other than found or absent throws, so that a storage failure cannot make the user eligible.
-  private async hasRemovedMemberRecord({ user, signal }: InspectionRequest): Promise<boolean> {
-    if (this.options.removedMembers === undefined) return false;
-    signal.throwIfAborted();
-    const record = await this.options.removedMembers.readRemovedMember({ authority: user.authority, subject: user.subject });
-    signal.throwIfAborted();
-    if (record.status === 'absent') return false;
-    if (record.status === 'found') return true;
-    throw new Error('Removed-member record is unavailable');
   }
 
   private async createOrganization(request: ActivationRequest): Promise<SignupResult> {

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { test } from 'node:test';
 import { parseHTML } from 'linkedom';
-import { signupClosedPage, signupContinuePage, signupCreateAccountPage, signupExistingAccountPage, signupFailurePage, signupFormPage } from '../../../src/interfaces/web/auth/workos/workos-signup-pages.ts';
+import { signupClosedPage, signupContinuePage, signupCreateAccountPage, signupFailurePage, signupFormPage } from '../../../src/interfaces/web/auth/workos/workos-signup-pages.ts';
 
 const documentOf = (text: string) => ({ version: 'legal-v1', text, sha256: createHash('sha256').update(text).digest('hex') });
 const documents = { version: 'bundle-v1', terms: documentOf('# Terms\n\nOriginal terms.'), notice: documentOf('# Notice\n\nOriginal notice.'), agreement: { version: 'agreement-v1', text: 'I agree to these exact terms.\n' } };
@@ -154,12 +154,10 @@ test('Given the creation page, when it is rendered, then an editable name and on
   assert.equal(page.querySelector('button[type="submit"]')?.hasAttribute('disabled'), false);
 });
 
-test('Given closed, existing-access, existing-account and failed signup states, when shown, then each branded notice keeps its status and offers a safe recovery action', async () => {
+test('Given closed, existing-access and failed signup states, when shown, then each branded notice keeps its status and offers a safe recovery action', async () => {
   const cases = [
     { response: signupClosedPage(403), status: 403, link: '/login', label: 'Sign in' },
     { response: signupContinuePage('/organizations?return_to=%2F'), status: 200, link: '/organizations?return_to=%2F', label: 'Continue' },
-    { response: signupExistingAccountPage('/organizations?return_to=%2F'), status: 200, link: '/organizations?return_to=%2F', label: 'Open your workspace' },
-    { response: signupExistingAccountPage('/organizations?return_to=%2F', 403), status: 403, link: 'mailto:legal@thermus.ai', label: 'Contact' },
     { response: signupFailurePage(409, 'Contact support.', '/organizations?return_to=%2F'), status: 409, link: 'mailto:legal@thermus.ai', label: 'Contact' },
     { response: signupFailurePage(503, 'Try again later.'), status: 503, link: '/signup', label: 'Open signup again' },
     { response: signupFailurePage(401, 'Sign in before activation.'), status: 401, link: '/login?return_to=%2Fsignup', label: 'Sign in again' },
@@ -172,4 +170,16 @@ test('Given closed, existing-access, existing-account and failed signup states, 
     assert.equal(recovery?.getAttribute('href'), link);
     assert.equal(page.querySelectorAll('form').length, 0);
   }
+});
+
+test('Given an account whose organization exists, when the continue notice renders, then it says each account can create one organization and offers Continue', async () => {
+  const response = signupContinuePage('/organizations?return_to=%2F');
+  const page = parseHTML(await response.text()).document;
+
+  assert.equal(response.status, 200);
+  assert.equal(page.querySelector('title')?.textContent, 'Your organization exists · Thermus');
+  assert.equal(page.querySelector('h1')?.textContent, 'Your organization exists');
+  assert.equal(page.querySelector('.notice-message')?.textContent, 'Each Thermus account can create one organization through free access. This account already created its organization. Continue to open it.');
+  assert.deepEqual([...page.querySelectorAll('.task-card a')].map((anchor) => [anchor.textContent, anchor.getAttribute('href')]), [['Continue', '/organizations?return_to=%2F']]);
+  assert.equal(page.querySelectorAll('form, input').length, 0);
 });

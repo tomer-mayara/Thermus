@@ -8,16 +8,16 @@ export interface SignupDocuments {
   readonly agreement: { readonly version: string; readonly text: string };
 }
 
-// existing-access: current product access in an organization. existing-account: a membership record of any status
-// (active, pending, or inactive) without current product access. eligible: no membership record and no retained
-// signup organization. Only an eligible user can create an organization.
 export type SignupResult =
   // Active means that a current read confirmed usable membership in this organization.
   | { readonly status: 'active'; readonly organizationId: string }
-  | { readonly status: 'existing-access' | 'existing-account' | 'unverified' | 'support-required' | 'unavailable' | 'sign-in-required' };
+  | { readonly status: 'unverified' | 'support-required' | 'unavailable' | 'sign-in-required' };
 
+// Each account can create one organization through free access. existing-access: this account already created its
+// organization and can use it. eligible: no organization that this account created is retained, so the account can
+// create one. Memberships in other organizations do not change the state.
 export type SignupState =
-  | { readonly status: 'eligible' | 'existing-access' | 'existing-account' | 'unavailable' | 'sign-in-required' }
+  | { readonly status: 'eligible' | 'existing-access' | 'unavailable' | 'sign-in-required' }
   | { readonly status: 'support-required'; readonly canContinue: boolean };
 
 // found: the identity provider has a user with this email. absent: it has none. unavailable: it could not say. The

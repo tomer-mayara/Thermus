@@ -25,7 +25,7 @@ export interface RemovalOperationStore {
 }
 
 // A member that Thermus removed from an organization, kept before the deletion at the provider, which keeps no record
-// of a deleted membership. Free access reads it: a person who had a membership cannot create a new organization.
+// of a deleted membership. The record is the audit evidence of the removal. Signup does not read it.
 export interface RemovedMember {
   readonly authority: string;
   readonly subject: string;

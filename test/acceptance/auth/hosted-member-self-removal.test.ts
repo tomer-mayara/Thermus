@@ -34,7 +34,7 @@ test('Given an Admin with another eligible membership, when the Admin removes it
   assert.equal(JSON.parse(access.body).organizationId, otherOrganization);
 });
 
-test('Given an invited Admin without another membership or creator record, when the Admin removes itself and follows guidance, then no-membership invitation guidance is usable and signup refuses the removed account without restoring access', async (t) => {
+test('Given an invited Admin without another membership or creator record, when the Admin removes itself and follows guidance, then no-membership invitation guidance is usable, signup offers the organization form, and the new organization restores no access to the old organization', async (t) => {
   const site = await serveMemberRemovalSite(t);
   const { browser } = await signInThroughServer(site, removalAdmin, removalOrganization);
   const oldToken = await site.world.connectToken(removalAdmin, { org_id: removalOrganization });
@@ -46,15 +46,25 @@ test('Given an invited Admin without another membership or creator record, when 
   assert.match(selector.body, /accept the invitation in the email/);
   assert.match(selector.body, /Check free signup availability/);
   assert.deepEqual(formsIn(selector.body), []);
-  // The removed Admin had a Thermus account, so free access keeps its removed-member record and offers no form.
+  assert.equal((await browser.open('portal/access')).status, 403);
+  // Member removal keeps the removed-member record as evidence of the removal. Free access does not read it, so the
+  // removed Admin can create the one organization of its account.
+  const records = structuredClone(site.removalStore.removedMembers);
+  assert.deepEqual(records.map(({ subject, organizationId }) => [subject, organizationId]), [[removalAdmin.id, removalOrganization]]);
   const signup = await browser.open('signup');
   assert.equal(signup.status, 200, signup.body);
-  assert.match(signup.body, /You already have a Thermus account/);
-  assert.doesNotMatch(signup.body, /name="organization_name"/);
-  assert.deepEqual(formsIn(signup.body), []);
-  assert.equal((await browser.open('portal/access')).status, 403);
+  assert.match(signup.body, /name="organization_name"/);
+  const form = formsIn(signup.body).find(({ action }) => action === '/team/signup');
+  assert.ok(form, signup.body);
+  const created = await browser.post('signup', { ...form.fields, organization_name: 'Fresh Labs', agreement: 'accepted' });
+  assert.equal(created.status, 303, created.body);
+  assert.equal(created.location?.pathname, '/team/quick-start');
+  assert.equal(site.signupFake.organizations.length, 1);
+  const access = await browser.open('portal/access');
+  assert.equal(access.status, 200, access.body);
+  assert.equal(JSON.parse(access.body).organizationId, site.signupFake.organizations[0]?.id);
   assert.equal((await site.discover(oldToken)).status, 403);
-  assert.deepEqual(site.signupFake.organizations, []);
+  assert.deepEqual(site.removalStore.removedMembers, records);
 });
 
 test('Given a creator Admin with a retained start record and another Admin, when the creator removes itself, then signup offers saved-start support without making or restoring a membership', async (t) => {

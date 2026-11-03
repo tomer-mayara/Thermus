@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto';
 import { test } from 'node:test';
 import { adminGrant, userGrant } from '../../support/fixtures/hosted-roles.ts';
 import { WorkOSSignup } from '../../../src/accounts/providers/workos/workos-signup.ts';
-import { RemovedMemberStoreSpy, SignupClientFake, documents, organizationName, user } from './fixtures/signup-client-fake.ts';
+import { SignupClientFake, documents, organizationName, user } from './fixtures/signup-client-fake.ts';
 
 test('Given a verified identity without access, when it names and accepts an organization, then the saved name and first Admin match the request', async () => {
   const fake = new SignupClientFake();
@@ -154,50 +154,44 @@ test('Given WorkOS returns another current user, when activation is requested, t
   assert.equal(fake.organizationWrites.length, 0);
 });
 
-test('Given existing product access and no creation record, when activation is requested, then it uses existing access without a new workspace', async () => {
-  const fake = new SignupClientFake();
-  fake.existingAccess = [{ organizationId: 'org_existing', organizationName: 'Existing', active: true, grants: [userGrant] }];
-  assert.deepEqual(await activate(fake), { status: 'existing-access' });
-  assert.equal(fake.organizationWrites.length, 0);
-  assert.equal(fake.membershipWrites.length, 0);
-});
-
-for (const status of ['active', 'pending', 'inactive'] as const) {
-  test(`Given a membership record with status ${status} and no product access, when activation is requested, then it is an existing account without an organization or membership write`, async () => {
+for (const grant of [userGrant, adminGrant]) {
+  test(`Given ${grant.role} product access in another organization and no creation record, when activation is requested, then it creates the account's one organization with the first Admin and leaves the other access unchanged`, async () => {
     const fake = new SignupClientFake();
-    fake.memberships = [{ userId: user.subject, organizationId: 'org_former', status, directoryManaged: false, roles: [{ slug: 'member' }] }];
+    fake.existingAccess = [{ organizationId: 'org_existing', organizationName: 'Existing', active: true, grants: [grant] }];
+    fake.memberships = [{ userId: user.subject, organizationId: 'org_existing', status: 'active', directoryManaged: false, roles: [{ slug: grant.role }] }];
+    const other = structuredClone(fake.memberships);
 
-    assert.deepEqual(await activate(fake), { status: 'existing-account' });
-    assert.deepEqual(fake.organizationWrites, []);
-    assert.deepEqual(fake.membershipWrites, []);
+    assert.deepEqual(await activate(fake), { status: 'active', organizationId: 'org_personal' });
+    assert.equal(fake.organizationWrites.length, 1);
+    assert.deepEqual(fake.membershipWrites, [{ organizationId: 'org_personal', userId: user.subject, roleSlug: 'admin' }]);
+    assert.deepEqual(fake.memberships.filter((record) => record.organizationId === 'org_existing'), other);
   });
 }
 
-test('Given a request is cancelled after the account record read, when activation continues, then no organization or membership is written', async () => {
+for (const status of ['active', 'pending', 'inactive'] as const) {
+  test(`Given a membership record with status ${status} in another organization, when activation is requested, then it creates the account's one organization and first Admin without a membership read of the user`, async () => {
+    const fake = new SignupClientFake();
+    fake.memberships = [{ userId: user.subject, organizationId: 'org_former', status, directoryManaged: false, roles: [{ slug: 'member' }] }];
+    const former = structuredClone(fake.memberships);
+
+    assert.deepEqual(await activate(fake), { status: 'active', organizationId: 'org_personal' });
+    assert.equal(fake.organizationWrites.length, 1);
+    assert.deepEqual(fake.membershipWrites, [{ organizationId: 'org_personal', userId: user.subject, roleSlug: 'admin' }]);
+    assert.ok(fake.membershipReads.length > 0);
+    assert.deepEqual(fake.membershipReads.filter((read) => read.userId !== undefined || read.organizationId !== 'org_personal'), []);
+    assert.deepEqual(fake.memberships.filter((record) => record.organizationId === 'org_former'), former);
+  });
+}
+
+test('Given a request is cancelled during the creation-record lookup, when activation continues, then no organization or membership is written', async () => {
   const fake = new SignupClientFake();
   const controller = new AbortController();
-  fake.afterMembershipRead = () => controller.abort();
+  fake.organizations.getOrganizationByExternalId = async () => {
+    controller.abort();
+    throw Object.assign(new Error('not found'), { status: 404 });
+  };
 
   assert.deepEqual(await activate(fake, controller.signal), { status: 'unavailable' });
-  assert.deepEqual(fake.membershipReads.map((read) => read.userId), [user.subject]);
-  assert.deepEqual(fake.organizationWrites, []);
-  assert.deepEqual(fake.membershipWrites, []);
-});
-
-test('Given no removed-member record, when a verified identity names and accepts an organization, then after one read of the identity the organization and first Admin are created as before', async () => {
-  const fake = new SignupClientFake();
-  fake.removedMembers = new RemovedMemberStoreSpy('absent');
-
-  assert.deepEqual(await activate(fake), { status: 'active', organizationId: 'org_personal' });
-  assert.deepEqual(fake.removedMembers.reads, [{ authority: user.authority, subject: user.subject }]);
-  assert.equal(fake.organizationWrites.length, 1);
-  assert.deepEqual(fake.membershipWrites, [{ organizationId: 'org_personal', userId: user.subject, roleSlug: 'admin' }]);
-});
-
-test('Given only Admin product access, when activation is requested, then existing access continues without a new workspace or membership', async () => {
-  const fake = new SignupClientFake();
-  fake.existingAccess = [{ organizationId: 'org_existing', organizationName: 'Existing', active: true, grants: [adminGrant] }];
-  assert.deepEqual(await activate(fake), { status: 'existing-access' });
   assert.deepEqual(fake.organizationWrites, []);
   assert.deepEqual(fake.membershipWrites, []);
 });
@@ -283,7 +277,7 @@ for (const boundary of ['afterOrganizationCreate', 'afterOrganizationRead', 'aft
   test(`Given a request is cancelled ${boundary}, when activation continues, then it performs no membership write`, async () => {
     const fake = new SignupClientFake();
     const controller = new AbortController();
-    // Each boundary comes after the organization create. The account record read before the create is not one of them.
+    // Each boundary comes after the organization create.
     fake[boundary] = () => { if (fake.organization !== undefined) controller.abort(); };
     assert.deepEqual(await activate(fake, controller.signal), { status: 'unavailable' });
     assert.equal(fake.membershipWrites.length, 0);

@@ -2,38 +2,18 @@ import { createHash } from 'node:crypto';
 import { hostedRolePermissions } from '../../../support/fixtures/hosted-roles.ts';
 import type { CreateOrganizationOptions, CreateOrganizationMembershipOptions, ListOrganizationMembershipsOptions, ListUsersOptions } from '@workos-inc/node';
 import type { OrganizationMembership } from '../../../../src/accounts/organizations/organization-directory.ts';
-import type { RemovedMemberStore } from '../../../../src/accounts/organizations/removal-operation-store.ts';
 import type { SignupDocuments } from '../../../../src/accounts/organizations/signup-activation.ts';
 import type { WorkOSSignupOptions } from '../../../../src/accounts/providers/workos/workos-signup.ts';
 
 type Organization = Awaited<ReturnType<WorkOSSignupOptions['workos']['organizations']['getOrganization']>>;
 type Membership = Awaited<ReturnType<WorkOSSignupOptions['workos']['userManagement']['createOrganizationMembership']>>;
 type Roles = Awaited<ReturnType<WorkOSSignupOptions['workos']['authorization']['listOrganizationRoles']>>['data'];
-type Identity = Parameters<RemovedMemberStore['readRemovedMember']>[0];
-type RemovedMemberAnswer = Awaited<ReturnType<RemovedMemberStore['readRemovedMember']>>['status'];
 
 export const user = { authority: 'workos:staging', subject: 'user_verified' };
 export const organizationName = 'Acme Labs';
 export const documents: SignupDocuments = { purpose: 'organization-creation', version: 'bundle-v1', terms: { version: 'terms-v1', sha256: createHash('sha256').update('Terms').digest('hex'), text: 'Terms' },
   notice: { version: 'notice-v1', sha256: createHash('sha256').update('Notice').digest('hex'), text: 'Notice' },
   agreement: { version: 'agreement-v1', text: 'TEST ONLY. I have authority to accept these terms for this organization.' } };
-
-// A spy of the removed-member read of signup: it gives one scripted answer and records each identity that it reads.
-export class RemovedMemberStoreSpy implements Pick<RemovedMemberStore, 'readRemovedMember'> {
-  readonly reads: Identity[] = [];
-  answer: RemovedMemberAnswer;
-  afterRead?: () => void;
-
-  constructor(answer: RemovedMemberAnswer) {
-    this.answer = answer;
-  }
-
-  async readRemovedMember(identity: Identity): ReturnType<RemovedMemberStore['readRemovedMember']> {
-    this.reads.push(identity);
-    this.afterRead?.();
-    return { status: this.answer };
-  }
-}
 
 export class SignupClientFake {
   readonly organizationWrites: CreateOrganizationOptions[] = [];
@@ -58,12 +38,9 @@ export class SignupClientFake {
   afterRolesRead?: () => void;
   afterMembershipRead?: () => void;
   roleReads = 0;
-  // Without a store, signup gets no removed-member read, as in a composition without hosted storage.
-  removedMembers: RemovedMemberStoreSpy | undefined;
 
   options(): WorkOSSignupOptions {
-    return { authority: user.authority, workos: this, directory: { membershipsOf: async () => this.existingAccess }, clock: () => new Date('2026-10-16T12:00:00.000Z'),
-      ...(this.removedMembers === undefined ? {} : { removedMembers: this.removedMembers }) };
+    return { authority: user.authority, workos: this, directory: { membershipsOf: async () => this.existingAccess }, clock: () => new Date('2026-10-16T12:00:00.000Z') };
   }
 
   readonly organizations = {
@@ -97,11 +74,12 @@ export class SignupClientFake {
       if (this.userReadFailure) throw new Error('provider secret');
       return { data: this.users.filter((record) => record.email.toLowerCase() === options.email?.toLowerCase()).slice(0, options.limit) };
     },
-    // A read for one user gives only the records of that user, as WorkOS does.
+    // A read that names a user, an organization, or both gives only the records that match, as WorkOS does.
     listOrganizationMemberships: async (options: ListOrganizationMembershipsOptions) => {
       this.membershipReads.push(options);
       this.afterMembershipRead?.();
-      const data = options.userId === undefined ? [...this.memberships] : this.memberships.filter((record) => record.userId === options.userId);
+      const data = this.memberships.filter((record) => (options.userId === undefined || record.userId === options.userId)
+        && (options.organizationId === undefined || record.organizationId === options.organizationId));
       return { data, listMetadata: { after: this.readAfter } };
     },
     createOrganizationMembership: async (options: CreateOrganizationMembershipOptions) => {
