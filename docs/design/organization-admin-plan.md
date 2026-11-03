@@ -2069,7 +2069,9 @@ gratuitous source change to create a red step.
    Admin alone now has product access and continues instead of creating a new
    User workspace. Preserve the S1-02 eligibility update and extend its coverage.
    Former invited members without access can create (until 2 November 2026:
-   since then a membership record of any status refuses creation, see the
+   then a membership record of any status refused creation; a later owner
+   decision of the same day lets each account create one organization, also
+   with current access or a membership record in another organization, see the
    [authentication design](authentication-design.md)); retained creator records
    follow saved-start/support recovery after access loss. Test old markers,
    malformed metadata, failed reads, and revoked first Admin without treating any

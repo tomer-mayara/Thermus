@@ -57,8 +57,10 @@ no-access message and Start free access recovery action visible.
 Signup creates a named organization after the account creation at the AuthKit
 sign-up screen. Before that screen, step 1 asks only for the email address: an
 email that has an account gets a message and Sign in, and another email opens
-the screen with the email filled in. An account with an organization membership
-cannot create a new organization. Show an editable organization name and one
+the screen with the email filled in. Each account can create one organization:
+memberships in other organizations do not stop it, and an account whose
+organization exists gets **Your organization exists** with Continue (owner
+decision of 2 November 2026). Show an editable organization name and one
 unchecked organization/authority agreement. Trim the name and accept 1 to 100
 UTF-16 units of well-formed text without controls.
 Do not add account or payment fields. Keep all approved document text, versions,
@@ -163,9 +165,15 @@ another workspace gives no menu links here. Without a selected workspace, or
 when its access is denied, stale, or unavailable, keep the picker usable with
 Connect and Switch Workspace. The display lookup gives no selection authority.
 
+In the organization card, say "Each account can create one organization." and
+link **Create an organization** to the hosted signup URL. Keep this link out of
+the header menu. Signup decides whether the account can still create its one
+organization; the link gives no authority (owner decision of 2 November 2026).
+
 The implemented [desktop](portal-screenshots/organizations-desktop.png) and
 [mobile](portal-screenshots/organizations-mobile.png) previews use the built
-portal assets and a sample personal workspace.
+portal assets and a sample personal workspace. They show the picker before the
+Create an organization link.
 
 ## Admin Quick start
 
