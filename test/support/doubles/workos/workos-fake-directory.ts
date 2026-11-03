@@ -77,13 +77,14 @@ function positionAfter(records: readonly { readonly index: number }[], cursorInd
   return position === -1 ? records.length : position;
 }
 
-// The routes of the membership reads and creates, the user reads, the role assignments, and the role lists of the
-// organizations of start(). workos-fake-organizations.ts has the organization reads.
+// The routes of the membership reads and creates, the user reads and the user list, the role assignments, and the role
+// lists of the organizations of start(). workos-fake-organizations.ts has the organization reads.
 export function answerDirectoryRoutes(fake: WorkOSFakeApi, view: DirectoryView, organizations: readonly string[]): void {
   fake.answer(membershipsRoute, (request) => membershipsAnswer(view, request));
   fake.answer('POST /user_management/organization_memberships', (request) => createMembershipAnswer(view, request));
   fake.answerEach(`${membershipsRoute}/:id`, (_request, id) => membershipAnswer(view, id));
   fake.answerEach('DELETE /user_management/organization_memberships/:id', (_request, id) => deleteMembershipAnswer(view, id));
+  fake.answer('GET /user_management/users', (request) => usersAnswer(view, request));
   fake.answerEach('GET /user_management/users/:id', (_request, id) => userAnswer(view, id));
   fake.answerEach(`POST ${roleAssignmentsPath}`, (request, id) => roleAssignmentAnswer(view, request, id));
   fake.answerEach(`DELETE ${roleAssignmentsPath}`, (request, id) => roleAssignmentAnswer(view, request, id));
@@ -138,6 +139,15 @@ function deleteMembershipAnswer(view: DirectoryView, membershipId: string): Fake
   }
   view.deletedMembershipIds.add(membershipId);
   return { status: 204 };
+}
+
+// The user list with an email filter gives the users of that address, at most the limit, in one page. WorkOS compares
+// addresses without letter case.
+function usersAnswer(view: DirectoryView, request: RecordedRequest): FakeAnswer {
+  const query = queryOf(request);
+  const email = query.get('email')?.toLowerCase();
+  const fitting = view.users.filter((user) => email === undefined || user.email.toLowerCase() === email);
+  return listAnswer(fitting.slice(0, Number(query.get('limit') ?? 10)).map(userJson), null);
 }
 
 function userAnswer(view: DirectoryView, userId: string): FakeAnswer {
